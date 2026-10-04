@@ -1,0 +1,279 @@
+{
+ "decks": 24,
+ "distinct_cards": 76,
+ "unresolved_names": [],
+ "name_corrections": {
+  "potion enegry": "potion energy",
+  "rocket's trap": "the rocket's trap"
+ },
+ "labels": {
+  "archetypes": 14,
+  "top1_share": 0.25,
+  "top2_share": 0.375,
+  "hhi": 0.11458333333333333,
+  "effective_archetypes": 8.727272727272728,
+  "counts": {
+   "Wigglytuff": 6,
+   "Clefable / Wigglytuff": 3,
+   "Clefable": 2,
+   "Rain Dance": 2,
+   "Haymaker": 2,
+   "Blaine’s Rhyhorn / Rocket’s Zapdos": 1,
+   "Aerodactyl / Haymaker": 1,
+   "Venusaur": 1,
+   "Brock’s Sandslash / Clefable / Hitmonchan": 1,
+   "Dodrio / Haymaker": 1,
+   "Rain Dance / Wigglytuff": 1,
+   "Arcanine / Haymaker": 1,
+   "Dodrio / Wigglytuff": 1,
+   "Wigglytuff / Dodrio": 1
+  }
+ },
+ "signatures": {
+  "archetypes": 23,
+  "top1_share": 0.08333333333333333,
+  "top2_share": 0.125,
+  "hhi": 0.04513888888888889,
+  "effective_archetypes": 22.153846153846153,
+  "counts": {
+   "chansey / electabuzz / jigglypuff / rocket's zapdos / scyther / wigglytuff": 2,
+   "chansey / clefable / clefairy / electabuzz / hitmonchan / rocket's zapdos / scyther": 1,
+   "clefable / clefairy / ditto / hitmonchan / magmar / scyther": 1,
+   "clefable / clefairy / electabuzz / jigglypuff / mewtwo (promo) / mr. mime / rocket's zapdos / wigglytuff": 1,
+   "blaine's rhyhorn / brock's lickitung / electabuzz / hitmonchan / rocket's zapdos / scyther": 1,
+   "clefable / clefairy / electabuzz / jigglypuff / mewtwo (promo) / rocket's zapdos / wigglytuff": 1,
+   "aerodactyl / chansey / ditto / electabuzz / hitmonchan / rocket's zapdos / scyther": 1,
+   "bulbasaur / chansey / ditto / erika's dratini / ivysaur / kangaskhan / scyther / venusaur": 1,
+   "chansey / ditto / electabuzz / jigglypuff / magmar / scyther / wigglytuff": 1,
+   "chansey / electabuzz / hitmonchan / jigglypuff / rocket's zapdos / scyther / wigglytuff": 1,
+   "brock's sandshrew / brock's sandslash / chansey / clefable / clefairy / hitmonchan / magmar / rocket's hitmonchan / scyther": 1,
+   "ditto / dodrio / doduo / electabuzz / hitmonchan / machop / rocket's zapdos": 1,
+   "chansey / electabuzz / jigglypuff / magmar / rocket's zapdos / scyther / wigglytuff": 1,
+   "articuno / blastoise / ditto / jigglypuff / squirtle / wigglytuff": 1,
+   "arcanine / electabuzz / growlithe / machop / magmar / rocket's zapdos / scyther": 1,
+   "dodrio / doduo / electabuzz / jigglypuff / rocket's scyther / scyther / wigglytuff": 1,
+   "articuno / blastoise / lapras / lickitung / squirtle": 1,
+   "ditto / hitmonchan / kangaskhan / magmar / scyther": 1,
+   "articuno / blastoise / erika's dratini / lapras / squirtle": 1,
+   "clefable / clefairy / jigglypuff / magmar / mewtwo / scyther / wigglytuff": 1,
+   "ditto / electabuzz / hitmonchan / jigglypuff / lickitung / scyther / wigglytuff": 1,
+   "dodrio / doduo / electabuzz / jigglypuff / mewtwo (promo) / mr. mime / rocket's zapdos / scyther / wigglytuff": 1,
+   "ditto / electabuzz / erika's dratini / hitmonchan / rocket's zapdos / scyther": 1
+  }
+ },
+ "top_pokemon_pairs": {
+  "archetypes": 17,
+  "top1_share": 0.125,
+  "top2_share": 0.20833333333333331,
+  "hhi": 0.06944444444444445,
+  "effective_archetypes": 14.399999999999999,
+  "counts": {
+   "electabuzz / hitmonchan": 3,
+   "clefable / clefairy": 2,
+   "clefairy / electabuzz": 2,
+   "electabuzz / jigglypuff": 2,
+   "jigglypuff / magmar": 2,
+   "articuno / blastoise": 2,
+   "blaine's rhyhorn / electabuzz": 1,
+   "aerodactyl / ditto": 1,
+   "bulbasaur / chansey": 1,
+   "chansey / ditto": 1,
+   "brock's sandshrew / magmar": 1,
+   "ditto / dodrio": 1,
+   "arcanine / electabuzz": 1,
+   "ditto / hitmonchan": 1,
+   "articuno / lapras": 1,
+   "chansey / electabuzz": 1,
+   "dodrio / doduo": 1
+  }
+ },
+ "by_division": {
+  "10 and under": {
+   "archetypes": 5,
+   "top1_share": 0.25,
+   "top2_share": 0.5,
+   "hhi": 0.21875,
+   "effective_archetypes": 4.571428571428571,
+   "counts": {
+    "Rain Dance": 2,
+    "Haymaker": 2,
+    "Wigglytuff": 2,
+    "Clefable / Wigglytuff": 1,
+    "Wigglytuff / Dodrio": 1
+   }
+  },
+  "11-14": {
+   "archetypes": 6,
+   "top1_share": 0.375,
+   "top2_share": 0.5,
+   "hhi": 0.21875,
+   "effective_archetypes": 4.571428571428571,
+   "counts": {
+    "Wigglytuff": 3,
+    "Brock’s Sandslash / Clefable / Hitmonchan": 1,
+    "Dodrio / Haymaker": 1,
+    "Rain Dance / Wigglytuff": 1,
+    "Arcanine / Haymaker": 1,
+    "Dodrio / Wigglytuff": 1
+   }
+  },
+  "15+": {
+   "archetypes": 6,
+   "top1_share": 0.25,
+   "top2_share": 0.5,
+   "hhi": 0.1875,
+   "effective_archetypes": 5.333333333333333,
+   "counts": {
+    "Clefable": 2,
+    "Clefable / Wigglytuff": 2,
+    "Blaine’s Rhyhorn / Rocket’s Zapdos": 1,
+    "Aerodactyl / Haymaker": 1,
+    "Venusaur": 1,
+    "Wigglytuff": 1
+   }
+  }
+ },
+ "by_event": {
+  "2000-super-trainer-showdown-new-jersey": {
+   "archetypes": 14,
+   "top1_share": 0.25,
+   "top2_share": 0.375,
+   "hhi": 0.11458333333333333,
+   "effective_archetypes": 8.727272727272728,
+   "counts": {
+    "Wigglytuff": 6,
+    "Clefable / Wigglytuff": 3,
+    "Clefable": 2,
+    "Rain Dance": 2,
+    "Haymaker": 2,
+    "Blaine’s Rhyhorn / Rocket’s Zapdos": 1,
+    "Aerodactyl / Haymaker": 1,
+    "Venusaur": 1,
+    "Brock’s Sandslash / Clefable / Hitmonchan": 1,
+    "Dodrio / Haymaker": 1,
+    "Rain Dance / Wigglytuff": 1,
+    "Arcanine / Haymaker": 1,
+    "Dodrio / Wigglytuff": 1,
+    "Wigglytuff / Dodrio": 1
+   }
+  }
+ },
+ "trainers": {
+  "min": 14,
+  "median": 15.0,
+  "max": 15,
+  "decks_with_25_plus": 0
+ },
+ "evolution": {
+  "decks_without_evolutions": 3,
+  "decks_with_one_evolution_line": 12,
+  "evolution_lines": {
+   "wigglytuff": 12,
+   "clefable": 6,
+   "dodrio": 3,
+   "blastoise": 3,
+   "aerodactyl": 1,
+   "ivysaur": 1,
+   "venusaur": 1,
+   "brock's sandslash": 1,
+   "wartortle": 1,
+   "arcanine": 1,
+   "dark blastoise": 1
+  }
+ },
+ "similarity": {
+  "mean": 0.4146739130434783,
+  "min": 0.06666666666666667,
+  "max": 0.85,
+  "same_label_mean": 0.6349206349206349,
+  "different_label_mean": 0.3965359477124183,
+  "trainer_suite_overlap_mean": 0.5299171842650103
+ },
+ "top": 3,
+ "ryuu": {
+  "pool_size": 569,
+  "missing": {
+   "rocket's zapdos": {
+    "decks": 14,
+    "copies": 35
+   },
+   "narrow gym": {
+    "decks": 3,
+    "copies": 4
+   },
+   "mewtwo (promo)": {
+    "decks": 3,
+    "copies": 7
+   },
+   "blaine's rhyhorn": {
+    "decks": 1,
+    "copies": 3
+   },
+   "brock's lickitung": {
+    "decks": 1,
+    "copies": 2
+   },
+   "lt. surge's electabuzz": {
+    "decks": 1,
+    "copies": 1
+   },
+   "misty's wrath": {
+    "decks": 5,
+    "copies": 11
+   },
+   "brock's rhyhorn": {
+    "decks": 2,
+    "copies": 2
+   },
+   "erika's dratini": {
+    "decks": 4,
+    "copies": 7
+   },
+   "no removal gym": {
+    "decks": 3,
+    "copies": 3
+   },
+   "secret mission": {
+    "decks": 1,
+    "copies": 3
+   },
+   "chaos gym": {
+    "decks": 2,
+    "copies": 6
+   },
+   "brock's sandslash": {
+    "decks": 1,
+    "copies": 2
+   },
+   "brock's sandshrew": {
+    "decks": 1,
+    "copies": 3
+   },
+   "rocket's hitmonchan": {
+    "decks": 1,
+    "copies": 2
+   },
+   "rocket's moltres": {
+    "decks": 1,
+    "copies": 1
+   },
+   "pewter city gym": {
+    "decks": 1,
+    "copies": 2
+   },
+   "rocket's scyther": {
+    "decks": 1,
+    "copies": 2
+   },
+   "erika": {
+    "decks": 1,
+    "copies": 3
+   },
+   "the rocket's trap": {
+    "decks": 1,
+    "copies": 2
+   }
+  },
+  "lists_fully_buildable": 5
+ }
+}

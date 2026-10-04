@@ -1,0 +1,186 @@
+{
+ "decks": 24,
+ "distinct_cards": 56,
+ "unresolved_names": [],
+ "name_corrections": {
+  "rocket's sneak atack": "rocket's sneak attack",
+  "lightning enegry": "lightning energy"
+ },
+ "labels": {
+  "archetypes": 8,
+  "top1_share": 0.4166666666666667,
+  "top2_share": 0.7083333333333334,
+  "hhi": 0.2743055555555556,
+  "effective_archetypes": 3.6455696202531644,
+  "counts": {
+   "Wigglytuff": 10,
+   "Haymaker": 7,
+   "Sponge": 2,
+   "Hitmonchan / Magmar": 1,
+   "Rain Dance": 1,
+   "Electabuzz / Mr. Mime": 1,
+   "Clefable": 1,
+   "Articuno / Hitmonchan / Scyther": 1
+  }
+ },
+ "signatures": {
+  "archetypes": 21,
+  "top1_share": 0.125,
+  "top2_share": 0.20833333333333331,
+  "hhi": 0.05555555555555555,
+  "effective_archetypes": 18.0,
+  "counts": {
+   "ditto / electabuzz / hitmonchan / scyther": 3,
+   "jigglypuff / mewtwo (promo) / scyther / wigglytuff": 2,
+   "ditto / hitmonchan / lickitung / mewtwo (promo) / scyther": 1,
+   "hitmonchan / jigglypuff / scyther / wigglytuff": 1,
+   "hitmonchan / lickitung / magmar / scyther": 1,
+   "hitmonchan / jigglypuff / mewtwo (promo) / mr. mime / wigglytuff": 1,
+   "chansey / ditto / hitmonchan / magmar": 1,
+   "gastly / hitmonchan / jigglypuff / mewtwo (promo) / wigglytuff": 1,
+   "electabuzz / jigglypuff / scyther / wigglytuff": 1,
+   "chansey / ditto / electabuzz / mewtwo (promo) / scyther": 1,
+   "chansey / ditto / jigglypuff / scyther / wigglytuff": 1,
+   "ditto / electabuzz / jigglypuff / scyther / wigglytuff": 1,
+   "electabuzz / hitmonchan / scyther": 1,
+   "hitmonchan / jigglypuff / magmar / scyther / wigglytuff": 1,
+   "articuno / blastoise / lapras / squirtle": 1,
+   "electabuzz / magmar / mewtwo (promo) / scyther": 1,
+   "chansey / hitmonchan / mewtwo (promo) / scyther": 1,
+   "ditto / electabuzz / magmar / mr. mime / scyther": 1,
+   "ditto / hitmonchan / jigglypuff / magmar / scyther / wigglytuff": 1,
+   "clefable / clefairy / electabuzz / hitmonchan / scyther": 1,
+   "articuno / hitmonchan / machop / scyther": 1
+  }
+ },
+ "top_pokemon_pairs": {
+  "archetypes": 18,
+  "top1_share": 0.125,
+  "top2_share": 0.25,
+  "hhi": 0.06944444444444445,
+  "effective_archetypes": 14.399999999999999,
+  "counts": {
+   "jigglypuff / mewtwo (promo)": 3,
+   "scyther / electabuzz": 3,
+   "hitmonchan / jigglypuff": 2,
+   "electabuzz / hitmonchan": 2,
+   "hitmonchan / mewtwo (promo)": 1,
+   "hitmonchan / magmar": 1,
+   "jigglypuff / hitmonchan": 1,
+   "magmar / chansey": 1,
+   "electabuzz / jigglypuff": 1,
+   "jigglypuff / scyther": 1,
+   "jigglypuff / ditto": 1,
+   "magmar / hitmonchan": 1,
+   "articuno / squirtle": 1,
+   "electabuzz / magmar": 1,
+   "mewtwo (promo) / scyther": 1,
+   "electabuzz / mr. mime": 1,
+   "clefairy / hitmonchan": 1,
+   "articuno / hitmonchan": 1
+  }
+ },
+ "by_division": {
+  "10 and under": {
+   "archetypes": 7,
+   "top1_share": 0.25,
+   "top2_share": 0.375,
+   "hhi": 0.15625,
+   "effective_archetypes": 6.4,
+   "counts": {
+    "Haymaker": 2,
+    "Rain Dance": 1,
+    "Sponge": 1,
+    "Electabuzz / Mr. Mime": 1,
+    "Wigglytuff": 1,
+    "Clefable": 1,
+    "Articuno / Hitmonchan / Scyther": 1
+   }
+  },
+  "11-14": {
+   "archetypes": 3,
+   "top1_share": 0.625,
+   "top2_share": 0.875,
+   "hhi": 0.46875,
+   "effective_archetypes": 2.1333333333333333,
+   "counts": {
+    "Wigglytuff": 5,
+    "Haymaker": 2,
+    "Sponge": 1
+   }
+  },
+  "15+": {
+   "archetypes": 3,
+   "top1_share": 0.5,
+   "top2_share": 0.875,
+   "hhi": 0.40625,
+   "effective_archetypes": 2.4615384615384617,
+   "counts": {
+    "Wigglytuff": 4,
+    "Haymaker": 3,
+    "Hitmonchan / Magmar": 1
+   }
+  }
+ },
+ "by_event": {
+  "2000-super-trainer-showdown-california": {
+   "archetypes": 8,
+   "top1_share": 0.4166666666666667,
+   "top2_share": 0.7083333333333334,
+   "hhi": 0.2743055555555556,
+   "effective_archetypes": 3.6455696202531644,
+   "counts": {
+    "Wigglytuff": 10,
+    "Haymaker": 7,
+    "Sponge": 2,
+    "Hitmonchan / Magmar": 1,
+    "Rain Dance": 1,
+    "Electabuzz / Mr. Mime": 1,
+    "Clefable": 1,
+    "Articuno / Hitmonchan / Scyther": 1
+   }
+  }
+ },
+ "trainers": {
+  "min": 18,
+  "median": 28.0,
+  "max": 34,
+  "decks_with_25_plus": 20
+ },
+ "evolution": {
+  "decks_without_evolutions": 12,
+  "decks_with_one_evolution_line": 12,
+  "evolution_lines": {
+   "wigglytuff": 10,
+   "blastoise": 1,
+   "clefable": 1
+  }
+ },
+ "similarity": {
+  "mean": 0.5065217391304347,
+  "min": 0.11666666666666667,
+  "max": 0.9166666666666666,
+  "same_label_mean": 0.6087064676616916,
+  "different_label_mean": 0.4737639553429027,
+  "trainer_suite_overlap_mean": 0.6798537997993261
+ },
+ "top": 3,
+ "ryuu": {
+  "pool_size": 231,
+  "missing": {
+   "mewtwo (promo)": {
+    "decks": 8,
+    "copies": 27
+   },
+   "ditto": {
+    "decks": 11,
+    "copies": 22
+   },
+   "mew": {
+    "decks": 1,
+    "copies": 1
+   }
+  },
+  "lists_fully_buildable": 7
+ }
+}

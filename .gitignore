@@ -1,0 +1,5 @@
+notes/data/cache/
+__pycache__/
+*.pyc
+node_modules/
+*.cpuprofile

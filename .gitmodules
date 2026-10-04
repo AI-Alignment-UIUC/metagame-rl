@@ -1,0 +1,4 @@
+[submodule "ryuu-play"]
+	path = ryuu-play
+	url = https://github.com/evcoats/ryuu-play.git
+	branch = sts-2000-pool

@@ -1,0 +1,77 @@
+card,supertype,stage,decks,share,total_copies,mean_copies_when_present
+professor oak,trainer,-,24,1.0,69,2.875
+computer search,trainer,-,24,1.0,64,2.6666666666666665
+double colorless energy,energy,-,22,0.9166666666666666,66,3.0
+scyther,pokemon,Basic,20,0.8333333333333334,51,2.55
+gust of wind,trainer,-,18,0.75,39,2.1666666666666665
+electabuzz,pokemon,Basic,16,0.6666666666666666,45,2.8125
+lightning energy,energy,Basic,16,0.6666666666666666,184,11.5
+item finder,trainer,-,15,0.625,27,1.8
+full heal energy,energy,-,15,0.625,38,2.533333333333333
+rocket's zapdos,pokemon,Basic,14,0.5833333333333334,35,2.5
+chansey,pokemon,Basic,12,0.5,24,2.0
+ditto,pokemon,Basic,12,0.5,26,2.1666666666666665
+nightly garbage run,trainer,-,12,0.5,16,1.3333333333333333
+wigglytuff,pokemon,Stage 1,12,0.5,35,2.9166666666666665
+jigglypuff,pokemon,Basic,12,0.5,35,2.9166666666666665
+hitmonchan,pokemon,Basic,10,0.4166666666666667,29,2.9
+fighting energy,energy,Basic,10,0.4166666666666667,102,10.2
+pluspower,trainer,-,9,0.375,23,2.5555555555555554
+super energy removal,trainer,-,8,0.3333333333333333,20,2.5
+scoop up,trainer,-,8,0.3333333333333333,15,1.875
+magmar,pokemon,Basic,7,0.2916666666666667,21,3.0
+fire energy,energy,Basic,7,0.2916666666666667,76,10.857142857142858
+clefable,pokemon,Stage 1,6,0.25,14,2.3333333333333335
+clefairy,pokemon,Basic,6,0.25,16,2.6666666666666665
+bill,trainer,-,5,0.20833333333333334,11,2.2
+misty's wrath,trainer,-,5,0.20833333333333334,11,2.2
+potion energy,energy,-,5,0.20833333333333334,11,2.2
+energy removal,trainer,-,4,0.16666666666666666,9,2.25
+psychic energy,energy,Basic,4,0.16666666666666666,38,9.5
+erika's dratini,pokemon,Basic,4,0.16666666666666666,7,1.75
+pokemon breeder,trainer,-,4,0.16666666666666666,10,2.5
+narrow gym,trainer,-,3,0.125,4,1.3333333333333333
+mr. mime,pokemon,Basic,3,0.125,6,2.0
+mewtwo (promo),pokemon,Basic,3,0.125,7,2.3333333333333335
+no removal gym,trainer,-,3,0.125,3,1.0
+rocket's sneak attack,trainer,-,3,0.125,6,2.0
+dodrio,pokemon,Stage 1,3,0.125,8,2.6666666666666665
+doduo,pokemon,Basic,3,0.125,8,2.6666666666666665
+blastoise,pokemon,Stage 2,3,0.125,8,2.6666666666666665
+squirtle,pokemon,Basic,3,0.125,9,3.0
+articuno,pokemon,Basic,3,0.125,9,3.0
+lapras,pokemon,Basic,3,0.125,7,2.3333333333333335
+water energy,energy,Basic,3,0.125,79,26.333333333333332
+pokemon center,trainer,-,2,0.08333333333333333,5,2.5
+brock's rhyhorn,pokemon,Basic,2,0.08333333333333333,2,1.0
+kangaskhan,pokemon,Basic,2,0.08333333333333333,6,3.0
+grass energy,energy,Basic,2,0.08333333333333333,32,16.0
+chaos gym,trainer,-,2,0.08333333333333333,6,3.0
+machop,pokemon,Basic,2,0.08333333333333333,4,2.0
+lickitung,pokemon,Basic,2,0.08333333333333333,5,2.5
+challenge,trainer,-,1,0.041666666666666664,1,1.0
+blaine's rhyhorn,pokemon,Basic,1,0.041666666666666664,3,3.0
+brock's lickitung,pokemon,Basic,1,0.041666666666666664,2,2.0
+lt. surge's electabuzz,pokemon,Basic,1,0.041666666666666664,1,1.0
+aerodactyl,pokemon,Stage 1,1,0.041666666666666664,3,3.0
+mysterious fossil,trainer,-,1,0.041666666666666664,3,3.0
+venusaur,pokemon,Stage 2,1,0.041666666666666664,3,3.0
+ivysaur,pokemon,Stage 1,1,0.041666666666666664,3,3.0
+bulbasaur,pokemon,Basic,1,0.041666666666666664,3,3.0
+secret mission,trainer,-,1,0.041666666666666664,3,3.0
+brock's sandslash,pokemon,Stage 1,1,0.041666666666666664,2,2.0
+brock's sandshrew,pokemon,Basic,1,0.041666666666666664,3,3.0
+rocket's hitmonchan,pokemon,Basic,1,0.041666666666666664,2,2.0
+rocket's moltres,pokemon,Basic,1,0.041666666666666664,1,1.0
+pewter city gym,trainer,-,1,0.041666666666666664,2,2.0
+wartortle,pokemon,Stage 1,1,0.041666666666666664,1,1.0
+arcanine,pokemon,Stage 1,1,0.041666666666666664,3,3.0
+growlithe,pokemon,Basic,1,0.041666666666666664,3,3.0
+defender,trainer,-,1,0.041666666666666664,2,2.0
+rocket's scyther,pokemon,Basic,1,0.041666666666666664,2,2.0
+dark blastoise,pokemon,Stage 2,1,0.041666666666666664,1,1.0
+erika,trainer,-,1,0.041666666666666664,3,3.0
+mewtwo,pokemon,Basic,1,0.041666666666666664,3,3.0
+the rocket's trap,trainer,-,1,0.041666666666666664,2,2.0
+pokemon trader,trainer,-,1,0.041666666666666664,2,2.0
+goop gas attack,trainer,-,1,0.041666666666666664,2,2.0
