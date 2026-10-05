@@ -45,9 +45,19 @@ async function makeAgent(spec, enc, seed) {
   }
   if (spec.startsWith('onnx:')) {
     const parts = spec.slice(5).split(':greedy');
-    return OnnxAgent.load(parts[0], enc.obsSize, enc.actionSize, { seed, greedy: spec.endsWith(':greedy') });
+    // In a game with token observations (against a token model) the identity agent re-encodes.
+    const own = enc.actionId ? null : identityEncoder();
+    const e = own || enc;
+    return OnnxAgent.load(parts[0], e.obsSize, e.actionSize, { seed, greedy: spec.endsWith(':greedy'), reencode: own });
   }
   throw new Error('unknown agent ' + spec);
+}
+
+// The identity vocabulary is the one the models train on (the field's cards), whatever the decks.
+function identityEncoder() {
+  const { Encoder } = require('../encode.js');
+  const { archivedDecks } = require('../decks.js');
+  return new Encoder([...new Set(archivedDecks().flatMap(d => d.cards))]);
 }
 
 function pickDecks(decks, pattern) {
@@ -64,8 +74,7 @@ async function worker(from, to) {
   const decks = DECKS_FILE ? require('../decks.js').decksFromFile(DECKS_FILE) : archivedDecks();
   // A token-model agent needs token observations (the other agents choose by option either way).
   const tok = [X, Y].some(sp => sp.startsWith('onnxtok:'));
-  // The identity vocabulary is the one the models train on (the field's cards), whatever the decks.
-  const enc = tok ? new (require('../tokens.js').TokenEncoder)() : new Encoder([...new Set(archivedDecks().flatMap(d => d.cards))]);
+  const enc = tok ? new (require('../tokens.js').TokenEncoder)() : identityEncoder();
   const agents = { x: await makeAgent(X, enc, SEED * 7919 + from), y: await makeAgent(Y, enc, SEED * 104729 + from) };
   const d1 = pickDecks(decks, D1), d2 = pickDecks(decks, D2);
   let g = from;

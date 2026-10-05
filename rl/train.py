@@ -118,34 +118,54 @@ def ppo_update(model, opt, batch, args, device):
     adv = (adv - adv.mean()) / (adv.std() + 1e-8)
     stats = {"pi_loss": 0.0, "v_loss": 0.0, "entropy": 0.0, "kl": 0.0, "clipfrac": 0.0}
     n = 0
+    tok_len = None
+    if args.model == "tokens":                # tokens fill from the front; kind 0 is padding
+        kind = inputs[1]
+        tok_len = ((kind > 0).long() * torch.arange(1, kind.shape[1] + 1, device=device)).amax(1)
     for _ in range(args.epochs):
         perm = torch.randperm(T, device=device)
         for s in range(0, T, args.minibatch):
             idx = perm[s:s + args.minibatch]
-            logits, v = model(*[x[idx] for x in inputs])
-            mask = legal_mask(idx, offsets, ids, model.action_size)
-            logits = logits.masked_fill(~mask, -1e9)
-            logp_all = F.log_softmax(logits, dim=-1)
-            logp = logp_all.gather(1, act[idx, None]).squeeze(1)
-            p_all = logp_all.exp()
-            entropy = -(p_all * logp_all).masked_fill(~mask, 0.0).sum(-1).mean()
-            ratio = (logp - old_logp[idx]).exp()
-            a = adv[idx]
-            pi_loss = -torch.min(ratio * a, ratio.clamp(1 - args.clip, 1 + args.clip) * a).mean()
-            v_clipped = old_v[idx] + (v - old_v[idx]).clamp(-args.clip, args.clip)
-            v_loss = torch.max((v - ret[idx]) ** 2, (v_clipped - ret[idx]) ** 2).mean()
-            loss = pi_loss + args.vf * v_loss - args.ent * entropy
+            if tok_len is not None:           # similar lengths share a micro-batch, cut to its longest
+                idx = idx[torch.argsort(tok_len[idx])]
             opt.zero_grad(set_to_none=True)
-            loss.backward()
+            # The minibatch's loss is accumulated over micro-batches (same gradient, less memory).
+            micro = args.micro_batch or len(idx)
+            mb_stats = {k: 0.0 for k in stats}
+            for m in range(0, len(idx), micro):
+                j = idx[m:m + micro]
+                w = len(j) / len(idx)
+                with torch.autocast("cuda", dtype=torch.bfloat16, enabled=args.amp and device == "cuda"):
+                    xs = [x[j] for x in inputs]
+                    if tok_len is not None:
+                        L = int(tok_len[j].max())
+                        xs[:3] = [x[:, :L] for x in xs[:3]]
+                    logits, v = model(*xs)
+                logits, v = logits.float(), v.float()
+                mask = legal_mask(j, offsets, ids, model.action_size)
+                logits = logits.masked_fill(~mask, -1e9)
+                logp_all = F.log_softmax(logits, dim=-1)
+                logp = logp_all.gather(1, act[j, None]).squeeze(1)
+                p_all = logp_all.exp()
+                entropy = -(p_all * logp_all).masked_fill(~mask, 0.0).sum(-1).mean()
+                ratio = (logp - old_logp[j]).exp()
+                a = adv[j]
+                pi_loss = -torch.min(ratio * a, ratio.clamp(1 - args.clip, 1 + args.clip) * a).mean()
+                v_clipped = old_v[j] + (v - old_v[j]).clamp(-args.clip, args.clip)
+                v_loss = torch.max((v - ret[j]) ** 2, (v_clipped - ret[j]) ** 2).mean()
+                loss = pi_loss + args.vf * v_loss - args.ent * entropy
+                (loss * w).backward()
+                with torch.no_grad():
+                    mb_stats["pi_loss"] += w * pi_loss.item()
+                    mb_stats["v_loss"] += w * v_loss.item()
+                    mb_stats["entropy"] += w * entropy.item()
+                    mb_stats["kl"] += w * (old_logp[j] - logp).mean().item()
+                    mb_stats["clipfrac"] += w * ((ratio - 1).abs() > args.clip).float().mean().item()
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
             opt.step()
-            with torch.no_grad():
-                stats["pi_loss"] += pi_loss.item()
-                stats["v_loss"] += v_loss.item()
-                stats["entropy"] += entropy.item()
-                stats["kl"] += (old_logp[idx] - logp).mean().item()
-                stats["clipfrac"] += ((ratio - 1).abs() > args.clip).float().mean().item()
-                n += 1
+            for k in stats:
+                stats[k] += mb_stats[k]
+            n += 1
     return {k: v / max(n, 1) for k, v in stats.items()}
 
 
@@ -204,6 +224,8 @@ def main(argv=None):
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--epochs", type=int, default=3)
     ap.add_argument("--minibatch", type=int, default=4096)
+    ap.add_argument("--micro-batch", type=int, default=0, help="split each minibatch into chunks of this size (0 = whole)")
+    ap.add_argument("--amp", action="store_true", help="bfloat16 autocast for the forward pass on the GPU")
     ap.add_argument("--gamma", type=float, default=1.0)
     ap.add_argument("--lam", type=float, default=0.95)
     ap.add_argument("--clip", type=float, default=0.2)

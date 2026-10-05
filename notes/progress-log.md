@@ -255,3 +255,38 @@ Entry format:
   Haymaker list -0.17 against the equilibrium); this is the A5.1 reference for how the meta moves
   as play improves. SimpleBot matches are now fast (the engine speedups apply to its clones).
 - **Next:** A4.1 training.
+
+### #18 · 2026-10-05 · A4.1 · One MLP policy for all 24 decks: exit met at iteration 249
+- **Done:** `runs/a4`: IdentityMLP (1024 x 3, 5.2M parameters), PPO self-play with a snapshot
+  league over all 576 ordered deck pairs (16 workers x 4,096 transitions, GPU inference, seed 1).
+  Stopped at iteration 249 of 400 (3 h 18 min). Exit evaluation with `runs/a4_exit.sh` (mirror
+  and field steps): `notes/data/eval/a4_mirror_simplebot.json`, `a4_field_simplebot.json`.
+- **Evidence:** In-training vs SimpleBot (400 games): it 24 29.4%, 49 53.6%, 99 81.1%, 149 84.4%,
+  199 85.3%, 224 89.4%, 249 89.1% ± 3.0. Exit, 2,400 games, 100 per deck, greedy: mirror 89.25%
+  ± 1.2 (lowest Viray Rain Dance 67%, Bartlett Sponge 77%; highest 97-98%); field 88.0% ± 1.3
+  (lowest Viray 61%, Bartlett 75%, Morris Electabuzz 78%). Every deck above 50%. 0 errors; 44 /
+  52 games cut off (scored as half).
+- **Found:** Gains slowed to ~1 point per 25 iterations after iteration 100; it is ~9 points
+  below the one-matchup A3 policy, with the losses concentrated in the 10-and-under lists. The
+  trained-policy matrix and its Nash (the third step of `a4_exit.sh`) were not run.
+- **Next:** A4.2: the token model on the same task, compared with this checkpoint.
+
+### #19 · 2026-10-05 · A4.2 · Token-model training made affordable; mixed-model matches
+- **Done:** `rl/train.py`: `--micro-batch` (each PPO minibatch accumulated over chunks; same
+  gradient) and `--amp` (bfloat16 forward). For the token model each minibatch is sorted by
+  token count and each micro-batch cut to its longest state. `rl/token_model.py`: attention
+  through `F.scaled_dot_product_attention`, plain matmuls kept for the ONNX export.
+  `env/agents.js`: `OnnxAgent` `reencode` mode (identity policy in a token-encoded game: encodes
+  the state itself, maps the options to its ids, answers with the option index);
+  `env/env.js` `visibleDecks()`; `env/tools/evaluate.js` uses it, so an MLP can play a token
+  model. Check: `env/tools/check_reencode.js`.
+- **Evidence:** Token model on all 576 pairs at minibatch 4,096: the whole-batch update filled
+  the 16 GB GPU and spilled to shared memory (3 iterations not done in 10 min). Micro-batch
+  1,024 fp32: 44 s train / iteration; + bf16, micro 2,048: 32 s; + length sorting and fused
+  attention: 17 s (fp32 at micro 2,048 with these: 81-112 s). Micro-batched vs whole update on
+  a test batch: parameters within 4e-8, identical stats. Fused vs matmul attention on 2,000 real
+  states: logits within 2e-8; trimmed to the batch's longest state: identical (states 45-95
+  tokens, mean 62, padding always at the end). Re-encoding: 7,959 decisions with 0 mismatches
+  against the plain agent, 7,170 decisions in token games with 0 invalid; A4.1 vs an untrained
+  token model 80/80.
+- **Next:** Train the token model (`runs/a4-tok`, A4.1 settings, 250 iterations), then compare.

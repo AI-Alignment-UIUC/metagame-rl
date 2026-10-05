@@ -21,6 +21,7 @@ import math
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 TYPES = 11
 NUM_KINDS = 16
@@ -57,6 +58,15 @@ def card_feature_matrix(table: list) -> np.ndarray:
     return np.stack(rows)
 
 
+def attend(q, k, v, mask):
+    """Attention over the unmasked keys. Plain matmuls when exporting to ONNX; PyTorch's fused
+    kernel otherwise (same result, much less memory in training)."""
+    if torch.onnx.is_in_onnx_export():
+        att = (q @ k.transpose(-1, -2)) / math.sqrt(q.shape[-1])
+        return att.masked_fill(~mask[:, None, None, :], -1e9).softmax(-1) @ v
+    return F.scaled_dot_product_attention(q, k, v, attn_mask=mask[:, None, None, :])
+
+
 class Block(nn.Module):
     """Pre-LN transformer block; keys masked by `mask` (True = real token)."""
 
@@ -72,9 +82,7 @@ class Block(nn.Module):
         B, T, d = x.shape
         hd = d // self.h
         q, k, v = self.qkv(self.ln1(x)).view(B, T, 3, self.h, hd).permute(2, 0, 3, 1, 4)
-        att = (q @ k.transpose(-1, -2)) / math.sqrt(hd)
-        att = att.masked_fill(~mask[:, None, None, :], -1e9).softmax(-1)
-        y = (att @ v).transpose(1, 2).reshape(B, T, d)
+        y = attend(q, k, v, mask).transpose(1, 2).reshape(B, T, d)
         x = x + self.proj(y)
         return x + self.ff(self.ln2(x))
 
@@ -97,9 +105,7 @@ class CrossBlock(nn.Module):
         hd = d // self.h
         q = self.q(self.lnq(c)).view(B, M, self.h, hd).transpose(1, 2)
         k, v = self.kv(self.lnk(x)).view(B, T, 2, self.h, hd).permute(2, 0, 3, 1, 4)
-        att = (q @ k.transpose(-1, -2)) / math.sqrt(hd)
-        att = att.masked_fill(~mask[:, None, None, :], -1e9).softmax(-1)
-        y = (att @ v).transpose(1, 2).reshape(B, M, d)
+        y = attend(q, k, v, mask).transpose(1, 2).reshape(B, M, d)
         c = c + self.proj(y)
         return c + self.ff(self.ln2(c))
 

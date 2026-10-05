@@ -30,12 +30,16 @@ function sampleMasked(logits, offset, legal, rng, greedy) {
 }
 
 class OnnxAgent {
-  constructor(session, obsSize, actionSize, { seed = 0, greedy = false } = {}) {
+  // reencode: an identity Encoder for games whose Env uses another encoder (the token one, when
+  // this agent plays a token model): the agent then encodes the state itself and maps the
+  // options on offer to its action ids, and answers with the Env's own action (option index).
+  constructor(session, obsSize, actionSize, { seed = 0, greedy = false, reencode = null } = {}) {
     this.session = session;
     this.obsSize = obsSize;
     this.actionSize = actionSize;
     this.rng = new Rng(seed);
     this.greedy = greedy;
+    this.reencode = reencode;
   }
 
   static async load(file, obsSize, actionSize, opts) {
@@ -46,14 +50,20 @@ class OnnxAgent {
 
   async act(batch) {
     const ort = require('onnxruntime-node');
-    const n = batch.length;
+    const n = batch.length, enc = this.reencode;
     const x = new Uint8Array(n * this.obsSize);
-    batch.forEach((b, i) => x.set(b.obs, i * this.obsSize));
+    const legal = batch.map((b, i) => {
+      if (!enc) { x.set(b.obs, i * this.obsSize); return b.legal; }
+      const { game, current } = b.env;
+      x.set(enc.encodeU8(game, current.playerId, b.env.visibleDecks(current.playerId)), i * this.obsSize);
+      return current.options.map(o => enc.actionId(o.key));
+    });
     const out = await this.session.run({ obs: new ort.Tensor('uint8', x, [n, this.obsSize]) });
     const logits = out.logits.data, value = out.value.data;
     return batch.map((b, i) => {
-      const s = sampleMasked(logits, i * this.actionSize, b.legal, this.rng, this.greedy);
-      return { action: s.action, logp: s.logp, value: value[i] };
+      const s = sampleMasked(logits, i * this.actionSize, legal[i], this.rng, this.greedy);
+      const action = enc ? b.legal[legal[i].indexOf(s.action)] : s.action;
+      return { action, logp: s.logp, value: value[i] };
     });
   }
 }
