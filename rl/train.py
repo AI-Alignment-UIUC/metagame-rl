@@ -230,12 +230,6 @@ def main(argv=None):
     torch.manual_seed(args.seed)
     random.seed(args.seed)
 
-    matchups = []
-    for m in args.matchup:
-        a, b = m.split("|")
-        matchups.append([a.strip(), b.strip()])
-        if args.both_directions and a.strip() != b.strip():
-            matchups.append([b.strip(), a.strip()])
 
     if args.inference == "gpu":
         from rl.remote import RemotePool
@@ -243,6 +237,16 @@ def main(argv=None):
     else:
         pool = Workers(args.workers)
     info = pool.ask_all([{"cmd": "info"}] * args.workers)[0]
+    matchups = []
+    for m in args.matchup:
+        if m == "all":                     # every ordered pair of archived decks, mirrors included
+            names = info["decks"]
+            matchups += [[a, b] for a in names for b in names]
+            continue
+        a, b = m.split("|")
+        matchups.append([a.strip(), b.strip()])
+        if args.both_directions and a.strip() != b.strip():
+            matchups.append([b.strip(), a.strip()])
     model = build_model(args, info).to(device)
     opt = torch.optim.Adam(model.parameters(), lr=args.lr, eps=1e-5)
     start = 0
@@ -326,7 +330,7 @@ def main(argv=None):
                   f"win={row['win_vs']} collect {row['collect_s']}s train {row['train_s']}s", flush=True)
 
             if args.eval_every and (it + 1) % args.eval_every == 0:
-                d1, d2 = args.matchup[0].split("|")
+                d1, d2 = ("all", "all") if args.matchup[0] == "all" else args.matchup[0].split("|")
                 path = run / "policies" / f"it{it:05d}.onnx"
                 spec = export_policy(model, path, args.model)
                 model.to(device)

@@ -118,7 +118,7 @@ F.readFrames(process.stdin, (type, payload) => {
     try {
       if (msg.cmd === 'quit') process.exit(0);
       if (msg.cmd === 'info') {
-        F.writeJson(process.stdout, { ok: true, identity: { obsSize: identity.obsSize, actionSize: identity.actionSize },
+        F.writeJson(process.stdout, { ok: true, decks: decks.map(d => d.name), identity: { obsSize: identity.obsSize, actionSize: identity.actionSize },
           tokens: { maxTok: tokens.MAX_TOK, maxCand: tokens.MAX_CAND, globF: tokens.GLOB_F, slotF: tokens.SLOT_F, names: tokens.names.length } });
         return;
       }
