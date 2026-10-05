@@ -217,6 +217,7 @@ def main(argv=None):
     ap.add_argument("--bot-opponents", default="", help='fixed bots to play too, e.g. "heuristic=0.1"')
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--resume", action="store_true")
+    ap.add_argument("--init-from", help="start from this checkpoint's weights (e.g. to pilot new decks)")
     ap.add_argument("--eval-every", type=int, default=0, help="evaluate against --eval-opponents every N iterations")
     ap.add_argument("--eval-opponents", default="simplebot,heuristic")
     ap.add_argument("--eval-games", type=int, default=200)
@@ -253,6 +254,8 @@ def main(argv=None):
     start = 0
     snapshots = []            # onnx: policy files; gpu: state-dict files
     ckpt = run / "checkpoint.pt"
+    if args.init_from:
+        model.load_state_dict(torch.load(ROOT / args.init_from, map_location=device)["model"])
     if args.resume and ckpt.exists():
         state = torch.load(ckpt, map_location=device)
         model.load_state_dict(state["model"])
