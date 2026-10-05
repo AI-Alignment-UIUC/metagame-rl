@@ -1,0 +1,42 @@
+# Engine and environment checks (plan item A1.6). The engine is the ryuu-play submodule.
+name: checks
+on:
+  push:
+  pull_request:
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - name: Fetch the engine's history (the equivalence test reads an old store.ts)
+        run: git -C ryuu-play fetch --unshallow || true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Build the engine
+        working-directory: ryuu-play
+        run: |
+          npm install --no-audit --no-fund --workspace=packages/common --workspace=packages/sets --workspace=packages/simple-bot
+          npm run compile -w packages/common
+          npm run compile -w packages/sets
+      - name: Engine specs
+        working-directory: ryuu-play
+        run: |
+          (cd packages/common && npx jasmine-ts "src/**/*.spec.ts")
+          (cd packages/sets && npx jasmine-ts "tests/**/*.spec.ts")
+      - name: Archived decklists build and start
+        run: node notes/scripts/ryuu_sts_decks_check.js
+      - name: 2000-era rulings
+        run: node notes/scripts/ryuu_rulings_tests.js
+      - name: Card interactions in the STS field
+        run: node notes/scripts/ryuu_sts_cards_tests.js
+      - name: Engine equivalence with the original store
+        run: node notes/scripts/ryuu_engine_equivalence.js --games 20
+      - name: Environment API and encoder
+        run: node env/tools/test_env.js --games 100
+      - name: Legal-action enumerator against the oracle
+        run: node env/tools/verify_enumerator.js --games 200 --workers 2
