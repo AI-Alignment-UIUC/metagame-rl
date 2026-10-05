@@ -1,7 +1,7 @@
 # Pokémon TCG metagame RL
 
 A reinforcement-learning project on the Pokémon Trading Card Game. The environment is
-[AI-Alignment-UIUC/ryuu-play](https://github.com/AI-Alignment-UIUC/ryuu-play) (branch `sts-2000-pool`), a fork of
+[evcoats/ryuu-play](https://github.com/evcoats/ryuu-play) (branch `sts-2000-pool`), a fork of
 [keeshii/ryuu-play](https://github.com/keeshii/ryuu-play), the open-source Pokémon TCG simulator
 in TypeScript. The fork is included here as the `ryuu-play/` submodule.
 
