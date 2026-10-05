@@ -333,3 +333,28 @@ Entry format:
   Archive lists are one per archetype, not the full Worlds top cut.
 - **Next:** Source the Worlds 2011 top-cut lists; per-card text check of the same-name
   printings; then B2 (implement the HGSS-era gap) after the Phase A gate.
+
+### #22 · 2026-10-05 · B1 · 2005 vs 2011 measured by printing: 2005 is no harder, and needs no new mechanics
+- **Done:** `notes/scripts/ryuu_coverage_season.py` (replaces `ryuu_coverage_2011.py`) resolves
+  every card of a season's ptcgarchive archetype lists to its printing (pokemon-tcg-data ids,
+  cached in `notes/data/cache/tcgdata/`) and classes it against the fork: exact (same name and
+  printed set), reprint (another set, identical card data), near-reprint (same structure, text
+  at least 90% alike; to check by hand), different (same name, different card), missing.
+  Engine cards are indexed by `name` and printed set, so cards without a `fullName` count (the
+  #21 script missed them). 2005 page saved in `notes/data/2005-season-ptcgarchive/`. Results:
+  `notes/data/eval/coverage_2005.json`, `coverage_2011.json`.
+- **Evidence:** 2005 (19 lists, 1,140 copies, 139 names): exact 362, near-reprint 65,
+  different 128, missing 516, unresolved 69; best list Birds 40/60. 2011 (13 lists, 780 copies,
+  111 names): exact 224, reprint 110, different 267, missing 178, unresolved 1; best lists
+  Reshiram/Typhlosion 42/60, Zekrom/Pachirisu/Shaymin 40/60. No list in either year is fully
+  buildable. Mechanics: the engine has the Pokemon-ex rule (38 cards in its three EX sets) but
+  no Lost Zone and no LEGEND cards, which 2011 needs (Lost World, Mew Prime's Lost Zone,
+  Rayquaza & Deoxys LEGEND in the Worlds-winning list).
+- **Found:** The decklist gap is about the same share in both years (names not buildable: 2005
+  about 100 of 139, 2011 about 79 of 111), and the full legal pools are both about 600 cards
+  short (2005: six EX sets missing, three complete; 2011: about 35 cards of six sets present).
+  2005's missing cards sit inside mechanics the engine already plays; 2011 also needs new
+  engine mechanics. The "different" class over-counts: some are wording-only changes (Double
+  Colorless Energy), but most checked are real (HGSS Pokemon Communication and Rare Candy).
+  #21's claim that 2011 was chosen for simpler rules does not hold against 2005.
+- **Next:** Decide the Phase B target with these numbers (the README currently says 2011).

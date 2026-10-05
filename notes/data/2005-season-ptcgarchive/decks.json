@@ -1,0 +1,2159 @@
+[
+ {
+  "title": "4 Corners",
+  "cards": [
+   [
+    4,
+    "Dunsparce"
+   ],
+   [
+    2,
+    "Lanturn"
+   ],
+   [
+    2,
+    "Chinchou"
+   ],
+   [
+    2,
+    "Dark Hypno"
+   ],
+   [
+    2,
+    "Drowzee"
+   ],
+   [
+    2,
+    "Magcargo"
+   ],
+   [
+    2,
+    "Slugma"
+   ],
+   [
+    1,
+    "Rhydon"
+   ],
+   [
+    1,
+    "Rhyhorn"
+   ],
+   [
+    1,
+    "Jirachi"
+   ],
+   [
+    3,
+    "TV Reporter"
+   ],
+   [
+    3,
+    "Celio\u2019s Network"
+   ],
+   [
+    3,
+    "Steven\u2019s Advice"
+   ],
+   [
+    1,
+    "Rocket\u2019s Admin"
+   ],
+   [
+    3,
+    "Swoop! Teleporter"
+   ],
+   [
+    2,
+    "Pokemon Retriever"
+   ],
+   [
+    2,
+    "Switch"
+   ],
+   [
+    2,
+    "Crystal Shard"
+   ],
+   [
+    1,
+    "Strength Charm"
+   ],
+   [
+    1,
+    "Pow! Hand Extension"
+   ],
+   [
+    1,
+    "ATM Rock"
+   ],
+   [
+    3,
+    "Battle Frontier"
+   ],
+   [
+    3,
+    "Double Rainbow Energy"
+   ],
+   [
+    3,
+    "Multi Energy"
+   ],
+   [
+    3,
+    "Lightning Energy"
+   ],
+   [
+    3,
+    "Psychic Energy"
+   ],
+   [
+    2,
+    "Scramble Energy"
+   ],
+   [
+    2,
+    "Fighting Energy"
+   ]
+  ],
+  "images": [
+   "ex2-60",
+   "ex5-38",
+   "ex5-57",
+   "ex7-6",
+   "ex6-32",
+   "ex8-20",
+   "ex8-75",
+   "ex5-46",
+   "ex5-70",
+   "ex8-9",
+   "ex3-88",
+   "ex6-88",
+   "ex5-92",
+   "ex7-86",
+   "ex7-92",
+   "ex7-84",
+   "ex6-102",
+   "ex8-85",
+   "ex8-92",
+   "ex7-85",
+   "ex5-85",
+   "ex9-75",
+   "ex9-87",
+   "ex9-89",
+   "ex1-109",
+   "ex1-107",
+   "ex8-95",
+   "ex1-105"
+  ],
+  "desc": "4 Corners had no real goal other than to exploit the weaknesses of the key matchups in the format, and as such the main attackers could be interchanged depending on the expected meta. Cards like Swoop! Teleporter, Magcargo and Celio\u2019s Network provided the needed consistency to make a toolbox like this function, and the abundance of special energy available made setting up the strong attacks much more reliable."
+ },
+ {
+  "title": "Birds",
+  "cards": [
+   [
+    4,
+    "Zapdos ex"
+   ],
+   [
+    4,
+    "Moltres ex"
+   ],
+   [
+    4,
+    "Kangaskhan"
+   ],
+   [
+    4,
+    "Wobbuffet"
+   ],
+   [
+    1,
+    "Rayquaza"
+   ],
+   [
+    4,
+    "Lanette\u2019s Net Search"
+   ],
+   [
+    4,
+    "Scott"
+   ],
+   [
+    3,
+    "Mr Stone\u2019s Project"
+   ],
+   [
+    4,
+    "EXP ALL"
+   ],
+   [
+    4,
+    "Battle Frontier"
+   ],
+   [
+    11,
+    "Fire Energy"
+   ],
+   [
+    11,
+    "Lightning Energy"
+   ],
+   [
+    2,
+    "Psychic Energy"
+   ]
+  ],
+  "images": [
+   "ex6-116",
+   "ex6-115",
+   "ex6-6",
+   "ex2-26",
+   "ex8-107",
+   "ex9-77",
+   "ex9-84",
+   "ex9-79",
+   "ex6-91",
+   "ex9-75",
+   "ex1-108",
+   "ex1-109",
+   "ex1-107"
+  ],
+  "desc": "An extremely simple deck created by Chris McGiven which was able to win the UK National Championships. It focused on setting up behind walls like Kangaskhan and Wobbuffet then eventually attack with a stream of Zapdos ex and Moltres ex. EXP.All allowed you to setup more attackers towards the end of the game, including a Rayquaza * which could steal games. The 4 Battle Frontier would also potentially outright shut down some decks that weren\u2019t prepared."
+ },
+ {
+  "title": "Blastoise ex",
+  "cards": [
+   [
+    3,
+    "Blastoise ex"
+   ],
+   [
+    3,
+    "Squirtle"
+   ],
+   [
+    3,
+    "Delcatty"
+   ],
+   [
+    3,
+    "Skitty"
+   ],
+   [
+    3,
+    "Magneton"
+   ],
+   [
+    3,
+    "Magnemite"
+   ],
+   [
+    3,
+    "Dunsparce"
+   ],
+   [
+    1,
+    "Deoxys ex (Attack)"
+   ],
+   [
+    1,
+    "Deoxys ex (Normal)"
+   ],
+   [
+    1,
+    "Plusle"
+   ],
+   [
+    4,
+    "Celio\u2019s Network"
+   ],
+   [
+    3,
+    "TV Reporter"
+   ],
+   [
+    2,
+    "Copycat"
+   ],
+   [
+    2,
+    "Mr. Stone\u2019s Project"
+   ],
+   [
+    1,
+    "Rocket\u2019s Admin"
+   ],
+   [
+    1,
+    "Scott"
+   ],
+   [
+    4,
+    "Rare Candy"
+   ],
+   [
+    1,
+    "Swoop! Teleporter"
+   ],
+   [
+    1,
+    "Pokemon Retriever"
+   ],
+   [
+    1,
+    "High Pressure System"
+   ],
+   [
+    1,
+    "Island Cave"
+   ],
+   [
+    11,
+    "Water Energy"
+   ],
+   [
+    2,
+    "Lightning Energy"
+   ],
+   [
+    2,
+    "Psychic Energy"
+   ]
+  ],
+  "images": [
+   "ex6-104",
+   "ex6-83",
+   "ex1-5",
+   "ex1-44",
+   "ex3-17",
+   "ex3-63",
+   "ex2-60",
+   "ex8-97",
+   "ex8-98",
+   "ex8-44",
+   "ex6-88",
+   "ex3-88",
+   "ex7-83",
+   "ex9-79",
+   "ex7-86",
+   "ex9-84",
+   "ex2-88",
+   "ex7-92",
+   "ex7-84",
+   "ex3-85",
+   "ex5-89",
+   "ex1-106",
+   "ex1-109",
+   "ex1-107"
+  ],
+  "desc": "A surprise deck at the World Championships, this deck achieved both a T8 and T16 finish in Seniors, and served as a predecessor of the popular LBS deck in the following season. Delcatty and Magneton gave the deck a lot of consistency, as well as strong 1 Prize attackers hitting for relevant weaknesses with Blastoise\u2019s Energy Rain Poke-Power. The Deoxys ex\u2019s provided another strong weakness to hit in a Medicham focused format, as well as an opportunity to deal with a high HP problematic Pokemon with ease."
+ },
+ {
+  "title": "Blaziken",
+  "cards": [
+   [
+    4,
+    "Dunsparce"
+   ],
+   [
+    3,
+    "Blaziken"
+   ],
+   [
+    2,
+    "Blaziken ex"
+   ],
+   [
+    3,
+    "Combusken"
+   ],
+   [
+    4,
+    "Torchic"
+   ],
+   [
+    2,
+    "Pidgeot"
+   ],
+   [
+    1,
+    "Pidgeotto"
+   ],
+   [
+    2,
+    "Pidgey"
+   ],
+   [
+    2,
+    "Rayquaza ex"
+   ],
+   [
+    1,
+    "Moltres ex"
+   ],
+   [
+    1,
+    "Jirachi"
+   ],
+   [
+    3,
+    "Celio\u2019s Network"
+   ],
+   [
+    3,
+    "TV Reporter"
+   ],
+   [
+    2,
+    "Steven\u2019s Advice"
+   ],
+   [
+    1,
+    "Copycat"
+   ],
+   [
+    1,
+    "Rocket\u2019s Admin"
+   ],
+   [
+    4,
+    "Rare Candy"
+   ],
+   [
+    2,
+    "Switch"
+   ],
+   [
+    1,
+    "Warp Point"
+   ],
+   [
+    1,
+    "Pokemon Retriever"
+   ],
+   [
+    3,
+    "High Pressure Stadium"
+   ],
+   [
+    10,
+    "Fire Energy"
+   ],
+   [
+    4,
+    "Multi Energy"
+   ]
+  ],
+  "images": [
+   "ex2-60",
+   "ex1-3",
+   "ex4-89",
+   "ex1-28",
+   "ex1-74",
+   "ex6-10",
+   "ex6-45",
+   "ex6-73",
+   "ex3-97",
+   "ex6-115",
+   "ex5-8",
+   "ex6-88",
+   "ex3-88",
+   "ex5-92",
+   "ex7-83",
+   "ex7-86",
+   "ex2-88",
+   "ex6-102",
+   "ex4-85",
+   "ex7-84",
+   "ex3-85",
+   "ex1-108",
+   "ex9-89"
+  ],
+  "desc": "While not as strong as it was in 2004, it still saw a lot of play well into the 2005 season, even reaching T16 at Worlds. It maintained many of its strengths, but also gained the consistency engine of Pidgeot, as well as Celio\u2019s Network allowing it to hit combo\u2019s much more freely."
+ },
+ {
+  "title": "Dark Slowking",
+  "cards": [
+   [
+    4,
+    "Jirachi"
+   ],
+   [
+    4,
+    "Dark Slowking"
+   ],
+   [
+    4,
+    "Slowpoke"
+   ],
+   [
+    4,
+    "Steven\u2019s Advice"
+   ],
+   [
+    4,
+    "Professor Cosmo\u2019s Discovery"
+   ],
+   [
+    2,
+    "Rocket\u2019s Mission"
+   ],
+   [
+    4,
+    "Rocket\u2019s Poke Ball"
+   ],
+   [
+    4,
+    "Swoop! Teleporter"
+   ],
+   [
+    4,
+    "Crystal Shard"
+   ],
+   [
+    4,
+    "Strength Charm"
+   ],
+   [
+    4,
+    "EXP ALL"
+   ],
+   [
+    4,
+    "Pokemon Retriever"
+   ],
+   [
+    10,
+    "Psychic Energy"
+   ],
+   [
+    4,
+    "Darkness Energy"
+   ]
+  ],
+  "images": [
+   "ex8-9",
+   "ex7-9",
+   "ex4-45",
+   "ex5-92",
+   "ex8-90",
+   "ex7-88",
+   "ex7-89",
+   "ex7-92",
+   "ex8-85",
+   "ex8-92",
+   "ex6-91",
+   "ex7-84",
+   "ex1-107",
+   "ex9-86"
+  ],
+  "desc": "William Hung decided to make a far more aggro version of the T2 archetype with Dark Slowking. Dark Slowking\u2019s Litter attack allowed you to deal as much as 100 damage Turn 2 with the abundance of Tool Cards and Rocket\u2019s Secret Machines in his list. It\u2019s Cunning PokePower also allowed you to control your opponent\u2019s draws to disrupt as much as possible and EXP.ALL meant that it was easy to keep a string of attackers going at any given time. Its strong typing, as well as ability to avoid an annoying resistance with Crystal Shard meant it had options against a lot of the format."
+ },
+ {
+  "title": "Dark Steelix",
+  "cards": [
+   [
+    4,
+    "Dark Steelix"
+   ],
+   [
+    4,
+    "Onix"
+   ],
+   [
+    4,
+    "Jirachi"
+   ],
+   [
+    4,
+    "TV Reporter"
+   ],
+   [
+    3,
+    "Rocket\u2019s Admin"
+   ],
+   [
+    3,
+    "Steven\u2019s Advice"
+   ],
+   [
+    2,
+    "Copycat"
+   ],
+   [
+    4,
+    "Swoop! Teleporter"
+   ],
+   [
+    4,
+    "Life Herb"
+   ],
+   [
+    4,
+    "Potion"
+   ],
+   [
+    3,
+    "Rocket\u2019s Poke Ball"
+   ],
+   [
+    3,
+    "Oran Berry"
+   ],
+   [
+    3,
+    "Rocket\u2019s Tricky Gym"
+   ],
+   [
+    4,
+    "Darkness Energy"
+   ],
+   [
+    4,
+    "Metal Energy"
+   ],
+   [
+    4,
+    "Fighting Energy"
+   ],
+   [
+    3,
+    "R Energy"
+   ]
+  ],
+  "images": [
+   "ex7-10",
+   "ex7-69",
+   "ex8-9",
+   "ex3-88",
+   "ex7-86",
+   "ex5-92",
+   "ex7-83",
+   "ex7-92",
+   "ex5-90",
+   "ex6-101",
+   "ex7-89",
+   "ex9-80",
+   "ex7-90",
+   "ex9-86",
+   "ex9-88",
+   "ex1-105",
+   "ex7-95"
+  ],
+  "desc": "Cropping up and seeing success at Worlds, Dark Steelix provided a new take on the popular T2 archetype. It\u2019s strategy was to overwhelm the opponent with a stream of single prize Dark Steelix\u2019s, which could both tank hits and deal decent damage with Metal Energy and Darkness Energy respectively. Instead of disruption, the deck focused on using more healing cards like Life Herb and Potion, to make your main attackers even harder to KO."
+ },
+ {
+  "title": "Dark Tyranitar",
+  "cards": [
+   [
+    3,
+    "Dark Tyranitar"
+   ],
+   [
+    1,
+    "Dark Tyranitar"
+   ],
+   [
+    4,
+    "Dark Pupitar"
+   ],
+   [
+    4,
+    "Larvitar"
+   ],
+   [
+    2,
+    "Magcargo"
+   ],
+   [
+    2,
+    "Slugma"
+   ],
+   [
+    4,
+    "Dunsparce"
+   ],
+   [
+    4,
+    "Steven\u2019s Advice"
+   ],
+   [
+    4,
+    "TV Reporter"
+   ],
+   [
+    4,
+    "Rocket\u2019s Admin"
+   ],
+   [
+    2,
+    "Celio\u2019s Network"
+   ],
+   [
+    1,
+    "Mr. Briney\u2019s Compassion"
+   ],
+   [
+    3,
+    "Desert Ruins"
+   ],
+   [
+    2,
+    "ATM: Rock"
+   ],
+   [
+    1,
+    "VS Seeker"
+   ],
+   [
+    1,
+    "Warp Point"
+   ],
+   [
+    1,
+    "Pokemon Retriever"
+   ],
+   [
+    6,
+    "Fighting Energy"
+   ],
+   [
+    4,
+    "Darkness Energy"
+   ],
+   [
+    3,
+    "R Energy"
+   ],
+   [
+    2,
+    "Scramble Energy"
+   ],
+   [
+    1,
+    "Double Rainbow Energy"
+   ],
+   [
+    1,
+    "Heal Energy"
+   ]
+  ],
+  "images": [
+   "ex7-19",
+   "ex7-20",
+   "ex7-41",
+   "ex7-63",
+   "ex8-20",
+   "ex8-74",
+   "ex2-60",
+   "ex5-92",
+   "ex3-88",
+   "ex7-86",
+   "ex6-88",
+   "ex3-87",
+   "ex5-85",
+   "ex6-100",
+   "ex4-85",
+   "ex7-84",
+   "ex5-88",
+   "ex1-105",
+   "ex9-86",
+   "ex7-95",
+   "ex8-95",
+   "ex9-87",
+   "ex8-94"
+  ],
+  "desc": "This variant of Dark Tyranitar just focuses on setting up Dark Tyranitar normally, with the aide of either Pidgeot or Magcargo and relies on its incredibly strong attacks, high HP and it\u2019s 6 prize game. The space this version provides allows for a lot of consistency and tech options like ATM Rock. This variant managed to get T4 at the World Championships in Masters, and 2nd in Seniors, both piloted by Japanese players."
+ },
+ {
+  "title": "DragTrode",
+  "cards": [
+   [
+    4,
+    "Rocket\u2019s Sneasel ex"
+   ],
+   [
+    3,
+    "Dark Dragonite"
+   ],
+   [
+    3,
+    "Dark Dragonair"
+   ],
+   [
+    3,
+    "Dratini"
+   ],
+   [
+    3,
+    "Dark Electrode"
+   ],
+   [
+    3,
+    "Voltorb"
+   ],
+   [
+    1,
+    "Rocket\u2019s Scyther ex"
+   ],
+   [
+    4,
+    "Lanette\u2019s Net Search"
+   ],
+   [
+    3,
+    "Copycat"
+   ],
+   [
+    3,
+    "Steven\u2019s Advice"
+   ],
+   [
+    2,
+    "Rocket\u2019s Admin"
+   ],
+   [
+    2,
+    "Mr. Briney\u2019s Compassion"
+   ],
+   [
+    4,
+    "Rocket\u2019s Poke Ball"
+   ],
+   [
+    3,
+    "Dual Ball"
+   ],
+   [
+    1,
+    "Pow! Hand Extension"
+   ],
+   [
+    1,
+    "Switch"
+   ],
+   [
+    2,
+    "Desert Ruins"
+   ],
+   [
+    1,
+    "Rocket\u2019s Hideout"
+   ],
+   [
+    4,
+    "Darkness Energy"
+   ],
+   [
+    4,
+    "Dark Metal Energy"
+   ],
+   [
+    3,
+    "Rainbow Energy"
+   ],
+   [
+    3,
+    "R Energy"
+   ]
+  ],
+  "images": [
+   "ex7-103",
+   "ex7-15",
+   "ex7-31",
+   "ex7-53",
+   "ex7-4",
+   "ex6-85",
+   "ex7-102",
+   "ex9-77",
+   "ex7-83",
+   "ex5-92",
+   "ex7-86",
+   "ex3-87",
+   "ex7-89",
+   "ex4-72",
+   "ex7-85",
+   "ex6-102",
+   "ex5-88",
+   "ex7-87",
+   "ex9-86",
+   "ex7-94",
+   "ex1-95",
+   "ex7-95"
+  ],
+  "desc": "Early DragTrode builds tended to lean towards a focus of Dunsparce and Pidgeot to setup, and relied more on using Dark Dragonite as the main attacker while healing with Mr. Briney\u2019s Compassion. The combination of Dark Electrode\u2019s Darkness Navigation and Dark Dragonite\u2019s Dark Trance would allow you to accelerate energies fast and move them to the appropriate attacker given the situation. A more aggressive build started to see play later in the season, which cut the Dunsparce and Pidgeot entirely, and focused on aggression with more copies of Rocket\u2019s Sneasel ex."
+ },
+ {
+  "title": "LudiCargo",
+  "cards": [
+   [
+    4,
+    "Dunsparce"
+   ],
+   [
+    3,
+    "Ludicolo"
+   ],
+   [
+    2,
+    "Lombre"
+   ],
+   [
+    3,
+    "Lotad"
+   ],
+   [
+    1,
+    "Articuno ex"
+   ],
+   [
+    2,
+    "Magcargo"
+   ],
+   [
+    2,
+    "Slugma"
+   ],
+   [
+    2,
+    "Lanturn"
+   ],
+   [
+    2,
+    "Chinchou"
+   ],
+   [
+    4,
+    "Celio\u2019s Network"
+   ],
+   [
+    2,
+    "Rocket\u2019s Admin"
+   ],
+   [
+    1,
+    "Steven\u2019s Advice"
+   ],
+   [
+    1,
+    "Copycat"
+   ],
+   [
+    1,
+    "TV Reporter"
+   ],
+   [
+    1,
+    "Professor Oak\u2019s Research"
+   ],
+   [
+    1,
+    "Mr. Briney\u2019s Compassion"
+   ],
+   [
+    3,
+    "Rare Candy"
+   ],
+   [
+    1,
+    "Switch"
+   ],
+   [
+    1,
+    "Warp Point"
+   ],
+   [
+    1,
+    "Swoop! Teleporter"
+   ],
+   [
+    1,
+    "Strength Charm"
+   ],
+   [
+    1,
+    "ATM Rock"
+   ],
+   [
+    1,
+    "Pokemon Retriever"
+   ],
+   [
+    1,
+    "VS Seeker"
+   ],
+   [
+    4,
+    "Desert Ruins"
+   ],
+   [
+    6,
+    "Water Energy"
+   ],
+   [
+    4,
+    "Double Rainbow Energy"
+   ],
+   [
+    2,
+    "Scramble Energy"
+   ],
+   [
+    2,
+    "Heal Energy"
+   ]
+  ],
+  "images": [
+   "ex2-60",
+   "ex8-10",
+   "ex2-45",
+   "ex2-66",
+   "ex6-114",
+   "ex8-20",
+   "ex8-74",
+   "ex5-38",
+   "ex5-56",
+   "ex6-88",
+   "ex7-86",
+   "ex5-92",
+   "ex7-83",
+   "ex3-88",
+   "ex6-98",
+   "ex3-87",
+   "ex2-88",
+   "ex6-102",
+   "ex4-85",
+   "ex7-92",
+   "ex8-92",
+   "ex5-85",
+   "ex7-84",
+   "ex6-100",
+   "ex5-88",
+   "ex1-106",
+   "ex9-87",
+   "ex8-95",
+   "ex8-94"
+  ],
+  "desc": "This deck\u2019s built in synergy between Magcargo\u2019s Smooth Over and Magcargo\u2019s Swing Dance meant you had access to any card you wanted to each turn. This combined with a mix of strong attackers in Ludicolo and Lanturn/Rhydon/Ninetales meant it could take on a lot of the format, as long as you tech\u2019d correctly. The deck also had an inbuilt counter Rock lock and an aid against Medicham, with both Lotad and Lombre having the Rain Dish Poke-Body, and it\u2019s lack of focus on ex\u2019s or Pidgeot meant that it could run high counts of either Battle Frontier or Desert Ruins to disrupt any given meta."
+ },
+ {
+  "title": "Medicham",
+  "cards": [
+   [
+    4,
+    "Jirachi"
+   ],
+   [
+    4,
+    "Medicham ex"
+   ],
+   [
+    2,
+    "Meditite"
+   ],
+   [
+    2,
+    "Meditite"
+   ],
+   [
+    2,
+    "Ninetales"
+   ],
+   [
+    2,
+    "Vulpix"
+   ],
+   [
+    4,
+    "Rocket\u2019s Admin"
+   ],
+   [
+    4,
+    "TV Reporter"
+   ],
+   [
+    3,
+    "Wally\u2019s Training"
+   ],
+   [
+    2,
+    "Steven\u2019s Advice"
+   ],
+   [
+    4,
+    "Energy Removal 2"
+   ],
+   [
+    4,
+    "Pow! Hand Extension"
+   ],
+   [
+    4,
+    "Swoop! Teleporter"
+   ],
+   [
+    4,
+    "Team Aqua\u2019s Hideout"
+   ],
+   [
+    7,
+    "Fighting Energy"
+   ],
+   [
+    4,
+    "Fire Energy"
+   ],
+   [
+    4,
+    "Metal Energy"
+   ]
+  ],
+  "images": [
+   "ex8-9",
+   "ex9-95",
+   "ex9-55",
+   "ex3-37",
+   "ex5-22",
+   "ex5-81",
+   "ex7-86",
+   "ex3-88",
+   "ex9-85",
+   "ex5-92",
+   "ex6-89",
+   "ex7-85",
+   "ex7-92",
+   "ex4-78",
+   "ex1-105",
+   "ex1-108",
+   "ex9-88"
+  ],
+  "desc": "With the release of Emerald, Medicham quickly became a dominant deck, winning all 3 age divisions of US Nationals. It\u2019s success continued into Worlds with Sami Sekkoum reaching top 8 with a Ninetales hybrid, designed to hard counter opposing ex decks (including the mirror). Medicham\u2019s Wise Aura Poke-Body allowed you to shut off a large portion of the format early on, while Pure Power allowed you to play from behind the whole game, giving access to powerful cards like Pow! Hand Extension and Rocket\u2019s Admin to disrupt your opponent while you set up your win condition."
+ },
+ {
+  "title": "Metagross",
+  "cards": [
+   [
+    3,
+    "Dunsparce"
+   ],
+   [
+    2,
+    "Metagross ex"
+   ],
+   [
+    2,
+    "Metagross"
+   ],
+   [
+    1,
+    "Metagross"
+   ],
+   [
+    3,
+    "Metang"
+   ],
+   [
+    4,
+    "Beldum"
+   ],
+   [
+    2,
+    "Pidgeot"
+   ],
+   [
+    1,
+    "Pidgeotto"
+   ],
+   [
+    2,
+    "Pidgey"
+   ],
+   [
+    1,
+    "Bellossom"
+   ],
+   [
+    1,
+    "Oddish"
+   ],
+   [
+    1,
+    "Jirachi"
+   ],
+   [
+    4,
+    "Steven\u2019s Advice"
+   ],
+   [
+    4,
+    "Celio\u2019s Network"
+   ],
+   [
+    3,
+    "TV Reporter"
+   ],
+   [
+    2,
+    "Rocket\u2019s Admin"
+   ],
+   [
+    4,
+    "Rare Candy"
+   ],
+   [
+    1,
+    "ATM Rock"
+   ],
+   [
+    1,
+    "Switch"
+   ],
+   [
+    1,
+    "Warp Point"
+   ],
+   [
+    1,
+    "Strength Charm"
+   ],
+   [
+    1,
+    "Magnetic Storm"
+   ],
+   [
+    1,
+    "Island Cave"
+   ],
+   [
+    7,
+    "Psychic Energy"
+   ],
+   [
+    4,
+    "Metal Energy"
+   ],
+   [
+    2,
+    "Scramble Energy"
+   ],
+   [
+    1,
+    "Rainbow Energy"
+   ]
+  ],
+  "images": [
+   "ex2-60",
+   "ex5-95",
+   "ex8-11",
+   "ex5-11",
+   "ex8-40",
+   "ex5-54",
+   "ex6-10",
+   "ex6-45",
+   "ex6-73",
+   "ex5-16",
+   "ex5-68",
+   "ex8-9",
+   "ex5-92",
+   "ex6-88",
+   "ex3-88",
+   "ex7-86",
+   "ex2-88",
+   "ex5-85",
+   "ex6-102",
+   "ex4-85",
+   "ex8-92",
+   "ex5-91",
+   "ex5-89",
+   "ex1-107",
+   "ex9-88",
+   "ex8-95",
+   "ex1-95"
+  ],
+  "desc": "Piloted by Jay Hornung, this deck focused on setting up a tanky Metagross ex which could focus down opponent\u2019s threats with Metal Reversal, while reducing damage done to itself with Metal Energy and Bellossom. The other Metagross allowed for quicker setup, sustainability throughout the game and alternate attackers, while the Pidgeot line allowed for more consistency."
+ },
+ {
+  "title": "Muk",
+  "cards": [
+   [
+    4,
+    "Jirachi"
+   ],
+   [
+    4,
+    "Muk ex"
+   ],
+   [
+    4,
+    "Grimer"
+   ],
+   [
+    4,
+    "TV Reporter"
+   ],
+   [
+    3,
+    "Steven\u2019s Advice"
+   ],
+   [
+    3,
+    "Rocket\u2019s Admin"
+   ],
+   [
+    3,
+    "Wally\u2019s Training"
+   ],
+   [
+    2,
+    "Scott"
+   ],
+   [
+    1,
+    "Copycat"
+   ],
+   [
+    4,
+    "Swoop! Teleporter"
+   ],
+   [
+    4,
+    "Pokemon Reversal"
+   ],
+   [
+    4,
+    "Energy Removal 2"
+   ],
+   [
+    2,
+    "Crystal Shard"
+   ],
+   [
+    4,
+    "Team Aqua\u2019s Hideout"
+   ],
+   [
+    10,
+    "Grass Energy"
+   ],
+   [
+    4,
+    "Metal Energy"
+   ]
+  ],
+  "images": [
+   "ex8-9",
+   "ex3-96",
+   "ex7-56",
+   "ex3-88",
+   "ex5-92",
+   "ex7-86",
+   "ex9-85",
+   "ex9-84",
+   "ex7-83",
+   "ex7-92",
+   "ex6-97",
+   "ex6-89",
+   "ex8-85",
+   "ex4-78",
+   "ex1-104",
+   "ex9-88"
+  ],
+  "desc": "One of the original T2 decks of the format. This archetype relied on putting pressure as soon as possible, both with Muk\u2019s Toxic Gas Poke-Body shutting off opposing Poke-Powers, and its attacks starting to ramp up damage quickly. The low Pokemon count allows for lots of disruption cards like Energy Removal 2, Pokemon Reversal and Team Aqua\u2019s Hideout which aimed to make it as hard as possible for the opponent to deal with multiple Muk ex\u2019s."
+ },
+ {
+  "title": "Nidoqueen",
+  "cards": [
+   [
+    4,
+    "Nidoqueen"
+   ],
+   [
+    3,
+    "Nidorina"
+   ],
+   [
+    4,
+    "Nidoran"
+   ],
+   [
+    3,
+    "Pidgeot"
+   ],
+   [
+    2,
+    "Pidgeotto"
+   ],
+   [
+    3,
+    "Pidgey"
+   ],
+   [
+    1,
+    "Milotic"
+   ],
+   [
+    1,
+    "Feebas"
+   ],
+   [
+    4,
+    "Celio\u2019s Network"
+   ],
+   [
+    4,
+    "Copycat"
+   ],
+   [
+    2,
+    "Rocket\u2019s Admin"
+   ],
+   [
+    2,
+    "Steven\u2019s Advice"
+   ],
+   [
+    1,
+    "Mr. Briney\u2019s Compassion"
+   ],
+   [
+    4,
+    "Desert Ruins"
+   ],
+   [
+    4,
+    "Rare Candy"
+   ],
+   [
+    3,
+    "Great Ball"
+   ],
+   [
+    6,
+    "Grass Energy"
+   ],
+   [
+    4,
+    "Double Rainbow Energy"
+   ],
+   [
+    3,
+    "Heal Energy"
+   ],
+   [
+    2,
+    "Fighting Energy"
+   ]
+  ],
+  "images": [
+   "ex6-9",
+   "ex6-40",
+   "ex6-70",
+   "ex6-10",
+   "ex6-45",
+   "ex6-73",
+   "ex5-12",
+   "ex5-61",
+   "ex6-88",
+   "ex7-83",
+   "ex7-86",
+   "ex5-92",
+   "ex3-87",
+   "ex2-88",
+   "ex6-92",
+   "ex5-88",
+   "ex1-104",
+   "ex9-87",
+   "ex8-94",
+   "ex1-105"
+  ],
+  "desc": "A secret deck created by Jeremy Maron, Pablo Meza and Adam Capriola, this deck took the World Championships by storm achieving 1st and 3rd place. It\u2019s consistency along with Nidoqueen\u2019s ability to both disrupt with Toxic and deal a lot of damage with Power Lariat made it incredibly hard to beat with the format\u2019s card pool."
+ },
+ {
+  "title": "PowTar",
+  "cards": [
+   [
+    3,
+    "Dark Tyranitar"
+   ],
+   [
+    2,
+    "Dark Pupitar"
+   ],
+   [
+    3,
+    "Larvitar"
+   ],
+   [
+    2,
+    "Electrode ex"
+   ],
+   [
+    2,
+    "Voltorb"
+   ],
+   [
+    1,
+    "Pidgeot"
+   ],
+   [
+    1,
+    "Pidgeotto"
+   ],
+   [
+    1,
+    "Pidgey"
+   ],
+   [
+    1,
+    "Magcargo"
+   ],
+   [
+    1,
+    "Slugma"
+   ],
+   [
+    1,
+    "Magmar"
+   ],
+   [
+    1,
+    "Jirachi"
+   ],
+   [
+    3,
+    "Dunsparce"
+   ],
+   [
+    4,
+    "Celio\u2019s Network"
+   ],
+   [
+    3,
+    "Copycat"
+   ],
+   [
+    2,
+    "TV Reporter"
+   ],
+   [
+    2,
+    "Rocket\u2019s Admin"
+   ],
+   [
+    1,
+    "Steven\u2019s Advice"
+   ],
+   [
+    4,
+    "Pow! Hand Extension"
+   ],
+   [
+    3,
+    "Rare Candy"
+   ],
+   [
+    3,
+    "Swoop! Teleporter"
+   ],
+   [
+    1,
+    "ATM Rock"
+   ],
+   [
+    1,
+    "Pokemon Retriever"
+   ],
+   [
+    4,
+    "Heal Energy"
+   ],
+   [
+    4,
+    "Scramble Energy"
+   ],
+   [
+    4,
+    "Darkness Energy"
+   ],
+   [
+    2,
+    "Rainbow Energy"
+   ]
+  ],
+  "images": [
+   "ex7-19",
+   "ex7-41",
+   "ex7-63",
+   "ex6-107",
+   "ex9-71",
+   "ex6-10",
+   "ex6-45",
+   "ex6-73",
+   "ex8-20",
+   "ex8-74",
+   "ex7-44",
+   "ex8-9",
+   "ex2-60",
+   "ex6-88",
+   "ex7-83",
+   "ex3-88",
+   "ex7-86",
+   "ex5-92",
+   "ex7-85",
+   "ex2-88",
+   "ex7-92",
+   "ex5-85",
+   "ex7-84",
+   "ex8-94",
+   "ex8-95",
+   "ex9-86",
+   "ex1-95"
+  ],
+  "desc": "Similar in concept to ZRE, Ross Cawthon took this rogue deck to a surprise 2nd place finish at the World Championships. The deck relies on setting up a combo involving Electrode ex\u2019s Extra Energy Bomb in conjunction with cards like Rocket\u2019s Admin and Pow! Hand extension to cripple your opponent\u2019s setup while setting up attackers. Scramble Energy becomes a key part of this combo, as it becomes active when you knock out Electrode, and allows you to take KO\u2019s on most of the format, or set up Spinning Tail attacks to close out games."
+ },
+ {
+  "title": "Rock Lock",
+  "cards": [
+   [
+    4,
+    "Dunsparce"
+   ],
+   [
+    2,
+    "Dark Tyranitar"
+   ],
+   [
+    1,
+    "Dark Tyranitar"
+   ],
+   [
+    2,
+    "Dark Pupitar"
+   ],
+   [
+    3,
+    "Larvitar"
+   ],
+   [
+    2,
+    "Dark Ampharos"
+   ],
+   [
+    1,
+    "Dark Flaaffy"
+   ],
+   [
+    2,
+    "Mareep"
+   ],
+   [
+    2,
+    "Pidgeot"
+   ],
+   [
+    1,
+    "Pidgeotto"
+   ],
+   [
+    2,
+    "Pidgey"
+   ],
+   [
+    4,
+    "Celio\u2019s Network"
+   ],
+   [
+    2,
+    "Steven\u2019s Advice"
+   ],
+   [
+    2,
+    "Rocket\u2019s Admin"
+   ],
+   [
+    2,
+    "Copycat"
+   ],
+   [
+    1,
+    "Scott"
+   ],
+   [
+    1,
+    "Mr. Briney\u2019s Compassion"
+   ],
+   [
+    4,
+    "Rare Candy"
+   ],
+   [
+    3,
+    "ATM Rock"
+   ],
+   [
+    2,
+    "Rocket\u2019s Poke Ball"
+   ],
+   [
+    3,
+    "Desert Ruins"
+   ],
+   [
+    1,
+    "Rocket\u2019s Tricky Gym"
+   ],
+   [
+    4,
+    "Fighting Energy"
+   ],
+   [
+    4,
+    "Darkness Energy"
+   ],
+   [
+    2,
+    "Double Rainbow Energy"
+   ],
+   [
+    2,
+    "Heal Energy"
+   ],
+   [
+    1,
+    "Scramble Energy"
+   ]
+  ],
+  "images": [
+   "ex2-60",
+   "ex7-19",
+   "ex7-20",
+   "ex7-40",
+   "ex7-62",
+   "ex7-2",
+   "ex7-33",
+   "ex3-64",
+   "ex6-10",
+   "ex6-45",
+   "ex6-73",
+   "ex6-88",
+   "ex5-92",
+   "ex7-86",
+   "ex7-83",
+   "ex9-84",
+   "ex3-87",
+   "ex2-88",
+   "ex5-85",
+   "ex7-89",
+   "ex5-88",
+   "ex7-90",
+   "ex1-105",
+   "ex9-86",
+   "ex9-87",
+   "ex8-94",
+   "ex8-95"
+  ],
+  "desc": "Rock Lock, as the name suggests, focused on spreading damage around the opponents board and taking as many cheap prizes as possible, as well as stunting setups with Ancient Technical Machine: Rock. Dark Tyranitar\u2019s Sand Damage Poke-Body complimented Dark Ampharos\u2019s Darkest Impulse Poke-Body nicely, as it meant opponent\u2019s Pokemon wouldn\u2019t be safe whether they evolved or not, and the constant pressure of ATM: Rock would leave them taking more damage each turn. This deck primarily focused on the format\u2019s reliance on evolution cards and Rare Candy as it could target down either Support Pokemon, or Attacking Pokemon should the situation arise."
+ },
+ {
+  "title": "Sharpedo ex",
+  "cards": [
+   [
+    4,
+    "Sharpedo ex"
+   ],
+   [
+    4,
+    "Carvanha"
+   ],
+   [
+    4,
+    "Jirachi"
+   ],
+   [
+    1,
+    "Wobbuffet"
+   ],
+   [
+    3,
+    "Steven\u2019s Advice"
+   ],
+   [
+    3,
+    "Rocket\u2019s Admin"
+   ],
+   [
+    3,
+    "TV Reporter"
+   ],
+   [
+    3,
+    "Wally\u2019s Training"
+   ],
+   [
+    1,
+    "Scott"
+   ],
+   [
+    4,
+    "Energy Removal 2"
+   ],
+   [
+    4,
+    "Pokemon Reversal"
+   ],
+   [
+    4,
+    "Swoop! Teleporter"
+   ],
+   [
+    1,
+    "Crystal Shard"
+   ],
+   [
+    1,
+    "Pokemon Retriever"
+   ],
+   [
+    4,
+    "Battle Frontier"
+   ],
+   [
+    4,
+    "Darkness Energy"
+   ],
+   [
+    4,
+    "Dark Metal Energy"
+   ],
+   [
+    4,
+    "Rainbow Energy"
+   ],
+   [
+    4,
+    "Metal Energy"
+   ]
+  ],
+  "images": [
+   "ex8-9",
+   "ex8-104",
+   "ex8-56",
+   "ex2-26",
+   "ex5-92",
+   "ex7-86",
+   "ex3-88",
+   "ex9-85",
+   "ex9-84",
+   "ex6-89",
+   "ex6-97",
+   "ex7-92",
+   "ex8-85",
+   "ex7-84",
+   "ex9-75",
+   "ex9-86",
+   "ex7-94",
+   "ex1-95",
+   "ex9-88"
+  ],
+  "desc": "Similar to the Dark Slowking variant, this T2 variant focused on being aggressive, but allowed for more space for disruption cards again like Energy Removal 2, Pokemon Reversal and even Battle Frontier. Sharpedo\u2019s Drag Off allowed the deck to disrupt early, picking off opponent\u2019s key setup Pokemon, and Darkness Blast allowed the deck to hit for big numbers in conjunction with Darkness energy from Turn 3."
+ },
+ {
+  "title": "Vileplume",
+  "cards": [
+   [
+    4,
+    "Vileplume ex"
+   ],
+   [
+    1,
+    "Bellossom"
+   ],
+   [
+    1,
+    "Gloom"
+   ],
+   [
+    4,
+    "Oddish"
+   ],
+   [
+    4,
+    "Jirachi"
+   ],
+   [
+    4,
+    "TV Reporter"
+   ],
+   [
+    3,
+    "Steven\u2019s Advice"
+   ],
+   [
+    2,
+    "Copycat"
+   ],
+   [
+    1,
+    "Rocket\u2019s Admin"
+   ],
+   [
+    4,
+    "Pokemon Reversal"
+   ],
+   [
+    4,
+    "Swoop! Teleporter"
+   ],
+   [
+    4,
+    "Energy Removal 2"
+   ],
+   [
+    4,
+    "Rare Candy"
+   ],
+   [
+    3,
+    "Master Ball"
+   ],
+   [
+    2,
+    "Battle Frontier"
+   ],
+   [
+    1,
+    "Team Aqua Hideout"
+   ],
+   [
+    11,
+    "Grass Energy"
+   ],
+   [
+    3,
+    "Metal Energy"
+   ]
+  ],
+  "images": [
+   "ex8-9",
+   "ex5-100",
+   "ex5-16",
+   "ex5-35",
+   "ex5-68",
+   "ex3-88",
+   "ex5-92",
+   "ex7-83",
+   "ex7-86",
+   "ex6-97",
+   "ex7-92",
+   "ex6-89",
+   "ex2-88",
+   "ex8-88",
+   "ex9-75",
+   "ex4-78",
+   "ex1-104",
+   "ex9-88"
+  ],
+  "desc": "This deck\u2019s pure focus was to get a turn 2 Vileplume ex to lock your opponent out of the game with it\u2019s Block Dust Poke-Body, preventing them from playing trainers, and locking a disruptive Stadium in play for the entire game. It could then slowly whittle away at the opponent with Special Formula and disruption cards like Energy Removal 2 and Pokemon Reversal, while healing with a Bellossom on the bench."
+ },
+ {
+  "title": "ZapTurnDos",
+  "cards": [
+   [
+    4,
+    "Zapdos ex"
+   ],
+   [
+    3,
+    "Manectric"
+   ],
+   [
+    4,
+    "Electrike"
+   ],
+   [
+    1,
+    "Electrode"
+   ],
+   [
+    4,
+    "Voltorb"
+   ],
+   [
+    2,
+    "Mr. Stone\u2019s Project"
+   ],
+   [
+    2,
+    "Scott"
+   ],
+   [
+    2,
+    "Steven\u2019s Advice"
+   ],
+   [
+    1,
+    "Lanette\u2019s Net Search"
+   ],
+   [
+    1,
+    "Professor Oak\u2019s Research"
+   ],
+   [
+    4,
+    "Dual Ball"
+   ],
+   [
+    3,
+    "Pokemon Reversal"
+   ],
+   [
+    3,
+    "Super Scoop Up"
+   ],
+   [
+    2,
+    "Master Ball"
+   ],
+   [
+    2,
+    "Switch"
+   ],
+   [
+    2,
+    "Battle Frontier"
+   ],
+   [
+    2,
+    "Space Center"
+   ],
+   [
+    1,
+    "VS Seeker"
+   ],
+   [
+    17,
+    "Lightning Energy"
+   ]
+  ],
+  "images": [
+   "ex6-116",
+   "ex8-38",
+   "ex8-60",
+   "ex5-5",
+   "ex5-80",
+   "ex9-79",
+   "ex9-84",
+   "ex5-92",
+   "ex9-77",
+   "ex6-98",
+   "ex4-72",
+   "ex6-97",
+   "ex6-99",
+   "ex8-88",
+   "ex6-102",
+   "ex6-100",
+   "ex9-75",
+   "ex8-91",
+   "ex1-109"
+  ],
+  "desc": "As the name implies, the decks focus was to hit with Zapdos\u2019s attack from Turn 2, using either Electrike\u2019s or Voltorb\u2019s Recharge attack. Against a fair amount of decks this pace would be too much to keep up with and could potentially make you go too far ahead for them to get back into the game. Cards like Super Scoop Up made you able to reuse Zapdos ex as much as possible, and Pokemon Reversal let you pick off key Pokemon. Manectric and Electrode provided alternative attackers considering you already had the pre-evolutions in the deck."
+ },
+ {
+  "title": "ZRE",
+  "cards": [
+   [
+    4,
+    "Magmar"
+   ],
+   [
+    3,
+    "Electrode ex"
+   ],
+   [
+    3,
+    "Voltorb"
+   ],
+   [
+    2,
+    "Rayquaza ex"
+   ],
+   [
+    2,
+    "Zapdos ex"
+   ],
+   [
+    1,
+    "Rayquaza"
+   ],
+   [
+    4,
+    "Rocket\u2019s Admin"
+   ],
+   [
+    4,
+    "TV Reporter"
+   ],
+   [
+    3,
+    "Lanette\u2019s Net Search"
+   ],
+   [
+    2,
+    "Rocket\u2019s Mission"
+   ],
+   [
+    4,
+    "Pow! Hand Extension"
+   ],
+   [
+    3,
+    "Energy Removal 2"
+   ],
+   [
+    3,
+    "Switch"
+   ],
+   [
+    2,
+    "Strength Charm"
+   ],
+   [
+    2,
+    "Space Center"
+   ],
+   [
+    1,
+    "Battle Frontier"
+   ],
+   [
+    9,
+    "Lightning Energy"
+   ],
+   [
+    8,
+    "Fire Energy"
+   ]
+  ],
+  "images": [
+   "ex7-44",
+   "ex6-107",
+   "ex5-80",
+   "ex6-116",
+   "ex8-102",
+   "ex8-107",
+   "ex7-86",
+   "ex3-88",
+   "ex9-77",
+   "ex7-88",
+   "ex7-85",
+   "ex6-89",
+   "ex6-102",
+   "ex8-92",
+   "ex8-91",
+   "ex9-75",
+   "ex1-109",
+   "ex1-108"
+  ],
+  "desc": "Popping up more around the World Championships, this deck took the concept of ZapTurnDos but adapted it towards a combo focused direction to provide more stability vs the format. Using Magmar to set up early game, it would set up for a combo of Electrode ex\u2019s Extra Energy Bomb to set up energy on your board, Rocket\u2019s Admin to disrupt your opponent\u2019s hand and then Pow! Hand Extension to disrupt your opponent\u2019s field. This then allowed a Zapdos ex or Rayquaza ex to wreck havoc on an unoptimal board and hand state, or just use Rayquaza * to close out a game on an unprepared opponent."
+ }
+]

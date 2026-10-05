@@ -1,0 +1,3831 @@
+{
+ "year": 2005,
+ "lists": {
+  "4 Corners": {
+   "unresolved": 4,
+   "missing": 34,
+   "different": 7,
+   "exact": 15
+  },
+  "Birds": {
+   "exact": 40,
+   "unresolved": 4,
+   "different": 5,
+   "missing": 11
+  },
+  "Blastoise ex": {
+   "exact": 31,
+   "different": 8,
+   "unresolved": 7,
+   "missing": 14
+  },
+  "Blaziken": {
+   "unresolved": 8,
+   "exact": 31,
+   "missing": 14,
+   "different": 7
+  },
+  "Dark Slowking": {
+   "missing": 38,
+   "different": 4,
+   "exact": 14,
+   "near-reprint": 4
+  },
+  "Dark Steelix": {
+   "missing": 31,
+   "different": 6,
+   "near-reprint": 15,
+   "exact": 8
+  },
+  "Dark Tyranitar": {
+   "missing": 43,
+   "unresolved": 4,
+   "exact": 9,
+   "near-reprint": 4
+  },
+  "DragTrode": {
+   "missing": 27,
+   "different": 19,
+   "exact": 7,
+   "near-reprint": 7
+  },
+  "LudiCargo": {
+   "unresolved": 12,
+   "different": 4,
+   "exact": 13,
+   "missing": 31
+  },
+  "Medicham": {
+   "missing": 34,
+   "different": 7,
+   "exact": 15,
+   "near-reprint": 4
+  },
+  "Metagross": {
+   "unresolved": 7,
+   "missing": 30,
+   "exact": 18,
+   "different": 1,
+   "near-reprint": 4
+  },
+  "Muk": {
+   "missing": 30,
+   "different": 8,
+   "exact": 18,
+   "near-reprint": 4
+  },
+  "Nidoqueen": {
+   "exact": 30,
+   "missing": 22,
+   "different": 4,
+   "unresolved": 4
+  },
+  "PowTar": {
+   "missing": 33,
+   "exact": 11,
+   "different": 6,
+   "unresolved": 6,
+   "near-reprint": 4
+  },
+  "Rock Lock": {
+   "unresolved": 8,
+   "missing": 33,
+   "exact": 13,
+   "different": 2,
+   "near-reprint": 4
+  },
+  "Sharpedo ex": {
+   "missing": 32,
+   "different": 7,
+   "unresolved": 1,
+   "exact": 12,
+   "near-reprint": 8
+  },
+  "Vileplume": {
+   "missing": 27,
+   "different": 7,
+   "exact": 19,
+   "unresolved": 4,
+   "near-reprint": 3
+  },
+  "ZapTurnDos": {
+   "exact": 30,
+   "different": 13,
+   "missing": 13,
+   "near-reprint": 4
+  },
+  "ZRE": {
+   "different": 13,
+   "exact": 28,
+   "missing": 19
+  }
+ },
+ "rows": [
+  {
+   "deck": "4 Corners",
+   "count": 4,
+   "name": "Dunsparce",
+   "printing": null,
+   "status": "unresolved",
+   "engine_sets": [
+    "ex2"
+   ]
+  },
+  {
+   "deck": "4 Corners",
+   "count": 2,
+   "name": "Lanturn",
+   "printing": "ex5-38",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "4 Corners",
+   "count": 2,
+   "name": "Chinchou",
+   "printing": "ex5-57",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "4 Corners",
+   "count": 2,
+   "name": "Dark Hypno",
+   "printing": "ex7-6",
+   "status": "different",
+   "engine_sets": [
+    "base5"
+   ]
+  },
+  {
+   "deck": "4 Corners",
+   "count": 2,
+   "name": "Drowzee",
+   "printing": "ex6-32",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "base5",
+    "ex6",
+    "hgss1"
+   ]
+  },
+  {
+   "deck": "4 Corners",
+   "count": 2,
+   "name": "Magcargo",
+   "printing": "ex8-20",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "4 Corners",
+   "count": 2,
+   "name": "Slugma",
+   "printing": "ex8-75",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "4 Corners",
+   "count": 1,
+   "name": "Rhydon",
+   "printing": "ex5-46",
+   "status": "different",
+   "engine_sets": [
+    "base2"
+   ]
+  },
+  {
+   "deck": "4 Corners",
+   "count": 1,
+   "name": "Rhyhorn",
+   "printing": "ex5-70",
+   "status": "different",
+   "engine_sets": [
+    "base2"
+   ]
+  },
+  {
+   "deck": "4 Corners",
+   "count": 1,
+   "name": "Jirachi",
+   "printing": "ex8-9",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "4 Corners",
+   "count": 3,
+   "name": "TV Reporter",
+   "printing": "ex3-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "4 Corners",
+   "count": 3,
+   "name": "Celio\u2019s Network",
+   "printing": "ex6-88",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "4 Corners",
+   "count": 3,
+   "name": "Steven\u2019s Advice",
+   "printing": "ex5-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "4 Corners",
+   "count": 1,
+   "name": "Rocket\u2019s Admin",
+   "printing": "ex7-86",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "4 Corners",
+   "count": 3,
+   "name": "Swoop! Teleporter",
+   "printing": "ex7-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "4 Corners",
+   "count": 2,
+   "name": "Pokemon Retriever",
+   "printing": "ex7-84",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "4 Corners",
+   "count": 2,
+   "name": "Switch",
+   "printing": "ex6-102",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1",
+    "ex6",
+    "swsh1"
+   ]
+  },
+  {
+   "deck": "4 Corners",
+   "count": 2,
+   "name": "Crystal Shard",
+   "printing": "ex8-85",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "4 Corners",
+   "count": 1,
+   "name": "Strength Charm",
+   "printing": "ex8-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "4 Corners",
+   "count": 1,
+   "name": "Pow! Hand Extension",
+   "printing": "ex7-85",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "4 Corners",
+   "count": 1,
+   "name": "ATM Rock",
+   "printing": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "4 Corners",
+   "count": 3,
+   "name": "Battle Frontier",
+   "printing": "ex9-75",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "4 Corners",
+   "count": 3,
+   "name": "Double Rainbow Energy",
+   "printing": "ex9-87",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "4 Corners",
+   "count": 3,
+   "name": "Multi Energy",
+   "printing": "ex9-89",
+   "status": "different",
+   "engine_sets": [
+    "ex2",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "4 Corners",
+   "count": 3,
+   "name": "Lightning Energy",
+   "printing": "ex1-109",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "4 Corners",
+   "count": 3,
+   "name": "Psychic Energy",
+   "printing": "ex1-107",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "4 Corners",
+   "count": 2,
+   "name": "Scramble Energy",
+   "printing": "ex8-95",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "4 Corners",
+   "count": 2,
+   "name": "Fighting Energy",
+   "printing": "ex1-105",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Birds",
+   "count": 4,
+   "name": "Zapdos ex",
+   "printing": "ex6-116",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Birds",
+   "count": 4,
+   "name": "Moltres ex",
+   "printing": "ex6-115",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Birds",
+   "count": 4,
+   "name": "Kangaskhan",
+   "printing": "ex6-6",
+   "status": "exact",
+   "engine_sets": [
+    "base2",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Birds",
+   "count": 4,
+   "name": "Wobbuffet",
+   "printing": null,
+   "status": "unresolved",
+   "engine_sets": [
+    "?",
+    "ex2"
+   ]
+  },
+  {
+   "deck": "Birds",
+   "count": 1,
+   "name": "Rayquaza",
+   "printing": "ex8-107",
+   "status": "different",
+   "engine_sets": [
+    "?"
+   ]
+  },
+  {
+   "deck": "Birds",
+   "count": 4,
+   "name": "Lanette\u2019s Net Search",
+   "printing": "ex9-77",
+   "status": "different",
+   "engine_sets": [
+    "ex2"
+   ]
+  },
+  {
+   "deck": "Birds",
+   "count": 4,
+   "name": "Scott",
+   "printing": "ex9-84",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Birds",
+   "count": 3,
+   "name": "Mr Stone\u2019s Project",
+   "printing": "ex9-79",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Birds",
+   "count": 4,
+   "name": "EXP ALL",
+   "printing": "ex6-91",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Birds",
+   "count": 4,
+   "name": "Battle Frontier",
+   "printing": "ex9-75",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Birds",
+   "count": 11,
+   "name": "Fire Energy",
+   "printing": "ex1-108",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Birds",
+   "count": 11,
+   "name": "Lightning Energy",
+   "printing": "ex1-109",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Birds",
+   "count": 2,
+   "name": "Psychic Energy",
+   "printing": "ex1-107",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 3,
+   "name": "Blastoise ex",
+   "printing": "ex6-104",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 3,
+   "name": "Squirtle",
+   "printing": "ex6-83",
+   "status": "exact",
+   "engine_sets": [
+    "?",
+    "base1",
+    "base5",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 3,
+   "name": "Delcatty",
+   "printing": "ex1-5",
+   "status": "exact",
+   "engine_sets": [
+    "ex1",
+    "ex2"
+   ]
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 3,
+   "name": "Skitty",
+   "printing": "ex1-44",
+   "status": "exact",
+   "engine_sets": [
+    "ex1",
+    "ex2"
+   ]
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 3,
+   "name": "Magneton",
+   "printing": "ex3-17",
+   "status": "different",
+   "engine_sets": [
+    "base1",
+    "base3",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 3,
+   "name": "Magnemite",
+   "printing": "ex3-63",
+   "status": "different",
+   "engine_sets": [
+    "base1",
+    "base5",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 3,
+   "name": "Dunsparce",
+   "printing": null,
+   "status": "unresolved",
+   "engine_sets": [
+    "ex2"
+   ]
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 1,
+   "name": "Deoxys ex (Attack)",
+   "printing": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 1,
+   "name": "Deoxys ex (Normal)",
+   "printing": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 1,
+   "name": "Plusle",
+   "printing": "ex8-44",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 4,
+   "name": "Celio\u2019s Network",
+   "printing": "ex6-88",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 3,
+   "name": "TV Reporter",
+   "printing": "ex3-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 2,
+   "name": "Copycat",
+   "printing": "ex7-83",
+   "status": "different",
+   "engine_sets": [
+    "sm7"
+   ]
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 2,
+   "name": "Mr. Stone\u2019s Project",
+   "printing": "ex9-79",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 1,
+   "name": "Rocket\u2019s Admin",
+   "printing": "ex7-86",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 1,
+   "name": "Scott",
+   "printing": "ex9-84",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 4,
+   "name": "Rare Candy",
+   "printing": null,
+   "status": "unresolved",
+   "engine_sets": [
+    "ex2",
+    "sm1"
+   ]
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 1,
+   "name": "Swoop! Teleporter",
+   "printing": "ex7-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 1,
+   "name": "Pokemon Retriever",
+   "printing": "ex7-84",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 1,
+   "name": "High Pressure System",
+   "printing": "ex3-85",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 1,
+   "name": "Island Cave",
+   "printing": "ex5-89",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 11,
+   "name": "Water Energy",
+   "printing": "ex1-106",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 2,
+   "name": "Lightning Energy",
+   "printing": "ex1-109",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Blastoise ex",
+   "count": 2,
+   "name": "Psychic Energy",
+   "printing": "ex1-107",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Blaziken",
+   "count": 4,
+   "name": "Dunsparce",
+   "printing": null,
+   "status": "unresolved",
+   "engine_sets": [
+    "ex2"
+   ]
+  },
+  {
+   "deck": "Blaziken",
+   "count": 3,
+   "name": "Blaziken",
+   "printing": "ex1-3",
+   "status": "exact",
+   "engine_sets": [
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Blaziken",
+   "count": 2,
+   "name": "Blaziken ex",
+   "printing": "ex4-89",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Blaziken",
+   "count": 3,
+   "name": "Combusken",
+   "printing": "ex1-28",
+   "status": "exact",
+   "engine_sets": [
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Blaziken",
+   "count": 4,
+   "name": "Torchic",
+   "printing": "ex1-74",
+   "status": "exact",
+   "engine_sets": [
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Blaziken",
+   "count": 2,
+   "name": "Pidgeot",
+   "printing": "ex6-10",
+   "status": "exact",
+   "engine_sets": [
+    "base2",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Blaziken",
+   "count": 1,
+   "name": "Pidgeotto",
+   "printing": "ex6-45",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Blaziken",
+   "count": 2,
+   "name": "Pidgey",
+   "printing": "ex6-73",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Blaziken",
+   "count": 2,
+   "name": "Rayquaza ex",
+   "printing": "ex3-97",
+   "status": "different",
+   "engine_sets": [
+    "bw6"
+   ]
+  },
+  {
+   "deck": "Blaziken",
+   "count": 1,
+   "name": "Moltres ex",
+   "printing": "ex6-115",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Blaziken",
+   "count": 1,
+   "name": "Jirachi",
+   "printing": "ex5-8",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Blaziken",
+   "count": 3,
+   "name": "Celio\u2019s Network",
+   "printing": "ex6-88",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Blaziken",
+   "count": 3,
+   "name": "TV Reporter",
+   "printing": "ex3-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Blaziken",
+   "count": 2,
+   "name": "Steven\u2019s Advice",
+   "printing": "ex5-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Blaziken",
+   "count": 1,
+   "name": "Copycat",
+   "printing": "ex7-83",
+   "status": "different",
+   "engine_sets": [
+    "sm7"
+   ]
+  },
+  {
+   "deck": "Blaziken",
+   "count": 1,
+   "name": "Rocket\u2019s Admin",
+   "printing": "ex7-86",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Blaziken",
+   "count": 4,
+   "name": "Rare Candy",
+   "printing": null,
+   "status": "unresolved",
+   "engine_sets": [
+    "ex2",
+    "sm1"
+   ]
+  },
+  {
+   "deck": "Blaziken",
+   "count": 2,
+   "name": "Switch",
+   "printing": "ex6-102",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1",
+    "ex6",
+    "swsh1"
+   ]
+  },
+  {
+   "deck": "Blaziken",
+   "count": 1,
+   "name": "Warp Point",
+   "printing": "ex4-85",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Blaziken",
+   "count": 1,
+   "name": "Pokemon Retriever",
+   "printing": "ex7-84",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Blaziken",
+   "count": 3,
+   "name": "High Pressure Stadium",
+   "printing": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Blaziken",
+   "count": 10,
+   "name": "Fire Energy",
+   "printing": "ex1-108",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Blaziken",
+   "count": 4,
+   "name": "Multi Energy",
+   "printing": "ex9-89",
+   "status": "different",
+   "engine_sets": [
+    "ex2",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Dark Slowking",
+   "count": 4,
+   "name": "Jirachi",
+   "printing": "ex8-9",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Slowking",
+   "count": 4,
+   "name": "Dark Slowking",
+   "printing": "ex7-9",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Slowking",
+   "count": 4,
+   "name": "Slowpoke",
+   "printing": "ex4-45",
+   "status": "different",
+   "engine_sets": [
+    "base3",
+    "base5",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Dark Slowking",
+   "count": 4,
+   "name": "Steven\u2019s Advice",
+   "printing": "ex5-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Slowking",
+   "count": 4,
+   "name": "Professor Cosmo\u2019s Discovery",
+   "printing": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Slowking",
+   "count": 2,
+   "name": "Rocket\u2019s Mission",
+   "printing": "ex7-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Slowking",
+   "count": 4,
+   "name": "Rocket\u2019s Poke Ball",
+   "printing": "ex7-89",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Slowking",
+   "count": 4,
+   "name": "Swoop! Teleporter",
+   "printing": "ex7-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Slowking",
+   "count": 4,
+   "name": "Crystal Shard",
+   "printing": "ex8-85",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Slowking",
+   "count": 4,
+   "name": "Strength Charm",
+   "printing": "ex8-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Slowking",
+   "count": 4,
+   "name": "EXP ALL",
+   "printing": "ex6-91",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Dark Slowking",
+   "count": 4,
+   "name": "Pokemon Retriever",
+   "printing": "ex7-84",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Slowking",
+   "count": 10,
+   "name": "Psychic Energy",
+   "printing": "ex1-107",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Dark Slowking",
+   "count": 4,
+   "name": "Darkness Energy",
+   "printing": "ex9-86",
+   "status": "near-reprint",
+   "engine_sets": [
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Dark Steelix",
+   "count": 4,
+   "name": "Dark Steelix",
+   "printing": "ex7-10",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Steelix",
+   "count": 4,
+   "name": "Onix",
+   "printing": "ex7-69",
+   "status": "different",
+   "engine_sets": [
+    "base1",
+    "ex2",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Dark Steelix",
+   "count": 4,
+   "name": "Jirachi",
+   "printing": "ex8-9",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Steelix",
+   "count": 4,
+   "name": "TV Reporter",
+   "printing": "ex3-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Steelix",
+   "count": 3,
+   "name": "Rocket\u2019s Admin",
+   "printing": "ex7-86",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Steelix",
+   "count": 3,
+   "name": "Steven\u2019s Advice",
+   "printing": "ex5-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Steelix",
+   "count": 2,
+   "name": "Copycat",
+   "printing": "ex7-83",
+   "status": "different",
+   "engine_sets": [
+    "sm7"
+   ]
+  },
+  {
+   "deck": "Dark Steelix",
+   "count": 4,
+   "name": "Swoop! Teleporter",
+   "printing": "ex7-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Steelix",
+   "count": 4,
+   "name": "Life Herb",
+   "printing": "ex5-90",
+   "status": "near-reprint",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Dark Steelix",
+   "count": 4,
+   "name": "Potion",
+   "printing": "ex6-101",
+   "status": "exact",
+   "engine_sets": [
+    "?",
+    "base1",
+    "ex1",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Dark Steelix",
+   "count": 3,
+   "name": "Rocket\u2019s Poke Ball",
+   "printing": "ex7-89",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Steelix",
+   "count": 3,
+   "name": "Oran Berry",
+   "printing": "ex9-80",
+   "status": "near-reprint",
+   "engine_sets": [
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Dark Steelix",
+   "count": 3,
+   "name": "Rocket\u2019s Tricky Gym",
+   "printing": "ex7-90",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Steelix",
+   "count": 4,
+   "name": "Darkness Energy",
+   "printing": "ex9-86",
+   "status": "near-reprint",
+   "engine_sets": [
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Dark Steelix",
+   "count": 4,
+   "name": "Metal Energy",
+   "printing": "ex9-88",
+   "status": "near-reprint",
+   "engine_sets": [
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Dark Steelix",
+   "count": 4,
+   "name": "Fighting Energy",
+   "printing": "ex1-105",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Dark Steelix",
+   "count": 3,
+   "name": "R Energy",
+   "printing": "ex7-95",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 3,
+   "name": "Dark Tyranitar",
+   "printing": "ex7-19",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 1,
+   "name": "Dark Tyranitar",
+   "printing": "ex7-19",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 4,
+   "name": "Dark Pupitar",
+   "printing": "ex7-41",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 4,
+   "name": "Larvitar",
+   "printing": "ex7-63",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 2,
+   "name": "Magcargo",
+   "printing": "ex8-20",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 2,
+   "name": "Slugma",
+   "printing": "ex8-74",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 4,
+   "name": "Dunsparce",
+   "printing": null,
+   "status": "unresolved",
+   "engine_sets": [
+    "ex2"
+   ]
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 4,
+   "name": "Steven\u2019s Advice",
+   "printing": "ex5-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 4,
+   "name": "TV Reporter",
+   "printing": "ex3-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 4,
+   "name": "Rocket\u2019s Admin",
+   "printing": "ex7-86",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 2,
+   "name": "Celio\u2019s Network",
+   "printing": "ex6-88",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 1,
+   "name": "Mr. Briney\u2019s Compassion",
+   "printing": "ex3-87",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 3,
+   "name": "Desert Ruins",
+   "printing": "ex5-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 2,
+   "name": "ATM: Rock",
+   "printing": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 1,
+   "name": "VS Seeker",
+   "printing": "ex6-100",
+   "status": "exact",
+   "engine_sets": [
+    "ex6",
+    "xy4"
+   ]
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 1,
+   "name": "Warp Point",
+   "printing": "ex4-85",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 1,
+   "name": "Pokemon Retriever",
+   "printing": "ex7-84",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 6,
+   "name": "Fighting Energy",
+   "printing": "ex1-105",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 4,
+   "name": "Darkness Energy",
+   "printing": "ex9-86",
+   "status": "near-reprint",
+   "engine_sets": [
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 3,
+   "name": "R Energy",
+   "printing": "ex7-95",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 2,
+   "name": "Scramble Energy",
+   "printing": "ex8-95",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 1,
+   "name": "Double Rainbow Energy",
+   "printing": "ex9-87",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Dark Tyranitar",
+   "count": 1,
+   "name": "Heal Energy",
+   "printing": "ex8-94",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "DragTrode",
+   "count": 4,
+   "name": "Rocket\u2019s Sneasel ex",
+   "printing": "ex7-103",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "DragTrode",
+   "count": 3,
+   "name": "Dark Dragonite",
+   "printing": "ex7-15",
+   "status": "different",
+   "engine_sets": [
+    "base5"
+   ]
+  },
+  {
+   "deck": "DragTrode",
+   "count": 3,
+   "name": "Dark Dragonair",
+   "printing": "ex7-31",
+   "status": "different",
+   "engine_sets": [
+    "base5"
+   ]
+  },
+  {
+   "deck": "DragTrode",
+   "count": 3,
+   "name": "Dratini",
+   "printing": "ex7-53",
+   "status": "different",
+   "engine_sets": [
+    "base1",
+    "base5"
+   ]
+  },
+  {
+   "deck": "DragTrode",
+   "count": 3,
+   "name": "Dark Electrode",
+   "printing": "ex7-4",
+   "status": "different",
+   "engine_sets": [
+    "base5"
+   ]
+  },
+  {
+   "deck": "DragTrode",
+   "count": 3,
+   "name": "Voltorb",
+   "printing": "ex6-85",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "base5",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "DragTrode",
+   "count": 1,
+   "name": "Rocket\u2019s Scyther ex",
+   "printing": "ex7-102",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "DragTrode",
+   "count": 4,
+   "name": "Lanette\u2019s Net Search",
+   "printing": "ex9-77",
+   "status": "different",
+   "engine_sets": [
+    "ex2"
+   ]
+  },
+  {
+   "deck": "DragTrode",
+   "count": 3,
+   "name": "Copycat",
+   "printing": "ex7-83",
+   "status": "different",
+   "engine_sets": [
+    "sm7"
+   ]
+  },
+  {
+   "deck": "DragTrode",
+   "count": 3,
+   "name": "Steven\u2019s Advice",
+   "printing": "ex5-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "DragTrode",
+   "count": 2,
+   "name": "Rocket\u2019s Admin",
+   "printing": "ex7-86",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "DragTrode",
+   "count": 2,
+   "name": "Mr. Briney\u2019s Compassion",
+   "printing": "ex3-87",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "DragTrode",
+   "count": 4,
+   "name": "Rocket\u2019s Poke Ball",
+   "printing": "ex7-89",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "DragTrode",
+   "count": 3,
+   "name": "Dual Ball",
+   "printing": "ex4-72",
+   "status": "near-reprint",
+   "engine_sets": [
+    "hgss2"
+   ]
+  },
+  {
+   "deck": "DragTrode",
+   "count": 1,
+   "name": "Pow! Hand Extension",
+   "printing": "ex7-85",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "DragTrode",
+   "count": 1,
+   "name": "Switch",
+   "printing": "ex6-102",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1",
+    "ex6",
+    "swsh1"
+   ]
+  },
+  {
+   "deck": "DragTrode",
+   "count": 2,
+   "name": "Desert Ruins",
+   "printing": "ex5-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "DragTrode",
+   "count": 1,
+   "name": "Rocket\u2019s Hideout",
+   "printing": "ex7-87",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "DragTrode",
+   "count": 4,
+   "name": "Darkness Energy",
+   "printing": "ex9-86",
+   "status": "near-reprint",
+   "engine_sets": [
+    "ex1"
+   ]
+  },
+  {
+   "deck": "DragTrode",
+   "count": 4,
+   "name": "Dark Metal Energy",
+   "printing": "ex7-94",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "DragTrode",
+   "count": 3,
+   "name": "Rainbow Energy",
+   "printing": "ex1-95",
+   "status": "exact",
+   "engine_sets": [
+    "base5",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "DragTrode",
+   "count": 3,
+   "name": "R Energy",
+   "printing": "ex7-95",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 4,
+   "name": "Dunsparce",
+   "printing": null,
+   "status": "unresolved",
+   "engine_sets": [
+    "ex2"
+   ]
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 3,
+   "name": "Ludicolo",
+   "printing": "ex8-10",
+   "status": "different",
+   "engine_sets": [
+    "ex2"
+   ]
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 2,
+   "name": "Lombre",
+   "printing": null,
+   "status": "unresolved",
+   "engine_sets": [
+    "ex2"
+   ]
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 3,
+   "name": "Lotad",
+   "printing": null,
+   "status": "unresolved",
+   "engine_sets": [
+    "ex2"
+   ]
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 1,
+   "name": "Articuno ex",
+   "printing": "ex6-114",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 2,
+   "name": "Magcargo",
+   "printing": "ex8-20",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 2,
+   "name": "Slugma",
+   "printing": "ex8-74",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 2,
+   "name": "Lanturn",
+   "printing": "ex5-38",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 2,
+   "name": "Chinchou",
+   "printing": "ex5-56",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 4,
+   "name": "Celio\u2019s Network",
+   "printing": "ex6-88",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 2,
+   "name": "Rocket\u2019s Admin",
+   "printing": "ex7-86",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 1,
+   "name": "Steven\u2019s Advice",
+   "printing": "ex5-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 1,
+   "name": "Copycat",
+   "printing": "ex7-83",
+   "status": "different",
+   "engine_sets": [
+    "sm7"
+   ]
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 1,
+   "name": "TV Reporter",
+   "printing": "ex3-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 1,
+   "name": "Professor Oak\u2019s Research",
+   "printing": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 1,
+   "name": "Mr. Briney\u2019s Compassion",
+   "printing": "ex3-87",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 3,
+   "name": "Rare Candy",
+   "printing": null,
+   "status": "unresolved",
+   "engine_sets": [
+    "ex2",
+    "sm1"
+   ]
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 1,
+   "name": "Switch",
+   "printing": "ex6-102",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1",
+    "ex6",
+    "swsh1"
+   ]
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 1,
+   "name": "Warp Point",
+   "printing": "ex4-85",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 1,
+   "name": "Swoop! Teleporter",
+   "printing": "ex7-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 1,
+   "name": "Strength Charm",
+   "printing": "ex8-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 1,
+   "name": "ATM Rock",
+   "printing": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 1,
+   "name": "Pokemon Retriever",
+   "printing": "ex7-84",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 1,
+   "name": "VS Seeker",
+   "printing": "ex6-100",
+   "status": "exact",
+   "engine_sets": [
+    "ex6",
+    "xy4"
+   ]
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 4,
+   "name": "Desert Ruins",
+   "printing": "ex5-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 6,
+   "name": "Water Energy",
+   "printing": "ex1-106",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 4,
+   "name": "Double Rainbow Energy",
+   "printing": "ex9-87",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 2,
+   "name": "Scramble Energy",
+   "printing": "ex8-95",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LudiCargo",
+   "count": 2,
+   "name": "Heal Energy",
+   "printing": "ex8-94",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Medicham",
+   "count": 4,
+   "name": "Jirachi",
+   "printing": "ex8-9",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Medicham",
+   "count": 4,
+   "name": "Medicham ex",
+   "printing": "ex9-95",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Medicham",
+   "count": 2,
+   "name": "Meditite",
+   "printing": "ex9-55",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Medicham",
+   "count": 2,
+   "name": "Meditite",
+   "printing": "ex9-55",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Medicham",
+   "count": 2,
+   "name": "Ninetales",
+   "printing": "ex5-22",
+   "status": "different",
+   "engine_sets": [
+    "base1"
+   ]
+  },
+  {
+   "deck": "Medicham",
+   "count": 2,
+   "name": "Vulpix",
+   "printing": "ex5-81",
+   "status": "different",
+   "engine_sets": [
+    "base1"
+   ]
+  },
+  {
+   "deck": "Medicham",
+   "count": 4,
+   "name": "Rocket\u2019s Admin",
+   "printing": "ex7-86",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Medicham",
+   "count": 4,
+   "name": "TV Reporter",
+   "printing": "ex3-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Medicham",
+   "count": 3,
+   "name": "Wally\u2019s Training",
+   "printing": "ex9-85",
+   "status": "different",
+   "engine_sets": [
+    "ex2"
+   ]
+  },
+  {
+   "deck": "Medicham",
+   "count": 2,
+   "name": "Steven\u2019s Advice",
+   "printing": "ex5-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Medicham",
+   "count": 4,
+   "name": "Energy Removal 2",
+   "printing": "ex6-89",
+   "status": "exact",
+   "engine_sets": [
+    "ex1",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Medicham",
+   "count": 4,
+   "name": "Pow! Hand Extension",
+   "printing": "ex7-85",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Medicham",
+   "count": 4,
+   "name": "Swoop! Teleporter",
+   "printing": "ex7-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Medicham",
+   "count": 4,
+   "name": "Team Aqua\u2019s Hideout",
+   "printing": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Medicham",
+   "count": 7,
+   "name": "Fighting Energy",
+   "printing": "ex1-105",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Medicham",
+   "count": 4,
+   "name": "Fire Energy",
+   "printing": "ex1-108",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Medicham",
+   "count": 4,
+   "name": "Metal Energy",
+   "printing": "ex9-88",
+   "status": "near-reprint",
+   "engine_sets": [
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Metagross",
+   "count": 3,
+   "name": "Dunsparce",
+   "printing": null,
+   "status": "unresolved",
+   "engine_sets": [
+    "ex2"
+   ]
+  },
+  {
+   "deck": "Metagross",
+   "count": 2,
+   "name": "Metagross ex",
+   "printing": "ex5-95",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Metagross",
+   "count": 2,
+   "name": "Metagross",
+   "printing": "ex8-11",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Metagross",
+   "count": 1,
+   "name": "Metagross",
+   "printing": "ex8-11",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Metagross",
+   "count": 3,
+   "name": "Metang",
+   "printing": "ex8-40",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Metagross",
+   "count": 4,
+   "name": "Beldum",
+   "printing": "ex5-54",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Metagross",
+   "count": 2,
+   "name": "Pidgeot",
+   "printing": "ex6-10",
+   "status": "exact",
+   "engine_sets": [
+    "base2",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Metagross",
+   "count": 1,
+   "name": "Pidgeotto",
+   "printing": "ex6-45",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Metagross",
+   "count": 2,
+   "name": "Pidgey",
+   "printing": "ex6-73",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Metagross",
+   "count": 1,
+   "name": "Bellossom",
+   "printing": "ex5-16",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Metagross",
+   "count": 1,
+   "name": "Oddish",
+   "printing": "ex5-68",
+   "status": "different",
+   "engine_sets": [
+    "base2",
+    "base5",
+    "hgss3"
+   ]
+  },
+  {
+   "deck": "Metagross",
+   "count": 1,
+   "name": "Jirachi",
+   "printing": "ex8-9",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Metagross",
+   "count": 4,
+   "name": "Steven\u2019s Advice",
+   "printing": "ex5-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Metagross",
+   "count": 4,
+   "name": "Celio\u2019s Network",
+   "printing": "ex6-88",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Metagross",
+   "count": 3,
+   "name": "TV Reporter",
+   "printing": "ex3-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Metagross",
+   "count": 2,
+   "name": "Rocket\u2019s Admin",
+   "printing": "ex7-86",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Metagross",
+   "count": 4,
+   "name": "Rare Candy",
+   "printing": null,
+   "status": "unresolved",
+   "engine_sets": [
+    "ex2",
+    "sm1"
+   ]
+  },
+  {
+   "deck": "Metagross",
+   "count": 1,
+   "name": "ATM Rock",
+   "printing": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Metagross",
+   "count": 1,
+   "name": "Switch",
+   "printing": "ex6-102",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1",
+    "ex6",
+    "swsh1"
+   ]
+  },
+  {
+   "deck": "Metagross",
+   "count": 1,
+   "name": "Warp Point",
+   "printing": "ex4-85",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Metagross",
+   "count": 1,
+   "name": "Strength Charm",
+   "printing": "ex8-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Metagross",
+   "count": 1,
+   "name": "Magnetic Storm",
+   "printing": "ex5-91",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Metagross",
+   "count": 1,
+   "name": "Island Cave",
+   "printing": "ex5-89",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Metagross",
+   "count": 7,
+   "name": "Psychic Energy",
+   "printing": "ex1-107",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Metagross",
+   "count": 4,
+   "name": "Metal Energy",
+   "printing": "ex9-88",
+   "status": "near-reprint",
+   "engine_sets": [
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Metagross",
+   "count": 2,
+   "name": "Scramble Energy",
+   "printing": "ex8-95",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Metagross",
+   "count": 1,
+   "name": "Rainbow Energy",
+   "printing": "ex1-95",
+   "status": "exact",
+   "engine_sets": [
+    "base5",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Muk",
+   "count": 4,
+   "name": "Jirachi",
+   "printing": "ex8-9",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Muk",
+   "count": 4,
+   "name": "Muk ex",
+   "printing": "ex3-96",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Muk",
+   "count": 4,
+   "name": "Grimer",
+   "printing": "ex7-56",
+   "status": "different",
+   "engine_sets": [
+    "base3",
+    "base5"
+   ]
+  },
+  {
+   "deck": "Muk",
+   "count": 4,
+   "name": "TV Reporter",
+   "printing": "ex3-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Muk",
+   "count": 3,
+   "name": "Steven\u2019s Advice",
+   "printing": "ex5-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Muk",
+   "count": 3,
+   "name": "Rocket\u2019s Admin",
+   "printing": "ex7-86",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Muk",
+   "count": 3,
+   "name": "Wally\u2019s Training",
+   "printing": "ex9-85",
+   "status": "different",
+   "engine_sets": [
+    "ex2"
+   ]
+  },
+  {
+   "deck": "Muk",
+   "count": 2,
+   "name": "Scott",
+   "printing": "ex9-84",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Muk",
+   "count": 1,
+   "name": "Copycat",
+   "printing": "ex7-83",
+   "status": "different",
+   "engine_sets": [
+    "sm7"
+   ]
+  },
+  {
+   "deck": "Muk",
+   "count": 4,
+   "name": "Swoop! Teleporter",
+   "printing": "ex7-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Muk",
+   "count": 4,
+   "name": "Pokemon Reversal",
+   "printing": "ex6-97",
+   "status": "exact",
+   "engine_sets": [
+    "ex1",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Muk",
+   "count": 4,
+   "name": "Energy Removal 2",
+   "printing": "ex6-89",
+   "status": "exact",
+   "engine_sets": [
+    "ex1",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Muk",
+   "count": 2,
+   "name": "Crystal Shard",
+   "printing": "ex8-85",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Muk",
+   "count": 4,
+   "name": "Team Aqua\u2019s Hideout",
+   "printing": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Muk",
+   "count": 10,
+   "name": "Grass Energy",
+   "printing": "ex1-104",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Muk",
+   "count": 4,
+   "name": "Metal Energy",
+   "printing": "ex9-88",
+   "status": "near-reprint",
+   "engine_sets": [
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Nidoqueen",
+   "count": 4,
+   "name": "Nidoqueen",
+   "printing": "ex6-9",
+   "status": "exact",
+   "engine_sets": [
+    "base2",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Nidoqueen",
+   "count": 3,
+   "name": "Nidorina",
+   "printing": "ex6-40",
+   "status": "exact",
+   "engine_sets": [
+    "base2",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Nidoqueen",
+   "count": 4,
+   "name": "Nidoran",
+   "printing": "ex6-70",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Nidoqueen",
+   "count": 3,
+   "name": "Pidgeot",
+   "printing": "ex6-10",
+   "status": "exact",
+   "engine_sets": [
+    "base2",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Nidoqueen",
+   "count": 2,
+   "name": "Pidgeotto",
+   "printing": "ex6-45",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Nidoqueen",
+   "count": 3,
+   "name": "Pidgey",
+   "printing": "ex6-73",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Nidoqueen",
+   "count": 1,
+   "name": "Milotic",
+   "printing": "ex5-12",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Nidoqueen",
+   "count": 1,
+   "name": "Feebas",
+   "printing": "ex5-61",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Nidoqueen",
+   "count": 4,
+   "name": "Celio\u2019s Network",
+   "printing": "ex6-88",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Nidoqueen",
+   "count": 4,
+   "name": "Copycat",
+   "printing": "ex7-83",
+   "status": "different",
+   "engine_sets": [
+    "sm7"
+   ]
+  },
+  {
+   "deck": "Nidoqueen",
+   "count": 2,
+   "name": "Rocket\u2019s Admin",
+   "printing": "ex7-86",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Nidoqueen",
+   "count": 2,
+   "name": "Steven\u2019s Advice",
+   "printing": "ex5-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Nidoqueen",
+   "count": 1,
+   "name": "Mr. Briney\u2019s Compassion",
+   "printing": "ex3-87",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Nidoqueen",
+   "count": 4,
+   "name": "Desert Ruins",
+   "printing": "ex5-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Nidoqueen",
+   "count": 4,
+   "name": "Rare Candy",
+   "printing": null,
+   "status": "unresolved",
+   "engine_sets": [
+    "ex2",
+    "sm1"
+   ]
+  },
+  {
+   "deck": "Nidoqueen",
+   "count": 3,
+   "name": "Great Ball",
+   "printing": "ex6-92",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Nidoqueen",
+   "count": 6,
+   "name": "Grass Energy",
+   "printing": "ex1-104",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Nidoqueen",
+   "count": 4,
+   "name": "Double Rainbow Energy",
+   "printing": "ex9-87",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Nidoqueen",
+   "count": 3,
+   "name": "Heal Energy",
+   "printing": "ex8-94",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Nidoqueen",
+   "count": 2,
+   "name": "Fighting Energy",
+   "printing": "ex1-105",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "PowTar",
+   "count": 3,
+   "name": "Dark Tyranitar",
+   "printing": "ex7-19",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "PowTar",
+   "count": 2,
+   "name": "Dark Pupitar",
+   "printing": "ex7-41",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "PowTar",
+   "count": 3,
+   "name": "Larvitar",
+   "printing": "ex7-63",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "PowTar",
+   "count": 2,
+   "name": "Electrode ex",
+   "printing": "ex6-107",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "PowTar",
+   "count": 2,
+   "name": "Voltorb",
+   "printing": "ex9-71",
+   "status": "different",
+   "engine_sets": [
+    "base1",
+    "base5",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "PowTar",
+   "count": 1,
+   "name": "Pidgeot",
+   "printing": "ex6-10",
+   "status": "exact",
+   "engine_sets": [
+    "base2",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "PowTar",
+   "count": 1,
+   "name": "Pidgeotto",
+   "printing": "ex6-45",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "PowTar",
+   "count": 1,
+   "name": "Pidgey",
+   "printing": "ex6-73",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "PowTar",
+   "count": 1,
+   "name": "Magcargo",
+   "printing": "ex8-20",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "PowTar",
+   "count": 1,
+   "name": "Slugma",
+   "printing": "ex8-74",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "PowTar",
+   "count": 1,
+   "name": "Magmar",
+   "printing": "ex7-44",
+   "status": "different",
+   "engine_sets": [
+    "base1",
+    "base3"
+   ]
+  },
+  {
+   "deck": "PowTar",
+   "count": 1,
+   "name": "Jirachi",
+   "printing": "ex8-9",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "PowTar",
+   "count": 3,
+   "name": "Dunsparce",
+   "printing": null,
+   "status": "unresolved",
+   "engine_sets": [
+    "ex2"
+   ]
+  },
+  {
+   "deck": "PowTar",
+   "count": 4,
+   "name": "Celio\u2019s Network",
+   "printing": "ex6-88",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "PowTar",
+   "count": 3,
+   "name": "Copycat",
+   "printing": "ex7-83",
+   "status": "different",
+   "engine_sets": [
+    "sm7"
+   ]
+  },
+  {
+   "deck": "PowTar",
+   "count": 2,
+   "name": "TV Reporter",
+   "printing": "ex3-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "PowTar",
+   "count": 2,
+   "name": "Rocket\u2019s Admin",
+   "printing": "ex7-86",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "PowTar",
+   "count": 1,
+   "name": "Steven\u2019s Advice",
+   "printing": "ex5-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "PowTar",
+   "count": 4,
+   "name": "Pow! Hand Extension",
+   "printing": "ex7-85",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "PowTar",
+   "count": 3,
+   "name": "Rare Candy",
+   "printing": null,
+   "status": "unresolved",
+   "engine_sets": [
+    "ex2",
+    "sm1"
+   ]
+  },
+  {
+   "deck": "PowTar",
+   "count": 3,
+   "name": "Swoop! Teleporter",
+   "printing": "ex7-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "PowTar",
+   "count": 1,
+   "name": "ATM Rock",
+   "printing": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "PowTar",
+   "count": 1,
+   "name": "Pokemon Retriever",
+   "printing": "ex7-84",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "PowTar",
+   "count": 4,
+   "name": "Heal Energy",
+   "printing": "ex8-94",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "PowTar",
+   "count": 4,
+   "name": "Scramble Energy",
+   "printing": "ex8-95",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "PowTar",
+   "count": 4,
+   "name": "Darkness Energy",
+   "printing": "ex9-86",
+   "status": "near-reprint",
+   "engine_sets": [
+    "ex1"
+   ]
+  },
+  {
+   "deck": "PowTar",
+   "count": 2,
+   "name": "Rainbow Energy",
+   "printing": "ex1-95",
+   "status": "exact",
+   "engine_sets": [
+    "base5",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 4,
+   "name": "Dunsparce",
+   "printing": null,
+   "status": "unresolved",
+   "engine_sets": [
+    "ex2"
+   ]
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 2,
+   "name": "Dark Tyranitar",
+   "printing": "ex7-19",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 1,
+   "name": "Dark Tyranitar",
+   "printing": "ex7-19",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 2,
+   "name": "Dark Pupitar",
+   "printing": "ex7-40",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 3,
+   "name": "Larvitar",
+   "printing": "ex7-62",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 2,
+   "name": "Dark Ampharos",
+   "printing": "ex7-2",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 1,
+   "name": "Dark Flaaffy",
+   "printing": "ex7-33",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 2,
+   "name": "Mareep",
+   "printing": "ex3-64",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 2,
+   "name": "Pidgeot",
+   "printing": "ex6-10",
+   "status": "exact",
+   "engine_sets": [
+    "base2",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 1,
+   "name": "Pidgeotto",
+   "printing": "ex6-45",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 2,
+   "name": "Pidgey",
+   "printing": "ex6-73",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 4,
+   "name": "Celio\u2019s Network",
+   "printing": "ex6-88",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 2,
+   "name": "Steven\u2019s Advice",
+   "printing": "ex5-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 2,
+   "name": "Rocket\u2019s Admin",
+   "printing": "ex7-86",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 2,
+   "name": "Copycat",
+   "printing": "ex7-83",
+   "status": "different",
+   "engine_sets": [
+    "sm7"
+   ]
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 1,
+   "name": "Scott",
+   "printing": "ex9-84",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 1,
+   "name": "Mr. Briney\u2019s Compassion",
+   "printing": "ex3-87",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 4,
+   "name": "Rare Candy",
+   "printing": null,
+   "status": "unresolved",
+   "engine_sets": [
+    "ex2",
+    "sm1"
+   ]
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 3,
+   "name": "ATM Rock",
+   "printing": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 2,
+   "name": "Rocket\u2019s Poke Ball",
+   "printing": "ex7-89",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 3,
+   "name": "Desert Ruins",
+   "printing": "ex5-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 1,
+   "name": "Rocket\u2019s Tricky Gym",
+   "printing": "ex7-90",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 4,
+   "name": "Fighting Energy",
+   "printing": "ex1-105",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 4,
+   "name": "Darkness Energy",
+   "printing": "ex9-86",
+   "status": "near-reprint",
+   "engine_sets": [
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 2,
+   "name": "Double Rainbow Energy",
+   "printing": "ex9-87",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 2,
+   "name": "Heal Energy",
+   "printing": "ex8-94",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Rock Lock",
+   "count": 1,
+   "name": "Scramble Energy",
+   "printing": "ex8-95",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo ex",
+   "count": 4,
+   "name": "Sharpedo ex",
+   "printing": "ex8-104",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo ex",
+   "count": 4,
+   "name": "Carvanha",
+   "printing": "ex8-56",
+   "status": "different",
+   "engine_sets": [
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Sharpedo ex",
+   "count": 4,
+   "name": "Jirachi",
+   "printing": "ex8-9",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo ex",
+   "count": 1,
+   "name": "Wobbuffet",
+   "printing": null,
+   "status": "unresolved",
+   "engine_sets": [
+    "?",
+    "ex2"
+   ]
+  },
+  {
+   "deck": "Sharpedo ex",
+   "count": 3,
+   "name": "Steven\u2019s Advice",
+   "printing": "ex5-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo ex",
+   "count": 3,
+   "name": "Rocket\u2019s Admin",
+   "printing": "ex7-86",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo ex",
+   "count": 3,
+   "name": "TV Reporter",
+   "printing": "ex3-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo ex",
+   "count": 3,
+   "name": "Wally\u2019s Training",
+   "printing": "ex9-85",
+   "status": "different",
+   "engine_sets": [
+    "ex2"
+   ]
+  },
+  {
+   "deck": "Sharpedo ex",
+   "count": 1,
+   "name": "Scott",
+   "printing": "ex9-84",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo ex",
+   "count": 4,
+   "name": "Energy Removal 2",
+   "printing": "ex6-89",
+   "status": "exact",
+   "engine_sets": [
+    "ex1",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Sharpedo ex",
+   "count": 4,
+   "name": "Pokemon Reversal",
+   "printing": "ex6-97",
+   "status": "exact",
+   "engine_sets": [
+    "ex1",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Sharpedo ex",
+   "count": 4,
+   "name": "Swoop! Teleporter",
+   "printing": "ex7-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo ex",
+   "count": 1,
+   "name": "Crystal Shard",
+   "printing": "ex8-85",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo ex",
+   "count": 1,
+   "name": "Pokemon Retriever",
+   "printing": "ex7-84",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo ex",
+   "count": 4,
+   "name": "Battle Frontier",
+   "printing": "ex9-75",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo ex",
+   "count": 4,
+   "name": "Darkness Energy",
+   "printing": "ex9-86",
+   "status": "near-reprint",
+   "engine_sets": [
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Sharpedo ex",
+   "count": 4,
+   "name": "Dark Metal Energy",
+   "printing": "ex7-94",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo ex",
+   "count": 4,
+   "name": "Rainbow Energy",
+   "printing": "ex1-95",
+   "status": "exact",
+   "engine_sets": [
+    "base5",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Sharpedo ex",
+   "count": 4,
+   "name": "Metal Energy",
+   "printing": "ex9-88",
+   "status": "near-reprint",
+   "engine_sets": [
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Vileplume",
+   "count": 4,
+   "name": "Vileplume ex",
+   "printing": "ex5-100",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Vileplume",
+   "count": 1,
+   "name": "Bellossom",
+   "printing": "ex5-16",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Vileplume",
+   "count": 1,
+   "name": "Gloom",
+   "printing": "ex5-35",
+   "status": "different",
+   "engine_sets": [
+    "base2",
+    "hgss3"
+   ]
+  },
+  {
+   "deck": "Vileplume",
+   "count": 4,
+   "name": "Oddish",
+   "printing": "ex5-68",
+   "status": "different",
+   "engine_sets": [
+    "base2",
+    "base5",
+    "hgss3"
+   ]
+  },
+  {
+   "deck": "Vileplume",
+   "count": 4,
+   "name": "Jirachi",
+   "printing": "ex8-9",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Vileplume",
+   "count": 4,
+   "name": "TV Reporter",
+   "printing": "ex3-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Vileplume",
+   "count": 3,
+   "name": "Steven\u2019s Advice",
+   "printing": "ex5-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Vileplume",
+   "count": 2,
+   "name": "Copycat",
+   "printing": "ex7-83",
+   "status": "different",
+   "engine_sets": [
+    "sm7"
+   ]
+  },
+  {
+   "deck": "Vileplume",
+   "count": 1,
+   "name": "Rocket\u2019s Admin",
+   "printing": "ex7-86",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Vileplume",
+   "count": 4,
+   "name": "Pokemon Reversal",
+   "printing": "ex6-97",
+   "status": "exact",
+   "engine_sets": [
+    "ex1",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Vileplume",
+   "count": 4,
+   "name": "Swoop! Teleporter",
+   "printing": "ex7-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Vileplume",
+   "count": 4,
+   "name": "Energy Removal 2",
+   "printing": "ex6-89",
+   "status": "exact",
+   "engine_sets": [
+    "ex1",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "Vileplume",
+   "count": 4,
+   "name": "Rare Candy",
+   "printing": null,
+   "status": "unresolved",
+   "engine_sets": [
+    "ex2",
+    "sm1"
+   ]
+  },
+  {
+   "deck": "Vileplume",
+   "count": 3,
+   "name": "Master Ball",
+   "printing": "ex8-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Vileplume",
+   "count": 2,
+   "name": "Battle Frontier",
+   "printing": "ex9-75",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Vileplume",
+   "count": 1,
+   "name": "Team Aqua Hideout",
+   "printing": "ex4-78",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Vileplume",
+   "count": 11,
+   "name": "Grass Energy",
+   "printing": "ex1-104",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "Vileplume",
+   "count": 3,
+   "name": "Metal Energy",
+   "printing": "ex9-88",
+   "status": "near-reprint",
+   "engine_sets": [
+    "ex1"
+   ]
+  },
+  {
+   "deck": "ZapTurnDos",
+   "count": 4,
+   "name": "Zapdos ex",
+   "printing": "ex6-116",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "ZapTurnDos",
+   "count": 3,
+   "name": "Manectric",
+   "printing": "ex8-38",
+   "status": "different",
+   "engine_sets": [
+    "ex1"
+   ]
+  },
+  {
+   "deck": "ZapTurnDos",
+   "count": 4,
+   "name": "Electrike",
+   "printing": "ex8-60",
+   "status": "different",
+   "engine_sets": [
+    "ex1"
+   ]
+  },
+  {
+   "deck": "ZapTurnDos",
+   "count": 1,
+   "name": "Electrode",
+   "printing": "ex5-5",
+   "status": "different",
+   "engine_sets": [
+    "base1",
+    "base2"
+   ]
+  },
+  {
+   "deck": "ZapTurnDos",
+   "count": 4,
+   "name": "Voltorb",
+   "printing": "ex5-80",
+   "status": "different",
+   "engine_sets": [
+    "base1",
+    "base5",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "ZapTurnDos",
+   "count": 2,
+   "name": "Mr. Stone\u2019s Project",
+   "printing": "ex9-79",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "ZapTurnDos",
+   "count": 2,
+   "name": "Scott",
+   "printing": "ex9-84",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "ZapTurnDos",
+   "count": 2,
+   "name": "Steven\u2019s Advice",
+   "printing": "ex5-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "ZapTurnDos",
+   "count": 1,
+   "name": "Lanette\u2019s Net Search",
+   "printing": "ex9-77",
+   "status": "different",
+   "engine_sets": [
+    "ex2"
+   ]
+  },
+  {
+   "deck": "ZapTurnDos",
+   "count": 1,
+   "name": "Professor Oak\u2019s Research",
+   "printing": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "ZapTurnDos",
+   "count": 4,
+   "name": "Dual Ball",
+   "printing": "ex4-72",
+   "status": "near-reprint",
+   "engine_sets": [
+    "hgss2"
+   ]
+  },
+  {
+   "deck": "ZapTurnDos",
+   "count": 3,
+   "name": "Pokemon Reversal",
+   "printing": "ex6-97",
+   "status": "exact",
+   "engine_sets": [
+    "ex1",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "ZapTurnDos",
+   "count": 3,
+   "name": "Super Scoop Up",
+   "printing": "ex6-99",
+   "status": "exact",
+   "engine_sets": [
+    "ex6",
+    "sm7"
+   ]
+  },
+  {
+   "deck": "ZapTurnDos",
+   "count": 2,
+   "name": "Master Ball",
+   "printing": "ex8-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "ZapTurnDos",
+   "count": 2,
+   "name": "Switch",
+   "printing": "ex6-102",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1",
+    "ex6",
+    "swsh1"
+   ]
+  },
+  {
+   "deck": "ZapTurnDos",
+   "count": 2,
+   "name": "Battle Frontier",
+   "printing": "ex9-75",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "ZapTurnDos",
+   "count": 2,
+   "name": "Space Center",
+   "printing": "ex8-91",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "ZapTurnDos",
+   "count": 1,
+   "name": "VS Seeker",
+   "printing": "ex6-100",
+   "status": "exact",
+   "engine_sets": [
+    "ex6",
+    "xy4"
+   ]
+  },
+  {
+   "deck": "ZapTurnDos",
+   "count": 17,
+   "name": "Lightning Energy",
+   "printing": "ex1-109",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "ZRE",
+   "count": 4,
+   "name": "Magmar",
+   "printing": "ex7-44",
+   "status": "different",
+   "engine_sets": [
+    "base1",
+    "base3"
+   ]
+  },
+  {
+   "deck": "ZRE",
+   "count": 3,
+   "name": "Electrode ex",
+   "printing": "ex6-107",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "ZRE",
+   "count": 3,
+   "name": "Voltorb",
+   "printing": "ex5-80",
+   "status": "different",
+   "engine_sets": [
+    "base1",
+    "base5",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "ZRE",
+   "count": 2,
+   "name": "Rayquaza ex",
+   "printing": "ex8-102",
+   "status": "different",
+   "engine_sets": [
+    "bw6"
+   ]
+  },
+  {
+   "deck": "ZRE",
+   "count": 2,
+   "name": "Zapdos ex",
+   "printing": "ex6-116",
+   "status": "exact",
+   "engine_sets": [
+    "ex6"
+   ]
+  },
+  {
+   "deck": "ZRE",
+   "count": 1,
+   "name": "Rayquaza",
+   "printing": "ex8-107",
+   "status": "different",
+   "engine_sets": [
+    "?"
+   ]
+  },
+  {
+   "deck": "ZRE",
+   "count": 4,
+   "name": "Rocket\u2019s Admin",
+   "printing": "ex7-86",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "ZRE",
+   "count": 4,
+   "name": "TV Reporter",
+   "printing": "ex3-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "ZRE",
+   "count": 3,
+   "name": "Lanette\u2019s Net Search",
+   "printing": "ex9-77",
+   "status": "different",
+   "engine_sets": [
+    "ex2"
+   ]
+  },
+  {
+   "deck": "ZRE",
+   "count": 2,
+   "name": "Rocket\u2019s Mission",
+   "printing": "ex7-88",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "ZRE",
+   "count": 4,
+   "name": "Pow! Hand Extension",
+   "printing": "ex7-85",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "ZRE",
+   "count": 3,
+   "name": "Energy Removal 2",
+   "printing": "ex6-89",
+   "status": "exact",
+   "engine_sets": [
+    "ex1",
+    "ex6"
+   ]
+  },
+  {
+   "deck": "ZRE",
+   "count": 3,
+   "name": "Switch",
+   "printing": "ex6-102",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1",
+    "ex6",
+    "swsh1"
+   ]
+  },
+  {
+   "deck": "ZRE",
+   "count": 2,
+   "name": "Strength Charm",
+   "printing": "ex8-92",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "ZRE",
+   "count": 2,
+   "name": "Space Center",
+   "printing": "ex8-91",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "ZRE",
+   "count": 1,
+   "name": "Battle Frontier",
+   "printing": "ex9-75",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "ZRE",
+   "count": 9,
+   "name": "Lightning Energy",
+   "printing": "ex1-109",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  },
+  {
+   "deck": "ZRE",
+   "count": 8,
+   "name": "Fire Energy",
+   "printing": "ex1-108",
+   "status": "exact",
+   "engine_sets": [
+    "base1",
+    "ex1"
+   ]
+  }
+ ]
+}
