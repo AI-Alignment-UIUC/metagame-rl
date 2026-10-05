@@ -23,6 +23,7 @@ jobs:
           npm install --no-audit --no-fund --workspace=packages/common --workspace=packages/sets --workspace=packages/simple-bot
           npm run compile -w packages/common
           npm run compile -w packages/sets
+          npm run compile -w packages/simple-bot
       - name: Engine specs
         working-directory: ryuu-play
         run: |
