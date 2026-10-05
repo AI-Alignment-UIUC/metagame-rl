@@ -1,0 +1,2889 @@
+{
+ "lists": {
+  "Bearhug": {
+   "missing": 23,
+   "exact": 15,
+   "other-printing": 22
+  },
+  "Kingdra / Yanmega": {
+   "missing": 21,
+   "other-printing": 39
+  },
+  "Lanturn / Yanmega": {
+   "missing": 15,
+   "other-printing": 45
+  },
+  "LostGar": {
+   "other-printing": 53,
+   "missing": 7
+  },
+  "Magneboar": {
+   "missing": 8,
+   "other-printing": 34,
+   "exact": 18
+  },
+  "Mew Box": {
+   "missing": 18,
+   "other-printing": 42
+  },
+  "Prime Time": {
+   "missing": 18,
+   "other-printing": 31,
+   "exact": 11
+  },
+  "Reshiphlosion": {
+   "exact": 28,
+   "other-printing": 31,
+   "missing": 1
+  },
+  "Sharpedo": {
+   "other-printing": 39,
+   "missing": 21
+  },
+  "Stage 1s": {
+   "other-printing": 31,
+   "missing": 10,
+   "exact": 19
+  },
+  "The Truth": {
+   "exact": 23,
+   "missing": 14,
+   "other-printing": 23
+  },
+  "Tyranitar": {
+   "missing": 22,
+   "other-printing": 38
+  },
+  "ZPS": {
+   "exact": 24,
+   "other-printing": 36
+  }
+ },
+ "rows": [
+  {
+   "deck": "Bearhug",
+   "count": 2,
+   "name": "Ursaring Prime",
+   "set": "UL",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Bearhug",
+   "count": 3,
+   "name": "Teddiursa",
+   "set": "CL",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Bearhug",
+   "count": 4,
+   "name": "Yanmega Prime",
+   "set": "TM",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Bearhug",
+   "count": 4,
+   "name": "Yanma",
+   "set": "TM",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Bearhug",
+   "count": 2,
+   "name": "Sunflora",
+   "set": "HS",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Bearhug",
+   "count": 2,
+   "name": "Sunkern",
+   "set": "HS",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Bearhug",
+   "count": 2,
+   "name": "Vileplume",
+   "set": "UD",
+   "status": "exact",
+   "engine_sets": [
+    "JU",
+    "UND"
+   ]
+  },
+  {
+   "deck": "Bearhug",
+   "count": 1,
+   "name": "Bellossom",
+   "set": "UD",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Bearhug",
+   "count": 2,
+   "name": "Gloom",
+   "set": "UD",
+   "status": "exact",
+   "engine_sets": [
+    "JU",
+    "UND"
+   ]
+  },
+  {
+   "deck": "Bearhug",
+   "count": 3,
+   "name": "Oddish",
+   "set": "UD",
+   "status": "exact",
+   "engine_sets": [
+    "JU",
+    "TR",
+    "UND"
+   ]
+  },
+  {
+   "deck": "Bearhug",
+   "count": 1,
+   "name": "Roserade",
+   "set": "UL",
+   "status": "other-printing",
+   "engine_sets": [
+    "DGE"
+   ]
+  },
+  {
+   "deck": "Bearhug",
+   "count": 1,
+   "name": "Roselia",
+   "set": "UL",
+   "status": "other-printing",
+   "engine_sets": [
+    "DGE"
+   ]
+  },
+  {
+   "deck": "Bearhug",
+   "count": 1,
+   "name": "Jirachi",
+   "set": "UL",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Bearhug",
+   "count": 4,
+   "name": "Pokemon Collector",
+   "set": "HS",
+   "status": "exact",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Bearhug",
+   "count": 4,
+   "name": "Copycat",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "CES"
+   ]
+  },
+  {
+   "deck": "Bearhug",
+   "count": 4,
+   "name": "Judge",
+   "set": "UL",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Bearhug",
+   "count": 2,
+   "name": "Professor Juniper",
+   "set": "BLW",
+   "status": "exact",
+   "engine_sets": [
+    "BW"
+   ]
+  },
+  {
+   "deck": "Bearhug",
+   "count": 2,
+   "name": "Professor Oak\u2019s New Theory",
+   "set": "HS",
+   "status": "exact",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Bearhug",
+   "count": 4,
+   "name": "Pokemon Communication",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "TEU"
+   ]
+  },
+  {
+   "deck": "Bearhug",
+   "count": 4,
+   "name": "Double Colorless Energy",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS"
+   ]
+  },
+  {
+   "deck": "Bearhug",
+   "count": 4,
+   "name": "Rainbow Energy",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "RS",
+    "TR"
+   ]
+  },
+  {
+   "deck": "Bearhug",
+   "count": 4,
+   "name": "Grass Energy",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RS"
+   ]
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 4,
+   "name": "Kingdra Prime",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 2,
+   "name": "Seadra",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "FO"
+   ]
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 4,
+   "name": "Horsea",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "FO"
+   ]
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 4,
+   "name": "Yanmega Prime",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 4,
+   "name": "Yanma",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 2,
+   "name": "Jirachi",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 1,
+   "name": "Blissey Prime",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 1,
+   "name": "Chansey",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RG"
+   ]
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 2,
+   "name": "Cleffa",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "HGSS",
+    "UNB"
+   ]
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 1,
+   "name": "Tyrogue",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 4,
+   "name": "Pokemon Collector",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 4,
+   "name": "Copycat",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "CES"
+   ]
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 4,
+   "name": "Judge",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 2,
+   "name": "Professor Juniper",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BW"
+   ]
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 4,
+   "name": "Pokemon Communication",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "TEU"
+   ]
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 4,
+   "name": "Rare Candy",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "SS",
+    "SUM"
+   ]
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 3,
+   "name": "Pokemon Reversal",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "RG",
+    "RS"
+   ]
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 2,
+   "name": "Junk Arm",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "TRM"
+   ]
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 3,
+   "name": "Psychic Energy",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RS"
+   ]
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 3,
+   "name": "Rainbow Energy",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "RS",
+    "TR"
+   ]
+  },
+  {
+   "deck": "Kingdra / Yanmega",
+   "count": 2,
+   "name": "Rescue Energy",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Lanturn / Yanmega",
+   "count": 3,
+   "name": "Lanturn Prime",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Lanturn / Yanmega",
+   "count": 3,
+   "name": "Chinchou",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Lanturn / Yanmega",
+   "count": 3,
+   "name": "Yanmega Prime",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Lanturn / Yanmega",
+   "count": 3,
+   "name": "Yanma",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Lanturn / Yanmega",
+   "count": 2,
+   "name": "Zekrom",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BW"
+   ]
+  },
+  {
+   "deck": "Lanturn / Yanmega",
+   "count": 1,
+   "name": "Shaymin",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "UNL"
+   ]
+  },
+  {
+   "deck": "Lanturn / Yanmega",
+   "count": 1,
+   "name": "Cleffa",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "HGSS",
+    "UNB"
+   ]
+  },
+  {
+   "deck": "Lanturn / Yanmega",
+   "count": 1,
+   "name": "Pachirisu",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "OP9"
+   ]
+  },
+  {
+   "deck": "Lanturn / Yanmega",
+   "count": 4,
+   "name": "Pokemon Collector",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Lanturn / Yanmega",
+   "count": 3,
+   "name": "Professor Juniper",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BW"
+   ]
+  },
+  {
+   "deck": "Lanturn / Yanmega",
+   "count": 3,
+   "name": "Professor Oak\u2019s New Theory",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Lanturn / Yanmega",
+   "count": 3,
+   "name": "Judge",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Lanturn / Yanmega",
+   "count": 3,
+   "name": "Copycat",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "CES"
+   ]
+  },
+  {
+   "deck": "Lanturn / Yanmega",
+   "count": 4,
+   "name": "Pokemon Reversal",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "RG",
+    "RS"
+   ]
+  },
+  {
+   "deck": "Lanturn / Yanmega",
+   "count": 3,
+   "name": "Pokemon Communication",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "TEU"
+   ]
+  },
+  {
+   "deck": "Lanturn / Yanmega",
+   "count": 3,
+   "name": "Pluspower",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "BW"
+   ]
+  },
+  {
+   "deck": "Lanturn / Yanmega",
+   "count": 3,
+   "name": "Junk Arm",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "TRM"
+   ]
+  },
+  {
+   "deck": "Lanturn / Yanmega",
+   "count": 2,
+   "name": "Defender",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BS"
+   ]
+  },
+  {
+   "deck": "Lanturn / Yanmega",
+   "count": 8,
+   "name": "Lightning Energy",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RS"
+   ]
+  },
+  {
+   "deck": "Lanturn / Yanmega",
+   "count": 4,
+   "name": "Double Colorless Energy",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BS"
+   ]
+  },
+  {
+   "deck": "LostGar",
+   "count": 4,
+   "name": "Gengar Prime",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "FO"
+   ]
+  },
+  {
+   "deck": "LostGar",
+   "count": 2,
+   "name": "Haunter",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "FO",
+    "RG"
+   ]
+  },
+  {
+   "deck": "LostGar",
+   "count": 4,
+   "name": "Gastly",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "FO",
+    "RG"
+   ]
+  },
+  {
+   "deck": "LostGar",
+   "count": 2,
+   "name": "Magnezone Prime",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LostGar",
+   "count": 1,
+   "name": "Magneton",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "FO",
+    "RG"
+   ]
+  },
+  {
+   "deck": "LostGar",
+   "count": 2,
+   "name": "Magnemite",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RG",
+    "TR"
+   ]
+  },
+  {
+   "deck": "LostGar",
+   "count": 3,
+   "name": "Mew Prime",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "PR"
+   ]
+  },
+  {
+   "deck": "LostGar",
+   "count": 2,
+   "name": "Spiritomb",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LostGar",
+   "count": 1,
+   "name": "Mr. Mime",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "JU",
+    "PLF"
+   ]
+  },
+  {
+   "deck": "LostGar",
+   "count": 1,
+   "name": "Mime Jr.",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LostGar",
+   "count": 1,
+   "name": "Cleffa",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "HGSS",
+    "UNB"
+   ]
+  },
+  {
+   "deck": "LostGar",
+   "count": 4,
+   "name": "Pokemon Collector",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "LostGar",
+   "count": 4,
+   "name": "Twins",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "TRM"
+   ]
+  },
+  {
+   "deck": "LostGar",
+   "count": 4,
+   "name": "Seeker",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "TRM"
+   ]
+  },
+  {
+   "deck": "LostGar",
+   "count": 4,
+   "name": "Pokemon Communication",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "TEU"
+   ]
+  },
+  {
+   "deck": "LostGar",
+   "count": 4,
+   "name": "Rare Candy",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "SS",
+    "SUM"
+   ]
+  },
+  {
+   "deck": "LostGar",
+   "count": 2,
+   "name": "Switch",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RG",
+    "RS",
+    "SSH"
+   ]
+  },
+  {
+   "deck": "LostGar",
+   "count": 1,
+   "name": "Junk Arm",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "TRM"
+   ]
+  },
+  {
+   "deck": "LostGar",
+   "count": 2,
+   "name": "Lost World",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "LostGar",
+   "count": 9,
+   "name": "Psychic Energy",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RS"
+   ]
+  },
+  {
+   "deck": "LostGar",
+   "count": 3,
+   "name": "Rainbow Energy",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "RS",
+    "TR"
+   ]
+  },
+  {
+   "deck": "Magneboar",
+   "count": 3,
+   "name": "Magnezone Prime",
+   "set": "TM",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Magneboar",
+   "count": 1,
+   "name": "Magneton",
+   "set": "TM",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "FO",
+    "RG"
+   ]
+  },
+  {
+   "deck": "Magneboar",
+   "count": 3,
+   "name": "Magnemite",
+   "set": "TM",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RG",
+    "TR"
+   ]
+  },
+  {
+   "deck": "Magneboar",
+   "count": 2,
+   "name": "Emboar",
+   "set": "BLW",
+   "status": "other-printing",
+   "engine_sets": [
+    "LTR"
+   ]
+  },
+  {
+   "deck": "Magneboar",
+   "count": 1,
+   "name": "Pignite",
+   "set": "BLW",
+   "status": "exact",
+   "engine_sets": [
+    "BW"
+   ]
+  },
+  {
+   "deck": "Magneboar",
+   "count": 3,
+   "name": "Tepig",
+   "set": "BCR",
+   "status": "other-printing",
+   "engine_sets": [
+    "BW"
+   ]
+  },
+  {
+   "deck": "Magneboar",
+   "count": 2,
+   "name": "Reshiram",
+   "set": "BLW",
+   "status": "exact",
+   "engine_sets": [
+    "BW"
+   ]
+  },
+  {
+   "deck": "Magneboar",
+   "count": 2,
+   "name": "Cleffa",
+   "set": "HS",
+   "status": "exact",
+   "engine_sets": [
+    "HGSS",
+    "UNB"
+   ]
+  },
+  {
+   "deck": "Magneboar",
+   "count": 1,
+   "name": "Rayquaza & Deoxys Legend",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Magneboar",
+   "count": 1,
+   "name": "Rayquaza & Deoxys Legend",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Magneboar",
+   "count": 4,
+   "name": "Pokemon Collector",
+   "set": "HS",
+   "status": "exact",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Magneboar",
+   "count": 3,
+   "name": "Professor Oak\u2019s New Theory",
+   "set": "HS",
+   "status": "exact",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Magneboar",
+   "count": 3,
+   "name": "Twins",
+   "set": "TM",
+   "status": "exact",
+   "engine_sets": [
+    "TRM"
+   ]
+  },
+  {
+   "deck": "Magneboar",
+   "count": 1,
+   "name": "Fisherman",
+   "set": "HS",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Magneboar",
+   "count": 4,
+   "name": "Pokemon Communication",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "TEU"
+   ]
+  },
+  {
+   "deck": "Magneboar",
+   "count": 4,
+   "name": "Rare Candy",
+   "set": "UL",
+   "status": "other-printing",
+   "engine_sets": [
+    "SS",
+    "SUM"
+   ]
+  },
+  {
+   "deck": "Magneboar",
+   "count": 3,
+   "name": "Junk Arm",
+   "set": "TM",
+   "status": "exact",
+   "engine_sets": [
+    "TRM"
+   ]
+  },
+  {
+   "deck": "Magneboar",
+   "count": 2,
+   "name": "Switch",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RG",
+    "RS",
+    "SSH"
+   ]
+  },
+  {
+   "deck": "Magneboar",
+   "count": 2,
+   "name": "Energy Retrieval",
+   "set": "BLW",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "SUM"
+   ]
+  },
+  {
+   "deck": "Magneboar",
+   "count": 9,
+   "name": "Fire Energy",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RS"
+   ]
+  },
+  {
+   "deck": "Magneboar",
+   "count": 4,
+   "name": "Lightning Energy",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RS"
+   ]
+  },
+  {
+   "deck": "Magneboar",
+   "count": 2,
+   "name": "Rescue Energy",
+   "set": "TM",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Mew Box",
+   "count": 4,
+   "name": "Yanmega Prime",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Mew Box",
+   "count": 4,
+   "name": "Yanma",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Mew Box",
+   "count": 4,
+   "name": "Mew Prime",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "PR"
+   ]
+  },
+  {
+   "deck": "Mew Box",
+   "count": 2,
+   "name": "Vileplume",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "JU",
+    "UND"
+   ]
+  },
+  {
+   "deck": "Mew Box",
+   "count": 2,
+   "name": "Gloom",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "JU",
+    "UND"
+   ]
+  },
+  {
+   "deck": "Mew Box",
+   "count": 2,
+   "name": "Oddish",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "JU",
+    "TR",
+    "UND"
+   ]
+  },
+  {
+   "deck": "Mew Box",
+   "count": 2,
+   "name": "Jumpluff",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Mew Box",
+   "count": 2,
+   "name": "Muk",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "FO"
+   ]
+  },
+  {
+   "deck": "Mew Box",
+   "count": 2,
+   "name": "Cleffa",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "HGSS",
+    "UNB"
+   ]
+  },
+  {
+   "deck": "Mew Box",
+   "count": 1,
+   "name": "Tyrogue",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Mew Box",
+   "count": 1,
+   "name": "Spinarak",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Mew Box",
+   "count": 1,
+   "name": "Jirachi",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Mew Box",
+   "count": 1,
+   "name": "Zoroark",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BW"
+   ]
+  },
+  {
+   "deck": "Mew Box",
+   "count": 1,
+   "name": "Crobat Prime",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "PFO"
+   ]
+  },
+  {
+   "deck": "Mew Box",
+   "count": 1,
+   "name": "Gengar Prime",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "FO"
+   ]
+  },
+  {
+   "deck": "Mew Box",
+   "count": 4,
+   "name": "Pokemon Collector",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Mew Box",
+   "count": 4,
+   "name": "Judge",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Mew Box",
+   "count": 4,
+   "name": "Copycat",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "CES"
+   ]
+  },
+  {
+   "deck": "Mew Box",
+   "count": 2,
+   "name": "Professor Elm\u2019s Training Method",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Mew Box",
+   "count": 4,
+   "name": "Pokemon Communication",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "TEU"
+   ]
+  },
+  {
+   "deck": "Mew Box",
+   "count": 5,
+   "name": "Psychic Energy",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RS"
+   ]
+  },
+  {
+   "deck": "Mew Box",
+   "count": 4,
+   "name": "Rainbow Energy",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "RS",
+    "TR"
+   ]
+  },
+  {
+   "deck": "Mew Box",
+   "count": 3,
+   "name": "Grass Energy",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RS"
+   ]
+  },
+  {
+   "deck": "Prime Time",
+   "count": 3,
+   "name": "Yanmega Prime",
+   "set": "TM",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Prime Time",
+   "count": 4,
+   "name": "Yanma",
+   "set": "TM",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Prime Time",
+   "count": 4,
+   "name": "Magnezone Prime",
+   "set": "TM",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Prime Time",
+   "count": 1,
+   "name": "Magneton",
+   "set": "TM",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "FO",
+    "RG"
+   ]
+  },
+  {
+   "deck": "Prime Time",
+   "count": 4,
+   "name": "Magnemite",
+   "set": "TM",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RG",
+    "TR"
+   ]
+  },
+  {
+   "deck": "Prime Time",
+   "count": 1,
+   "name": "Kingdra Prime",
+   "set": "UL",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Prime Time",
+   "count": 1,
+   "name": "Horsea",
+   "set": "UL",
+   "status": "other-printing",
+   "engine_sets": [
+    "FO"
+   ]
+  },
+  {
+   "deck": "Prime Time",
+   "count": 1,
+   "name": "Jirachi",
+   "set": "UL",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Prime Time",
+   "count": 1,
+   "name": "Cleffa",
+   "set": "HS",
+   "status": "exact",
+   "engine_sets": [
+    "HGSS",
+    "UNB"
+   ]
+  },
+  {
+   "deck": "Prime Time",
+   "count": 4,
+   "name": "Pokemon Collector",
+   "set": "HS",
+   "status": "exact",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Prime Time",
+   "count": 3,
+   "name": "Judge",
+   "set": "UL",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Prime Time",
+   "count": 2,
+   "name": "Sage\u2019s Training",
+   "set": "UD",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Prime Time",
+   "count": 2,
+   "name": "Twins",
+   "set": "TM",
+   "status": "exact",
+   "engine_sets": [
+    "TRM"
+   ]
+  },
+  {
+   "deck": "Prime Time",
+   "count": 1,
+   "name": "Copycat",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "CES"
+   ]
+  },
+  {
+   "deck": "Prime Time",
+   "count": 4,
+   "name": "Pokemon Communication",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "TEU"
+   ]
+  },
+  {
+   "deck": "Prime Time",
+   "count": 4,
+   "name": "Rare Candy",
+   "set": "UL",
+   "status": "other-printing",
+   "engine_sets": [
+    "SS",
+    "SUM"
+   ]
+  },
+  {
+   "deck": "Prime Time",
+   "count": 4,
+   "name": "Pokemon Reversal",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "RG",
+    "RS"
+   ]
+  },
+  {
+   "deck": "Prime Time",
+   "count": 4,
+   "name": "Junk Arm",
+   "set": "TM",
+   "status": "exact",
+   "engine_sets": [
+    "TRM"
+   ]
+  },
+  {
+   "deck": "Prime Time",
+   "count": 1,
+   "name": "Switch",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RG",
+    "RS",
+    "SSH"
+   ]
+  },
+  {
+   "deck": "Prime Time",
+   "count": 5,
+   "name": "Lightning Energy",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RS"
+   ]
+  },
+  {
+   "deck": "Prime Time",
+   "count": 4,
+   "name": "Psychic Energy",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RS"
+   ]
+  },
+  {
+   "deck": "Prime Time",
+   "count": 2,
+   "name": "Rainbow Energy",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "RS",
+    "TR"
+   ]
+  },
+  {
+   "deck": "Reshiphlosion",
+   "count": 4,
+   "name": "Typhlosion Prime",
+   "set": "HS",
+   "status": "exact",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Reshiphlosion",
+   "count": 2,
+   "name": "Quilava",
+   "set": "HS",
+   "status": "exact",
+   "engine_sets": [
+    "HGSS",
+    "SS"
+   ]
+  },
+  {
+   "deck": "Reshiphlosion",
+   "count": 4,
+   "name": "Cyndaquil",
+   "set": "HS",
+   "status": "exact",
+   "engine_sets": [
+    "HGSS",
+    "SS"
+   ]
+  },
+  {
+   "deck": "Reshiphlosion",
+   "count": 3,
+   "name": "Reshiram",
+   "set": "BLW",
+   "status": "exact",
+   "engine_sets": [
+    "BW"
+   ]
+  },
+  {
+   "deck": "Reshiphlosion",
+   "count": 2,
+   "name": "Ninetales",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS"
+   ]
+  },
+  {
+   "deck": "Reshiphlosion",
+   "count": 2,
+   "name": "Vulpix",
+   "set": "UL",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS"
+   ]
+  },
+  {
+   "deck": "Reshiphlosion",
+   "count": 1,
+   "name": "Cleffa",
+   "set": "HS",
+   "status": "exact",
+   "engine_sets": [
+    "HGSS",
+    "UNB"
+   ]
+  },
+  {
+   "deck": "Reshiphlosion",
+   "count": 4,
+   "name": "Pokemon Collector",
+   "set": "HS",
+   "status": "exact",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Reshiphlosion",
+   "count": 4,
+   "name": "Professor Juniper",
+   "set": "BLW",
+   "status": "exact",
+   "engine_sets": [
+    "BW"
+   ]
+  },
+  {
+   "deck": "Reshiphlosion",
+   "count": 1,
+   "name": "Sage\u2019s Training",
+   "set": "UD",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Reshiphlosion",
+   "count": 1,
+   "name": "Twins",
+   "set": "TM",
+   "status": "exact",
+   "engine_sets": [
+    "TRM"
+   ]
+  },
+  {
+   "deck": "Reshiphlosion",
+   "count": 4,
+   "name": "Pokemon Communication",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "TEU"
+   ]
+  },
+  {
+   "deck": "Reshiphlosion",
+   "count": 4,
+   "name": "Junk Arm",
+   "set": "TM",
+   "status": "exact",
+   "engine_sets": [
+    "TRM"
+   ]
+  },
+  {
+   "deck": "Reshiphlosion",
+   "count": 3,
+   "name": "Rare Candy",
+   "set": "UL",
+   "status": "other-printing",
+   "engine_sets": [
+    "SS",
+    "SUM"
+   ]
+  },
+  {
+   "deck": "Reshiphlosion",
+   "count": 3,
+   "name": "Pokemon Reversal",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "RG",
+    "RS"
+   ]
+  },
+  {
+   "deck": "Reshiphlosion",
+   "count": 3,
+   "name": "Pluspower",
+   "set": "UL",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "BW"
+   ]
+  },
+  {
+   "deck": "Reshiphlosion",
+   "count": 1,
+   "name": "Energy Retrieval",
+   "set": "BLW",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "SUM"
+   ]
+  },
+  {
+   "deck": "Reshiphlosion",
+   "count": 1,
+   "name": "Revive",
+   "set": "BLW",
+   "status": "exact",
+   "engine_sets": [
+    "BS",
+    "BW"
+   ]
+  },
+  {
+   "deck": "Reshiphlosion",
+   "count": 13,
+   "name": "Fire Energy",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RS"
+   ]
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 3,
+   "name": "Sharpedo",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "RS"
+   ]
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 3,
+   "name": "Carvanha",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "RS"
+   ]
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 2,
+   "name": "Cincinno",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 2,
+   "name": "Mincinno",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 2,
+   "name": "Weavile",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 2,
+   "name": "Sneasel",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 1,
+   "name": "Slowking",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 1,
+   "name": "Slowpoke",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "FO",
+    "RG",
+    "TR"
+   ]
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 1,
+   "name": "Mandibuzz",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 1,
+   "name": "Vullaby",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 1,
+   "name": "Unown DARK",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 1,
+   "name": "Cleffa",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "HGSS",
+    "UNB"
+   ]
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 1,
+   "name": "Tyrogue",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 4,
+   "name": "Pokemon Collector",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 3,
+   "name": "Professor Oak\u2019s New Theory",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 3,
+   "name": "Sage\u2019s Training",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 1,
+   "name": "Professor Juniper",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BW"
+   ]
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 4,
+   "name": "Pokemon Communication",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "TEU"
+   ]
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 3,
+   "name": "Junk Arm",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "TRM"
+   ]
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 3,
+   "name": "Pokemon Reversal",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "RG",
+    "RS"
+   ]
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 3,
+   "name": "Pluspower",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "BW"
+   ]
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 2,
+   "name": "Dual Ball",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "UNL"
+   ]
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 1,
+   "name": "Switch",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RG",
+    "RS",
+    "SSH"
+   ]
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 4,
+   "name": "Darkness Energy (SP)",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 3,
+   "name": "Darkness Energy",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "RS"
+   ]
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 3,
+   "name": "Double Colorless Energy",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BS"
+   ]
+  },
+  {
+   "deck": "Sharpedo",
+   "count": 2,
+   "name": "Rescue Energy",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Stage 1s",
+   "count": 3,
+   "name": "Donphan Prime",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "PLS",
+    "RS"
+   ]
+  },
+  {
+   "deck": "Stage 1s",
+   "count": 3,
+   "name": "Phanpy",
+   "set": "CL",
+   "status": "other-printing",
+   "engine_sets": [
+    "PLS",
+    "RS"
+   ]
+  },
+  {
+   "deck": "Stage 1s",
+   "count": 3,
+   "name": "Yanmega Prime",
+   "set": "TM",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Stage 1s",
+   "count": 3,
+   "name": "Yanma",
+   "set": "TM",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Stage 1s",
+   "count": 2,
+   "name": "Zoroark",
+   "set": "BLW",
+   "status": "exact",
+   "engine_sets": [
+    "BW"
+   ]
+  },
+  {
+   "deck": "Stage 1s",
+   "count": 2,
+   "name": "Zorua",
+   "set": "BLW",
+   "status": "exact",
+   "engine_sets": [
+    "BW",
+    "DEX"
+   ]
+  },
+  {
+   "deck": "Stage 1s",
+   "count": 1,
+   "name": "Tyrogue",
+   "set": "HS",
+   "status": "exact",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Stage 1s",
+   "count": 1,
+   "name": "Manaphy",
+   "set": "UL",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Stage 1s",
+   "count": 1,
+   "name": "Bouffalant",
+   "set": "BLW",
+   "status": "other-printing",
+   "engine_sets": [
+    "DGE"
+   ]
+  },
+  {
+   "deck": "Stage 1s",
+   "count": 4,
+   "name": "Pokemon Collector",
+   "set": "HS",
+   "status": "exact",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Stage 1s",
+   "count": 3,
+   "name": "Professor Juniper",
+   "set": "BLW",
+   "status": "exact",
+   "engine_sets": [
+    "BW"
+   ]
+  },
+  {
+   "deck": "Stage 1s",
+   "count": 3,
+   "name": "Professor Oak\u2019s New Theory",
+   "set": "HS",
+   "status": "exact",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Stage 1s",
+   "count": 3,
+   "name": "Judge",
+   "set": "UL",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Stage 1s",
+   "count": 4,
+   "name": "Pokemon Communication",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "TEU"
+   ]
+  },
+  {
+   "deck": "Stage 1s",
+   "count": 4,
+   "name": "Junk Arm",
+   "set": "TM",
+   "status": "exact",
+   "engine_sets": [
+    "TRM"
+   ]
+  },
+  {
+   "deck": "Stage 1s",
+   "count": 3,
+   "name": "Pluspower",
+   "set": "UL",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "BW"
+   ]
+  },
+  {
+   "deck": "Stage 1s",
+   "count": 3,
+   "name": "Pokemon Reversal",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "RG",
+    "RS"
+   ]
+  },
+  {
+   "deck": "Stage 1s",
+   "count": 2,
+   "name": "Switch",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RG",
+    "RS",
+    "SSH"
+   ]
+  },
+  {
+   "deck": "Stage 1s",
+   "count": 9,
+   "name": "Fighting Energy",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RS"
+   ]
+  },
+  {
+   "deck": "Stage 1s",
+   "count": 3,
+   "name": "Double Colorless Energy",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 2,
+   "name": "Vileplume",
+   "set": "UD",
+   "status": "exact",
+   "engine_sets": [
+    "JU",
+    "UND"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 2,
+   "name": "Gloom",
+   "set": "UD",
+   "status": "exact",
+   "engine_sets": [
+    "JU",
+    "UND"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 3,
+   "name": "Oddish",
+   "set": "UD",
+   "status": "exact",
+   "engine_sets": [
+    "JU",
+    "TR",
+    "UND"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 2,
+   "name": "Reuniclus",
+   "set": "BLW",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "The Truth",
+   "count": 2,
+   "name": "Duosion",
+   "set": "BLW",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "The Truth",
+   "count": 3,
+   "name": "Solosis",
+   "set": "BLW",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "The Truth",
+   "count": 2,
+   "name": "Donphan Prime",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "PLS",
+    "RS"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 2,
+   "name": "Phanpy",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "PLS",
+    "RS"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 2,
+   "name": "Zekrom",
+   "set": "BLW",
+   "status": "exact",
+   "engine_sets": [
+    "BW"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 1,
+   "name": "Blissey Prime",
+   "set": "HS",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "The Truth",
+   "count": 1,
+   "name": "Chansey",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RG"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 2,
+   "name": "Pichu",
+   "set": "HS",
+   "status": "exact",
+   "engine_sets": [
+    "HGSS",
+    "OP9",
+    "SS"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 1,
+   "name": "Cleffa",
+   "set": "HS",
+   "status": "exact",
+   "engine_sets": [
+    "HGSS",
+    "UNB"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 1,
+   "name": "Suicune & Entei Legend",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "The Truth",
+   "count": 1,
+   "name": "Suicune & Entei Legend",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "The Truth",
+   "count": 4,
+   "name": "Twins",
+   "set": "TM",
+   "status": "exact",
+   "engine_sets": [
+    "TRM"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 4,
+   "name": "Sage\u2019s Training",
+   "set": "UD",
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "The Truth",
+   "count": 3,
+   "name": "Pokemon Collector",
+   "set": "HS",
+   "status": "exact",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 2,
+   "name": "Seeker",
+   "set": "TM",
+   "status": "exact",
+   "engine_sets": [
+    "TRM"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 1,
+   "name": "Copycat",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "CES"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 1,
+   "name": "Professor Oak\u2019s New Theory",
+   "set": "HS",
+   "status": "exact",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 3,
+   "name": "Pokemon Communication",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "TEU"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 3,
+   "name": "Rare Candy",
+   "set": "UL",
+   "status": "other-printing",
+   "engine_sets": [
+    "SS",
+    "SUM"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 1,
+   "name": "Tropical Beach",
+   "set": "BLW",
+   "status": "exact",
+   "engine_sets": [
+    "BW"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 4,
+   "name": "Double Colorless Energy",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 4,
+   "name": "Rainbow Energy",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "RS",
+    "TR"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 2,
+   "name": "Fighting Energy",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RS"
+   ]
+  },
+  {
+   "deck": "The Truth",
+   "count": 1,
+   "name": "Fire Energy",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RS"
+   ]
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 4,
+   "name": "Tyranitar Prime",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 3,
+   "name": "Pupitar",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 4,
+   "name": "Larvitar",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 2,
+   "name": "Serperior",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 2,
+   "name": "Servine",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 2,
+   "name": "Snivy",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 3,
+   "name": "Cleffa",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "HGSS",
+    "UNB"
+   ]
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 1,
+   "name": "Jirachi",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 1,
+   "name": "Shaymin",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "UNL"
+   ]
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 1,
+   "name": "Tyrogue",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 1,
+   "name": "Unown DARK",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 4,
+   "name": "Pokemon Collector",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 4,
+   "name": "Professor Oak\u2019s New Theory",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 3,
+   "name": "Twins",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "TRM"
+   ]
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 3,
+   "name": "Professor Elm\u2019s Training Method",
+   "set": null,
+   "status": "missing",
+   "engine_sets": []
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 4,
+   "name": "Rare Candy",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "SS",
+    "SUM"
+   ]
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 4,
+   "name": "Pokemon Communication",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "TEU"
+   ]
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 2,
+   "name": "Switch",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RG",
+    "RS",
+    "SSH"
+   ]
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 4,
+   "name": "Darkness Energy",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "RS"
+   ]
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 4,
+   "name": "Rainbow Energy",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "RS",
+    "TR"
+   ]
+  },
+  {
+   "deck": "Tyranitar",
+   "count": 4,
+   "name": "Double Colorless Energy",
+   "set": null,
+   "status": "other-printing",
+   "engine_sets": [
+    "BS"
+   ]
+  },
+  {
+   "deck": "ZPS",
+   "count": 4,
+   "name": "Zekrom",
+   "set": "BLW",
+   "status": "exact",
+   "engine_sets": [
+    "BW"
+   ]
+  },
+  {
+   "deck": "ZPS",
+   "count": 2,
+   "name": "Pachirisu",
+   "set": "CL",
+   "status": "other-printing",
+   "engine_sets": [
+    "OP9"
+   ]
+  },
+  {
+   "deck": "ZPS",
+   "count": 2,
+   "name": "Shaymin",
+   "set": "UL",
+   "status": "exact",
+   "engine_sets": [
+    "UNL"
+   ]
+  },
+  {
+   "deck": "ZPS",
+   "count": 1,
+   "name": "Reshiram",
+   "set": "BLW",
+   "status": "exact",
+   "engine_sets": [
+    "BW"
+   ]
+  },
+  {
+   "deck": "ZPS",
+   "count": 1,
+   "name": "Bouffalant",
+   "set": "BLW",
+   "status": "other-printing",
+   "engine_sets": [
+    "DGE"
+   ]
+  },
+  {
+   "deck": "ZPS",
+   "count": 4,
+   "name": "Professor Oak\u2019s New Theory",
+   "set": "HS",
+   "status": "exact",
+   "engine_sets": [
+    "HGSS"
+   ]
+  },
+  {
+   "deck": "ZPS",
+   "count": 3,
+   "name": "Professor Juniper",
+   "set": "BLW",
+   "status": "exact",
+   "engine_sets": [
+    "BW"
+   ]
+  },
+  {
+   "deck": "ZPS",
+   "count": 2,
+   "name": "Copycat",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "CES"
+   ]
+  },
+  {
+   "deck": "ZPS",
+   "count": 1,
+   "name": "Seeker",
+   "set": "TM",
+   "status": "exact",
+   "engine_sets": [
+    "TRM"
+   ]
+  },
+  {
+   "deck": "ZPS",
+   "count": 4,
+   "name": "Dual Ball",
+   "set": "UL",
+   "status": "exact",
+   "engine_sets": [
+    "UNL"
+   ]
+  },
+  {
+   "deck": "ZPS",
+   "count": 4,
+   "name": "Junk Arm",
+   "set": "TM",
+   "status": "exact",
+   "engine_sets": [
+    "TRM"
+   ]
+  },
+  {
+   "deck": "ZPS",
+   "count": 4,
+   "name": "Super Scoop Up",
+   "set": "UL",
+   "status": "other-printing",
+   "engine_sets": [
+    "CES",
+    "RG"
+   ]
+  },
+  {
+   "deck": "ZPS",
+   "count": 3,
+   "name": "Pokegear 3.0",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "UNB"
+   ]
+  },
+  {
+   "deck": "ZPS",
+   "count": 3,
+   "name": "Pokemon Reversal",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "RG",
+    "RS"
+   ]
+  },
+  {
+   "deck": "ZPS",
+   "count": 3,
+   "name": "Pluspower",
+   "set": "UL",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "BW"
+   ]
+  },
+  {
+   "deck": "ZPS",
+   "count": 3,
+   "name": "Defender",
+   "set": "UD",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS"
+   ]
+  },
+  {
+   "deck": "ZPS",
+   "count": 1,
+   "name": "Revive",
+   "set": "BLW",
+   "status": "exact",
+   "engine_sets": [
+    "BS",
+    "BW"
+   ]
+  },
+  {
+   "deck": "ZPS",
+   "count": 1,
+   "name": "Energy Retrieval",
+   "set": "BLW",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "SUM"
+   ]
+  },
+  {
+   "deck": "ZPS",
+   "count": 11,
+   "name": "Lightning Energy",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS",
+    "RS"
+   ]
+  },
+  {
+   "deck": "ZPS",
+   "count": 3,
+   "name": "Double Colorless Energy",
+   "set": "HS",
+   "status": "other-printing",
+   "engine_sets": [
+    "BS"
+   ]
+  }
+ ]
+}

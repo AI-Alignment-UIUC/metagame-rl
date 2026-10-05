@@ -21,10 +21,10 @@ and proven there first.
 
 **Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup
 matrix. A PPO self-play policy beats SimpleBot 97-98% in one matchup, and one MLP policy for all
-24 decks (A4.1) beats it 88.5-89.6% with every deck above 70%, weakest on the 10-and-under lists.
-The token + pointer model (A4.2) now updates in 17 s per iteration and can play the MLP
-directly. Its first run exposed two endless loops (Metronome copying Metronome; free
-start-then-undo cycles), now fixed; it is retraining on the fixed environment.
+24 decks (A4.1) beats it 88.5-89.6% with every deck above 70%. The token + pointer model (A4.2)
+trains at 17 s per update, plays the MLP directly, and is retraining after its first run exposed
+two endless loops, now fixed. Phase B now targets Worlds 2011 (San Diego), where 44 of 111 card names
+in the season's archetype lists are still unimplemented.
 
 **Earlier work:**
 
@@ -44,22 +44,25 @@ start-then-undo cycles), now fixed; it is retraining on the fixed environment.
   directions, and the stronger (run c) beats the other 57.8%. The token model, central GPU
   inference and the A5 pieces (matchup model, edit builder, PSRO loop) are built and tested.
 
-**Recent (log #17–20):** Under SimpleBot piloting the 24 x 24 matrix's equilibrium is Sponge,
-Wigglytuff and Articuno/Hitmonchan/Scyther, with no Haymaker list in the support. A4.1 met its
-per-deck exit (re-scored on the fixed environment: mirror 89.6%, field 88.5% vs SimpleBot,
-lowest Viray Rain Dance 71-72%), with gains down to ~1 point per 25 iterations. Token-model
-training was made to fit and run fast (each change checked against the original), mixed
-MLP-vs-token games work, and the loops the token run hit are fixed: every game the A4.1 exit
-had cut off was one of them.
+**Recent (log #17–21):** Under SimpleBot piloting the 24 x 24 matrix's equilibrium has no Haymaker
+list in its support, and A4.1 met its per-deck exit (re-scored on the fixed environment: mirror
+89.6%, field 88.5%, lowest Viray Rain Dance 71-72%, gains down to ~1 point per 25 iterations).
+Token-model training was made to fit and run fast, mixed MLP-vs-token games work, and the two
+loops the token run hit (Metronome copying Metronome; start-then-undo cycles, behind every game
+A4.1's exit had cut off) are fixed. Phase B moved to Worlds 2011, San Diego, whose measured gap
+(no printing-exact list; the 2011 winner's list lacks 8 cards) is larger than 2013-14's.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
 1. A4.2: the token-model run on the fixed environment (`runs/a4-tok`, 250 iterations, A4.1 settings).
-2. Compare the two: learning curves, mirror/field vs SimpleBot, head-to-head, cost.
-3. A4 exit: the trained-policy matrix, its stability across reruns, and era write-ups.
-4. A5.1: Nash over the trained-policy matrix; then PSRO with the builder.
+2. Supervised architecture check: token model vs MLP on 398k teacher-labelled states
+   (`rl/distill.py`), plus ONNX / permutation / padding checks.
+3. Compare the two RL policies: learning curves, mirror/field vs SimpleBot, head-to-head, cost.
+4. A4 exit: the trained-policy matrix, its stability across reruns, and era write-ups.
+5. A5.1: Nash over the trained-policy matrix; then PSRO with the builder.
+6. B1: source the Worlds 2011 top-cut lists and check same-name printings card by card.
 <!-- status:end -->
 
 ---
@@ -87,14 +90,14 @@ support, measured by card overlap with archived lists). Matching meta *shares* i
 
 ## Why start in 2000
 
-| | July 2000 STS (Base–Rocket) | A Worlds format (e.g. 2013–14) |
+| | July 2000 STS (Base–Rocket) | Worlds 2011, San Diego (HGSS–Black & White) |
 |---|---|---|
-| Card pool in ryuu-play | **Complete**: every card in the field is implemented and verified | Mostly present, with real gaps (all of Team Plasma, Black Kyurem-EX, …) |
-| Distinct cards in the field | **56** (21 Pokémon, 26 Trainer, 9 Energy) | Hundreds |
+| Card pool in ryuu-play | **Complete**: every card in the field is implemented and verified | Partial: 44 of the 111 card names in the season's archetype lists have no implementation, and the HGSS-era sets are mostly absent (see B1) |
+| Distinct cards in the field | **56** (21 Pokémon, 26 Trainer, 9 Energy) | 111 card names (153 name-and-set printings) across 13 archetype lists; six sets in the format |
 | Evolution | Three stacks in the whole field, max depth 2 | Deep lines, Rare Candy, many evolution engines |
 | One player's full observation | **482 bits ≈ 60 bytes**; ~760–870 floats one-hot | Needs the scalable token representation |
-| Recorded field | 24 top-8 lists across three age divisions | Large fields with placements |
-| Mechanics | No abilities-era complexity, no EX/GX prize rules, no ACE SPEC | All of these |
+| Recorded field | 24 top-8 lists across three age divisions | Masters top 8 by archetype; one archived list per archetype so far (ptcgarchive); full Worlds lists not yet sourced |
+| Mechanics | No abilities-era complexity, no EX/GX prize rules, no ACE SPEC | Poké-Powers and Poké-Bodies, Pokémon Prime, two-card LEGENDs, the Lost Zone; no EX prize rule (from 2012) and no ACE SPEC |
 
 The 2000 format is small enough to iterate on in hours on one machine and real enough to have
 an answer key. Its weakness is also clear: there is **one** recorded field, and it is
@@ -235,16 +238,30 @@ serve as rough replicates of the human field.
 
 Phase B reuses everything from Phase A. What is new is the card pool, the scale, and the data.
 
-#### B1. Choose the target Worlds by measurement, not preference
+#### B1. Target: Worlds 2011, San Diego
 
-- **Coverage:** the candidates are the 2013 and 2014 formats.
-  - The engine already holds much of the 2010–15 pool: 70 of 88 era staples are present, seven
-    era archetypes are buildable, and two archived Worlds Blastoise/Keldeo lists build 57 of 60
-    cards.
-  - Missing: all of Team Plasma, Black Kyurem-EX, and others.
-  - Earlier Worlds formats (2004–05) are mostly absent: 3 of 9 sets for 2005.
-- **Data:** decklists and placements from Limitless and pokemon.com.
-- **Legality:** build per-year legal pools from set codes. The current pool mixes sets that never
+The 2011 World Championships (San Diego, August 12–14, 2011) were played in the HGSS-on format:
+HeartGold & SoulSilver, Unleashed, Undaunted, Triumphant, Call of Legends and Black & White. It
+was chosen over 2013–14 for its smaller pool and simpler rules: six sets, no EX prize rule, no
+ACE SPEC. The Masters top 8 was four Reshiram/Typhlosion, two Magnezone/Emboar (David Cohen won
+with one), Vileplume/Reuniclus ("The Truth", Ross Cawthon, 2nd) and Magnezone/Yanmega.
+
+- **Coverage, measured** (`notes/scripts/ryuu_coverage_2011.py`, results in
+  `notes/data/eval/coverage_2011.json`): over the 13 archetype lists of the 2011 season on
+  ptcgarchive, 44 of 111 card names have no implementation. The 2011
+  winner's Magnezone/Emboar lacks 8 cards (Magnezone Prime, Rayquaza & Deoxys LEGEND, Fisherman,
+  Rescue Energy), The Truth 14, Magnezone/Yanmega 18, Reshiram/Typhlosion 1 (Sage's Training);
+  Zekrom/Pachirisu/Shaymin has every name. Most same-name Pokémon in the engine are other
+  printings (Gengar from Fossil, not Gengar Prime), so the true gap is larger than the names
+  alone show. The HGSS-era sets are the work: the engine's HGSS folder holds 23 cards.
+- **The alternative, for comparison:** 2013–14 was the earlier candidate. Two archived Worlds
+  Blastoise/Keldeo lists build 57 of 60 cards and seven era archetypes are buildable; all of Team
+  Plasma and Black Kyurem-EX are missing (`notes/tcg-rl-research-notes.md`). San Diego 2005
+  (EX Ruby & Sapphire through EX Emerald) has 3 of 9 sets.
+- **Data:** the season's archetype lists (ptcgarchive, saved in `notes/data/2011-season-ptcgarchive/`); full Worlds
+  2011 top-cut lists and placements still to be sourced (Limitless, pokemon.com, the 2011 World
+  Championship decks).
+- **Legality:** build the 2011 legal pool from set codes. The current pool mixes sets that never
   coexisted, and an agent would invent decks no one could have played.
 
 #### B2. Close the card gap with the Phase A verification pipeline

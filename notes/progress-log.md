@@ -314,3 +314,22 @@ Entry format:
 - **Found:** Every cut-off game in the A4.1 exit was this Rain Dance cycle, so its weakest-deck
   score was partly an environment fault. A4.1 itself trained with both loops possible.
 - **Next:** Token run on the fixed environment, then compare against the re-scored A4.1.
+
+### #21 · 2026-10-05 · B1 · Phase B target set to Worlds 2011 (San Diego); coverage measured
+- **Done:** Phase B target changed from 2013–14 to Worlds 2011, San Diego (HGSS-on: HGSS,
+  Unleashed, Undaunted, Triumphant, Call of Legends, Black & White), by the user's choice for its
+  smaller pool and simpler rules. `notes/scripts/ryuu_coverage_2011.py` parses the 2011 season's
+  archetype lists from ptcgarchive (page saved in `notes/data/2011-season-ptcgarchive/decks.html`) and
+  checks each card against the fork by name and printed set; results in
+  `notes/data/eval/coverage_2011.json`. README: format table, B1 rewritten.
+- **Evidence:** 13 lists, 153 distinct cards: 44 names have no implementation; by printing,
+  0 lists are fully buildable. Missing copies per list: Zekrom/Pachirisu/Shaymin 0,
+  Reshiram/Typhlosion 1 (Sage's Training), Magnezone/Emboar (Cohen, Worlds 1st) 8 (Magnezone
+  Prime x3, Rayquaza & Deoxys LEGEND x2, Fisherman, Rescue Energy x2), Vileplume/Reuniclus (Cawthon,
+  2nd) 14, Magnezone/Yanmega 18. The engine's HGSS folder has 23 cards.
+- **Found:** By coverage alone 2011 is further from buildable than 2013–14 (57 of 60 for two
+  Blastoise/Keldeo lists): most same-name Pokémon in the engine are other printings, and the
+  printing match is partial (card images whose names didn't parse count as unknown printing).
+  Archive lists are one per archetype, not the full Worlds top cut.
+- **Next:** Source the Worlds 2011 top-cut lists; per-card text check of the same-name
+  printings; then B2 (implement the HGSS-era gap) after the Phase A gate.
