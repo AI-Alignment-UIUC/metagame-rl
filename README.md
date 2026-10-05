@@ -19,33 +19,39 @@ and proven there first.
 <!-- status:start -->
 *Updated 2026-10-05.*
 
-**Where things stand.** Phase A, milestone A0 is done: the engine runs the whole 2000 field and
-is verified. A1 (making the engine RL-ready) is under way: the throughput fixes are committed
-and verified equivalent, giving 64.6 engine-only games/s/core, already above A1's target of 50.
-All legal Base-era promos are now in the engine too. No agent has been trained yet.
+**Where things stand.** A0 and A1 are done. The game is now a seeded RL environment whose
+legal-action enumerator matches an exhaustive oracle on every decision of 10,000 games, with a
+byte-exact encoder, a reset/step API, a Node + ONNX / PyTorch PPO pipeline and CI, at 53.9
+random-policy games/s per core (target ≥ 50). Next is A2 (baselines and evaluation), then
+training. No agent has been trained yet.
 
 **Earlier work:**
 
 - **Log #1 (A0, engine covers the field).** All 24 archived STS lists build and play on the
   fork, with 541 engine specs, 68/68 interaction tests and 22/23 rulings passing (T18 open,
   outside this field). The engine runs ~9 games/s per core with no detectable first-player bias.
+- **Log #2–9 (A1.1–A1.6, plus the promos).** The environment was built and verified: the
+  enumerator against an oracle on 10,000 games (0 mismatches over 1.65M checked decisions), the
+  engine's speedups against the original store, all 2000 rulings (T18 fixed) and CI. Building it
+  turned up engine faults — a Ditto Transform crash (fixed), prompt answers the engine never
+  validates, and actions it accepts on the opponent's side — that the environment now guards
+  against. All Base-era promos are in for the A5 full pool.
 
-**Recent (log #2–4):** Set up the progress log and this status. Committed the A1.1 throughput
-fixes: 554 → 160 µs/action (3.5×), with the state identical to the old engine after every action
-over 300 seeded games; the scratch estimate of 5.4× was optimistic. Folded in the Black Star
-Promos #1–#16, verified by specs, card data and a 400-game fuzz.
+**Recent (log #10–11):** Environment throughput went from 4.5 to 53.9 random-policy
+games/s/core, meeting A1's target. The big wins were an O(n^2) clone, effect propagation to
+no-op cards, and the knockout scan's HP check of every Pokémon after every action. Every engine
+change was checked against the original engine, and the final code passed the 10,000-game
+enumerator verification again.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. A1.2: legal-action enumerator, verified against the engine on every action across ≥ 10k games.
-2. A1.3: observation encoder.
-3. A1.4: seeded `reset` / `step` environment API.
-4. A1.5: training bridge — going with Node rollouts + ONNX inference, PyTorch training (`.venv`
-   ready: torch 2.11 + CUDA on the RTX 5070 Ti).
-5. A1.6: fix T18; run the spec, interaction, rulings and decklist checks as CI.
-6. Profile the engine again once the enumerator and encoder are in.
+1. A2: heuristic and search rungs for the baseline ladder (random, first-option, heuristic,
+   SimpleBot, search).
+2. A2: the 24 × 24 SimpleBot matchup matrix and its Nash equilibrium.
+3. A2: puzzle positions with provable answers.
+4. A3: PPO self-play league on Wigglytuff vs Haymaker; exit = beats SimpleBot both directions.
 <!-- status:end -->
 
 ---
@@ -119,7 +125,7 @@ On the engine fork, branch `sts-2000-pool`:
   - SimpleBot, the bundled bot, costs ~30× the engine per move (0.6 games/s/core), so it is an
     evaluation floor, not a self-play opponent.
 
-#### A1. Make the engine an RL environment
+#### A1. Make the engine an RL environment — ✅ done
 
 The engine was built for a websocket server, not for millions of headless games. It has no
 legal-move enumerator: an illegal action throws, and the store restores a deep-cloned backup.
@@ -131,24 +137,28 @@ legal-move enumerator: an illegal action throws, and the store restores a deep-c
    - Measured **554 → 160 µs/action (3.5×), 18.7 → 64.6 engine-only games/s/core**, with the
      state identical to the old engine after every action over 300 seeded games
      (`notes/scripts/ryuu_engine_equivalence.js`).
-2. **Legal-action enumerator.** At every decision, list the candidate actions: play card,
-   attach, evolve, retreat, use Power, attack, pass, and the options of every open prompt.
-   Verify it against the engine: every enumerated action must be accepted, and a sampled
-   non-enumerated action must be rejected.
-3. **Observation encoder** following the measured layout (12 slots × 55 floats plus hand,
-   discards, counts). Hidden information stays hidden: the opponent's hand shows as a size, and
-   prizes are unknown to both players.
-4. **Environment API**: `reset(deckA, deckB, seed) → obs, mask` and `step(action)`. Seeded, so
-   games replay exactly. Each worker process runs many games.
-5. **Training bridge.** *Decision:* run rollouts in Node with ONNX inference and train in
-   PyTorch, syncing weights each iteration (recommended, since the networks are small and CPU
-   inference is cheap), or call the Node engine from Python in batches.
-6. **Housekeeping.**
-   - Fix T18.
-   - Run the spec, interaction, rulings and decklist checks as CI.
+2. **Legal-action enumerator — ✅ done** (`env/legal.js`). At every decision, list the candidate
+   actions: play card, attach, evolve, retreat, use Power, attack, pass, and the options of
+   every open prompt. Verify it against the engine: every enumerated action must be accepted,
+   and a sampled non-enumerated action must be rejected. Verified against an exhaustive oracle
+   (`env/oracle.js`) on every decision of 10,000 games: 0 mismatches.
+3. **Observation encoder — ✅ done** (`env/encode.js`): 1,110 byte-exact features (12 slots ×
+   54 plus hand, discards, unseen cards, counts) and 1,915 action ids. Hidden information stays
+   hidden: the opponent's hand shows as a size, and prizes are unknown to both players.
+4. **Environment API — ✅ done** (`env/env.js`): `reset(deckA, deckB, seed) → obs, legal` and
+   `step(action)`. Seeded, so games replay exactly. Each worker process runs many games
+   (`env/runner.js`).
+5. **Training bridge — ✅ done.** *Decision:* rollouts in Node with ONNX inference
+   (`env/rollout_worker.js`), training in PyTorch (`rl/train.py`), syncing weights each
+   iteration.
+6. **Housekeeping — ✅ done.**
+   - Fix T18 (fork `fc4c8ec`, `Rules.fossilsAsStarters`).
+   - Run the spec, interaction, rulings and decklist checks as CI (`.github/workflows/ci.yml`),
+     plus the engine equivalence, env and enumerator checks.
 
 **Exit:** a seeded, enumerated, encoded environment at ≥ 50 random-policy games/s/core, with
-the enumerator verified on every action across ≥ 10k games.
+the enumerator verified on every action across ≥ 10k games. *Met: 0 mismatches over 10,000
+games; 53.9 random-policy games/s/core (`env/tools/bench_env.js`).*
 
 #### A2. Baselines and the evaluation ladder
 
@@ -274,6 +284,8 @@ Same exit criteria as A4 and A5, measured against the archived Worlds top cut.
 |---|---|
 | `ryuu-play/` | Submodule: the engine fork, pinned to a commit on `sts-2000-pool`. Engine changes are committed there and the pin is bumped here. |
 | `notes/progress-log.md` | Append-only log of finished todos, from which the Status section is summarized |
+| `env/` | The RL environment: seeded game loop, legal-action enumerator and its oracle, encoder, env API, rollout runner and workers; `env/tools/` has the verification, test, benchmark and evaluation scripts |
+| `rl/` | The learner: PyTorch models, ONNX export, rollout reader, PPO training (`python -m rl.train`) |
 | `notes/tcg-rl-research-notes.md` | The research log and RL design, including the comparison with [Pokemon_TCG_RL](https://github.com/SuryaSGit/Pokemon_TCG_RL) (v4) |
 | `notes/three-level-rl-pitch.md` | The three-level (move / game / metagame) pitch |
 | `notes/sts-2000-engine-check.md` | The 2000 verification report: coverage, throughput, profiling, state vector |
@@ -301,6 +313,18 @@ node notes/scripts/ryuu_rulings_tests.js          # 22/23 (T18 open)
 
 The scripts find the engine at `ryuu-play/` by default; pass a path or set `RYUU_PLAY` to
 point them elsewhere.
+
+The environment and training (from the repository root):
+
+```
+npm install                                        # onnxruntime-node for the rollout workers
+node env/tools/test_env.js                         # env API and encoder
+node env/tools/verify_enumerator.js --games 200    # enumerator vs. the oracle
+node env/tools/bench_env.js                        # random-policy games/s on one core
+node env/tools/evaluate.js --x simplebot --y random --games 200
+py -3 -m venv .venv && .venv/Scripts/pip install torch numpy onnx   # (CUDA build of torch from download.pytorch.org)
+.venv/Scripts/python -m rl.train --run runs/try --matchup "Wigglytuff|Haymaker" --both-directions
+```
 
 ## Credits
 

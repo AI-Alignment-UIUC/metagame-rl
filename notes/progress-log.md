@@ -67,3 +67,94 @@ Entry format:
 - **Found:** Mew's Devolution Beam came up only 2 times and Texture Magic 4 times in 400 games;
   they rely on specs more than play.
 - **Next:** Back to A1.2.
+
+### #5 · 2026-10-05 · A1.2 · Legal-action enumerator, verified against an oracle
+- **Done:** `env/legal.js`: main-phase options (attach, basic, evolve, trainer, retreat, attack,
+  Power, Stadium, Trainer-in-play, pass) with canonical keys (copies of a card are one option,
+  empty Bench slots one target), and prompt answers built one pick at a time in canonical order,
+  checked with the prompt's own decode + validate. `env/oracle.js` tries every action shape on
+  a clone; `env/tools/verify_enumerator.js` compares the two on every decision. `env/game.js`
+  is the seeded game loop (coin flips, shuffles and face-down prize picks answered from the
+  game's RNG). Fork `253399e`: Ditto's Transform now blocks copied attacks it can't pay for.
+- **Evidence:** 10,000 random-policy games, every decision checked: 1,120,594 main-phase
+  decisions with 0 mismatches; 527,852 prompts against 10.7M legal raw answers, 0 missing,
+  0 invalid; 0 engine errors, all games finished. Ditto specs 12/12.
+- **Found:** The engine's Store never decodes or validates prompt answers (only the websocket
+  server does), so the env does it. The engine accepts rules-illegal actions: Energy onto the
+  opponent's Pokemon, Basics onto their Bench, evolving their Pokemon, using their Pokemon
+  Power (all excluded by the enumerator, counted as leniency). Legality sometimes lives behind
+  a coin flip (a Smokescreen-style effect flips before the Energy check), so trials run with
+  all heads and all tails. A copied attack's legality is decided after its prompt resolves, so
+  copy prompts are checked by replaying the chain from a snapshot.
+- **Next:** encoder, env API, bridge.
+
+### #6 · 2026-10-05 · A1.3 · Observation encoder and action indexing
+- **Done:** `env/encode.js`: 1,110 features from the decider's view (12 slots x 54, per-player
+  sizes and flags, card-count vectors for my hand, both discards, my unseen cards and the
+  opponent's decklist, turn, Stadium, open prompt and picks so far); every feature a multiple
+  of 1/48, so observations travel as bytes exactly. 1,915 action ids cover every option key.
+- **Evidence:** `env/tools/test_env.js`, 300 games / 61,785 decisions: all features byte-exact
+  (largest 228), every offered option has an id, ids distinct per decision.
+- **Next:** env API.
+
+### #7 · 2026-10-05 · A1.4 · Environment API
+- **Done:** `env/env.js`: `reset(deckA, deckB, seed)` and `step(actionId)` returning the
+  deciding player, observation and legal ids; both seats through the same calls.
+- **Evidence:** seeded games replay exactly (test_env.js replays every 4th game: identical
+  observation hashes and results).
+- **Next:** training bridge.
+
+### #8 · 2026-10-05 · A1.5 · Training bridge: Node rollouts + ONNX, PyTorch training
+- **Done:** Decision taken as recommended. `env/runner.js` plays many games per process and
+  batches each agent's decisions into one inference call; `env/agents.js` (ONNX policy,
+  random, first-option, SimpleBot); `env/rollout_worker.js` (JSON-lines control, binary
+  rollout files); `rl/model.py` (IdentityMLP 1.8M params, ONNX export), `rl/rollouts.py`,
+  `rl/train.py` (PPO with GAE per player trajectory, masked softmax, optional snapshot
+  league). `env/tools/evaluate.js`: seat- and deck-swapped matches with 95% CIs (A2 protocol).
+  Root `package.json` (onnxruntime-node); Python deps in a git-ignored `.venv` (torch 2.11 +
+  CUDA on the RTX 5070 Ti).
+- **Evidence:** ONNX matches PyTorch to 5e-7; inference 55 us/decision at batch 64 on one
+  thread. 3-iteration smoke run trains end to end (~1,300 transitions/s per worker).
+  SimpleBot beats random 96.9% ± 3.5 (96 games); always-first-option beats random 75%.
+- **Found:** Random play is weak enough that passing every turn beats it: random burns its own
+  deck with draw Trainers.
+- **Next:** A1.6, then A2/A3.
+
+### #9 · 2026-10-05 · A1.6 · T18 fixed, CI
+- **Done:** Fork `fc4c8ec`: `Rules.fossilsAsStarters` (default on, as upstream; off in our
+  Base Sets format, env and harness). T18 now recognizes a mulligan; the rulings script exits
+  non-zero on a failure. `.github/workflows/ci.yml` runs engine specs, decklists, rulings,
+  card interactions, engine equivalence, env tests and a 200-game enumerator check.
+- **Evidence:** rulings 23/23, decks 24/24, interactions 68/68, specs 250 + 686.
+- **Next:** CI runs on the next push (A1 milestone).
+
+### #10 · 2026-10-05 · A1 · Environment throughput
+- **Done:** Env: no game log, resolved prompts dropped once none is open, no rollback backup
+  (only enumerated actions are dispatched), trials share the card-order cache, stop at the end
+  of the turn, and skip unaffordable attacks and retreats using the engine's own cost queries;
+  card code gets a plain copy of the engine's exports (TypeScript's getter chains cost 15%).
+  Fork `01bbe57`: deepClone with a Map (was O(n^2)), no-op cards skipped in effect
+  propagation, counting sort for the card order.
+- **Evidence:** `env/tools/bench_env.js`, random policy, one core: 4.5 -> 38.1 games/s
+  (1,064 -> 127 us/step, 206 steps/game). Equivalence after the engine changes: 150/150
+  games identical, 1.83M order checks equal. Enumerator re-verified on 2,000 games (0
+  mismatches) after the optimizations, before the 10,000-game run in #5.
+- **Found:** A1's exit target (>= 50 random-policy games/s/core) is not met yet: 38.1. Random
+  play makes long games (206 decisions, vs ~135 actions with SimpleBot). Remaining time is the
+  engine's effect propagation (~50%) and clones for trials (~17%).
+- **Next:** more throughput (fewer trials for common Trainers, cheaper propagation), then A2.
+
+### #11 · 2026-10-05 · A1 · Throughput target met; A1 closed
+- **Done:** Trials skip the post-action state check (knockouts, prizes, winner), since the
+  reducers settle legality. Fork `dfd7085`: the engine's knockout scan skips undamaged Pokemon
+  (no card lowers HP). New `env/tools/trace_hash.js` fingerprints whole-state traces to check
+  engine changes the equivalence test can't swap.
+- **Evidence:** `bench_env.js`, random policy, one core: 38.1 -> 41.2 (trials) -> 53.9
+  games/s (90 us/step). 300 seeded games: full-state traces identical with and without the
+  knockout-scan change. Final code re-verified on 10,000 games: 1,120,394 main-phase
+  decisions and 528,637 prompts (10.7M legal raw answers), 0 mismatches, 0 missing, 0 invalid,
+  0 engine errors. Specs 250 + 686, rulings 23/23, decks 24/24, interactions 68/68.
+- **Found:** Most of a turn change was the knockout scan: one HP-check propagation per Pokemon
+  in play after every action. The submodule's `origin` is upstream; the fork is the remote
+  `mine`.
+- **Next:** A2 (heuristic rung, search rung, SimpleBot matrix, puzzles), A3 training.

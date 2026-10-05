@@ -1,0 +1,190 @@
+// One seeded headless game: the environment loop around the engine.
+//
+//   const g = new Game(deckA, deckB, seed);
+//   while (!g.done) {
+//     const d = g.decision();          // { playerId, options: [{ key, ... }], prompt? }
+//     g.step(pickIndex(d.options));
+//   }
+//   g.winner                           // 1, 2, 0 (draw) or -1 (cut off / broken)
+//
+// Coin flips, deck shuffles and prize picks (face down, so there is nothing to decide) are
+// answered here from the game's own seeded RNG; everything else is a decision. The same seed
+// and the same choices replay the same game exactly.
+'use strict';
+const { C, newStore, newState } = require('./engine.js');
+const { Rng } = require('./rng.js');
+const { turnOptions, promptSpace, AUTO_PROMPTS } = require('./legal.js');
+
+const MAX_STEPS = 5000;
+
+class Game {
+  constructor(deckA, deckB, seed, { backup = false } = {}) {
+    this.rng = new Rng(seed);
+    this.store = newStore(newState(), { backup });
+    this.steps = 0;
+    this.picks = [];         // picks so far in a multi-pick prompt answer
+    this.pickedKeys = [];    // their option keys
+    this.space = null;       // option space of the open prompt, kept across its picks
+    this.spaceFor = -1;      // id of the prompt `space` belongs to
+    this.cached = null;      // decision() result until the next step
+    this.error = null;       // set if the engine threw on an offered option
+    this.chain = null;       // { base, log }: replay record since the last attack or Power
+    this.dispatch(new C.AddPlayerAction(1, 'A', deckA));
+    this.dispatch(new C.AddPlayerAction(2, 'B', deckB));
+  }
+
+  get state() { return this.store.state; }
+
+  // Option keys picked so far in the open prompt, without the "pick|" prefix.
+  pickKeys() { return this.pickedKeys.map(k => k.slice(5)); }
+
+  get done() {
+    return this.error !== null || this.steps >= MAX_STEPS || this.state.phase === C.GamePhase.FINISHED;
+  }
+
+  // 1 or 2 for the winning player id, 0 for a draw, -1 if the game was cut off or broke.
+  get winner() {
+    if (this.error !== null || this.state.phase !== C.GamePhase.FINISHED) return -1;
+    switch (this.state.winner) {
+      case C.GameWinner.PLAYER_1: return this.state.players[0].id;
+      case C.GameWinner.PLAYER_2: return this.state.players[1].id;
+      case C.GameWinner.DRAW: return 0;
+      default: return -1;
+    }
+  }
+
+  openPrompt() {
+    let best;
+    for (const p of this.state.prompts) {
+      if (p.result === undefined && (best === undefined || p.id < best.id)) best = p;
+    }
+    return best;
+  }
+
+  decision() {
+    if (this.cached) return this.cached;
+    if (this.done) return null;
+    const prompt = this.openPrompt();
+    let d;
+    if (prompt) {
+      if (this.spaceFor !== prompt.id) {
+        this.space = promptSpace(prompt, this.state);
+        this.spaceFor = prompt.id;
+        this.picks = [];
+        this.pickedKeys = [];
+      }
+      let options = this.space.options(this.picks);
+      if (REPLAY_CHECKED.has(prompt.type) && this.chain) {
+        options = options.filter(o => o.raw === undefined || o.raw === null || this.replayAccepts(prompt, o.raw));
+      }
+      d = { playerId: prompt.playerId, prompt, options };
+    } else {
+      d = { playerId: this.state.players[this.state.activePlayer].id, prompt: null, options: turnOptions(this.state, this.store) };
+    }
+    if (d.options.length === 0) {
+      this.error = new Error(`no legal option at step ${this.steps} (${prompt ? prompt.type + ' / ' + prompt.message : 'main phase'})`);
+      return null;
+    }
+    this.cached = d;
+    return d;
+  }
+
+  step(i) {
+    const d = this.decision();
+    if (d === null) throw new Error('step() on a finished game');
+    const opt = d.options[i];
+    if (opt === undefined) throw new Error(`option ${i} out of range (${d.options.length})`);
+    this.cached = null;
+    this.steps++;
+    this.lastKey = (d.prompt ? d.prompt.type + ': ' : '') + opt.key;
+    if (opt.pick !== undefined) {
+      this.picks = this.picks.concat(opt.pick);
+      this.pickedKeys = this.pickedKeys.concat(opt.key);
+      return;
+    }
+    if (d.prompt) {
+      this.picks = [];
+      this.spaceFor = -1;
+      if (this.chain) this.chain.log.push({ promptId: d.prompt.id, raw: opt.raw });
+      this.dispatch(new C.ResolvePromptAction(d.prompt.id, d.prompt.decode(opt.raw, this.state)));
+    } else {
+      this.chain = /^(attack|power)|/.test(opt.key)
+        ? { base: C.deepClone(this.state, [C.Card]), log: [{ action: opt.action }] } : null;
+      this.dispatch(opt.action);
+    }
+  }
+
+  // Play an engine action chosen outside the option list (SimpleBot plays this way). Any
+  // half-built prompt answer is dropped.
+  applyEngineAction(action) {
+    this.cached = null;
+    this.steps++;
+    this.picks = [];
+    this.pickedKeys = [];
+    this.spaceFor = -1;
+    this.chain = null;
+    this.lastKey = 'engine:' + action.type;
+    this.dispatch(action);
+  }
+
+  dispatch(action) {
+    try {
+      this.store.dispatch(action);
+      this.resolveAutoPrompts();
+    } catch (e) {
+      this.error = e;
+    }
+  }
+
+  resolveAutoPrompts() {
+    for (;;) {
+      const prompt = this.state.prompts.find(p => p.result === undefined && AUTO_PROMPTS.has(p.type));
+      if (!prompt) return;
+      const raw = this.autoAnswer(prompt);
+      if (this.chain) this.chain.log.push({ promptId: prompt.id, raw });
+      this.store.dispatch(new C.ResolvePromptAction(prompt.id, prompt.decode(raw, this.state)));
+    }
+  }
+
+  autoAnswer(prompt) {
+    const player = this.state.players.find(p => p.id === prompt.playerId);
+    switch (prompt.type) {
+      case 'Coin flip':
+        return this.rng.int(2) === 0;
+      case 'Shuffle deck':
+        return this.rng.permutation(player.deck.cards.length);
+      case 'Choose prize': {
+        const prizes = player.prizes.filter(p => p.cards.length > 0);
+        return this.rng.permutation(prizes.length).slice(0, prompt.options.count);
+      }
+      default:
+        throw new Error('not an automatic prompt: ' + prompt.type);
+    }
+  }
+}
+
+// Answers whose legality is decided in card code after the prompt resolves (a copied attack or
+// Power that can't be used), so decode + validate can't see it. Checked by replaying the chain
+// of actions since the attack or Power that opened the prompt, on a copy of the state before it.
+const REPLAY_CHECKED = new Set(['Choose attack']);
+
+Game.prototype.replayAccepts = function (prompt, raw) {
+  const store = newStore(C.deepClone(this.chain.base, [C.Card]));
+  const answer = (id, r) => {
+    const p = store.state.prompts.find(q => q.id === id);
+    store.dispatch(new C.ResolvePromptAction(id, p.decode(r, store.state)));
+  };
+  try {
+    for (const e of this.chain.log) {
+      if (e.action) store.dispatch(e.action);
+      else answer(e.promptId, e.raw);
+    }
+    answer(prompt.id, raw);
+    return true;
+  } catch (e) {
+    if (e instanceof C.GameError) return false;
+    throw e;
+  }
+};
+
+module.exports = { Game, MAX_STEPS };

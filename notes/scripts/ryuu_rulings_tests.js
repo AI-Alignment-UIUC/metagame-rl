@@ -277,9 +277,14 @@ test('T17 Switch works on a Paralyzed Active', 'Feb 3 2000', 'active Scyther', (
 test('T18 Opening hand with Mysterious Fossil and no Basic', 'Feb 10 / Apr 27 2000: it is a Trainer in hand, you must mulligan', 'mulligan (no Fossil as starter)', () => {
   const deck = [['Mysterious Fossil FO', 1], ['Fighting Energy BS', 6], ['Hitmonchan BS', 4], ['Scyther JU', 4], ['Chansey BS', 4], ['Professor Oak BS', 4],
     ['Bill BS', 4], ['PlusPower BS', 4], ['Switch BS', 4], ['Gust of Wind BS', 4], ['Psychic Energy BS', 21]];
-  const sim = new Simulator(new State(), { flipMode: BotFlipMode.ALL_HEADS, shuffleMode: BotShuffleMode.NO_SHUFFLE });
+  // Under the format's 2000 rules (Rules.fossilsAsStarters off).
+  const s0 = new State(); s0.rules = new C.Rules({ fossilsAsStarters: false });
+  const sim = new Simulator(s0, { flipMode: BotFlipMode.ALL_HEADS, shuffleMode: BotShuffleMode.NO_SHUFFLE });
   sim.dispatch(new AddPlayerAction(1, 'A', expand(deck))); sim.dispatch(new AddPlayerAction(2, 'B', expand(DECK)));
-  const st = sim.store.state; const pr = st.prompts.filter(x => x.result === undefined && x instanceof ChooseCardsPrompt && x.playerId === st.players[0].id)[0];
+  const st = sim.store.state;
+  // A mulligan shows as the "no Basic Pokemon" alert to A (and A's hand shown to B).
+  if (st.prompts.some(x => x.result === undefined && x instanceof AlertPrompt && x.playerId === st.players[0].id)) return 'mulligan (no Fossil as starter)';
+  const pr = st.prompts.filter(x => x.result === undefined && x instanceof ChooseCardsPrompt && x.playerId === st.players[0].id)[0];
   if (!pr) return 'no starting prompt for A (phase ' + st.phase + ', open=' + st.prompts.filter(x => x.result === undefined).map(x => x.type + '@' + x.playerId).join(';') + ', ids=' + st.players.map(x => x.id).join('/') + ', hand=' + names(st.players[0].hand) + ')';
   const offered = pr.cards.cards.filter(c => matches(c, pr.filter)).map(c => c.name);
   return offered.includes('Mysterious Fossil') ? 'Fossil offered as starter: ' + offered.join(',') : 'mulligan (no Fossil as starter)';
@@ -289,3 +294,4 @@ test('T18 Opening hand with Mysterious Fossil and no Basic', 'Feb 10 / Apr 27 20
 let passed = 0;
 for (const r of results) { if (r.ok) passed++; console.log((r.ok ? 'PASS ' : 'FAIL ') + r.id + ' | expected: ' + r.expect + ' | got: ' + r.got + ' | ' + r.ruling); }
 console.log('\n' + passed + '/' + results.length + ' checks agree with the 2000-era ruling');
+process.exitCode = passed === results.length ? 0 : 1;

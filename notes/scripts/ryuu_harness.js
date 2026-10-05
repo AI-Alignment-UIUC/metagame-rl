@@ -9,7 +9,10 @@
 'use strict';
 const path = require('path');
 
-const RYUU = path.resolve((process.argv[2] && !process.argv[2].startsWith('--') ? process.argv[2] : '') || process.env.RYUU_PLAY || path.join(__dirname, '..', '..', 'ryuu-play'));
+// The first argument is the engine path only if it is one (scripts also take flags and numbers).
+const ARG = process.argv[2];
+const ARG_IS_ENGINE = ARG && !ARG.startsWith('--') && require('fs').existsSync(path.join(ARG, 'packages', 'common'));
+const RYUU = path.resolve((ARG_IS_ENGINE ? ARG : '') || process.env.RYUU_PLAY || path.join(__dirname, '..', '..', 'ryuu-play'));
 const ROOT = path.join(RYUU, 'packages');
 const C = require(path.join(ROOT, 'common'));
 const S = require(path.join(ROOT, 'sets'));
@@ -31,7 +34,9 @@ if (!Simulator || !BotFlipMode) {
 const cm = CardManager.getInstance();
 const SETS = [S.baseSets.setBase, S.baseSets.setJungle, S.baseSets.setFossil, S.baseSets.setTeamRocket];
 if (S.baseSets.setPromos) { SETS.push(S.baseSets.setPromos); }
-cm.defineFormat('Base Sets', SETS);
+// 2000 rules: Mysterious Fossil is a Trainer in hand at setup, not a starting Pokemon.
+const RULES_2000 = new C.Rules({ fossilsAsStarters: false });
+if (!cm.getAllFormats().some(f => f.name === 'Base Sets')) cm.defineFormat('Base Sets', SETS, RULES_2000);   // env/engine.js may have registered it
 
 // ---------------------------------------------------------------- deck
 // A sandbox deck: every card a test might rig onto the board has to be somewhere it can be
