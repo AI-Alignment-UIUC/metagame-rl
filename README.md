@@ -14,8 +14,34 @@ much smaller: the **July 2000 Super Trainer Showdown (California)**. It has a 56
 that is now fully implemented in the engine and verified. Every part of the system gets built
 and proven there first.
 
-> Status, 2026-10-04: Phase A, milestone A0 is done (the engine runs the whole 2000 field). The
-> next work is A1 (making the engine RL-ready). No agent has been trained yet.
+## Status
+
+<!-- status:start -->
+*Updated 2026-10-05.*
+
+**Where things stand.** Phase A, milestone A0 is done: the engine runs the whole 2000 field and
+is verified. The work now is A1, making the engine RL-ready, and its first step (committing two
+measured throughput fixes) hasn't started. No agent has been trained yet.
+
+**Earlier work:**
+
+- **Log #1 (A0, engine covers the field).** All 24 archived STS lists build and play on the
+  fork, with 541 engine specs, 68/68 interaction tests and 22/23 rulings passing (T18 open,
+  outside this field). The engine runs ~9 games/s per core with no detectable first-player bias.
+
+**Recent (log #2):** Set up the progress log and this recursive status. The two A1 throughput
+fixes are still measured in a scratch test only (540 → 98 µs/action), not committed.
+
+The full record is in [`notes/progress-log.md`](notes/progress-log.md).
+
+**Next:**
+
+1. A1.1: commit the throughput fixes (log cloning, `propagateEffect` card-order cache).
+2. A1.2: legal-action enumerator, verified against the engine.
+3. A1.3: observation encoder.
+4. A1.4: seeded `reset` / `step` environment API.
+5. A1.5: decide the training bridge (Node + ONNX rollouts vs. Python calling Node).
+<!-- status:end -->
 
 ---
 
@@ -241,6 +267,7 @@ Same exit criteria as A4 and A5, measured against the archived Worlds top cut.
 | Path | Contents |
 |---|---|
 | `ryuu-play/` | Submodule: the engine fork, pinned to a commit on `sts-2000-pool`. Engine changes are committed there and the pin is bumped here. |
+| `notes/progress-log.md` | Append-only log of finished todos, from which the Status section is summarized |
 | `notes/tcg-rl-research-notes.md` | The research log and RL design, including the comparison with [Pokemon_TCG_RL](https://github.com/SuryaSGit/Pokemon_TCG_RL) (v4) |
 | `notes/three-level-rl-pitch.md` | The three-level (move / game / metagame) pitch |
 | `notes/sts-2000-engine-check.md` | The 2000 verification report: coverage, throughput, profiling, state vector |
