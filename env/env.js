@@ -41,8 +41,11 @@ class Env {
       const other = d.playerId === 1 ? 2 : 1;
       decks[other] = this.decklists[other];
     }
-    const legal = d.options.map(o => this.encoder.actionId(o.key));
-    const obs = this.u8 ? this.encoder.encodeU8(g, d.playerId, decks) : this.encoder.encode(g, d.playerId, decks);
+    // Token encoders (env/tokens.js) score the options themselves: actions are option indices.
+    const tokens = typeof this.encoder.actionId !== 'function';
+    const legal = tokens ? d.options.map((_, i) => i) : d.options.map(o => this.encoder.actionId(o.key));
+    const obs = tokens ? this.encoder.encode(g, d.playerId, decks, d.options)
+      : this.u8 ? this.encoder.encodeU8(g, d.playerId, decks) : this.encoder.encode(g, d.playerId, decks);
     this.current = { playerId: d.playerId, legal, options: d.options };
     return { done: false, playerId: d.playerId, obs, legal };
   }

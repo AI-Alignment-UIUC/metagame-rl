@@ -4,7 +4,7 @@ import struct
 
 import numpy as np
 
-DTYPES = {"uint8": np.uint8, "int32": np.int32, "float32": np.float32}
+DTYPES = {"uint8": np.uint8, "int16": np.int16, "int32": np.int32, "float32": np.float32}
 
 
 def read_rollout(path: str) -> dict:
@@ -26,9 +26,11 @@ def concat(rollouts: list) -> dict:
     out = {}
     traj_base = 0
     legal_base = 0
-    parts = {k: [] for k in ("obs", "action", "logp", "value", "reward", "done", "traj", "legal_offsets", "legal_ids")}
+    keys = ("obs", "action", "logp", "value", "reward", "done", "legal_ids")
+    extra = sorted({k for r in rollouts for k in r if k.startswith("obs.")})   # token fields
+    parts = {k: [] for k in keys + ("traj", "legal_offsets") + tuple(extra)}
     for r in rollouts:
-        for k in ("obs", "action", "logp", "value", "reward", "done", "legal_ids"):
+        for k in keys + tuple(extra):
             parts[k].append(r[k])
         parts["traj"].append(r["traj"].astype(np.int64) + traj_base)
         parts["legal_offsets"].append(r["legal_offsets"][:-1].astype(np.int64) + legal_base)

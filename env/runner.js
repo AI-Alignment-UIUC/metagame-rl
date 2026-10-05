@@ -111,8 +111,20 @@ function packRollout(rec, obsSize, meta = {}) {
   const T = rec.action.length;
   const L = rec.legal.reduce((a, l) => a + l.length, 0);
   const arrays = [];
-  const obs = new Uint8Array(T * obsSize);
-  rec.obs.forEach((o, i) => obs.set(o, i * obsSize));
+  // Observations are byte vectors (identity encoder) or objects of fixed-size typed arrays
+  // (token encoder); each token field becomes its own section, obs.<field>.
+  const obsArrays = [];
+  if (T > 0 && !(rec.obs[0] instanceof Uint8Array)) {
+    for (const k of ['tokCard', 'tokKind', 'tokAux', 'glob', 'slots', 'cand']) {
+      const w = rec.obs[0][k].length, Ctor = rec.obs[0][k].constructor;
+      const all = new Ctor(T * w);
+      rec.obs.forEach((o, i) => all.set(o[k], i * w));
+      obsArrays.push(['obs.' + k, Ctor === Int16Array ? 'int16' : 'uint8', all]);
+    }
+    obsArrays.push(['obs.nCand', 'int32', Int32Array.from(rec.obs.map(o => o.nCand))]);
+  }
+  const obs = obsArrays.length ? new Uint8Array(0) : new Uint8Array(T * obsSize);
+  if (!obsArrays.length) rec.obs.forEach((o, i) => obs.set(o, i * obsSize));
   const offsets = new Int32Array(T + 1);
   const ids = new Int32Array(L);
   let p = 0;
@@ -121,7 +133,7 @@ function packRollout(rec, obsSize, meta = {}) {
   arrays.push(['obs', 'uint8', obs], ['action', 'int32', Int32Array.from(rec.action)],
     ['logp', 'float32', Float32Array.from(rec.logp)], ['value', 'float32', Float32Array.from(rec.value)],
     ['reward', 'float32', Float32Array.from(rec.reward)], ['done', 'uint8', Uint8Array.from(rec.done)],
-    ['traj', 'int32', Int32Array.from(rec.traj)], ['legal_offsets', 'int32', offsets], ['legal_ids', 'int32', ids]);
+    ['traj', 'int32', Int32Array.from(rec.traj)], ['legal_offsets', 'int32', offsets], ['legal_ids', 'int32', ids], ...obsArrays);
   const sections = [];
   let offset = 0;
   for (const [name, dtype, arr] of arrays) {

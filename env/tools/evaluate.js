@@ -6,6 +6,7 @@
 // cut-off games count as half a win).
 //
 // Agents: random | first | heuristic | simplebot | search[:rollouts[:turns]] | onnx:<file.onnx>[:greedy]
+//         | onnxtok:<file.onnx>[:greedy] (token model)
 // Decks:  any substring of an archived deck name ("division #place player (label)"), or "all"
 //         to cycle every archived deck on both sides.
 //
@@ -33,6 +34,11 @@ async function makeAgent(spec, enc, seed) {
   if (spec === 'heuristic') return new HeuristicAgent();
   if (spec.startsWith('search')) { const [, r, d] = spec.split(':'); return new SearchAgent({ rollouts: Number(r || 8), depth: Number(d || 2), seed }); }
   if (spec === 'simplebot') return new SimpleBotAgent();
+  if (spec.startsWith('onnxtok:')) {
+    const { OnnxTokenAgent } = require('../agents.js');
+    const { TokenEncoder } = require('../tokens.js');
+    return OnnxTokenAgent.load(spec.slice(8).replace(/:greedy$/, ''), new TokenEncoder(), { seed, greedy: spec.endsWith(':greedy') });
+  }
   if (spec.startsWith('onnx:')) {
     const parts = spec.slice(5).split(':greedy');
     return OnnxAgent.load(parts[0], enc.obsSize, enc.actionSize, { seed, greedy: spec.endsWith(':greedy') });
@@ -52,7 +58,9 @@ async function worker(from, to) {
   const { Runner } = require('../runner.js');
   const { archivedDecks } = require('../decks.js');
   const decks = archivedDecks();
-  const enc = new Encoder([...new Set(decks.flatMap(d => d.cards))]);
+  // A token-model agent needs token observations (the other agents choose by option either way).
+  const tok = [X, Y].some(sp => sp.startsWith('onnxtok:'));
+  const enc = tok ? new (require('../tokens.js').TokenEncoder)() : new Encoder([...new Set(decks.flatMap(d => d.cards))]);
   const agents = { x: await makeAgent(X, enc, SEED * 7919 + from), y: await makeAgent(Y, enc, SEED * 104729 + from) };
   const d1 = pickDecks(decks, D1), d2 = pickDecks(decks, D2);
   let g = from;

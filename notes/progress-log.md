@@ -207,3 +207,24 @@ Entry format:
   as prototypes, so `Object.create(source)` in every clone was a hidden engine-wide cost.
 - **Next:** Restart A3 from scratch. (10,000-game verification of the new rules: 991,580 main-phase
   decisions and 383,794 prompts checked, 0 mismatches, 0 missing, 0 invalid, 0 engine errors.)
+
+### #15 · 2026-10-05 · A4.2 · Token encoder, pointer model and GPU inference (infrastructure)
+- **Done:** `env/tools/card_features.js` (277-card table: structured features and plain-text
+  descriptions) and `rl/card_text.py` (all-MiniLM-L6-v2 embeddings of the descriptions, frozen).
+  `env/tokens.js`: the state as card tokens (global, 12 slots, attached cards, hand, discards,
+  unseen, opponent decklist, Stadium, prompt cards, picks) and each option as a candidate
+  [verb, card, slot1, slot2, name, extra]. `rl/token_model.py`: TokenPointerNet (card embedding =
+  features + text + learned residual; 3-layer transformer; candidates cross-attend to tokens and
+  are scored by a pointer head; ONNX-exportable). Central GPU inference: `env/framing.js`,
+  `env/remote_worker.js`, `rl/remote.py`; `rl/train.py` takes `--inference gpu` and
+  `--model tokens`, and holds league snapshots as GPU model slots.
+- **Evidence:** 200 random games: 74 tokens per state on average, 115 at most, at most 29
+  candidates (padded to 128 / 48, no overflow). Text-embedding neighbours: Gust of Wind ->
+  Switch; Energy Removal -> Super Energy Removal; Wigglytuff -> Jigglypuff. ONNX token inference
+  on one CPU thread: 1.3-5.7 ms per decision (vs 0.06 ms for the MLP) — too slow; GPU inference
+  through the workers: ~1,900 token-model transitions/s per worker (2,200 for the MLP) with the
+  CPU busy training. 2-iteration token-model training run with a league slot and an ONNX
+  evaluation works end to end.
+- **Found:** A transformer per decision is ~30x the MLP's compute; on CPU it would dominate the
+  environment by 20x, so the token model needs central batched inference.
+- **Next:** A3 exit evaluation (run b) and the held-out run c; then A4.1 and the A4.2 comparison.

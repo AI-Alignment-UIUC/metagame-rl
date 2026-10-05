@@ -58,6 +58,47 @@ class OnnxAgent {
   }
 }
 
+// A token + pointer policy (rl/token_model.py): inputs are env/tokens.js fields, outputs one
+// logit per candidate; actions are option indices.
+class OnnxTokenAgent {
+  constructor(session, enc, { seed = 0, greedy = false } = {}) {
+    this.session = session;
+    this.enc = enc;
+    this.rng = new Rng(seed);
+    this.greedy = greedy;
+  }
+
+  static async load(file, enc, opts) {
+    const ort = require('onnxruntime-node');
+    const session = await ort.InferenceSession.create(file, { intraOpNumThreads: 1, interOpNumThreads: 1 });
+    return new OnnxTokenAgent(session, enc, opts);
+  }
+
+  async act(batch) {
+    const ort = require('onnxruntime-node');
+    const n = batch.length, e = this.enc;
+    const tc = new Int16Array(n * e.MAX_TOK), tk = new Uint8Array(n * e.MAX_TOK), ta = new Uint8Array(n * e.MAX_TOK);
+    const gl = new Uint8Array(n * e.GLOB_F), sl = new Uint8Array(n * 12 * e.SLOT_F), cd = new Int16Array(n * e.MAX_CAND * 6);
+    const nc = new Int32Array(n);
+    batch.forEach((b, i) => {
+      const o = b.obs;
+      tc.set(o.tokCard, i * e.MAX_TOK); tk.set(o.tokKind, i * e.MAX_TOK); ta.set(o.tokAux, i * e.MAX_TOK);
+      gl.set(o.glob, i * e.GLOB_F); sl.set(o.slots, i * 12 * e.SLOT_F); cd.set(o.cand, i * e.MAX_CAND * 6); nc[i] = o.nCand;
+    });
+    const out = await this.session.run({
+      tok_card: new ort.Tensor('int16', tc, [n, e.MAX_TOK]), tok_kind: new ort.Tensor('uint8', tk, [n, e.MAX_TOK]),
+      tok_aux: new ort.Tensor('uint8', ta, [n, e.MAX_TOK]), glob: new ort.Tensor('uint8', gl, [n, e.GLOB_F]),
+      slots: new ort.Tensor('uint8', sl, [n, 12 * e.SLOT_F]), cand: new ort.Tensor('int16', cd, [n, e.MAX_CAND * 6]),
+      n_cand: new ort.Tensor('int32', nc, [n]),
+    });
+    const logits = out.logits.data, value = out.value.data;
+    return batch.map((b, i) => {
+      const s = sampleMasked(logits, i * e.MAX_CAND, b.legal, this.rng, this.greedy);
+      return { action: s.action, logp: s.logp, value: value[i] };
+    });
+  }
+}
+
 class RandomAgent {
   constructor({ seed = 0 } = {}) { this.rng = new Rng(seed); }
   async act(batch) {
@@ -180,7 +221,7 @@ class SimpleBotAgent {
   forget(game) { this.ais.delete(game); }
 }
 
-module.exports = { OnnxAgent, RandomAgent, FirstAgent, HeuristicAgent, SimpleBotAgent, sampleMasked };
+module.exports = { OnnxAgent, OnnxTokenAgent, RandomAgent, FirstAgent, HeuristicAgent, SimpleBotAgent, sampleMasked };
 
 // Flat Monte Carlo search with determinization (a fixed-budget relative scale for the ladder).
 // At a main-phase decision every option is tried in `rollouts` copies of the game where the

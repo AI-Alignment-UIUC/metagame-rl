@@ -1,22 +1,26 @@
-"""PPO self-play training (plan items A1.5 and A3).
+"""PPO self-play training (plan items A1.5, A3, A4).
 
-Rollouts are played by Node workers (env/rollout_worker.js) running the current policy as ONNX;
-this process trains on them with PyTorch (GPU if available) and exports the next policy. One
-iteration: export -> every worker collects N transitions -> PPO epochs -> log.
+Rollouts are played by Node workers. Two ways to run the policy for them:
+  --inference onnx  each worker runs the current policy exported to ONNX (env/rollout_worker.js);
+                    identity model only
+  --inference gpu   workers send their decisions here and the policy runs on the GPU in large
+                    batches across workers (env/remote_worker.js, rl/remote.py); needed for the
+                    token model, and faster for big networks
+Models: --model identity (IdentityMLP over env/encode.js) or tokens (TokenPointerNet over
+env/tokens.js). One iteration: collect N transitions per worker -> PPO epochs -> log.
 
-Opponents: the learner plays itself ("self") and, with --league, past snapshots of itself,
-added every --snapshot-every iterations. Both seats are recorded when it plays itself.
+Opponents: the learner plays itself ("self") and, with --league, past snapshots of itself
+(every --snapshot-every iterations), and optionally fixed bots (--bot-opponents heuristic=0.1).
+Both seats are recorded when it plays itself.
 
 Example (A3, one matchup, both directions):
-  .venv/Scripts/python -m rl.train --run runs/a3-wiggly-haymaker \
-      --matchup "15+ #2 William Lieu|15+ #1 Andrew Marshall" --both-directions --iterations 200
+  .venv/Scripts/python -m rl.train --run runs/a3 --matchup "15+ #2 William Lieu|15+ #1 Andrew Marshall" \
+      --both-directions --iterations 200 --league --eval-every 20
 """
 import argparse
 import json
-import os
 import random
 import subprocess
-import sys
 import time
 from pathlib import Path
 
@@ -24,14 +28,15 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from rl.model import IdentityMLP, export_onnx, build
+from rl.model import IdentityMLP, export_onnx
 from rl.rollouts import read_rollout, concat
 
 ROOT = Path(__file__).resolve().parent.parent
+TOKEN_FIELDS = ("obs.tokCard", "obs.tokKind", "obs.tokAux", "obs.glob", "obs.slots", "obs.cand", "obs.nCand")
 
 
 class Workers:
-    """Node rollout workers, one JSON command per line each way."""
+    """ONNX rollout workers, one JSON command per line each way."""
 
     def __init__(self, n: int):
         self.procs = [subprocess.Popen(["node", str(ROOT / "env" / "rollout_worker.js")], cwd=ROOT,
@@ -92,15 +97,23 @@ def legal_mask(idx: torch.Tensor, offsets: torch.Tensor, ids: torch.Tensor, acti
     return mask
 
 
+def model_inputs(batch: dict, kind: str) -> list:
+    """The network inputs for every transition, as arrays with the batch dimension first."""
+    T = len(batch["action"])
+    if kind == "tokens":
+        return [batch[k].reshape(T, -1) if k != "obs.nCand" else batch[k] for k in TOKEN_FIELDS]
+    return [batch["obs"]]
+
+
 def ppo_update(model, opt, batch, args, device):
     T = len(batch["action"])
-    obs = torch.from_numpy(batch["obs"]).to(device)
+    inputs = [torch.from_numpy(np.ascontiguousarray(x)).to(device) for x in batch["inputs"]]
     act = torch.from_numpy(batch["action"].astype(np.int64)).to(device)
     old_logp = torch.from_numpy(batch["logp"]).to(device)
     adv = torch.from_numpy(batch["adv"]).to(device)
     ret = torch.from_numpy(batch["ret"]).to(device)
     old_v = torch.from_numpy(batch["value"]).to(device)
-    offsets = torch.from_numpy(batch["legal_offsets"]).to(device)
+    offsets = torch.from_numpy(batch["legal_offsets"].astype(np.int64)).to(device)
     ids = torch.from_numpy(batch["legal_ids"].astype(np.int64)).to(device)
     adv = (adv - adv.mean()) / (adv.std() + 1e-8)
     stats = {"pi_loss": 0.0, "v_loss": 0.0, "entropy": 0.0, "kl": 0.0, "clipfrac": 0.0}
@@ -109,7 +122,7 @@ def ppo_update(model, opt, batch, args, device):
         perm = torch.randperm(T, device=device)
         for s in range(0, T, args.minibatch):
             idx = perm[s:s + args.minibatch]
-            logits, v = model(obs[idx])
+            logits, v = model(*[x[idx] for x in inputs])
             mask = legal_mask(idx, offsets, ids, model.action_size)
             logits = logits.masked_fill(~mask, -1e9)
             logp_all = F.log_softmax(logits, dim=-1)
@@ -136,10 +149,10 @@ def ppo_update(model, opt, batch, args, device):
     return {k: v / max(n, 1) for k, v in stats.items()}
 
 
-def evaluate(policy: Path, opponent: str, d1: str, d2: str, games: int, workers: int, seed: int) -> dict:
+def evaluate(policy_spec: str, opponent: str, d1: str, d2: str, games: int, workers: int, seed: int, tag: str) -> dict:
     """Seat- and deck-swapped match of the policy (greedy) against a fixed opponent (env/tools/evaluate.js)."""
-    out = policy.with_suffix(f".eval-{opponent}.json")
-    cmd = ["node", str(ROOT / "env" / "tools" / "evaluate.js"), "--x", f"onnx:{policy}:greedy", "--y", opponent,
+    out = ROOT / "runs" / f".eval-{tag}-{opponent}.json"
+    cmd = ["node", str(ROOT / "env" / "tools" / "evaluate.js"), "--x", policy_spec, "--y", opponent,
            "--d1", d1, "--d2", d2, "--games", str(games), "--workers", str(workers), "--concurrency", "8",
            "--seed", str(seed), "--json", str(out)]
     subprocess.run(cmd, cwd=ROOT, check=True, stdout=subprocess.DEVNULL)
@@ -149,18 +162,44 @@ def evaluate(policy: Path, opponent: str, d1: str, d2: str, games: int, workers:
             "dir1": round(r["dir1"]["xWinRate"], 4), "dir2": round(r["dir2"]["xWinRate"], 4)}
 
 
+def build_model(args, info):
+    if args.model == "tokens":
+        from rl.token_model import build_token_model
+        t = info["tokens"]
+        return build_token_model(str(ROOT / "notes/data/cards/pool.json"), str(ROOT / "notes/data/cards/text_emb.npy"),
+                                 t["names"], t["globF"], t["slotF"], t["maxTok"], t["maxCand"],
+                                 d=args.d, layers=args.tok_layers, heads=args.heads)
+    i = info["identity"] if "identity" in info else info
+    return IdentityMLP(i["obsSize"], i["actionSize"], args.hidden, args.layers)
+
+
+def export_policy(model, path: Path, kind: str) -> str:
+    """Exports for evaluate.js; returns its agent spec."""
+    if kind == "tokens":
+        from rl.token_model import export_token_onnx
+        export_token_onnx(model, str(path))
+        return f"onnxtok:{path}:greedy"
+    export_onnx(model, str(path))
+    return f"onnx:{path}:greedy"
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True)
     ap.add_argument("--matchup", action="append", required=True,
-                    help='"learner deck|opponent deck" (substring of an archived deck name); repeatable')
+                    help='"learner deck|opponent deck" (substring of an archived deck name); repeatable; "all" = every pair')
     ap.add_argument("--both-directions", action="store_true", help="also train each matchup with the decks swapped")
     ap.add_argument("--iterations", type=int, default=100)
     ap.add_argument("--workers", type=int, default=16)
     ap.add_argument("--transitions", type=int, default=4096, help="per worker per iteration")
     ap.add_argument("--concurrency", type=int, default=32)
+    ap.add_argument("--inference", choices=["onnx", "gpu"], default="onnx")
+    ap.add_argument("--model", choices=["identity", "tokens"], default="identity")
     ap.add_argument("--hidden", type=int, default=512)
     ap.add_argument("--layers", type=int, default=2)
+    ap.add_argument("--d", type=int, default=192, help="token model width")
+    ap.add_argument("--tok-layers", type=int, default=3)
+    ap.add_argument("--heads", type=int, default=4)
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--epochs", type=int, default=3)
     ap.add_argument("--minibatch", type=int, default=4096)
@@ -172,7 +211,9 @@ def main(argv=None):
     ap.add_argument("--max-grad-norm", type=float, default=0.5)
     ap.add_argument("--league", action="store_true", help="also play past snapshots")
     ap.add_argument("--snapshot-every", type=int, default=10)
+    ap.add_argument("--max-snapshots", type=int, default=8, help="league size kept in play (gpu inference)")
     ap.add_argument("--self-weight", type=float, default=0.5, help="share of games against itself with --league")
+    ap.add_argument("--bot-opponents", default="", help='fixed bots to play too, e.g. "heuristic=0.1"')
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--resume", action="store_true")
     ap.add_argument("--eval-every", type=int, default=0, help="evaluate against --eval-opponents every N iterations")
@@ -180,6 +221,8 @@ def main(argv=None):
     ap.add_argument("--eval-games", type=int, default=200)
     ap.add_argument("--eval-workers", type=int, default=8)
     args = ap.parse_args(argv)
+    if args.model == "tokens" and args.inference != "gpu":
+        raise SystemExit("the token model needs --inference gpu")
 
     run = ROOT / args.run
     (run / "policies").mkdir(parents=True, exist_ok=True)
@@ -191,15 +234,19 @@ def main(argv=None):
     for m in args.matchup:
         a, b = m.split("|")
         matchups.append([a.strip(), b.strip()])
-        if args.both_directions:
+        if args.both_directions and a.strip() != b.strip():
             matchups.append([b.strip(), a.strip()])
 
-    workers = Workers(args.workers)
-    info = workers.ask_all([{"cmd": "info"}] * args.workers)[0]
-    model = IdentityMLP(info["obsSize"], info["actionSize"], args.hidden, args.layers).to(device)
+    if args.inference == "gpu":
+        from rl.remote import RemotePool
+        pool = RemotePool(args.workers)
+    else:
+        pool = Workers(args.workers)
+    info = pool.ask_all([{"cmd": "info"}] * args.workers)[0]
+    model = build_model(args, info).to(device)
     opt = torch.optim.Adam(model.parameters(), lr=args.lr, eps=1e-5)
     start = 0
-    snapshots = []
+    snapshots = []            # onnx: policy files; gpu: state-dict files
     ckpt = run / "checkpoint.pt"
     if args.resume and ckpt.exists():
         state = torch.load(ckpt, map_location=device)
@@ -207,30 +254,54 @@ def main(argv=None):
         opt.load_state_dict(state["opt"])
         start = state["iteration"] + 1
         snapshots = state.get("snapshots", [])
-    (run / "config.json").write_text(json.dumps({**vars(args), "matchups": matchups, "model": model.config(),
+    (run / "config.json").write_text(json.dumps({**vars(args), "matchups": matchups, "model_config": model.config(),
                                                  "device": device}, indent=1))
     log = open(run / "log.jsonl", "a")
-    print(f"device {device}, obs {info['obsSize']}, actions {info['actionSize']}, "
-          f"params {sum(p.numel() for p in model.parameters())}, matchups {matchups}", flush=True)
+    print(f"device {device}, model {args.model}, inference {args.inference}, "
+          f"params {sum(p.numel() for p in model.parameters() if p.requires_grad)}, matchups {len(matchups)}", flush=True)
+    bots = []
+    for b in filter(None, args.bot_opponents.split(",")):
+        name, w = b.split("=")
+        bots.append({"spec": name, "weight": float(w)})
+    snapshot_models = {}
 
     try:
         for it in range(start, args.iterations):
             t0 = time.time()
-            policy = run / "policies" / f"it{it:05d}.onnx"
-            export_onnx(model, str(policy))
-            model.to(device).train()
-            opponents = [{"spec": "self", "weight": 1.0}]
-            if args.league and snapshots:
-                opponents = [{"spec": "self", "weight": args.self_weight}] + [
-                    {"spec": "onnx:" + s, "weight": (1 - args.self_weight) / len(snapshots)} for s in snapshots]
-            msgs = [{"cmd": "collect", "model": str(policy), "transitions": args.transitions, "concurrency": args.concurrency,
-                     "seed": args.seed * 1_000_003 + it * 1009 + w, "matchups": matchups, "opponents": opponents,
-                     "out": str(run / f"rollout_w{w}.bin")} for w in range(args.workers)]
-            replies = workers.ask_all(msgs)
+            league = snapshots[-args.max_snapshots:]
+            if args.inference == "gpu":
+                opponents = [{"spec": "self", "weight": 1.0}]
+                if args.league and league:
+                    opponents = [{"spec": "self", "weight": args.self_weight}] + [
+                        {"spec": f"slot:{k + 1}", "weight": (1 - args.self_weight) / len(league)} for k in range(len(league))]
+                for k, f in enumerate(league):
+                    if f not in snapshot_models:
+                        m = build_model(args, info).to(device)
+                        m.load_state_dict(torch.load(f, map_location=device)["model"])
+                        snapshot_models[f] = m.eval()
+                for f in list(snapshot_models):
+                    if f not in league:
+                        del snapshot_models[f]
+                models = {0: model.eval(), **{k + 1: snapshot_models[f] for k, f in enumerate(league)}}
+            else:
+                policy = run / "policies" / f"it{it:05d}.onnx"
+                export_onnx(model, str(policy))
+                opponents = [{"spec": "self", "weight": 1.0}]
+                if args.league and league:
+                    opponents = [{"spec": "self", "weight": args.self_weight}] + [
+                        {"spec": "onnx:" + s, "weight": (1 - args.self_weight) / len(league)} for s in league]
+            opponents += bots
+            msgs = [{"cmd": "collect", "encoding": args.model, "transitions": args.transitions,
+                     "concurrency": args.concurrency, "seed": args.seed * 1_000_003 + it * 1009 + w,
+                     "matchups": matchups, "opponents": opponents, "out": str(run / f"rollout_w{w}.bin"),
+                     **({"model": str(policy)} if args.inference == "onnx" else {})} for w in range(args.workers)]
+            replies = pool.collect(msgs, models, device) if args.inference == "gpu" else pool.ask_all(msgs)
+            model.train()
             t1 = time.time()
             batch = concat([read_rollout(r["out"]) for r in replies])
             adv, ret = advantages(batch, args.gamma, args.lam)
             batch["adv"], batch["ret"] = adv, ret
+            batch["inputs"] = model_inputs(batch, args.model)
             stats = ppo_update(model, opt, batch, args, device)
             t2 = time.time()
 
@@ -246,7 +317,7 @@ def main(argv=None):
             row = {"iteration": it, "transitions": int(len(batch["action"])), "games": len(games),
                    "steps_per_game": float(np.mean([g["steps"] for g in games])) if games else 0,
                    "errors": sum(1 for g in games if g.get("error")),
-                   "win_vs": {k: float(np.mean(v)) for k, v in vs.items()},
+                   "win_vs": {k: round(float(np.mean(v)), 4) for k, v in vs.items()},
                    "collect_s": round(t1 - t0, 1), "train_s": round(t2 - t1, 1), **{k: round(v, 5) for k, v in stats.items()}}
             log.write(json.dumps(row) + "\n")
             log.flush()
@@ -256,28 +327,35 @@ def main(argv=None):
 
             if args.eval_every and (it + 1) % args.eval_every == 0:
                 d1, d2 = args.matchup[0].split("|")
+                path = run / "policies" / f"it{it:05d}.onnx"
+                spec = export_policy(model, path, args.model)
+                model.to(device)
                 ev = {"iteration": it, "eval": {}}
                 for opp in args.eval_opponents.split(","):
-                    ev["eval"][opp] = evaluate(policy, opp, d1.strip(), d2.strip(), args.eval_games, args.eval_workers,
-                                               args.seed * 7 + it)
+                    ev["eval"][opp] = evaluate(spec, opp, d1.strip(), d2.strip(), args.eval_games, args.eval_workers,
+                                               args.seed * 7 + it, run.name)
                 log.write(json.dumps(ev) + "\n")
                 log.flush()
                 print(f"  eval it {it}: " + "  ".join(f"vs {k} {v['all']:.3f} ± {v['ci95']:.3f} "
                                                       f"(dirs {v['dir1']:.3f} / {v['dir2']:.3f})" for k, v in ev["eval"].items()),
                       flush=True)
 
-            if args.league and (it + 1) % args.snapshot_every == 0:
-                snapshots.append(str(policy))
+            if (it + 1) % args.snapshot_every == 0:
+                snap = run / f"model_it{it:05d}.pt"
+                torch.save({"model": model.state_dict(), "config": model.config()}, snap)
+                if args.league:
+                    snapshots.append(str(snap) if args.inference == "gpu" else str(run / "policies" / f"it{it:05d}.onnx"))
+                    if args.inference == "onnx":
+                        export_onnx(model, snapshots[-1])
+                        model.to(device)
             torch.save({"model": model.state_dict(), "opt": opt.state_dict(), "iteration": it, "snapshots": snapshots,
                         "config": model.config()}, ckpt)
-            if (it + 1) % args.snapshot_every == 0:
-                torch.save({"model": model.state_dict(), "config": model.config()}, run / f"model_it{it:05d}.pt")
-            # keep the policy files snapshots point to; drop the rest
-            for old in (run / "policies").glob("it*.onnx"):
-                if str(old) not in snapshots and old != policy and int(old.stem[2:]) < it - 2:
-                    old.unlink(missing_ok=True)
+            if args.inference == "onnx":
+                for old in (run / "policies").glob("it*.onnx"):
+                    if str(old) not in snapshots and int(old.stem[2:]) < it - 2:
+                        old.unlink(missing_ok=True)
     finally:
-        workers.close()
+        pool.close()
         log.close()
 
 
