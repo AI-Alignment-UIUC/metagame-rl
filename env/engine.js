@@ -111,9 +111,16 @@ function newStore(state, { backup = false, logs = false } = {}) {
 // `from` is the store that owns `state`: the trial reuses its card-order cache (the cards are
 // the same objects), which otherwise gets rebuilt, with a sort of every card, in each trial.
 function accepts(state, action, from) {
+  return tryAction(state, action, from).ok;
+}
+
+// Legality as accepts(), plus the state right after the action with every flip heads (null if
+// the turn ended in the trial, or the action was rejected).
+function tryAction(state, action, from) {
   const heads = trial(state, action, true, from);
-  if (!heads.ok || heads.flips === 0) return heads.ok;
-  return trial(state, action, false, from).ok;
+  if (!heads.ok) return { ok: false, after: null };
+  if (heads.flips > 0 && !trial(state, action, false, from).ok) return { ok: false, after: null };
+  return { ok: true, after: heads.state || null };
 }
 
 // Thrown inside a trial when the turn ends: whatever follows (between-turns effects, the next
@@ -160,4 +167,4 @@ function stateAfter(state, action, from) {
   return r.ok ? (r.state || null) : null;
 }
 
-module.exports = { RYUU, C, S, cm, FORMAT, RULES, newState, newStore, accepts, stateAfter };
+module.exports = { RYUU, C, S, cm, FORMAT, RULES, newState, newStore, accepts, tryAction, stateAfter };

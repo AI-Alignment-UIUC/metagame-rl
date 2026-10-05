@@ -27,7 +27,7 @@
 // same check the ryuu-play server applies, plus the prompt's declared options (slots, blocked
 // targets), which the server leaves to the client. oracle.js verifies all of this.
 'use strict';
-const { C, accepts: engineAccepts, stateAfter } = require('./engine.js');
+const { C, accepts: engineAccepts, tryAction, stateAfter } = require('./engine.js');
 const {
   PlayerType, SlotType, Stage, SuperType, TrainerType, SpecialCondition, StateUtils, FilterUtils,
   EnergyCard, PokemonCard, TrainerCard, GameError, GameMessage, PassTurnAction, PlayCardAction, RetreatAction,
@@ -86,6 +86,8 @@ function firstIndexByName(cards) {
 // store: the store that owns `state` (lets trials reuse its card-order cache; optional).
 function turnOptions(state, store) {
   const accepts = (st, action) => engineAccepts(st, action, store);
+  // Legal and not a dead end (see deadEnd): for actions that can open a prompt.
+  const usable = action => { const r = tryAction(state, action, store); return r.ok && !deadEnd(r.after, action.clientId || action.id); };
   const me = state.players[state.activePlayer];
   const turn = state.turn;
   const id = me.id;
@@ -124,11 +126,11 @@ function turnOptions(state, store) {
         const targets = mine.filter(s => occupied(s.slot)).concat(emptyBench ? [emptyBench] : []);
         for (const s of targets) {
           const action = new PlayCardAction(id, h, s.target);
-          if (accepts(state, action)) out.push({ key: `trainer|${name}|${canonicalCode(s)}`, action });
+          if (usable(action)) out.push({ key: `trainer|${name}|${canonicalCode(s)}`, action });
         }
       } else {
         const action = new PlayCardAction(id, h, { player: PlayerType.BOTTOM_PLAYER, slot: SlotType.ACTIVE, index: 0 });
-        if (accepts(state, action)) out.push({ key: `trainer|${name}|-`, action });
+        if (usable(action)) out.push({ key: `trainer|${name}|-`, action });
       }
     }
   }
@@ -151,7 +153,7 @@ function turnOptions(state, store) {
   if (benched.length > 0 && occupied(me.active) && me.retreatedTurn !== turn
     && !sp.includes(SpecialCondition.PARALYZED) && !sp.includes(SpecialCondition.ASLEEP)
     && (store === undefined || canPay(query(new CheckRetreatCostEffect(me)).cost))
-    && accepts(state, new RetreatAction(id, benched[0].target.index))) {
+    && usable(new RetreatAction(id, benched[0].target.index))) {
     for (const s of benched) out.push({ key: `retreat|${s.code}`, action: new RetreatAction(id, s.target.index) });
   }
 
@@ -175,7 +177,7 @@ function turnOptions(state, store) {
     for (const power of pokemon.powers) {
       if (!power.useWhenInPlay) continue;
       const action = new UseAbilityAction(id, power.name, s.target);
-      if (accepts(state, action) && !deadEndPower(state, action, store)) out.push({ key: `power|${power.name}|${s.code}`, action });
+      if (usable(action)) out.push({ key: `power|${power.name}|${s.code}`, action });
     }
   }
   for (const [zone, cards, slotType, prefix] of [['hand', me.hand.cards, SlotType.HAND, 'H'], ['discard', me.discard.cards, SlotType.DISCARD, 'D']]) {
@@ -185,7 +187,7 @@ function turnOptions(state, store) {
       for (const power of card.powers) {
         if (!(zone === 'hand' ? power.useFromHand : power.useFromDiscard)) continue;
         const action = new UseAbilityAction(id, power.name, { player: PlayerType.BOTTOM_PLAYER, slot: slotType, index: i });
-        if (accepts(state, action)) out.push({ key: `power|${power.name}|${prefix}${name}`, action });
+        if (usable(action)) out.push({ key: `power|${power.name}|${prefix}${name}`, action });
       }
     }
   }
@@ -194,7 +196,7 @@ function turnOptions(state, store) {
   const stadium = StateUtils.getStadiumCard(state);
   if (stadium && stadium.useWhenInPlay && me.stadiumUsedTurn !== turn) {
     const action = new UseStadiumAction(id);
-    if (accepts(state, action)) out.push({ key: 'stadium', action });
+    if (usable(action)) out.push({ key: 'stadium', action });
   }
   for (const s of myOccupied) {
     const names = new Set();
@@ -203,21 +205,25 @@ function turnOptions(state, store) {
     }
     for (const n of names) {
       const action = new UseTrainerInPlayAction(id, s.target, n);
-      if (accepts(state, action)) out.push({ key: `tip|${n}|${s.code}`, action });
+      if (usable(action)) out.push({ key: `tip|${n}|${s.code}`, action });
     }
   }
   return out;
 }
 
-// A Power whose use opens a prompt the player can only cancel (Ditto's Transform when every
-// copied attack is blocked) changes nothing and would let a policy loop on it forever.
-function deadEndPower(state, action, store) {
-  const after = stateAfter(state, action, store);
+// An action whose prompt the player can only cancel (Ditto's Transform when every copied
+// attack is blocked; a Trainer with nothing to choose) achieves nothing, and a policy could loop
+// on it forever. `after` is the state right after the action (engine.tryAction).
+function deadEnd(after, playerId) {
   if (!after) return false;
-  const prompt = after.prompts.find(p => p.result === undefined && p.playerId === action.clientId);
+  const prompt = after.prompts.find(p => p.result === undefined && p.playerId === playerId);
   if (!prompt || AUTO_PROMPTS.has(prompt.type)) return false;
-  const options = promptSpace(prompt, after).options([]);
-  return options.every(o => o.key === 'cancel');
+  return !promptSpace(prompt, after).hasAnswer();
+}
+
+function deadEndAction(state, action, store) {
+  const r = tryAction(state, action, store);
+  return r.ok && deadEnd(r.after, action.clientId || action.id);
 }
 
 // ---------------------------------------------------------------- prompts
@@ -271,6 +277,14 @@ function multiSpace({ items, encode, max, valid, relaxedValid, ordered = false, 
   }
   return {
     multi: true,
+    // Is there any answer other than cancel? Stops at the first one found.
+    hasAnswer() {
+      if (valid([])) return true;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].n > 0 && 0 < max && relaxedValid([i]) && extendable([i])) return true;
+      }
+      return false;
+    },
     options(picks) {
       const out = [];
       const c = counts(picks);
@@ -511,6 +525,7 @@ function orderCardsSpace(prompt) {
   };
   return {
     multi: true,
+    hasAnswer() { return true; },
     options(picks) {
       const used = new Array(groups.length).fill(0);
       for (const g of picks) used[g]++;
@@ -556,7 +571,7 @@ function singleSpace(prompt, state) {
     default:
       throw new Error('no option space for prompt type ' + prompt.type);
   }
-  return { multi: false, options: () => out };
+  return { multi: false, options: () => out, hasAnswer: () => out.some(o => o.key !== 'cancel') };
 }
 
 function promptSpace(prompt, state) {
@@ -576,4 +591,4 @@ function promptSpace(prompt, state) {
 // The prompt types the environment answers itself: no information to act on, or randomness.
 const AUTO_PROMPTS = new Set(['Coin flip', 'Shuffle deck', 'Choose prize']);
 
-module.exports = { turnOptions, promptSpace, AUTO_PROMPTS, safeValidate, allSlots, canonicalCode, occupied, isTargetedTrainer, deadEndPower };
+module.exports = { turnOptions, promptSpace, AUTO_PROMPTS, safeValidate, allSlots, canonicalCode, occupied, isTargetedTrainer, deadEnd, deadEndAction };

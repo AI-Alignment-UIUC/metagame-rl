@@ -22,31 +22,10 @@ if (argv[0] === '--compare') {
 const { Game } = require('../game.js');
 const { archivedDecks } = require('../decks.js');
 const { Rng } = require('../rng.js');
-const { C } = require('../engine.js');
+const { fingerprint } = require('../fingerprint.js');
 const GAMES = Number(flag('games', 300));
 const SEED = Number(flag('seed', 1));
 const OUT = flag('out', null);
-
-// Canonical walk of the state; cards are named by fullName plus a per-game identity index.
-function fingerprint(state, cardIds) {
-  const out = [];
-  const path = new Set();
-  const walk = v => {
-    if (v === null || v === undefined || typeof v !== 'object') { out.push(typeof v === 'function' ? 'fn' : JSON.stringify(v)); return; }
-    if (v instanceof C.Card) {
-      if (!cardIds.has(v)) cardIds.set(v, cardIds.size);
-      out.push(`<${v.fullName}#${cardIds.get(v)}>`);
-      return;
-    }
-    if (path.has(v)) { out.push('cycle'); return; }
-    path.add(v);
-    if (Array.isArray(v)) { out.push('['); v.forEach(walk); out.push(']'); }
-    else { out.push('{'); for (const k of Object.keys(v).sort()) { out.push(k + ':'); walk(v[k]); } out.push('}'); }
-    path.delete(v);
-  };
-  walk(state);
-  return out.join(',');
-}
 
 const decks = archivedDecks();
 const games = [];

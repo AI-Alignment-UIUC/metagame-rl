@@ -251,3 +251,4 @@ function score(game, me) {
 }
 
 module.exports.SearchAgent = SearchAgent;
+module.exports.heuristicIndex = heuristicIndex;

@@ -14,6 +14,7 @@
 const { C, newStore, newState } = require('./engine.js');
 const { Rng } = require('./rng.js');
 const { turnOptions, promptSpace, AUTO_PROMPTS } = require('./legal.js');
+const { sameState } = require('./fingerprint.js');
 
 const MAX_STEPS = 5000;
 
@@ -77,6 +78,11 @@ class Game {
       if (REPLAY_CHECKED.has(prompt.type) && this.chain) {
         options = options.filter(o => o.raw === undefined || o.raw === null || this.replayAccepts(prompt, o.raw));
       }
+      // A cancel that only undoes the action that opened this prompt is a no-op: once an action
+      // is started it is finished, or a policy can cycle start -> cancel forever.
+      if (this.picks.length === 0 && options.length > 1 && options.some(o => o.key === 'cancel') && this.cancelIsNoop(prompt)) {
+        options = options.filter(o => o.key !== 'cancel');
+      }
       d = { playerId: prompt.playerId, prompt, options };
     } else {
       d = { playerId: this.state.players[this.state.activePlayer].id, prompt: null, options: turnOptions(this.state, this.store) };
@@ -108,8 +114,10 @@ class Game {
       if (this.chain) this.chain.log.push({ promptId: d.prompt.id, raw: opt.raw });
       this.dispatch(new C.ResolvePromptAction(d.prompt.id, d.prompt.decode(opt.raw, this.state)));
     } else {
-      this.chain = /^(attack|power)|/.test(opt.key)
-        ? { base: C.deepClone(this.state, [C.Card]), log: [{ action: opt.action }] } : null;
+      // Snapshot before actions that can open a prompt of their own (pass, attach, basic and
+      // evolve can't), for replay checks of what follows.
+      this.chain = /^(trainer|power|retreat|attack|stadium|tip)|/.test(opt.key) || opt.key === 'stadium'
+        ? { base: C.deepClone(this.state, [C.Card]), log: [{ action: opt.action }], noop: new Map() } : null;
       this.dispatch(opt.action);
     }
   }
@@ -192,8 +200,41 @@ Game.prototype.clone = function (rng, viewer) {
 // of actions since the attack or Power that opened the prompt, on a copy of the state before it.
 const REPLAY_CHECKED = new Set(['Choose attack']);
 
+// True if answering `prompt` with cancel leaves the state exactly as it was before the action
+// that started this chain. Cached per prompt.
+Game.prototype.cancelIsNoop = function (prompt) {
+  if (!this.chain) return false;
+  if (this.chain.noop.has(prompt.id)) return this.chain.noop.get(prompt.id);
+  const after = this.replayState(prompt, null);
+  const noop = after !== null && sameState(after, this.chain.base);
+  this.chain.noop.set(prompt.id, noop);
+  return noop;
+};
+
+// The state after replaying the chain and answering `prompt` with `raw`, or null if rejected.
+Game.prototype.replayState = function (prompt, raw) {
+  const store = newStore(C.deepClone(this.chain.base, [C.Card]));
+  store.cardRanks = this.store.cardRanks;
+  const answer = (id, r) => {
+    const p = store.state.prompts.find(q => q.id === id);
+    store.dispatch(new C.ResolvePromptAction(id, p.decode(r, store.state)));
+  };
+  try {
+    for (const e of this.chain.log) {
+      if (e.action) store.dispatch(e.action);
+      else answer(e.promptId, e.raw);
+    }
+    answer(prompt.id, raw);
+    return store.state;
+  } catch (e) {
+    if (e instanceof C.GameError) return null;
+    throw e;
+  }
+};
+
 Game.prototype.replayAccepts = function (prompt, raw) {
   const store = newStore(C.deepClone(this.chain.base, [C.Card]));
+  store.cardRanks = this.store.cardRanks;
   const answer = (id, r) => {
     const p = store.state.prompts.find(q => q.id === id);
     store.dispatch(new C.ResolvePromptAction(id, p.decode(r, store.state)));

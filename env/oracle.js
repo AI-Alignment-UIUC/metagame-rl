@@ -12,7 +12,7 @@
 // options; every legal one must be reachable through the enumerator's picks.
 'use strict';
 const { C, accepts } = require('./engine.js');
-const { allSlots, safeValidate, occupied, isTargetedTrainer, promptSpace, deadEndPower } = require('./legal.js');
+const { allSlots, safeValidate, occupied, isTargetedTrainer, promptSpace, deadEndAction } = require('./legal.js');
 const { PlayerType, SlotType, Stage, EnergyCard, PokemonCard, TrainerCard } = C;
 
 function codeOf(state, me, target) {
@@ -50,7 +50,9 @@ function turnOracle(state) {
     let acceptedUntargeted = 0;
     const all = BOARD_TARGETS.concat(OFF_TARGETS);
     for (const t of all) {
-      if (!accepts(state, new C.PlayCardAction(id, h, t))) continue;
+      const play = new C.PlayCardAction(id, h, t);
+      if (!accepts(state, play)) continue;
+      if (card instanceof TrainerCard && deadEndAction(state, play)) { addLax('dead-end'); continue; }
       const code = codeOf(state, me, t);
       const theirs = code.startsWith('o') || code === '-';
       if (card instanceof EnergyCard) {
@@ -74,7 +76,9 @@ function turnOracle(state) {
   });
 
   for (let i = 0; i < 5; i++) {
-    if (accepts(state, new C.RetreatAction(id, i))) keys.add(`retreat|B${i}`);
+    const retreat = new C.RetreatAction(id, i);
+    if (!accepts(state, retreat)) continue;
+    if (deadEndAction(state, retreat)) addLax('dead-end'); else keys.add(`retreat|B${i}`);
   }
   const active = me.active.getPokemonCard();
   if (active) {
@@ -87,7 +91,7 @@ function turnOracle(state) {
         const action = new C.UseAbilityAction(id, power.name, s.target);
         if (!accepts(state, action)) continue;
         if (!s.mine) addLax('power@opponent');
-        else if (deadEndPower(state, action)) addLax('power@dead-end');
+        else if (deadEndAction(state, action)) addLax('dead-end');
         else keys.add(`power|${power.name}|${s.code}`);
       }
     }
@@ -96,8 +100,11 @@ function turnOracle(state) {
       if (c instanceof TrainerCard) names.add(c.name);
     }
     for (const n of names) {
-      if (!accepts(state, new C.UseTrainerInPlayAction(id, s.target, n))) continue;
-      if (s.mine) keys.add(`tip|${n}|${s.code}`); else addLax('tip@opponent');
+      const tip = new C.UseTrainerInPlayAction(id, s.target, n);
+      if (!accepts(state, tip)) continue;
+      if (!s.mine) addLax('tip@opponent');
+      else if (deadEndAction(state, tip)) addLax('dead-end');
+      else keys.add(`tip|${n}|${s.code}`);
     }
   }
   for (const [cards, slot, prefix] of [[me.hand.cards, SlotType.HAND, 'H'], [me.discard.cards, SlotType.DISCARD, 'D']]) {
@@ -105,11 +112,14 @@ function turnOracle(state) {
       if (!(card instanceof PokemonCard)) return;
       for (const power of card.powers) {
         const t = { player: PlayerType.BOTTOM_PLAYER, slot, index: i };
-        if (accepts(state, new C.UseAbilityAction(id, power.name, t))) keys.add(`power|${power.name}|${prefix}${card.fullName}`);
+        const use = new C.UseAbilityAction(id, power.name, t);
+        if (!accepts(state, use)) continue;
+        if (deadEndAction(state, use)) addLax('dead-end'); else keys.add(`power|${power.name}|${prefix}${card.fullName}`);
       }
     });
   }
-  if (accepts(state, new C.UseStadiumAction(id))) keys.add('stadium');
+  const stadium = new C.UseStadiumAction(id);
+  if (accepts(state, stadium)) { if (deadEndAction(state, stadium)) addLax('dead-end'); else keys.add('stadium'); }
   return { keys, lax, anomalies };
 }
 

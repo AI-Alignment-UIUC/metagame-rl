@@ -186,3 +186,24 @@ Entry format:
   meaningful scale, so it is parked; SimpleBot is the top fixed rung for now.
 - **Next:** A3 training is running (Wigglytuff vs Haymaker, league, evaluated every 20
   iterations against SimpleBot and the heuristic).
+
+### #14 · 2026-10-05 · A3 · First run found no-op cycles; environment fixed
+- **Done:** First A3 run (Wigglytuff vs Haymaker, both directions, self-play + snapshot league,
+  14 workers) stopped at iteration 75. Environment fixes: (1) a cancel that only undoes the
+  action that opened the prompt is no longer offered (checked by replaying the action and the
+  cancel from a snapshot and comparing whole states); (2) any action whose prompt offers only
+  cancel (the earlier Ditto rule, now for Trainers, retreat, Powers, Stadium, Trainers in play)
+  is not offered; the oracle classifies both the same way. Fork `0a723c8`: deepClone copies onto
+  the source's prototype instead of making the source the copy's prototype.
+- **Evidence:** Run 1 against SimpleBot (200 games, greedy, both deck directions): it 19 31.0%;
+  it 39 60.8% ± 6.8; it 59 68.2% ± 6.5 (73.5% / 63.0% by direction); against the heuristic
+  65-66%. Then episodes grew from 189 to 713 decisions by it 74, 42% of them `cancel` (start
+  Transform / a retreat / Super Energy Removal, cancel, repeat). After the fix, of 2,714 prompts
+  offering cancel in 100 random games, 2,627 were pure undo. 400-game verification with the new
+  rules: 0 mismatches. deepClone change: 300-game full-state traces identical, equivalence
+  60/60, specs 250 + 686; throughput 48.2 -> 68.7 random-policy games/s/core.
+- **Found:** With reward only at the end and no discount, nothing stops self-play drifting into
+  free no-op cycles; they have to be removed from the action space. V8 slows objects that serve
+  as prototypes, so `Object.create(source)` in every clone was a hidden engine-wide cost.
+- **Next:** Restart A3 from scratch. (10,000-game verification of the new rules: 991,580 main-phase
+  decisions and 383,794 prompts checked, 0 mismatches, 0 missing, 0 invalid, 0 engine errors.)
