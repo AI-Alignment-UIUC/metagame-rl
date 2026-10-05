@@ -23,8 +23,8 @@ and proven there first.
 matrix. A PPO self-play policy beats SimpleBot 97-98% in one matchup, and one MLP policy for all
 24 decks (A4.1) beats it 88.5-89.6% with every deck above 70%. The token + pointer model (A4.2)
 trains at 17 s per update, plays the MLP directly, and is retraining after its first run exposed
-two endless loops, now fixed. Phase B now targets Worlds 2011 (San Diego), where 44 of 111 card names
-in the season's archetype lists are still unimplemented.
+two endless loops, now fixed. Phase B targets Worlds 2005 (San Diego): its card gap matches
+2011's, about 600 cards to the full legal pool, and it needs no new engine mechanics.
 
 **Earlier work:**
 
@@ -44,13 +44,14 @@ in the season's archetype lists are still unimplemented.
   directions, and the stronger (run c) beats the other 57.8%. The token model, central GPU
   inference and the A5 pieces (matchup model, edit builder, PSRO loop) are built and tested.
 
-**Recent (log #17–21):** Under SimpleBot piloting the 24 x 24 matrix's equilibrium has no Haymaker
+**Recent (log #17–22):** Under SimpleBot piloting the 24 x 24 matrix's equilibrium has no Haymaker
 list in its support, and A4.1 met its per-deck exit (re-scored on the fixed environment: mirror
 89.6%, field 88.5%, lowest Viray Rain Dance 71-72%, gains down to ~1 point per 25 iterations).
 Token-model training was made to fit and run fast, mixed MLP-vs-token games work, and the two
 loops the token run hit (Metronome copying Metronome; start-then-undo cycles, behind every game
-A4.1's exit had cut off) are fixed. Phase B moved to Worlds 2011, San Diego, whose measured gap
-(no printing-exact list; the 2011 winner's list lacks 8 cards) is larger than 2013-14's.
+A4.1's exit had cut off) are fixed. Measured by printing, Worlds 2005 and 2011 need about the same
+share of their archived cards implemented (~72% and ~71% of names), but 2011 also needs the Lost
+Zone and LEGEND cards, so Phase B moved from 2011 to 2005.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
@@ -62,7 +63,8 @@ The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 3. Compare the two RL policies: learning curves, mirror/field vs SimpleBot, head-to-head, cost.
 4. A4 exit: the trained-policy matrix, its stability across reruns, and era write-ups.
 5. A5.1: Nash over the trained-policy matrix; then PSRO with the builder.
-6. B1: source the Worlds 2011 top-cut lists and check same-name printings card by card.
+6. B1: source the Worlds 2005 top-cut lists; verify the engine's three EX sets against card data
+   and rulings; check the near-reprints by hand.
 <!-- status:end -->
 
 ---
@@ -90,14 +92,14 @@ support, measured by card overlap with archived lists). Matching meta *shares* i
 
 ## Why start in 2000
 
-| | July 2000 STS (Base–Rocket) | Worlds 2011, San Diego (HGSS–Black & White) |
+| | July 2000 STS (Base–Rocket) | Worlds 2005, San Diego (EX Ruby & Sapphire–EX Emerald) |
 |---|---|---|
-| Card pool in ryuu-play | **Complete**: every card in the field is implemented and verified | Partial: 44 of the 111 card names in the season's archetype lists have no implementation, and the HGSS-era sets are mostly absent (see B1) |
-| Distinct cards in the field | **56** (21 Pokémon, 26 Trainer, 9 Energy) | 111 card names (153 name-and-set printings) across 13 archetype lists; six sets in the format |
+| Card pool in ryuu-play | **Complete**: every card in the field is implemented and verified | Partial: 3 of the 9 EX sets are in the engine (not yet verified); about 100 of the 139 card names in the season's archetype lists still need an implementation (see B1) |
+| Distinct cards in the field | **56** (21 Pokémon, 26 Trainer, 9 Energy) | 139 card names across 19 archetype lists; nine EX sets plus POP Series 1 and promos in the format |
 | Evolution | Three stacks in the whole field, max depth 2 | Deep lines, Rare Candy, many evolution engines |
 | One player's full observation | **482 bits ≈ 60 bytes**; ~760–870 floats one-hot | Needs the scalable token representation |
-| Recorded field | 24 top-8 lists across three age divisions | Masters top 8 by archetype; one archived list per archetype so far (ptcgarchive); full Worlds lists not yet sourced |
-| Mechanics | No abilities-era complexity, no EX/GX prize rules, no ACE SPEC | Poké-Powers and Poké-Bodies, Pokémon Prime, two-card LEGENDs, the Lost Zone; no EX prize rule (from 2012) and no ACE SPEC |
+| Recorded field | 24 top-8 lists across three age divisions | One archived list per archetype so far (ptcgarchive) and the four official 2005 World Championship decks; full top-cut lists not yet sourced |
+| Mechanics | No abilities-era complexity, no EX/GX prize rules, no ACE SPEC | Poké-Powers and Poké-Bodies, Pokémon-ex (two Prizes), Dark Pokémon; all already in the engine. No ACE SPEC, no Lost Zone, no LEGENDs |
 
 The 2000 format is small enough to iterate on in hours on one machine and real enough to have
 an answer key. Its weakness is also clear: there is **one** recorded field, and it is
@@ -238,30 +240,44 @@ serve as rough replicates of the human field.
 
 Phase B reuses everything from Phase A. What is new is the card pool, the scale, and the data.
 
-#### B1. Target: Worlds 2011, San Diego
+#### B1. Target: Worlds 2005, San Diego
 
-The 2011 World Championships (San Diego, August 12–14, 2011) were played in the HGSS-on format:
-HeartGold & SoulSilver, Unleashed, Undaunted, Triumphant, Call of Legends and Black & White. It
-was chosen over 2013–14 for its smaller pool and simpler rules: six sets, no EX prize rule, no
-ACE SPEC. The Masters top 8 was four Reshiram/Typhlosion, two Magnezone/Emboar (David Cohen won
-with one), Vileplume/Reuniclus ("The Truth", Ross Cawthon, 2nd) and Magnezone/Yanmega.
+The 2005 World Championships (San Diego, August 19–21, 2005) were played in the Modified format:
+EX Ruby & Sapphire, Sandstorm, Dragon, Team Magma vs Team Aqua, Hidden Legends, FireRed &
+LeafGreen, Team Rocket Returns, Deoxys and Emerald, plus POP Series 1, the EX Trainer Kits and
+Nintendo Black Star Promos 1–27. Wizards' four 2005 World Championship decks reproduce top
+players' lists: Queendom (Jeremy Maron), Dark Tyranitar (Takashi Yoneda, a finalist), King of the
+West (Michael Gonzalez) and Bright Aura (Curran Hill).
 
-- **Coverage, measured** (`notes/scripts/ryuu_coverage_2011.py`, results in
-  `notes/data/eval/coverage_2011.json`): over the 13 archetype lists of the 2011 season on
-  ptcgarchive, 44 of 111 card names have no implementation. The 2011
-  winner's Magnezone/Emboar lacks 8 cards (Magnezone Prime, Rayquaza & Deoxys LEGEND, Fisherman,
-  Rescue Energy), The Truth 14, Magnezone/Yanmega 18, Reshiram/Typhlosion 1 (Sage's Training);
-  Zekrom/Pachirisu/Shaymin has every name. Most same-name Pokémon in the engine are other
-  printings (Gengar from Fossil, not Gengar Prime), so the true gap is larger than the names
-  alone show. The HGSS-era sets are the work: the engine's HGSS folder holds 23 cards.
-- **The alternative, for comparison:** 2013–14 was the earlier candidate. Two archived Worlds
-  Blastoise/Keldeo lists build 57 of 60 cards and seven era archetypes are buildable; all of Team
-  Plasma and Black Kyurem-EX are missing (`notes/tcg-rl-research-notes.md`). San Diego 2005
-  (EX Ruby & Sapphire through EX Emerald) has 3 of 9 sets.
-- **Data:** the season's archetype lists (ptcgarchive, saved in `notes/data/2011-season-ptcgarchive/`); full Worlds
-  2011 top-cut lists and placements still to be sourced (Limitless, pokemon.com, the 2011 World
-  Championship decks).
-- **Legality:** build the 2011 legal pool from set codes. The current pool mixes sets that never
+Chosen by measurement over Worlds 2011 (San Diego) and 2013–14. The card gap is about the same as
+2011's, and 2005 needs no new engine mechanics.
+
+- **Coverage, measured** (`notes/scripts/ryuu_coverage_season.py`, results in
+  `notes/data/eval/coverage_2005.json` and `coverage_2011.json`; every card resolved to its
+  printing through pokemon-tcg-data):
+
+  | | 2005 | 2011 |
+  |---|---|---|
+  | Archetype lists (ptcgarchive) | 19 lists, 139 names | 13 lists, 111 names |
+  | Names still to implement | ~100 (72%) | ~79 (71%) |
+  | Copies buildable today | 362 of 1,140, +65 near-reprints to check | 334 of 780 |
+  | Closest list | Zapdos/Moltres "Birds" 40/60 | Reshiram/Typhlosion 42/60 |
+  | Full legal pool | 3 of 9 EX sets present, ~600 cards to go | ~35 cards of 6 sets present, ~600 to go |
+  | New engine mechanics | none | Lost Zone, LEGEND cards |
+
+  No list in either season is fully buildable yet. The most-played missing 2005 cards are
+  Supporters and Trainers from the missing sets (TV Reporter, Steven's Advice, Rocket's Admin.,
+  Swoop! Teleporter), Jirachi (Deoxys) and the Team Rocket Returns Dark Pokémon. "Different"
+  (same name, different card) slightly over-counts, since a few are wording-only changes.
+- **The engine's EX sets:** Ruby & Sapphire, Sandstorm and FireRed & LeafGreen are
+  near-complete (about 109, 98 and 112 cards) but not yet checked against card data and
+  rulings as the 2000 pool was.
+- **2013–14, for comparison:** two archived Worlds Blastoise/Keldeo lists build 57 of 60 cards,
+  but all of Team Plasma and Black Kyurem-EX are missing (`notes/tcg-rl-research-notes.md`).
+- **Data:** the season's archetype lists (ptcgarchive, saved in
+  `notes/data/2005-season-ptcgarchive/`) and the World Championship decks. Full Worlds 2005
+  top-cut lists and placements are still to be sourced.
+- **Legality:** build the 2005 legal pool from set codes. The current pool mixes sets that never
   coexisted, and an agent would invent decks no one could have played.
 
 #### B2. Close the card gap with the Phase A verification pipeline

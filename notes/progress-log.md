@@ -358,3 +358,14 @@ Entry format:
   Colorless Energy), but most checked are real (HGSS Pokemon Communication and Rare Candy).
   #21's claim that 2011 was chosen for simpler rules does not hold against 2005.
 - **Next:** Decide the Phase B target with these numbers (the README currently says 2011).
+
+### #23 · 2026-10-05 · B1 · Phase B target set to Worlds 2005, San Diego
+- **Done:** By the user's decision on #22's numbers, README Phase B now targets Worlds 2005 (San
+  Diego, August 19–21, 2005; Modified: EX Ruby & Sapphire through EX Emerald, POP Series 1, EX
+  Trainer Kits, Nintendo promos 1–27). Format table and B1 rewritten with the 2005 vs 2011
+  coverage table from #22; 2013–14 kept for comparison. This supersedes #21's choice of 2011.
+- **Evidence:** Numbers as measured in #22 (`notes/data/eval/coverage_2005.json`,
+  `coverage_2011.json`). Event dates, legal sets and the four 2005 World Championship decks
+  (Maron, Yoneda, Gonzalez, Hill) from pokumon.com; not cross-checked against a second source.
+- **Next:** Source the Worlds 2005 top-cut lists; verify the engine's EX sets (card data,
+  rulings) before B2 adds the six missing sets.
