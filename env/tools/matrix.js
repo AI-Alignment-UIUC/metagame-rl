@@ -22,6 +22,7 @@ const SEED = Number(flag('seed', 1));
 const DECKS = flag('decks', null);
 const DECKS_FILE = flag('decks-file', null);   // JSON [{ name, cards }] instead of the archived decks
 const OUT = flag('out', null);
+const NEW = Number(flag('new', 0));   // only pairs involving the last NEW decks (incremental PSRO rows)
 
 function deckList() {
   const { archivedDecks, decksFromFile } = require('../decks.js');
@@ -37,7 +38,7 @@ function deckList() {
 // Game k of the whole run -> (i, j, seat of deck i).
 function jobsFor(n) {
   const pairs = [];
-  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) pairs.push([i, j]);
+  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) if (!NEW || j >= n - NEW) pairs.push([i, j]);
   const jobs = [];
   for (const [i, j] of pairs) for (let g = 0; g < GAMES; g++) jobs.push({ i, j, iSeat: g % 2 === 0 ? 1 : 2 });
   return jobs;
@@ -117,7 +118,7 @@ if (process.env.MATRIX_WORKER) {
       wins[r.i][r.j] += r.iWin; wins[r.j][r.i] += 1 - r.iWin;
       games[r.i][r.j]++; games[r.j][r.i]++;
     }
-    for (let i = 0; i < n; i++) { wins[i][i] = GAMES / 2; games[i][i] = GAMES; }
+    for (let i = 0; i < n; i++) { wins[i][i] = GAMES / 2; games[i][i] = GAMES; }   // mirrors: 0.5 by symmetry
     const errors = results.filter(r => r.error).length;
     const cut = results.filter(r => r.iWin === 0.5).length;
     console.log(`\n${results.length} games in ${((Date.now() - t0) / 1000).toFixed(0)}s, ${errors} errors, ${cut} draws or cut off`);

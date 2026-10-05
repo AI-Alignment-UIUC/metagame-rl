@@ -186,7 +186,8 @@ def export_policy(model, path: Path, kind: str) -> str:
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True)
-    ap.add_argument("--matchup", action="append", required=True,
+    ap.add_argument("--matchups-file", help="JSON [[deckA, deckB], ...]: names or {name, cards} decklists")
+    ap.add_argument("--matchup", action="append", default=[],
                     help='"learner deck|opponent deck" (substring of an archived deck name); repeatable; "all" = every pair')
     ap.add_argument("--both-directions", action="store_true", help="also train each matchup with the decks swapped")
     ap.add_argument("--iterations", type=int, default=100)
@@ -237,7 +238,7 @@ def main(argv=None):
     else:
         pool = Workers(args.workers)
     info = pool.ask_all([{"cmd": "info"}] * args.workers)[0]
-    matchups = []
+    matchups = json.load(open(args.matchups_file)) if args.matchups_file else []
     for m in args.matchup:
         if m == "all":                     # every ordered pair of archived decks, mirrors included
             names = info["decks"]
@@ -330,7 +331,7 @@ def main(argv=None):
                   f"win={row['win_vs']} collect {row['collect_s']}s train {row['train_s']}s", flush=True)
 
             if args.eval_every and (it + 1) % args.eval_every == 0:
-                d1, d2 = ("all", "all") if args.matchup[0] == "all" else args.matchup[0].split("|")
+                d1, d2 = ("all", "all") if not args.matchup or args.matchup[0] == "all" else args.matchup[0].split("|")
                 path = run / "policies" / f"it{it:05d}.onnx"
                 spec = export_policy(model, path, args.model)
                 model.to(device)
