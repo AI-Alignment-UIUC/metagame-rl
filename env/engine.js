@@ -146,7 +146,7 @@ function trial(state, action, flip, from) {
       }
       store.dispatch(new C.ResolvePromptAction(p.id, result));
     }
-    return { ok: true, flips };
+    return { ok: true, flips, state: store.state };
   } catch (e) {
     if (e === TURN_ENDED) return { ok: true, flips };
     if (e instanceof C.GameError) return { ok: false, flips };
@@ -154,4 +154,10 @@ function trial(state, action, flip, from) {
   }
 }
 
-module.exports = { RYUU, C, S, cm, FORMAT, RULES, newState, newStore, accepts };
+// The state right after `action` (all coin flips heads), or null if the engine rejects it.
+function stateAfter(state, action, from) {
+  const r = trial(state, action, true, from);
+  return r.ok ? (r.state || null) : null;
+}
+
+module.exports = { RYUU, C, S, cm, FORMAT, RULES, newState, newStore, accepts, stateAfter };

@@ -5,6 +5,7 @@
 //   OnnxAgent    a policy network exported from rl/model.py (masked softmax over the legal ids)
 //   RandomAgent  uniform over the legal ids
 //   FirstAgent   always the first option (a cheap deterministic baseline)
+//   HeuristicAgent simple rules over the option keys (set up, then attack)
 //   SimpleBotAgent ryuu-play's bundled bot (an evaluation floor; it plays through the engine,
 //                not through option ids, see actEngine)
 'use strict';
@@ -68,6 +69,95 @@ class FirstAgent {
   async act(batch) { return batch.map(b => ({ action: b.legal[0], logp: 0, value: 0 })); }
 }
 
+// A cheap rule-based player over the option keys (a ladder rung between random and SimpleBot):
+// set up first (attach to the Active, evolve, bench Basics, useful Trainers), then attack with
+// the strongest attack, else pass. Prompts get simple defaults. Deterministic.
+const DRAW_TRAINERS = new Set(['Bill', 'Professor Oak', 'Imposter Professor Oak', 'Computer Search', 'Item Finder']);
+function damageOf(attack) { const m = /\d+/.exec(attack && attack.damage || ''); return m ? Number(m[0]) : 0; }
+
+class HeuristicAgent {
+  async act(batch) {
+    return batch.map(b => {
+      const env = b.env, game = env.game, state = game.state;
+      const options = env.current.options;
+      const d = game.decision();
+      let best = 0, bestScore = -Infinity;
+      options.forEach((o, i) => {
+        const sc = d.prompt ? promptScore(o, d.prompt, state, game) : turnScore(o.key, state);
+        if (sc > bestScore) { bestScore = sc; best = i; }
+      });
+      return { action: b.legal[best], logp: 0, value: 0 };
+    });
+  }
+}
+
+function turnScore(key, state) {
+  const me = state.players[state.activePlayer], opp = state.players[1 - state.activePlayer];
+  const [verb, a, t] = key.split('|');
+  const active = me.active.getPokemonCard();
+  const unmet = slot => {
+    const p = slot.getPokemonCard();
+    if (!p) return false;
+    const have = slot.energies.cards.length;
+    return p.attacks.some(x => x.cost.length > have);
+  };
+  switch (verb) {
+    case 'attach': {
+      const slot = t === 'A' ? me.active : me.bench[Number(t.slice(1))];
+      return (t === 'A' ? 60 : 40) + (unmet(slot) ? 10 : -30);
+    }
+    case 'evolve': return 55;
+    case 'basic': return me.bench.filter(b => b.pokemons.cards.length).length < 3 ? 50 : 20;
+    case 'trainer': {
+      const name = a.replace(/ (BS|JU|FO|TR|PR\d*)$/, '');
+      if (DRAW_TRAINERS.has(name)) return me.deck.cards.length < 10 ? -5 : name === 'Professor Oak' ? (me.hand.cards.length <= 3 ? 35 : -5) : 30;
+      if (name === 'PlusPower') return active && active.attacks.some(x => x.cost.length <= me.active.energies.cards.length) ? 45 : -5;
+      if (/Energy Removal/.test(name)) return opp.active.energies.cards.length ? 42 : -5;
+      if (/Potion|Pokemon Center/.test(name)) return me.active.damage >= 30 ? 40 : -5;
+      if (name === 'Gust of Wind') return 25;
+      if (name === 'Switch' || name === 'Scoop Up') return -2;
+      return 20;
+    }
+    case 'power': return a === 'Rain Dance' ? 52 : 10;
+    case 'attack': {
+      const atk = active && active.attacks.find(x => x.name === a);
+      return 15 + damageOf(atk) / 100;
+    }
+    case 'retreat': return me.active.damage >= 50 ? 12 : -10;
+    case 'pass': return 0;
+    default: return 1;
+  }
+}
+
+function promptScore(o, prompt, state, game) {
+  if (o.key === 'cancel') return -50;
+  if (o.key === 'done') return game.picks.length > 0 ? 10 : -1;
+  if (o.key === 'res|yes' || o.key === 'res|ok') return 5;
+  if (o.key.startsWith('res|') && prompt.type === 'Choose attack') {
+    const [, card, name] = o.key.split('|');
+    const pc = prompt.cards.find(c => c.fullName === card);
+    return 5 + damageOf(pc && pc.attacks.find(x => x.name === name)) / 100;
+  }
+  if (o.key.startsWith('pick|')) {
+    const item = o.key.slice(5);
+    if (prompt.type === 'Choose pokemon') {
+      const me = state.players.find(p => p.id === prompt.playerId), opp = state.players.find(p => p.id !== prompt.playerId);
+      const side = item.startsWith('o') ? opp : me;
+      const code = item.replace(/^o/, '');
+      const slot = code === 'A' ? side.active : side.bench[Number(code.slice(1))];
+      const pc = slot && slot.getPokemonCard();
+      const hpLeft = pc ? (pc.hp || 0) - slot.damage : 0;
+      return item.startsWith('o') ? 20 - hpLeft / 10 : 20 + hpLeft / 10;   // own: healthiest; theirs: weakest
+    }
+    if (prompt.type === 'Choose cards' && prompt.message === C.GameMessage.CHOOSE_STARTING_POKEMONS) {
+      const card = C.CardManager.getInstance().getCardByName(item);
+      return 20 + (card && card.hp || 0) / 100;
+    }
+    return 15;
+  }
+  return 1;
+}
+
 // SimpleBot decides with the engine's own actions. It needs an engine Simulator view of the
 // state (it tries candidate actions on clones), and answers whole prompts at once.
 class SimpleBotAgent {
@@ -90,4 +180,4 @@ class SimpleBotAgent {
   forget(game) { this.ais.delete(game); }
 }
 
-module.exports = { OnnxAgent, RandomAgent, FirstAgent, SimpleBotAgent, sampleMasked };
+module.exports = { OnnxAgent, RandomAgent, FirstAgent, HeuristicAgent, SimpleBotAgent, sampleMasked };

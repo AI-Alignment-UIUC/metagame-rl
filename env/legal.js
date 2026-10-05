@@ -27,7 +27,7 @@
 // same check the ryuu-play server applies, plus the prompt's declared options (slots, blocked
 // targets), which the server leaves to the client. oracle.js verifies all of this.
 'use strict';
-const { C, accepts: engineAccepts } = require('./engine.js');
+const { C, accepts: engineAccepts, stateAfter } = require('./engine.js');
 const {
   PlayerType, SlotType, Stage, SuperType, TrainerType, SpecialCondition, StateUtils, FilterUtils,
   EnergyCard, PokemonCard, TrainerCard, GameError, GameMessage, PassTurnAction, PlayCardAction, RetreatAction,
@@ -175,7 +175,7 @@ function turnOptions(state, store) {
     for (const power of pokemon.powers) {
       if (!power.useWhenInPlay) continue;
       const action = new UseAbilityAction(id, power.name, s.target);
-      if (accepts(state, action)) out.push({ key: `power|${power.name}|${s.code}`, action });
+      if (accepts(state, action) && !deadEndPower(state, action, store)) out.push({ key: `power|${power.name}|${s.code}`, action });
     }
   }
   for (const [zone, cards, slotType, prefix] of [['hand', me.hand.cards, SlotType.HAND, 'H'], ['discard', me.discard.cards, SlotType.DISCARD, 'D']]) {
@@ -207,6 +207,17 @@ function turnOptions(state, store) {
     }
   }
   return out;
+}
+
+// A Power whose use opens a prompt the player can only cancel (Ditto's Transform when every
+// copied attack is blocked) changes nothing and would let a policy loop on it forever.
+function deadEndPower(state, action, store) {
+  const after = stateAfter(state, action, store);
+  if (!after) return false;
+  const prompt = after.prompts.find(p => p.result === undefined && p.playerId === action.clientId);
+  if (!prompt || AUTO_PROMPTS.has(prompt.type)) return false;
+  const options = promptSpace(prompt, after).options([]);
+  return options.every(o => o.key === 'cancel');
 }
 
 // ---------------------------------------------------------------- prompts
@@ -565,4 +576,4 @@ function promptSpace(prompt, state) {
 // The prompt types the environment answers itself: no information to act on, or randomness.
 const AUTO_PROMPTS = new Set(['Coin flip', 'Shuffle deck', 'Choose prize']);
 
-module.exports = { turnOptions, promptSpace, AUTO_PROMPTS, safeValidate, allSlots, canonicalCode, occupied, isTargetedTrainer };
+module.exports = { turnOptions, promptSpace, AUTO_PROMPTS, safeValidate, allSlots, canonicalCode, occupied, isTargetedTrainer, deadEndPower };

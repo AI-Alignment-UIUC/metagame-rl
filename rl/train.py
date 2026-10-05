@@ -136,6 +136,19 @@ def ppo_update(model, opt, batch, args, device):
     return {k: v / max(n, 1) for k, v in stats.items()}
 
 
+def evaluate(policy: Path, opponent: str, d1: str, d2: str, games: int, workers: int, seed: int) -> dict:
+    """Seat- and deck-swapped match of the policy (greedy) against a fixed opponent (env/tools/evaluate.js)."""
+    out = policy.with_suffix(f".eval-{opponent}.json")
+    cmd = ["node", str(ROOT / "env" / "tools" / "evaluate.js"), "--x", f"onnx:{policy}:greedy", "--y", opponent,
+           "--d1", d1, "--d2", d2, "--games", str(games), "--workers", str(workers), "--concurrency", "8",
+           "--seed", str(seed), "--json", str(out)]
+    subprocess.run(cmd, cwd=ROOT, check=True, stdout=subprocess.DEVNULL)
+    r = json.load(open(out))
+    out.unlink(missing_ok=True)
+    return {"all": round(r["all"]["xWinRate"], 4), "ci95": round(r["all"]["ci95"], 4),
+            "dir1": round(r["dir1"]["xWinRate"], 4), "dir2": round(r["dir2"]["xWinRate"], 4)}
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True)
@@ -162,6 +175,10 @@ def main(argv=None):
     ap.add_argument("--self-weight", type=float, default=0.5, help="share of games against itself with --league")
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--resume", action="store_true")
+    ap.add_argument("--eval-every", type=int, default=0, help="evaluate against --eval-opponents every N iterations")
+    ap.add_argument("--eval-opponents", default="simplebot,heuristic")
+    ap.add_argument("--eval-games", type=int, default=200)
+    ap.add_argument("--eval-workers", type=int, default=8)
     args = ap.parse_args(argv)
 
     run = ROOT / args.run
@@ -236,6 +253,18 @@ def main(argv=None):
             print(f"it {it:4d}  T={row['transitions']:6d} games={row['games']:4d} len={row['steps_per_game']:.0f} "
                   f"ent={stats['entropy']:.3f} kl={stats['kl']:.4f} clip={stats['clipfrac']:.3f} v={stats['v_loss']:.3f} "
                   f"win={row['win_vs']} collect {row['collect_s']}s train {row['train_s']}s", flush=True)
+
+            if args.eval_every and (it + 1) % args.eval_every == 0:
+                d1, d2 = args.matchup[0].split("|")
+                ev = {"iteration": it, "eval": {}}
+                for opp in args.eval_opponents.split(","):
+                    ev["eval"][opp] = evaluate(policy, opp, d1.strip(), d2.strip(), args.eval_games, args.eval_workers,
+                                               args.seed * 7 + it)
+                log.write(json.dumps(ev) + "\n")
+                log.flush()
+                print(f"  eval it {it}: " + "  ".join(f"vs {k} {v['all']:.3f} ± {v['ci95']:.3f} "
+                                                      f"(dirs {v['dir1']:.3f} / {v['dir2']:.3f})" for k, v in ev["eval"].items()),
+                      flush=True)
 
             if args.league and (it + 1) % args.snapshot_every == 0:
                 snapshots.append(str(policy))

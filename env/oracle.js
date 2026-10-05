@@ -12,7 +12,7 @@
 // options; every legal one must be reachable through the enumerator's picks.
 'use strict';
 const { C, accepts } = require('./engine.js');
-const { allSlots, safeValidate, occupied, isTargetedTrainer, promptSpace } = require('./legal.js');
+const { allSlots, safeValidate, occupied, isTargetedTrainer, promptSpace, deadEndPower } = require('./legal.js');
 const { PlayerType, SlotType, Stage, EnergyCard, PokemonCard, TrainerCard } = C;
 
 function codeOf(state, me, target) {
@@ -84,8 +84,11 @@ function turnOracle(state) {
     const pokemon = s.slot.getPokemonCard();
     if (pokemon) {
       for (const power of pokemon.powers) {
-        if (!accepts(state, new C.UseAbilityAction(id, power.name, s.target))) continue;
-        if (s.mine) keys.add(`power|${power.name}|${s.code}`); else addLax('power@opponent');
+        const action = new C.UseAbilityAction(id, power.name, s.target);
+        if (!accepts(state, action)) continue;
+        if (!s.mine) addLax('power@opponent');
+        else if (deadEndPower(state, action)) addLax('power@dead-end');
+        else keys.add(`power|${power.name}|${s.code}`);
       }
     }
     const names = new Set();
