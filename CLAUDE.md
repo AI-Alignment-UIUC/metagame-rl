@@ -54,6 +54,6 @@ Edit these files only; don't commit or push unless asked.
 
 ## Submodule
 
-`ryuu-play/` is a submodule pinned to `evcoats/ryuu-play` on `sts-2000-pool`. In a fresh clone,
+`ryuu-play/` is a submodule pinned to `AI-Alignment-UIUC/ryuu-play` on `sts-2000-pool`. In a fresh clone,
 run `git submodule update --init --recursive` first. Engine changes are committed in the
 submodule, and then the pin is bumped here.

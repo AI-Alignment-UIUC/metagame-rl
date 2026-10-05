@@ -1,7 +1,7 @@
 # Pokémon TCG metagame RL
 
 A reinforcement-learning project on the Pokémon Trading Card Game. The environment is
-[evcoats/ryuu-play](https://github.com/evcoats/ryuu-play) (branch `sts-2000-pool`), a fork of
+[AI-Alignment-UIUC/ryuu-play](https://github.com/AI-Alignment-UIUC/ryuu-play) (branch `sts-2000-pool`), a fork of
 [keeshii/ryuu-play](https://github.com/keeshii/ryuu-play), the open-source Pokémon TCG simulator
 in TypeScript. The fork is included here as the `ryuu-play/` submodule.
 
@@ -342,7 +342,7 @@ Same exit criteria as A4 and A5, measured against the archived Worlds top cut.
 Requires Node.js 18.19+ (developed on Node 24).
 
 ```
-git clone --recurse-submodules https://github.com/evcoats/ptcg-metagame-rl
+git clone --recurse-submodules https://github.com/AI-Alignment-UIUC/ptcg-metagame-rl
 cd ptcg-metagame-rl/ryuu-play
 npm install --workspace=packages/common --workspace=packages/sets --workspace=packages/simple-bot
 npm run compile -w packages/common && npm run compile -w packages/sets
