@@ -9,7 +9,7 @@
 'use strict';
 const path = require('path');
 
-const RYUU = path.resolve(process.argv[2] || process.env.RYUU_PLAY || path.join(__dirname, '..', '..', 'ryuu-play'));
+const RYUU = path.resolve((process.argv[2] && !process.argv[2].startsWith('--') ? process.argv[2] : '') || process.env.RYUU_PLAY || path.join(__dirname, '..', '..', 'ryuu-play'));
 const ROOT = path.join(RYUU, 'packages');
 const C = require(path.join(ROOT, 'common'));
 const S = require(path.join(ROOT, 'sets'));

@@ -27,7 +27,7 @@ const BotFlipMode = C.BotFlipMode, BotShuffleMode = C.BotShuffleMode;
 if (!Simulator || !BotFlipMode) { console.error('Simulator/BotArbiter not exported; exports:', Object.keys(C).filter(k => /Sim|Bot/.test(k))); process.exit(1); }
 
 const cm = CardManager.getInstance();
-cm.defineFormat('Base Sets', [S.baseSets.setBase, S.baseSets.setJungle, S.baseSets.setFossil, S.baseSets.setTeamRocket]);
+cm.defineFormat('Base Sets', [S.baseSets.setBase, S.baseSets.setJungle, S.baseSets.setFossil, S.baseSets.setTeamRocket, S.baseSets.setPromos]);
 
 // ---------------------------------------------------------------- deck
 const DECK = [

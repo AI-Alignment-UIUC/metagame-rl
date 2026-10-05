@@ -20,8 +20,9 @@ and proven there first.
 *Updated 2026-10-05.*
 
 **Where things stand.** Phase A, milestone A0 is done: the engine runs the whole 2000 field and
-is verified. The work now is A1, making the engine RL-ready, and its first step (committing two
-measured throughput fixes) hasn't started. No agent has been trained yet.
+is verified. A1 (making the engine RL-ready) is under way: the throughput fixes are committed
+and verified equivalent, giving 64.6 engine-only games/s/core, already above A1's target of 50.
+All legal Base-era promos are now in the engine too. No agent has been trained yet.
 
 **Earlier work:**
 
@@ -29,18 +30,22 @@ measured throughput fixes) hasn't started. No agent has been trained yet.
   fork, with 541 engine specs, 68/68 interaction tests and 22/23 rulings passing (T18 open,
   outside this field). The engine runs ~9 games/s per core with no detectable first-player bias.
 
-**Recent (log #2):** Set up the progress log and this recursive status. The two A1 throughput
-fixes are still measured in a scratch test only (540 → 98 µs/action), not committed.
+**Recent (log #2–4):** Set up the progress log and this status. Committed the A1.1 throughput
+fixes: 554 → 160 µs/action (3.5×), with the state identical to the old engine after every action
+over 300 seeded games; the scratch estimate of 5.4× was optimistic. Folded in the Black Star
+Promos #1–#16, verified by specs, card data and a 400-game fuzz.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. A1.1: commit the throughput fixes (log cloning, `propagateEffect` card-order cache).
-2. A1.2: legal-action enumerator, verified against the engine.
-3. A1.3: observation encoder.
-4. A1.4: seeded `reset` / `step` environment API.
-5. A1.5: decide the training bridge (Node + ONNX rollouts vs. Python calling Node).
+1. A1.2: legal-action enumerator, verified against the engine on every action across ≥ 10k games.
+2. A1.3: observation encoder.
+3. A1.4: seeded `reset` / `step` environment API.
+4. A1.5: training bridge — going with Node rollouts + ONNX inference, PyTorch training (`.venv`
+   ready: torch 2.11 + CUDA on the RTX 5070 Ti).
+5. A1.6: fix T18; run the spec, interaction, rulings and decklist checks as CI.
+6. Profile the engine again once the enumerator and encoder are in.
 <!-- status:end -->
 
 ---
@@ -119,12 +124,13 @@ On the engine fork, branch `sts-2000-pool`:
 The engine was built for a websocket server, not for millions of headless games. It has no
 legal-move enumerator: an illegal action throws, and the store restores a deep-cloned backup.
 
-1. **Throughput fixes.**
-   - Stop deep-cloning `state.logs` on every dispatch. It grows all game long, which makes a
-     game O(n²) in its length.
-   - Cache the card order in `propagateEffect`, with a real invalidation rule.
-   - Together these measured **540 → 98 µs/action (5.4×)** in a scratch test with all tests
-     passing. They are not committed yet.
+1. **Throughput fixes — ✅ done** (fork `888b385`).
+   - Stop deep-cloning `state.logs` on every dispatch. It grew all game long, which made a game
+     O(n²) in its length.
+   - Cache the card order in `propagateEffect`, rebuilding it when a new card appears.
+   - Measured **554 → 160 µs/action (3.5×), 18.7 → 64.6 engine-only games/s/core**, with the
+     state identical to the old engine after every action over 300 seeded games
+     (`notes/scripts/ryuu_engine_equivalence.js`).
 2. **Legal-action enumerator.** At every decision, list the candidate actions: play card,
    attach, evolve, retreat, use Power, attack, pass, and the options of every open prompt.
    Verify it against the engine: every enumerated action must be accepted, and a sampled
@@ -184,10 +190,10 @@ reruns; and its matchup directions agree with era write-ups wherever those exist
      deck descriptors.
    - New decks get piloting time before their matchup row is trusted.
 3. **Two pool sizes.** Develop on the 56 cards the field played, which leaks human card choice
-   but is cheap. Make the actual claim on the **full legal Base–Rocket pool**, which needs the
-   remaining legal promos implemented. Most of those ~233 cards are unexercised by tests, so a
-   cold-start builder will find engine bugs and treat them as strategies; expand verification
-   first.
+   but is cheap. Make the actual claim on the **full legal Base–Rocket pool** (all legal promos
+   are now in: Wizards Black Star Promos #1–#16, fork `64330a4`). Most of those ~233 cards are
+   unexercised by tests, so a cold-start builder will find engine bugs and treat them as
+   strategies; expand verification first.
 
 **Exit:** from a cold start on the full pool, archived archetypes appear in the equilibrium
 support (by card overlap), and the result replicates across seeds. The three age divisions

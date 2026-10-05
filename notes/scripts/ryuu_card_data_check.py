@@ -11,6 +11,8 @@ Examples (Windows: use the `py` launcher):
   py ryuu_card_data_check.py --ryuu C:/path/to/ryuu-play --sets BS:base1,JU:base2,FO:base3,TR:base5,RS:ex1,SS:ex2,RG:ex6
 
 --sets maps ryuu-play set codes (the `set` field of a card class) to pokemon-tcg-data set ids.
+A class whose fullName ends in its set code plus a number (e.g. 'Pikachu PR4') is matched to
+that card number; otherwise the first printing with that name is used (e.g. 'Mewtwo PR' -> #3).
 Card database files are cached under notes/data/cache/tcgdata/ (shared with meta_aggregate.py).
 Standard library only.
 """
@@ -25,7 +27,7 @@ from collections import Counter
 from pathlib import Path
 
 TCGDATA_URL = "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/master/cards/en/{}.json"
-DEFAULT_SETS = "BS:base1,JU:base2,FO:base3,TR:base5"
+DEFAULT_SETS = "BS:base1,JU:base2,FO:base3,TR:base5,PR:basep"
 TYPE = {"COLORLESS": "Colorless", "GRASS": "Grass", "FIGHTING": "Fighting", "PSYCHIC": "Psychic", "WATER": "Water",
         "LIGHTNING": "Lightning", "FIRE": "Fire", "DARK": "Darkness", "METAL": "Metal", "DRAGON": "Dragon", "FAIRY": "Fairy"}
 STAGE = {"BASIC": "Basic", "STAGE_1": "Stage 1", "STAGE_2": "Stage 2"}
@@ -62,9 +64,12 @@ def unq(s: str) -> str:
 
 def check(ryuu: Path, setmap: dict[str, str], cache: Path) -> int:
     data: dict[tuple[str, str], dict] = {}
+    by_number: dict[tuple[str, str], dict] = {}
     for code, sid in setmap.items():
         for c in fetch_set(sid, cache):
             data.setdefault((code, norm(c["name"])), c)      # first printing wins (holo/non-holo duplicates)
+            by_number[(code, str(c.get("number", "")))] = c
+    numbered = 0
     mism, checked, pokemon, files = [], Counter(), 0, 0
     for f in sorted((ryuu / "packages" / "sets" / "src").rglob("*.ts")):
         if f.name == "index.ts" or f.name.endswith(".spec.ts"):
@@ -77,6 +82,13 @@ def check(ryuu: Path, setmap: dict[str, str], cache: Path) -> int:
         files += 1
         nm, cd = unq(name.group(1)), code.group(1)
         d = data.get((cd, norm(nm)))
+        full = re.search(r"fullName:\s*string\s*=\s*'([^']*)'", src)
+        num = re.search(r"\s" + re.escape(cd) + r"(\d+)$", unq(full.group(1))) if full else None
+        if num:
+            d = by_number.get((cd, num.group(1)))
+            if d is not None and norm(d["name"]) != norm(nm):
+                mism.append((cd, nm, "name@#" + num.group(1), nm, d["name"]))
+            numbered += 1
         if d is None:
             mism.append((cd, nm, "NOT IN DATABASE", "", ""))
             continue
@@ -116,7 +128,7 @@ def check(ryuu: Path, setmap: dict[str, str], cache: Path) -> int:
             sorted(norm(a["name"]) for a in d.get("abilities", [])))
 
     print(f"card files: {files}   Pokémon compared: {pokemon}   field checks: {sum(checked.values())}   mismatches: {len(mism)}")
-    print("checks per field:", dict(checked))
+    print("checks per field:", dict(checked), f"  matched by card number: {numbered}")
     for cd, nm, field, got, exp in mism:
         print(f"  {cd} {nm:24} {field:14} ryuu={got}  data={exp}")
     print("note: a damage string of '' vs '?' is cosmetic (variable-damage attacks); the database itself has occasional typos.")
