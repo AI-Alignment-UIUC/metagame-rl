@@ -243,3 +243,15 @@ Entry format:
   two runs (more data per iteration) is not beaten by the other: run c is the A3 policy of
   record. The self-play passing phase (51% passes at iteration ~20) is transient.
 - **Next:** SimpleBot 24 x 24 matrix (A2), then A4.1 on all 24 decks.
+
+### #17 · 2026-10-05 · A2 · SimpleBot 24 x 24 matrix and its equilibrium
+- **Done:** `env/tools/matrix.js --agent simplebot --games 100` over the 24 archived lists
+  (276 pairs, mirrors 0.5), solved with `rl/nash.py`. Saved as
+  `notes/data/eval/matrix_simplebot.json` and `nash_simplebot.json`.
+- **Evidence:** 27,600 games in 284 s, 0 errors, 17 draws or cut off. Equilibrium: Sponge (10-
+  #2 Bartlett) 0.469, Wigglytuff (11-14 #7 Pratt) 0.406, Articuno/Hitmonchan/Scyther (10- #8
+  Diamond) 0.125. Best uniform-field win rates: Pratt Wigglytuff 0.737, Diamond 0.737.
+- **Found:** Under SimpleBot piloting, Wigglytuff is in the support and Haymaker is not (best
+  Haymaker list -0.17 against the equilibrium); this is the A5.1 reference for how the meta moves
+  as play improves. SimpleBot matches are now fast (the engine speedups apply to its clones).
+- **Next:** A4.1 training.
