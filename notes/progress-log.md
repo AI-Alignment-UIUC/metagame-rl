@@ -228,3 +228,18 @@ Entry format:
 - **Found:** A transformer per decision is ~30x the MLP's compute; on CPU it would dominate the
   environment by 20x, so the token model needs central batched inference.
 - **Next:** A3 exit evaluation (run b) and the held-out run c; then A4.1 and the A4.2 comparison.
+
+### #16 · 2026-10-05 · A3 · Exit met: beats SimpleBot in both directions, replicated
+- **Done:** Run b (seed 1, ONNX rollouts, 160 iterations) and an independent held-out run c
+  (seed 2, GPU inference, 140 iterations), both PPO self-play with a snapshot league on
+  Wigglytuff (15+ #2 Lieu) vs Haymaker (15+ #1 Marshall), both deck directions. Exit evaluation
+  with `rl/crossplay.py`; results in `notes/data/eval/a3_exit_*.json`.
+- **Evidence:** Run b final, greedy: vs SimpleBot 97.9% ± 1.0 (n=800; 97.5% on Wigglytuff,
+  98.2% on Haymaker); sampled 95.2% ± 2.1; vs heuristic 94.9% ± 1.5. Run c final vs SimpleBot
+  97.2% ± 1.6 (98.0% / 96.5%). Held-out cross-play (200 games each): run b beats run 1's
+  checkpoints 87-99.5% and run c's iterations 19-99 55-99.5%, but loses to run c's iterations
+  119 and 139 (42.5%, 40.0%); run c final beats run b final 57.8% ± 4.8.
+- **Found:** Beating SimpleBot is reproducible across independent runs, but the stronger of the
+  two runs (more data per iteration) is not beaten by the other: run c is the A3 policy of
+  record. The self-play passing phase (51% passes at iteration ~20) is transient.
+- **Next:** SimpleBot 24 x 24 matrix (A2), then A4.1 on all 24 decks.

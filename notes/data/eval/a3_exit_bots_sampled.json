@@ -1,0 +1,20 @@
+{
+ "policy": "runs/a3b/model_it00159.pt",
+ "d1": "15+ #2 William Lieu",
+ "d2": "15+ #1 Andrew Marshall",
+ "stochastic": true,
+ "rows": [
+  {
+   "opponent": "simplebot",
+   "n": 400,
+   "win": 0.9525,
+   "ci95": 0.02084516670597767,
+   "dir1": 0.965,
+   "dir1_ci95": 0.025470575179999382,
+   "dir2": 0.94,
+   "dir2_ci95": 0.032913997022543474,
+   "cut": 0,
+   "errors": 0
+  }
+ ]
+}

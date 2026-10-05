@@ -1,0 +1,32 @@
+{
+ "policy": "runs/a3b/model_it00159.pt",
+ "d1": "15+ #2 William Lieu",
+ "d2": "15+ #1 Andrew Marshall",
+ "stochastic": false,
+ "rows": [
+  {
+   "opponent": "simplebot",
+   "n": 800,
+   "win": 0.97875,
+   "ci95": 0.009993702861052051,
+   "dir1": 0.975,
+   "dir1_ci95": 0.015300245096076082,
+   "dir2": 0.9825,
+   "dir2_ci95": 0.012850244161104475,
+   "cut": 0,
+   "errors": 0
+  },
+  {
+   "opponent": "heuristic",
+   "n": 800,
+   "win": 0.94875,
+   "ci95": 0.015280371293754614,
+   "dir1": 0.9825,
+   "dir1_ci95": 0.012850244161104475,
+   "dir2": 0.915,
+   "dir2_ci95": 0.0273304061440733,
+   "cut": 0,
+   "errors": 0
+  }
+ ]
+}
