@@ -163,6 +163,30 @@ class Game {
   }
 }
 
+// A copy of this game for search, taken at a main-phase decision (no prompt open). With
+// `viewer` set, what that player can't see is re-dealt at random first: their own deck and
+// prizes are shuffled together, and the opponent's hand, deck and prizes likewise, keeping
+// every zone's size. The copy shares no state with this game.
+Game.prototype.clone = function (rng, viewer) {
+  if (this.state.prompts.some(p => p.result === undefined)) throw new Error('clone() needs a stable state');
+  const g = Object.create(Game.prototype);
+  g.rng = rng || this.rng.clone();
+  g.store = newStore(C.deepClone(this.state, [C.Card]));
+  g.store.cardRanks = this.store.cardRanks;
+  g.steps = this.steps;
+  g.picks = []; g.pickedKeys = []; g.space = null; g.spaceFor = -1; g.cached = null; g.error = null; g.chain = null;
+  if (viewer !== undefined) {
+    for (const p of g.state.players) {
+      const zones = p.id === viewer ? [p.deck, ...p.prizes] : [p.hand, p.deck, ...p.prizes];
+      const pool = zones.flatMap(z => z.cards);
+      const order = g.rng.permutation(pool.length);
+      let k = 0;
+      for (const z of zones) z.cards = z.cards.map(() => pool[order[k++]]);
+    }
+  }
+  return g;
+};
+
 // Answers whose legality is decided in card code after the prompt resolves (a copied attack or
 // Power that can't be used), so decode + validate can't see it. Checked by replaying the chain
 // of actions since the attack or Power that opened the prompt, on a copy of the state before it.

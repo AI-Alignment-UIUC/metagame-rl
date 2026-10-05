@@ -181,3 +181,73 @@ class SimpleBotAgent {
 }
 
 module.exports = { OnnxAgent, RandomAgent, FirstAgent, HeuristicAgent, SimpleBotAgent, sampleMasked };
+
+// Flat Monte Carlo search with determinization (a fixed-budget relative scale for the ladder).
+// At a main-phase decision every option is tried in `rollouts` copies of the game where the
+// hidden cards are re-dealt at random, each played on by the heuristic for both players for
+// `depth` turns; the option with the best mean score is played. Score: 1 / 0 for a finished
+// game, otherwise 0.5 plus prize and damage differences. Prompts are answered by the heuristic.
+class SearchAgent {
+  constructor({ rollouts = 8, depth = 2, seed = 0 } = {}) {
+    this.rollouts = rollouts;
+    this.depth = depth;
+    this.rng = new Rng(seed);
+    this.heuristic = new HeuristicAgent();
+  }
+
+  async act(batch) {
+    const out = [];
+    for (const b of batch) out.push(await this.decide(b));
+    return out;
+  }
+
+  async decide(b) {
+    const game = b.env.game;
+    const d = game.decision();
+    if (d.prompt || d.options.length === 1) return (await this.heuristic.act([b]))[0];
+    const me = d.playerId;
+    let best = 0, bestScore = -Infinity;
+    for (let i = 0; i < d.options.length; i++) {
+      let total = 0;
+      for (let r = 0; r < this.rollouts; r++) total += this.rollout(game, i, me);
+      if (total > bestScore) { bestScore = total; best = i; }
+    }
+    return { action: b.legal[best], logp: 0, value: bestScore / this.rollouts };
+  }
+
+  rollout(game, optionIndex, me) {
+    const g = game.clone(new Rng(this.rng.u32()), me);
+    g.decision();
+    g.step(optionIndex);
+    const stopTurn = game.state.turn + this.depth;
+    while (!g.done && g.state.turn < stopTurn) {
+      const d = g.decision();
+      if (!d) break;
+      g.step(heuristicIndex(g, d));
+    }
+    return score(g, me);
+  }
+}
+
+function heuristicIndex(game, d) {
+  let best = 0, bestScore = -Infinity;
+  d.options.forEach((o, i) => {
+    const sc = d.prompt ? promptScore(o, d.prompt, game.state, game) : turnScore(o.key, game.state);
+    if (sc > bestScore) { bestScore = sc; best = i; }
+  });
+  return best;
+}
+
+function score(game, me) {
+  if (game.state.phase === C.GamePhase.FINISHED) {
+    const w = game.winner;
+    return w === me ? 1 : (w === 1 || w === 2) ? 0 : 0.5;
+  }
+  const mine = game.state.players.find(p => p.id === me), theirs = game.state.players.find(p => p.id !== me);
+  const prizesLeft = p => p.prizes.reduce((a, z) => a + z.cards.length, 0);
+  const damage = p => [p.active, ...p.bench].reduce((a, s) => a + s.damage, 0);
+  const v = 0.5 + 0.08 * (prizesLeft(theirs) - prizesLeft(mine)) + 0.002 * (damage(theirs) - damage(mine));
+  return Math.max(0, Math.min(1, v));
+}
+
+module.exports.SearchAgent = SearchAgent;

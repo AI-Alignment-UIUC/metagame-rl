@@ -158,3 +158,31 @@ Entry format:
   in play after every action. The submodule's `origin` is upstream; the fork is the remote
   `mine`.
 - **Next:** A2 (heuristic rung, search rung, SimpleBot matrix, puzzles), A3 training.
+
+### #12 · 2026-10-05 · A2 · Baseline ladder: random, first-option, heuristic, SimpleBot
+- **Done:** `HeuristicAgent` (set up, then attack with the strongest attack). The enumerator now
+  drops Powers whose use opens a prompt the player can only cancel (Ditto's Transform with every
+  copied attack blocked): the heuristic looped on them to the 5,000-step cap. Results saved in
+  `notes/data/eval/ladder_*.json`.
+- **Evidence:** 400 games per pair, all 24 decks, seat- and deck-swapped (win rate of the first
+  agent): first-option vs random 79.0% ± 4.0; heuristic vs random 87.3% ± 3.3; heuristic vs
+  first-option 86.8% ± 3.3; SimpleBot vs random 99.8% ± 0.5; SimpleBot vs first-option
+  96.8% ± 1.7; SimpleBot vs heuristic 61.4% ± 4.8. The ladder is transitive. Dead-end rule
+  verified against the oracle on 800 games (0 mismatches; 3,721 dead-end Powers dropped).
+- **Found:** The Ditto loop would also have hit training: any policy can cycle use-Power ->
+  cancel. Passing every turn beats random 79%: random play burns its own deck.
+- **Next:** search rung, SimpleBot matrix, A3 training.
+
+### #13 · 2026-10-05 · A2 · Search rung (flat Monte Carlo with determinization), not yet useful
+- **Done:** `Game.clone(rng, viewer)` re-deals what the viewer can't see (own deck and prizes;
+  the opponent's hand, deck and prizes) for search. `SearchAgent` tries each main-phase option
+  in R determinized copies played on by the heuristic, to a turn horizon or the end of the game.
+  `env/tools/matrix.js` (matchup matrix) and `rl/nash.py` (meta-game equilibrium by LP; uniform
+  on rock-paper-scissors, pure on a dominant deck) are in for the SimpleBot baseline.
+- **Evidence:** search vs heuristic: 4 rollouts, 2-turn horizon 25.0% ± 21.2 (16 games); 4
+  rollouts to the end of the game 37.5% ± 16.8 (32 games, 154 s).
+- **Found:** With few rollouts the search is noise around the heuristic and plays worse than
+  it; the 2-turn score doesn't value setup. It needs many more rollouts (cost grows fast) to be a
+  meaningful scale, so it is parked; SimpleBot is the top fixed rung for now.
+- **Next:** A3 training is running (Wigglytuff vs Haymaker, league, evaluated every 20
+  iterations against SimpleBot and the heuristic).

@@ -5,7 +5,7 @@
 // the engine. Win rates come with a 95% confidence interval (normal approximation; draws and
 // cut-off games count as half a win).
 //
-// Agents: random | first | heuristic | simplebot | onnx:<file.onnx>[:greedy]
+// Agents: random | first | heuristic | simplebot | search[:rollouts[:turns]] | onnx:<file.onnx>[:greedy]
 // Decks:  any substring of an archived deck name ("division #place player (label)"), or "all"
 //         to cycle every archived deck on both sides.
 //
@@ -27,10 +27,11 @@ const SEED = Number(flag('seed', 1));
 const JSON_OUT = flag('json', null);
 
 async function makeAgent(spec, enc, seed) {
-  const { OnnxAgent, RandomAgent, FirstAgent, HeuristicAgent, SimpleBotAgent } = require('../agents.js');
+  const { OnnxAgent, RandomAgent, FirstAgent, HeuristicAgent, SimpleBotAgent, SearchAgent } = require('../agents.js');
   if (spec === 'random') return new RandomAgent({ seed });
   if (spec === 'first') return new FirstAgent();
   if (spec === 'heuristic') return new HeuristicAgent();
+  if (spec.startsWith('search')) { const [, r, d] = spec.split(':'); return new SearchAgent({ rollouts: Number(r || 8), depth: Number(d || 2), seed }); }
   if (spec === 'simplebot') return new SimpleBotAgent();
   if (spec.startsWith('onnx:')) {
     const parts = spec.slice(5).split(':greedy');

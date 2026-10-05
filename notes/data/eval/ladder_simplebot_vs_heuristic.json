@@ -1,0 +1,3229 @@
+{
+ "x": "simplebot",
+ "y": "heuristic",
+ "d1": "all",
+ "d2": "all",
+ "all": {
+  "n": 400,
+  "xWinRate": 0.61375,
+  "ci95": 0.047715125942933444,
+  "cut": 3,
+  "errors": 0
+ },
+ "dir1": {
+  "n": 200,
+  "xWinRate": 0.6425,
+  "ci95": 0.0664225680774238,
+  "cut": 3,
+  "errors": 0
+ },
+ "dir2": {
+  "n": 200,
+  "xWinRate": 0.585,
+  "ci95": 0.06828778953810118,
+  "cut": 0,
+  "errors": 0
+ },
+ "rows": [
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #3 Chris Neathery (Haymaker)",
+   "xSeat": 1,
+   "steps": 38
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #4 Alvin Osborn (Haymaker)",
+   "xSeat": 2,
+   "steps": 129
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #2 William Lieu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 182
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #2 William Lieu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 185
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #1 Andrew Marshall (Haymaker)",
+   "xSeat": 1,
+   "steps": 180
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #5 Marcus Abreu (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 167
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #4 Alvin Osborn (Haymaker)",
+   "xSeat": 2,
+   "steps": 237
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #1 Andrew Marshall (Haymaker)",
+   "xSeat": 1,
+   "steps": 245
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+   "xSeat": 2,
+   "steps": 69
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #3 Chris Neathery (Haymaker)",
+   "xSeat": 1,
+   "steps": 274
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #7 Jarod Stein (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 89
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #5 Marcus Abreu (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 180
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #7 Jarod Stein (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 195
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+   "xSeat": 2,
+   "steps": 217
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #8 Jay Yu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 181
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #8 Jay Yu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 151
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #3 Daniel Nino (Haymaker)",
+   "xSeat": 1,
+   "steps": 39
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #2 Kody Barret (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 176
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #1 Jack Savage (Sponge)",
+   "xSeat": 1,
+   "steps": 207
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #5 Derek Bowling (Haymaker)",
+   "xSeat": 1,
+   "steps": 71
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #2 Kody Barret (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 188
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #1 Jack Savage (Sponge)",
+   "xSeat": 1,
+   "steps": 251
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #4 Zach Froelich (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 180
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #4 Zach Froelich (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 212
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #3 Daniel Nino (Haymaker)",
+   "xSeat": 1,
+   "steps": 260
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #5 Derek Bowling (Haymaker)",
+   "xSeat": 1,
+   "steps": 33
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #7 John Pratt (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 66
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 119
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #1 Joseph Viray (Rain Dance)",
+   "xSeat": 1,
+   "steps": 77
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #8 Matt Townend (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 149
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #8 Matt Townend (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 131
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #1 Joseph Viray (Rain Dance)",
+   "xSeat": 1,
+   "steps": 166
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 160
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #7 John Pratt (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 218
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #2 Dean Bartlett (Sponge)",
+   "xSeat": 2,
+   "steps": 173
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+   "xSeat": 2,
+   "steps": 203
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #3 Brock Christianson (Haymaker)",
+   "xSeat": 1,
+   "steps": 193
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #3 Brock Christianson (Haymaker)",
+   "xSeat": 1,
+   "steps": 193
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+   "xSeat": 2,
+   "steps": 164
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #2 Dean Bartlett (Sponge)",
+   "xSeat": 2,
+   "steps": 222
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #6 Chris Graham (Haymaker)",
+   "xSeat": 2,
+   "steps": 141
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 234
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 203
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "xSeat": 2,
+   "steps": 105
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "xSeat": 2,
+   "steps": 134
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #6 Chris Graham (Haymaker)",
+   "xSeat": 2,
+   "steps": 211
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #7 Ken Knight (Clefable)",
+   "xSeat": 1,
+   "steps": 198
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #1 Andrew Marshall (Haymaker)",
+   "xSeat": 1,
+   "steps": 237
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #1 Andrew Marshall (Haymaker)",
+   "xSeat": 1,
+   "steps": 265
+  },
+  {
+   "xWins": 0.5,
+   "cut": true,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #7 Ken Knight (Clefable)",
+   "xSeat": 1,
+   "steps": 5000
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #2 William Lieu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 60
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #3 Chris Neathery (Haymaker)",
+   "xSeat": 1,
+   "steps": 105
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #5 Marcus Abreu (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 106
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #4 Alvin Osborn (Haymaker)",
+   "xSeat": 2,
+   "steps": 191
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #2 William Lieu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 188
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #5 Marcus Abreu (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 210
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #4 Alvin Osborn (Haymaker)",
+   "xSeat": 2,
+   "steps": 195
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #3 Chris Neathery (Haymaker)",
+   "xSeat": 1,
+   "steps": 263
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+   "xSeat": 2,
+   "steps": 222
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #2 Kody Barret (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 32
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+   "xSeat": 2,
+   "steps": 277
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #7 Jarod Stein (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 147
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #7 Jarod Stein (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 236
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #8 Jay Yu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 197
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #8 Jay Yu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 189
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #4 Zach Froelich (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 66
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #1 Jack Savage (Sponge)",
+   "xSeat": 1,
+   "steps": 248
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #3 Daniel Nino (Haymaker)",
+   "xSeat": 1,
+   "steps": 152
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 43
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #2 Kody Barret (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 188
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #1 Jack Savage (Sponge)",
+   "xSeat": 1,
+   "steps": 269
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #4 Zach Froelich (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 168
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #5 Derek Bowling (Haymaker)",
+   "xSeat": 1,
+   "steps": 207
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #3 Daniel Nino (Haymaker)",
+   "xSeat": 1,
+   "steps": 240
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #5 Derek Bowling (Haymaker)",
+   "xSeat": 1,
+   "steps": 266
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #1 Joseph Viray (Rain Dance)",
+   "xSeat": 1,
+   "steps": 58
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #7 John Pratt (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 47
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #1 Joseph Viray (Rain Dance)",
+   "xSeat": 1,
+   "steps": 80
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #3 Brock Christianson (Haymaker)",
+   "xSeat": 1,
+   "steps": 61
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #8 Matt Townend (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 170
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #8 Matt Townend (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 171
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #7 John Pratt (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 182
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 172
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #2 Dean Bartlett (Sponge)",
+   "xSeat": 2,
+   "steps": 216
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #3 Brock Christianson (Haymaker)",
+   "xSeat": 1,
+   "steps": 161
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #2 Dean Bartlett (Sponge)",
+   "xSeat": 2,
+   "steps": 228
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+   "xSeat": 2,
+   "steps": 229
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+   "xSeat": 2,
+   "steps": 219
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 201
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 234
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #6 Chris Graham (Haymaker)",
+   "xSeat": 2,
+   "steps": 206
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #6 Chris Graham (Haymaker)",
+   "xSeat": 2,
+   "steps": 172
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #7 Ken Knight (Clefable)",
+   "xSeat": 1,
+   "steps": 188
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #7 Ken Knight (Clefable)",
+   "xSeat": 1,
+   "steps": 176
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #2 William Lieu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 88
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "xSeat": 2,
+   "steps": 201
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "xSeat": 2,
+   "steps": 112
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #1 Andrew Marshall (Haymaker)",
+   "xSeat": 1,
+   "steps": 232
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #2 William Lieu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 188
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #1 Andrew Marshall (Haymaker)",
+   "xSeat": 1,
+   "steps": 207
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+   "xSeat": 2,
+   "steps": 147
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #5 Marcus Abreu (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 187
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #3 Chris Neathery (Haymaker)",
+   "xSeat": 1,
+   "steps": 188
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #4 Alvin Osborn (Haymaker)",
+   "xSeat": 2,
+   "steps": 221
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #5 Marcus Abreu (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 215
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #3 Chris Neathery (Haymaker)",
+   "xSeat": 1,
+   "steps": 239
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+   "xSeat": 2,
+   "steps": 245
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #4 Alvin Osborn (Haymaker)",
+   "xSeat": 2,
+   "steps": 266
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #8 Jay Yu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 169
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #2 Kody Barret (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 132
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #8 Jay Yu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 163
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #7 Jarod Stein (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 215
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #7 Jarod Stein (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 257
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #2 Kody Barret (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 165
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #1 Jack Savage (Sponge)",
+   "xSeat": 1,
+   "steps": 262
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #4 Zach Froelich (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 57
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #1 Jack Savage (Sponge)",
+   "xSeat": 1,
+   "steps": 256
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #3 Daniel Nino (Haymaker)",
+   "xSeat": 1,
+   "steps": 172
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #3 Daniel Nino (Haymaker)",
+   "xSeat": 1,
+   "steps": 182
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #4 Zach Froelich (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 229
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 160
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #5 Derek Bowling (Haymaker)",
+   "xSeat": 1,
+   "steps": 241
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 145
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #5 Derek Bowling (Haymaker)",
+   "xSeat": 1,
+   "steps": 199
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #7 John Pratt (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 182
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #2 Dean Bartlett (Sponge)",
+   "xSeat": 2,
+   "steps": 57
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #3 Brock Christianson (Haymaker)",
+   "xSeat": 1,
+   "steps": 125
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #8 Matt Townend (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 127
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #1 Joseph Viray (Rain Dance)",
+   "xSeat": 1,
+   "steps": 112
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #1 Joseph Viray (Rain Dance)",
+   "xSeat": 1,
+   "steps": 133
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #8 Matt Townend (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 159
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #3 Brock Christianson (Haymaker)",
+   "xSeat": 1,
+   "steps": 98
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #2 Dean Bartlett (Sponge)",
+   "xSeat": 2,
+   "steps": 165
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #7 John Pratt (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 184
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #7 Ken Knight (Clefable)",
+   "xSeat": 1,
+   "steps": 22
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 125
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "xSeat": 2,
+   "steps": 65
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+   "xSeat": 2,
+   "steps": 224
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "xSeat": 2,
+   "steps": 132
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+   "xSeat": 2,
+   "steps": 222
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #6 Chris Graham (Haymaker)",
+   "xSeat": 2,
+   "steps": 236
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 235
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #6 Chris Graham (Haymaker)",
+   "xSeat": 2,
+   "steps": 228
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #1 Andrew Marshall (Haymaker)",
+   "xSeat": 1,
+   "steps": 199
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #2 William Lieu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 178
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #2 William Lieu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 167
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #1 Andrew Marshall (Haymaker)",
+   "xSeat": 1,
+   "steps": 198
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #3 Chris Neathery (Haymaker)",
+   "xSeat": 1,
+   "steps": 275
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #3 Chris Neathery (Haymaker)",
+   "xSeat": 1,
+   "steps": 266
+  },
+  {
+   "xWins": 0.5,
+   "cut": true,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #7 Ken Knight (Clefable)",
+   "xSeat": 1,
+   "steps": 5000
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #7 Jarod Stein (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 128
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #7 Jarod Stein (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 182
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #5 Marcus Abreu (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 195
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+   "xSeat": 2,
+   "steps": 237
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #5 Marcus Abreu (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 222
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+   "xSeat": 2,
+   "steps": 227
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #4 Alvin Osborn (Haymaker)",
+   "xSeat": 2,
+   "steps": 236
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #4 Alvin Osborn (Haymaker)",
+   "xSeat": 2,
+   "steps": 258
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #3 Daniel Nino (Haymaker)",
+   "xSeat": 1,
+   "steps": 26
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #8 Jay Yu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 227
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #4 Zach Froelich (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 35
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #8 Jay Yu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 213
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #2 Kody Barret (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 200
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #1 Jack Savage (Sponge)",
+   "xSeat": 1,
+   "steps": 212
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #2 Kody Barret (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 181
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #1 Jack Savage (Sponge)",
+   "xSeat": 1,
+   "steps": 218
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #3 Daniel Nino (Haymaker)",
+   "xSeat": 1,
+   "steps": 184
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #7 John Pratt (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 46
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #4 Zach Froelich (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 205
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #7 John Pratt (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 95
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 124
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #5 Derek Bowling (Haymaker)",
+   "xSeat": 1,
+   "steps": 217
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #8 Matt Townend (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 152
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #5 Derek Bowling (Haymaker)",
+   "xSeat": 1,
+   "steps": 229
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 167
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #8 Matt Townend (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 104
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #1 Joseph Viray (Rain Dance)",
+   "xSeat": 1,
+   "steps": 102
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+   "xSeat": 2,
+   "steps": 184
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #1 Joseph Viray (Rain Dance)",
+   "xSeat": 1,
+   "steps": 155
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #3 Brock Christianson (Haymaker)",
+   "xSeat": 1,
+   "steps": 188
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #2 Dean Bartlett (Sponge)",
+   "xSeat": 2,
+   "steps": 195
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #2 Dean Bartlett (Sponge)",
+   "xSeat": 2,
+   "steps": 225
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #3 Brock Christianson (Haymaker)",
+   "xSeat": 1,
+   "steps": 242
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+   "xSeat": 2,
+   "steps": 201
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 207
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 171
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #6 Chris Graham (Haymaker)",
+   "xSeat": 2,
+   "steps": 214
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #7 Ken Knight (Clefable)",
+   "xSeat": 1,
+   "steps": 133
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #7 Ken Knight (Clefable)",
+   "xSeat": 1,
+   "steps": 197
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "xSeat": 2,
+   "steps": 184
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #1 Andrew Marshall (Haymaker)",
+   "xSeat": 1,
+   "steps": 133
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #6 Chris Graham (Haymaker)",
+   "xSeat": 2,
+   "steps": 240
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #2 William Lieu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 94
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #1 Andrew Marshall (Haymaker)",
+   "xSeat": 1,
+   "steps": 124
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #4 Alvin Osborn (Haymaker)",
+   "xSeat": 2,
+   "steps": 55
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "xSeat": 2,
+   "steps": 215
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #2 William Lieu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 190
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #3 Chris Neathery (Haymaker)",
+   "xSeat": 1,
+   "steps": 236
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #4 Alvin Osborn (Haymaker)",
+   "xSeat": 2,
+   "steps": 191
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #3 Chris Neathery (Haymaker)",
+   "xSeat": 1,
+   "steps": 261
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #7 Jarod Stein (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 40
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #8 Jay Yu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 147
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #8 Jay Yu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 141
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+   "xSeat": 2,
+   "steps": 179
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #5 Marcus Abreu (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 155
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+   "xSeat": 2,
+   "steps": 185
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #5 Marcus Abreu (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 202
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #7 Jarod Stein (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 240
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #1 Jack Savage (Sponge)",
+   "xSeat": 1,
+   "steps": 216
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #4 Zach Froelich (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 62
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #1 Jack Savage (Sponge)",
+   "xSeat": 1,
+   "steps": 161
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #2 Kody Barret (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 168
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #4 Zach Froelich (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 107
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #5 Derek Bowling (Haymaker)",
+   "xSeat": 1,
+   "steps": 84
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #2 Kody Barret (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 168
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #3 Daniel Nino (Haymaker)",
+   "xSeat": 1,
+   "steps": 169
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #3 Daniel Nino (Haymaker)",
+   "xSeat": 1,
+   "steps": 211
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 116
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #5 Derek Bowling (Haymaker)",
+   "xSeat": 1,
+   "steps": 168
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #8 Matt Townend (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 118
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #8 Matt Townend (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 108
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 145
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #7 John Pratt (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 145
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #7 John Pratt (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 217
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #1 Joseph Viray (Rain Dance)",
+   "xSeat": 1,
+   "steps": 130
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #1 Joseph Viray (Rain Dance)",
+   "xSeat": 1,
+   "steps": 147
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 180
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+   "xSeat": 2,
+   "steps": 213
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #3 Brock Christianson (Haymaker)",
+   "xSeat": 1,
+   "steps": 210
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #2 Dean Bartlett (Sponge)",
+   "xSeat": 2,
+   "steps": 202
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #2 Dean Bartlett (Sponge)",
+   "xSeat": 2,
+   "steps": 224
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+   "xSeat": 2,
+   "steps": 220
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #3 Brock Christianson (Haymaker)",
+   "xSeat": 1,
+   "steps": 254
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #7 Ken Knight (Clefable)",
+   "xSeat": 1,
+   "steps": 118
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "xSeat": 2,
+   "steps": 153
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #2 William Lieu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 22
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #6 Chris Graham (Haymaker)",
+   "xSeat": 2,
+   "steps": 167
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 220
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "xSeat": 2,
+   "steps": 172
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #7 Ken Knight (Clefable)",
+   "xSeat": 1,
+   "steps": 191
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #6 Chris Graham (Haymaker)",
+   "xSeat": 2,
+   "steps": 251
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #1 Andrew Marshall (Haymaker)",
+   "xSeat": 1,
+   "steps": 215
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #5 Marcus Abreu (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 66
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #2 William Lieu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 158
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #1 Andrew Marshall (Haymaker)",
+   "xSeat": 1,
+   "steps": 220
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #3 Chris Neathery (Haymaker)",
+   "xSeat": 1,
+   "steps": 221
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #3 Chris Neathery (Haymaker)",
+   "xSeat": 1,
+   "steps": 238
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #4 Alvin Osborn (Haymaker)",
+   "xSeat": 2,
+   "steps": 214
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #5 Marcus Abreu (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 190
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #4 Alvin Osborn (Haymaker)",
+   "xSeat": 2,
+   "steps": 261
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #8 Jay Yu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 184
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #8 Jay Yu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 201
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #7 Jarod Stein (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 207
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #1 Jack Savage (Sponge)",
+   "xSeat": 1,
+   "steps": 225
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #1 Jack Savage (Sponge)",
+   "xSeat": 1,
+   "steps": 244
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+   "xSeat": 2,
+   "steps": 250
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+   "xSeat": 2,
+   "steps": 264
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #7 Jarod Stein (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 247
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #2 Kody Barret (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 168
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #2 Kody Barret (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 184
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #4 Zach Froelich (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 154
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #3 Daniel Nino (Haymaker)",
+   "xSeat": 1,
+   "steps": 185
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 59
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #4 Zach Froelich (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 207
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #3 Daniel Nino (Haymaker)",
+   "xSeat": 1,
+   "steps": 232
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #5 Derek Bowling (Haymaker)",
+   "xSeat": 1,
+   "steps": 250
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #5 Derek Bowling (Haymaker)",
+   "xSeat": 1,
+   "steps": 260
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #7 John Pratt (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 142
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 173
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #1 Joseph Viray (Rain Dance)",
+   "xSeat": 1,
+   "steps": 78
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #1 Joseph Viray (Rain Dance)",
+   "xSeat": 1,
+   "steps": 113
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #7 John Pratt (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 170
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #8 Matt Townend (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 173
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #8 Matt Townend (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 219
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #2 Dean Bartlett (Sponge)",
+   "xSeat": 2,
+   "steps": 196
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #3 Brock Christianson (Haymaker)",
+   "xSeat": 1,
+   "steps": 118
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #6 Chris Graham (Haymaker)",
+   "xSeat": 2,
+   "steps": 26
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #7 Ken Knight (Clefable)",
+   "xSeat": 1,
+   "steps": 24
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #3 Brock Christianson (Haymaker)",
+   "xSeat": 1,
+   "steps": 163
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 196
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #2 Dean Bartlett (Sponge)",
+   "xSeat": 2,
+   "steps": 188
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+   "xSeat": 2,
+   "steps": 196
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+   "xSeat": 2,
+   "steps": 261
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 232
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #6 Chris Graham (Haymaker)",
+   "xSeat": 2,
+   "steps": 262
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #2 William Lieu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 41
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #7 Ken Knight (Clefable)",
+   "xSeat": 1,
+   "steps": 197
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #2 William Lieu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 142
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "xSeat": 2,
+   "steps": 192
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #1 Andrew Marshall (Haymaker)",
+   "xSeat": 1,
+   "steps": 179
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #3 Chris Neathery (Haymaker)",
+   "xSeat": 1,
+   "steps": 154
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "xSeat": 2,
+   "steps": 254
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #1 Andrew Marshall (Haymaker)",
+   "xSeat": 1,
+   "steps": 209
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #5 Marcus Abreu (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 92
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #3 Chris Neathery (Haymaker)",
+   "xSeat": 1,
+   "steps": 248
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #5 Marcus Abreu (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 163
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #4 Alvin Osborn (Haymaker)",
+   "xSeat": 2,
+   "steps": 238
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+   "xSeat": 2,
+   "steps": 208
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #4 Alvin Osborn (Haymaker)",
+   "xSeat": 2,
+   "steps": 260
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+   "xSeat": 2,
+   "steps": 245
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #2 Kody Barret (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 55
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #8 Jay Yu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 140
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #7 Jarod Stein (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 200
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #2 Kody Barret (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 176
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #8 Jay Yu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 200
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #1 Jack Savage (Sponge)",
+   "xSeat": 1,
+   "steps": 218
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #1 Jack Savage (Sponge)",
+   "xSeat": 1,
+   "steps": 196
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #7 Jarod Stein (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 242
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 42
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #3 Daniel Nino (Haymaker)",
+   "xSeat": 1,
+   "steps": 221
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 71
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #3 Daniel Nino (Haymaker)",
+   "xSeat": 1,
+   "steps": 221
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #4 Zach Froelich (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 117
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #4 Zach Froelich (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 202
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #5 Derek Bowling (Haymaker)",
+   "xSeat": 1,
+   "steps": 232
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #5 Derek Bowling (Haymaker)",
+   "xSeat": 1,
+   "steps": 208
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #8 Matt Townend (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 138
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #7 John Pratt (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 175
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #7 John Pratt (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 187
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #1 Joseph Viray (Rain Dance)",
+   "xSeat": 1,
+   "steps": 157
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #8 Matt Townend (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 198
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #1 Joseph Viray (Rain Dance)",
+   "xSeat": 1,
+   "steps": 142
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #3 Brock Christianson (Haymaker)",
+   "xSeat": 1,
+   "steps": 169
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #2 Dean Bartlett (Sponge)",
+   "xSeat": 2,
+   "steps": 189
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #2 Dean Bartlett (Sponge)",
+   "xSeat": 2,
+   "steps": 214
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #3 Brock Christianson (Haymaker)",
+   "xSeat": 1,
+   "steps": 26
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 143
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "xSeat": 2,
+   "steps": 92
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+   "xSeat": 2,
+   "steps": 210
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #6 Chris Graham (Haymaker)",
+   "xSeat": 2,
+   "steps": 210
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+   "xSeat": 2,
+   "steps": 234
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 220
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #6 Chris Graham (Haymaker)",
+   "xSeat": 2,
+   "steps": 244
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #7 Ken Knight (Clefable)",
+   "xSeat": 1,
+   "steps": 222
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #2 William Lieu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 151
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "xSeat": 2,
+   "steps": 176
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #1 Andrew Marshall (Haymaker)",
+   "xSeat": 1,
+   "steps": 164
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #1 Andrew Marshall (Haymaker)",
+   "xSeat": 1,
+   "steps": 179
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #2 William Lieu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 161
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+   "xSeat": 2,
+   "steps": 36
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #3 Chris Neathery (Haymaker)",
+   "xSeat": 1,
+   "steps": 236
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #4 Alvin Osborn (Haymaker)",
+   "xSeat": 2,
+   "steps": 143
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #3 Chris Neathery (Haymaker)",
+   "xSeat": 1,
+   "steps": 242
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #5 Marcus Abreu (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 153
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #7 Jarod Stein (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 95
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #5 Marcus Abreu (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 214
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #4 Alvin Osborn (Haymaker)",
+   "xSeat": 2,
+   "steps": 249
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+   "xSeat": 2,
+   "steps": 248
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #7 Jarod Stein (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 235
+  },
+  {
+   "xWins": 0.5,
+   "cut": true,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #7 Ken Knight (Clefable)",
+   "xSeat": 1,
+   "steps": 5000
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #8 Jay Yu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 150
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #8 Jay Yu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 183
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #2 Kody Barret (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 197
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #3 Daniel Nino (Haymaker)",
+   "xSeat": 1,
+   "steps": 227
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #1 Jack Savage (Sponge)",
+   "xSeat": 1,
+   "steps": 234
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #1 Jack Savage (Sponge)",
+   "xSeat": 1,
+   "steps": 212
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #3 Daniel Nino (Haymaker)",
+   "xSeat": 1,
+   "steps": 221
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #2 Kody Barret (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 212
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #4 Zach Froelich (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 116
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #7 John Pratt (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 124
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 120
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #4 Zach Froelich (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 181
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 139
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #8 Matt Townend (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 170
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #7 John Pratt (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 154
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #5 Derek Bowling (Haymaker)",
+   "xSeat": 1,
+   "steps": 201
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #2 Dean Bartlett (Sponge)",
+   "xSeat": 2,
+   "steps": 63
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "11-14 #5 Derek Bowling (Haymaker)",
+   "xSeat": 1,
+   "steps": 261
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #3 Brock Christianson (Haymaker)",
+   "xSeat": 1,
+   "steps": 44
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "11-14 #8 Matt Townend (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 174
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #1 Joseph Viray (Rain Dance)",
+   "xSeat": 1,
+   "steps": 144
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #1 Joseph Viray (Rain Dance)",
+   "xSeat": 1,
+   "steps": 191
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #3 Brock Christianson (Haymaker)",
+   "xSeat": 1,
+   "steps": 149
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #2 Dean Bartlett (Sponge)",
+   "xSeat": 2,
+   "steps": 213
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+   "xSeat": 2,
+   "steps": 225
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #7 Ken Knight (Clefable)",
+   "xSeat": 1,
+   "steps": 95
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "xSeat": 2,
+   "steps": 35
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 161
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #7 Ken Knight (Clefable)",
+   "xSeat": 1,
+   "steps": 185
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #6 Chris Graham (Haymaker)",
+   "xSeat": 2,
+   "steps": 186
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+   "xSeat": 2,
+   "steps": 199
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #6 Chris Graham (Haymaker)",
+   "xSeat": 2,
+   "steps": 227
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "xSeat": 2,
+   "steps": 228
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 233
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #3 Chris Neathery (Haymaker)",
+   "xSeat": 1,
+   "steps": 98
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #1 Andrew Marshall (Haymaker)",
+   "xSeat": 1,
+   "steps": 184
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #2 William Lieu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 204
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #2 William Lieu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 188
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #1 Andrew Marshall (Haymaker)",
+   "xSeat": 1,
+   "steps": 245
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #4 Alvin Osborn (Haymaker)",
+   "xSeat": 2,
+   "steps": 181
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #5 Marcus Abreu (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 139
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #5 Marcus Abreu (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 86
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #7 Jarod Stein (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 41
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #3 Chris Neathery (Haymaker)",
+   "xSeat": 1,
+   "steps": 267
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #4 Alvin Osborn (Haymaker)",
+   "xSeat": 2,
+   "steps": 288
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #8 Jay Yu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 153
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": false,
+   "xDeck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+   "xSeat": 2,
+   "steps": 214
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+   "xSeat": 2,
+   "steps": 231
+  },
+  {
+   "xWins": 0,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #8 Jay Yu (Wigglytuff)",
+   "xSeat": 2,
+   "steps": 195
+  },
+  {
+   "xWins": 1,
+   "cut": false,
+   "xDeckIsD1": true,
+   "xDeck": "15+ #7 Jarod Stein (Wigglytuff)",
+   "xSeat": 1,
+   "steps": 247
+  }
+ ]
+}
