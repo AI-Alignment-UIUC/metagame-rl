@@ -10,6 +10,7 @@
 // Decks:  any substring of an archived deck name ("division #place player (label)"), or "all"
 //         to cycle every archived deck on both sides.
 //
+//      --mirror: both sides play the same deck; --per-deck: a line per deck of X
 // Run: node env/tools/evaluate.js --x simplebot --y random --d1 "Wigglytuff" --d2 "Haymaker"
 //        [--games 200] [--workers 16] [--concurrency 16] [--seed 1] [--json out.json]
 'use strict';
@@ -26,6 +27,9 @@ const WORKERS = Number(flag('workers', Math.max(1, os.cpus().length - 4)));
 const CONCURRENCY = Number(flag('concurrency', 16));
 const SEED = Number(flag('seed', 1));
 const JSON_OUT = flag('json', null);
+const DECKS_FILE = flag('decks-file', null);   // JSON [{ name, cards }] instead of the archived decks
+const MIRROR = argv.includes('--mirror');        // both sides play the same deck (piloting skill per deck)
+const PER_DECK = argv.includes('--per-deck');    // print the win rate for each of X's decks
 
 async function makeAgent(spec, enc, seed) {
   const { OnnxAgent, RandomAgent, FirstAgent, HeuristicAgent, SimpleBotAgent, SearchAgent } = require('../agents.js');
@@ -57,10 +61,11 @@ async function worker(from, to) {
   const { Encoder } = require('../encode.js');
   const { Runner } = require('../runner.js');
   const { archivedDecks } = require('../decks.js');
-  const decks = archivedDecks();
+  const decks = DECKS_FILE ? require('../decks.js').decksFromFile(DECKS_FILE) : archivedDecks();
   // A token-model agent needs token observations (the other agents choose by option either way).
   const tok = [X, Y].some(sp => sp.startsWith('onnxtok:'));
-  const enc = tok ? new (require('../tokens.js').TokenEncoder)() : new Encoder([...new Set(decks.flatMap(d => d.cards))]);
+  // The identity vocabulary is the one the models train on (the field's cards), whatever the decks.
+  const enc = tok ? new (require('../tokens.js').TokenEncoder)() : new Encoder([...new Set(archivedDecks().flatMap(d => d.cards))]);
   const agents = { x: await makeAgent(X, enc, SEED * 7919 + from), y: await makeAgent(Y, enc, SEED * 104729 + from) };
   const d1 = pickDecks(decks, D1), d2 = pickDecks(decks, D2);
   let g = from;
@@ -70,7 +75,7 @@ async function worker(from, to) {
     const i = g++;
     // Even games: X has D1; odd games: X has D2. Seats alternate too.
     const xDeckFirst = i % 2 === 0;
-    const a = d1[Math.floor(i / 2) % d1.length], b = d2[Math.floor(i / 2) % d2.length];
+    const a = d1[Math.floor(i / 2) % d1.length], b = MIRROR ? a : d2[Math.floor(i / 2) % d2.length];
     const [xd, yd] = xDeckFirst ? [a, b] : [b, a];
     const xSeat = Math.floor(i / 2) % 2 === 0 ? 1 : 2;
     const seats = xSeat === 1 ? { 1: 'x', 2: 'y' } : { 1: 'y', 2: 'x' };
@@ -119,6 +124,11 @@ if (process.env.EVAL_WORKER) {
     if (D1 !== D2) {
       console.log(`  ${X} on ${D1}, ${Y} on ${D2}: ${fmt(dir1)}`);
       console.log(`  ${X} on ${D2}, ${Y} on ${D1}: ${fmt(dir2)}`);
+    }
+    if (PER_DECK) {
+      const by = new Map();
+      for (const r of rows) { if (!by.has(r.xDeck)) by.set(r.xDeck, []); by.get(r.xDeck).push(r); }
+      for (const [deck, rs] of [...by].sort((p, q) => summary(p[1]).xWinRate - summary(q[1]).xWinRate)) console.log(`    ${fmt(summary(rs))}  ${deck}`);
     }
     for (const r of rows.filter(r => r.error).slice(0, 5)) console.log('  ERROR', r.error);
     if (JSON_OUT) fs.writeFileSync(JSON_OUT, JSON.stringify({ x: X, y: Y, d1: D1, d2: D2, all, dir1, dir2, rows }, null, 1));

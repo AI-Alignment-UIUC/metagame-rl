@@ -20,11 +20,12 @@ const WORKERS = Number(flag('workers', Math.max(1, os.cpus().length - 4)));
 const CONCURRENCY = Number(flag('concurrency', 8));
 const SEED = Number(flag('seed', 1));
 const DECKS = flag('decks', null);
+const DECKS_FILE = flag('decks-file', null);   // JSON [{ name, cards }] instead of the archived decks
 const OUT = flag('out', null);
 
 function deckList() {
-  const { archivedDecks } = require('../decks.js');
-  const all = archivedDecks();
+  const { archivedDecks, decksFromFile } = require('../decks.js');
+  const all = DECKS_FILE ? decksFromFile(DECKS_FILE) : archivedDecks();
   if (!DECKS) return all;
   return DECKS.split(',').map(p => {
     const d = all.find(x => x.name.toLowerCase().includes(p.trim().toLowerCase()));
@@ -48,11 +49,13 @@ async function worker(from, to) {
   const { archivedDecks } = require('../decks.js');
   const agents = require('../agents.js');
   const decks = deckList();
-  const enc = new Encoder([...new Set(archivedDecks().flatMap(d => d.cards))]);
+  const tok = AGENT.startsWith('onnxtok:');
+  const enc = tok ? new (require('../tokens.js').TokenEncoder)() : new Encoder([...new Set(archivedDecks().flatMap(d => d.cards))]);
   const make = () => {
     if (AGENT === 'simplebot') return new agents.SimpleBotAgent();
     if (AGENT === 'heuristic') return new agents.HeuristicAgent();
     if (AGENT === 'random') return new agents.RandomAgent({ seed: SEED + from });
+    if (tok) return agents.OnnxTokenAgent.load(AGENT.slice(8).replace(/:greedy$/, ''), enc, { seed: SEED + from, greedy: AGENT.endsWith(':greedy') });
     if (AGENT.startsWith('onnx:')) return agents.OnnxAgent.load(AGENT.slice(5).replace(/:greedy$/, ''), enc.obsSize, enc.actionSize, { seed: SEED + from, greedy: AGENT.endsWith(':greedy') });
     throw new Error('unknown agent ' + AGENT);
   };

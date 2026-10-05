@@ -23,6 +23,7 @@ const decks = archivedDecks();
 const identity = new Encoder([...new Set(decks.flatMap(d => d.cards))]);
 const tokens = new TokenEncoder();
 const deckByName = name => {
+  if (typeof name === 'object') return name;   // a decklist { name, cards } (built decks, A5)
   const d = decks.find(x => x.name === name) || decks.find(x => x.name.toLowerCase().includes(name.toLowerCase()));
   if (!d) throw new Error('no archived deck matches ' + name);
   return d;

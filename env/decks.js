@@ -12,4 +12,10 @@ function archivedDecks() {
   return cache;
 }
 
-module.exports = { archivedDecks };
+// Decks from a JSON file: [{ name, cards: [fullName x 60] }] (built decks, for A5).
+function decksFromFile(file) {
+  const list = JSON.parse(require('fs').readFileSync(file, 'utf8'));
+  return (Array.isArray(list) ? list : list.decks).map(d => ({ name: d.name, cards: d.cards }));
+}
+
+module.exports = { archivedDecks, decksFromFile };
