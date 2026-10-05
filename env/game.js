@@ -29,7 +29,8 @@ class Game {
     this.spaceFor = -1;      // id of the prompt `space` belongs to
     this.cached = null;      // decision() result until the next step
     this.error = null;       // set if the engine threw on an offered option
-    this.chain = null;       // { base, log }: replay record since the last attack or Power
+    this.chain = null;       // { base, log, key }: replay record since the last attack or Power
+    this.deadEnds = [];      // [{ base, key }]: main-phase options found to lead only to a no-op cancel
     this.dispatch(new C.AddPlayerAction(1, 'A', deckA));
     this.dispatch(new C.AddPlayerAction(2, 'B', deckB));
   }
@@ -78,14 +79,27 @@ class Game {
       if (REPLAY_CHECKED.has(prompt.type) && this.chain) {
         options = options.filter(o => o.raw === undefined || o.raw === null || this.replayAccepts(prompt, o.raw));
       }
-      // A cancel that only undoes the action that opened this prompt is a no-op: once an action
-      // is started it is finished, or a policy can cycle start -> cancel forever.
-      if (this.picks.length === 0 && options.length > 1 && options.some(o => o.key === 'cancel') && this.cancelIsNoop(prompt)) {
-        options = options.filter(o => o.key !== 'cancel');
+      // An answer that only undoes the action that opened this prompt (cancel, or done with
+      // nothing picked) is a no-op: once an action is started it is finished, or a policy can
+      // cycle start -> undo forever.
+      if (this.picks.length === 0) {
+        const noop = options.filter(o => (o.key === 'cancel' || (o.key === 'done' && emptyRaw(o.raw))) && this.answerIsNoop(prompt, o.raw));
+        if (noop.length > 0) {
+          if (noop.length < options.length) options = options.filter(o => !noop.includes(o));
+          // Only no-op answers are left (the replay check removed every other answer): the
+          // action that opened the prompt is a dead end, so it is not offered again in that state.
+          else if (this.chain.key) this.deadEnds.push({ base: this.chain.base, key: this.chain.key });
+        }
       }
       d = { playerId: prompt.playerId, prompt, options };
     } else {
-      d = { playerId: this.state.players[this.state.activePlayer].id, prompt: null, options: turnOptions(this.state, this.store) };
+      let options = turnOptions(this.state, this.store);
+      if (this.deadEnds.length > 0) {
+        this.deadEnds = this.deadEnds.filter(e => sameState(this.state, e.base));
+        const dead = new Set(this.deadEnds.map(e => e.key));
+        options = options.filter(o => !dead.has(o.key));
+      }
+      d = { playerId: this.state.players[this.state.activePlayer].id, prompt: null, options };
     }
     if (d.options.length === 0) {
       this.error = new Error(`no legal option at step ${this.steps} (${prompt ? prompt.type + ' / ' + prompt.message : 'main phase'})`);
@@ -117,7 +131,7 @@ class Game {
       // Snapshot before actions that can open a prompt of their own (pass, attach, basic and
       // evolve can't), for replay checks of what follows.
       this.chain = /^(trainer|power|retreat|attack|stadium|tip)|/.test(opt.key) || opt.key === 'stadium'
-        ? { base: C.deepClone(this.state, [C.Card]), log: [{ action: opt.action }], noop: new Map() } : null;
+        ? { base: C.deepClone(this.state, [C.Card]), log: [{ action: opt.action }], noop: new Map(), key: opt.key } : null;
       this.dispatch(opt.action);
     }
   }
@@ -182,7 +196,7 @@ Game.prototype.clone = function (rng, viewer) {
   g.store = newStore(C.deepClone(this.state, [C.Card]));
   g.store.cardRanks = this.store.cardRanks;
   g.steps = this.steps;
-  g.picks = []; g.pickedKeys = []; g.space = null; g.spaceFor = -1; g.cached = null; g.error = null; g.chain = null;
+  g.picks = []; g.pickedKeys = []; g.space = null; g.spaceFor = -1; g.cached = null; g.error = null; g.chain = null; g.deadEnds = [];
   if (viewer !== undefined) {
     for (const p of g.state.players) {
       const zones = p.id === viewer ? [p.deck, ...p.prizes] : [p.hand, p.deck, ...p.prizes];
@@ -200,16 +214,24 @@ Game.prototype.clone = function (rng, viewer) {
 // of actions since the attack or Power that opened the prompt, on a copy of the state before it.
 const REPLAY_CHECKED = new Set(['Choose attack']);
 
-// True if answering `prompt` with cancel leaves the state exactly as it was before the action
-// that started this chain. Cached per prompt.
-Game.prototype.cancelIsNoop = function (prompt) {
+// True if answering `prompt` with `raw` leaves the state exactly as it was before the action
+// that started this chain. Cached per prompt and answer.
+Game.prototype.answerIsNoop = function (prompt, raw) {
   if (!this.chain) return false;
-  if (this.chain.noop.has(prompt.id)) return this.chain.noop.get(prompt.id);
-  const after = this.replayState(prompt, null);
+  const key = prompt.id + ':' + JSON.stringify(raw);
+  if (this.chain.noop.has(key)) return this.chain.noop.get(key);
+  const after = this.replayState(prompt, raw);
   const noop = after !== null && sameState(after, this.chain.base);
-  this.chain.noop.set(prompt.id, noop);
+  this.chain.noop.set(key, noop);
   return noop;
 };
+
+Game.prototype.cancelIsNoop = function (prompt) { return this.answerIsNoop(prompt, null); };
+
+// An answer that picks nothing.
+function emptyRaw(raw) {
+  return raw === null || (Array.isArray(raw) && raw.length === 0);
+}
 
 // The state after replaying the chain and answering `prompt` with `raw`, or null if rejected.
 Game.prototype.replayState = function (prompt, raw) {

@@ -290,3 +290,27 @@ Entry format:
   against the plain agent, 7,170 decisions in token games with 0 invalid; A4.1 vs an untrained
   token model 80/80.
 - **Next:** Train the token model (`runs/a4-tok`, A4.1 settings, 250 iterations), then compare.
+
+### #20 · 2026-10-05 · A4.2 · Two endless loops found by the token run; fixed, A4.1 re-scored
+- **Done:** The first token run (`runs/a4-tok`, stopped at iteration 24) never finished its
+  first SimpleBot evaluation; replaying each of the 16 worker chunks and then single games found
+  two loops. (1) Clefable mirror: Metronome copies the other Clefable's Metronome, which prompts
+  again; each copy nests another prompt (moves slowed from 6 to 80 ms), so the 5,000-step cap
+  would take hours. Fork `3d2a13e`: Metronome can't copy Metronome (blocked in the copy prompt;
+  nothing happens if it is the only attack), with 3 new specs. (2) Free start-then-undo cycles
+  the #14 rule missed: Ditto's Transform whose copy prompt is left with only cancel after the
+  replay check, and Rain Dance answered with "done" and nothing attached. `env/game.js`: any
+  zero-pick answer (cancel or an empty done) that replays to the state before the action is
+  dropped; if it is the only answer, the action is recorded as a dead end and not offered again
+  in that state. Token run restarted from scratch on the fixed environment.
+- **Evidence:** Clefable specs fail 3/3 without the fix; all 689 set specs pass (`nyc` itself
+  exits non-zero). Game 93 (Clefable mirror) ends in 185 steps, game 103 (Transform cycle) in
+  185, a Rain Dance mirror that cycled 1,500 steps in 104; the 16 evaluation chunks finish in
+  11-14 s. Checks: 24/24 decks, 23/23 rulings, 68/68 card tests, engine equivalence 20/20,
+  `test_env` PASS, `verify_enumerator` 400 games PASS, re-encoding 8,744 decisions 0 mismatches.
+  A4.1 re-scored on the same seeds (`notes/data/eval/a4fix_*`): mirror 89.6% ± 1.2 (was 89.25%),
+  field 88.5% ± 1.3 (was 88.0%), 0 games cut off (was 44 / 52, all Viray Rain Dance); Viray
+  71% / 72% (was 67% / 61%), still the lowest deck.
+- **Found:** Every cut-off game in the A4.1 exit was this Rain Dance cycle, so its weakest-deck
+  score was partly an environment fault. A4.1 itself trained with both loops possible.
+- **Next:** Token run on the fixed environment, then compare against the re-scored A4.1.
