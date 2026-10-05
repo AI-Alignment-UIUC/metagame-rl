@@ -19,11 +19,11 @@ and proven there first.
 <!-- status:start -->
 *Updated 2026-10-05.*
 
-**Where things stand.** A0 and A1 are done. The game is now a seeded RL environment whose
-legal-action enumerator matches an exhaustive oracle on every decision of 10,000 games, with a
-byte-exact encoder, a reset/step API, a Node + ONNX / PyTorch PPO pipeline and CI, at 53.9
-random-policy games/s per core (target ≥ 50). Next is A2 (baselines and evaluation), then
-training. No agent has been trained yet.
+**Where things stand.** A0 and A1 are done, and A2's baselines are in. A3 is close: a PPO
+self-play policy beats SimpleBot 98.5% ± 1.7 in both directions of Wigglytuff vs Haymaker, and
+the held-out check is running. The token + pointer model (A4.2), central GPU inference and the
+A5 deck-building pieces (matchup model, edit builder, PSRO loop) are built and smoke-tested. Next
+are A3's exit, A4.1 (one policy for all 24 decks) and then the metagame level.
 
 **Earlier work:**
 
@@ -37,21 +37,24 @@ training. No agent has been trained yet.
   validates, and actions it accepts on the opponent's side — that the environment now guards
   against. All Base-era promos are in for the A5 full pool.
 
-**Recent (log #10–11):** Environment throughput went from 4.5 to 53.9 random-policy
-games/s/core, meeting A1's target. The big wins were an O(n^2) clone, effect propagation to
-no-op cards, and the knockout scan's HP check of every Pokémon after every action. Every engine
-change was checked against the original engine, and the final code passed the 10,000-game
-enumerator verification again.
+**Recent (log #10–15):** The environment reached 68.7 random-policy games/s/core (an O(n^2)
+clone, propagation to no-op cards, a per-action knockout scan, and clones made prototypes of
+the live state were the big costs). The A2 ladder is transitive (random < first-option <
+heuristic < SimpleBot); a search rung is parked. The first A3 run exposed free start-then-cancel
+cycles in the action space, now removed (10,000-game verification, 0 mismatches); the rerun beat
+SimpleBot 31% → 98.5% in 160 iterations. Token-model inference is 30× the MLP's, so it runs on
+the GPU, served to the rollout workers in batches.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. A2: heuristic and search rungs for the baseline ladder (random, first-option, heuristic,
-   SimpleBot, search).
+1. A3 exit: the final policy against SimpleBot (800 games, both directions) and against the
+   held-out run c's checkpoints.
 2. A2: the 24 × 24 SimpleBot matchup matrix and its Nash equilibrium.
-3. A2: puzzle positions with provable answers.
-4. A3: PPO self-play league on Wigglytuff vs Haymaker; exit = beats SimpleBot both directions.
+3. A4.1: one deck-general policy over all 24 lists; exit = beats SimpleBot with every deck.
+4. A4.2: the token model on the same task, matched against A4.1.
+5. A5.1: Nash over the trained-policy matrix; then PSRO with the builder.
 <!-- status:end -->
 
 ---
