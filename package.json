@@ -1,5 +1,5 @@
 {
-  "name": "ptcg-metagame-rl",
+  "name": "metagame-rl",
   "private": true,
   "description": "Pokemon TCG metagame RL: environment, rollout workers and tools (the engine is the ryuu-play/ submodule).",
   "license": "MIT",

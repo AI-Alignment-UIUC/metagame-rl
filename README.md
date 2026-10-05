@@ -342,8 +342,8 @@ Same exit criteria as A4 and A5, measured against the archived Worlds top cut.
 Requires Node.js 18.19+ (developed on Node 24).
 
 ```
-git clone --recurse-submodules https://github.com/AI-Alignment-UIUC/ptcg-metagame-rl
-cd ptcg-metagame-rl/ryuu-play
+git clone --recurse-submodules https://github.com/AI-Alignment-UIUC/metagame-rl
+cd metagame-rl/ryuu-play
 npm install --workspace=packages/common --workspace=packages/sets --workspace=packages/simple-bot
 npm run compile -w packages/common && npm run compile -w packages/sets
 (cd packages/sets && npx jasmine-ts "tests/**/*.spec.ts")      # 541 engine specs
