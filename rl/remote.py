@@ -118,8 +118,8 @@ class RemotePool:
     def _serve(self, requests, models, device):
         by_slot = {}
         for r in requests:
-            by_slot.setdefault(r[1]["slot"], []).append(r)
-        for slot, group in by_slot.items():
+            by_slot.setdefault((r[1]["slot"], bool(r[1].get("greedy"))), []).append(r)
+        for (slot, greedy), group in by_slot.items():
             model = models[slot]
             ns = [h["n"] for _, h, _ in group]
             B = sum(ns)
@@ -142,7 +142,7 @@ class RemotePool:
             mask[torch.from_numpy(np.concatenate(rows)).to(device),
                  torch.from_numpy(np.concatenate(cols).astype(np.int64)).to(device)] = True
             logp_all = torch.log_softmax(logits.float().masked_fill(~mask, -1e9), -1)
-            action = torch.multinomial(logp_all.exp(), 1).squeeze(1)
+            action = logp_all.argmax(-1) if greedy else torch.multinomial(logp_all.exp(), 1).squeeze(1)
             logp = logp_all.gather(1, action[:, None]).squeeze(1)
             action = action.int().cpu().numpy()
             logp, value = logp.cpu().numpy(), value.float().cpu().numpy()

@@ -23,6 +23,7 @@ const DECKS = flag('decks', null);
 const DECKS_FILE = flag('decks-file', null);   // JSON [{ name, cards }] instead of the archived decks
 const OUT = flag('out', null);
 const NEW = Number(flag('new', 0));   // only pairs involving the last NEW decks (incremental PSRO rows)
+const PAIRS = flag('pairs', null);    // "0-1,2-3": only these pairs (card ablations)
 
 function deckList() {
   const { archivedDecks, decksFromFile } = require('../decks.js');
@@ -38,7 +39,8 @@ function deckList() {
 // Game k of the whole run -> (i, j, seat of deck i).
 function jobsFor(n) {
   const pairs = [];
-  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) if (!NEW || j >= n - NEW) pairs.push([i, j]);
+  if (PAIRS) for (const p of PAIRS.split(',')) pairs.push(p.split('-').map(Number));
+  else for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) if (!NEW || j >= n - NEW) pairs.push([i, j]);
   const jobs = [];
   for (const [i, j] of pairs) for (let g = 0; g < GAMES; g++) jobs.push({ i, j, iSeat: g % 2 === 0 ? 1 : 2 });
   return jobs;
@@ -114,14 +116,18 @@ if (process.env.MATRIX_WORKER) {
     const n = decks.length;
     const wins = Array.from({ length: n }, () => new Array(n).fill(0));
     const games = Array.from({ length: n }, () => new Array(n).fill(0));
+    const steps = Array.from({ length: n }, () => new Array(n).fill(0));   // total decisions per pair
     for (const r of results) {
       wins[r.i][r.j] += r.iWin; wins[r.j][r.i] += 1 - r.iWin;
       games[r.i][r.j]++; games[r.j][r.i]++;
+      steps[r.i][r.j] += r.steps; steps[r.j][r.i] += r.steps;
     }
     for (let i = 0; i < n; i++) { wins[i][i] = GAMES / 2; games[i][i] = GAMES; }   // mirrors: 0.5 by symmetry
     const errors = results.filter(r => r.error).length;
     const cut = results.filter(r => r.iWin === 0.5).length;
-    console.log(`\n${results.length} games in ${((Date.now() - t0) / 1000).toFixed(0)}s, ${errors} errors, ${cut} draws or cut off`);
-    if (OUT) fs.writeFileSync(OUT, JSON.stringify({ agent: AGENT, gamesPerPair: GAMES, seed: SEED, decks: decks.map(d => d.name), wins, games }, null, 1));
+    const meanSteps = results.reduce((a, r) => a + r.steps, 0) / Math.max(1, results.length);
+    console.log(`\n${results.length} games in ${((Date.now() - t0) / 1000).toFixed(0)}s, ${errors} errors, ${cut} draws or cut off, ` +
+      `${meanSteps.toFixed(0)} decisions per game`);
+    if (OUT) fs.writeFileSync(OUT, JSON.stringify({ agent: AGENT, gamesPerPair: GAMES, seed: SEED, decks: decks.map(d => d.name), wins, games, steps }, null, 1));
   }).catch(e => { console.error(e); process.exitCode = 1; });
 }

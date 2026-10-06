@@ -18,6 +18,7 @@ import argparse
 import json
 import re
 import subprocess
+import time
 from pathlib import Path
 
 import numpy as np
@@ -96,10 +97,15 @@ class Population:
     def as_json(self):
         return [{"name": n, "cards": self.pool.names(v)} for n, v in zip(self.names, self.decks)]
 
-    def measure(self, run: Path, policy_spec: str, games: int, workers: int, new: int, seed: int):
-        """Plays the pairs not measured yet (those involving the last `new` decks, or all)."""
+    def measure(self, run: Path, policy_spec: str, games: int, workers: int, new: int, seed: int, gpu=None):
+        """Plays the pairs not measured yet (those involving the last `new` decks, or all), with
+        `gpu` (rl/gpu_matrix.GpuMatrix) if given, else with env/tools/matrix.js on CPU workers."""
         decks_file = run / "population.json"
         decks_file.write_text(json.dumps(self.as_json()))
+        if gpu is not None:
+            W, G, _ = gpu.play(self.as_json(), games, seed, new)
+            self._merge(W, G, games)
+            return gpu.last
         out = run / "matrix_new.json"
         cmd = ["node", str(ROOT / "env/tools/matrix.js"), "--agent", policy_spec, "--decks-file", str(decks_file),
                "--games", str(games), "--workers", str(workers), "--seed", str(seed), "--out", str(out)]
@@ -107,7 +113,9 @@ class Population:
             cmd += ["--new", str(new)]
         subprocess.run(cmd, cwd=ROOT, check=True, stdout=subprocess.DEVNULL)
         m = json.load(open(out))
-        W, G = np.array(m["wins"]), np.array(m["games"])
+        self._merge(np.array(m["wins"]), np.array(m["games"]), games)
+
+    def _merge(self, W, G, games):
         played = G > 0
         np.fill_diagonal(played, False)
         self.wins[played] = W[played]
@@ -129,6 +137,8 @@ def main(argv=None):
     ap.add_argument("--builder-iters", type=int, default=200)
     ap.add_argument("--pilot-iters", type=int, default=0, help="play-policy fine-tuning iterations per PSRO iteration")
     ap.add_argument("--workers", type=int, default=14)
+    ap.add_argument("--inference", choices=["gpu", "cpu"], default="gpu",
+                    help="matrix games with central GPU inference (rl/gpu_matrix.py) or CPU ONNX workers (matrix.js)")
     ap.add_argument("--seed", type=int, default=1)
     args = ap.parse_args(argv)
 
@@ -152,7 +162,11 @@ def main(argv=None):
         for k in range(int(args.init.split(":")[1])):
             pop.add(random_deck(pool, rng), f"random-{k}", "random")
     policy = args.policy
-    spec = as_spec(policy) if policy.endswith(".pt") else policy
+    spec = as_spec(policy) if policy.endswith(".pt") and args.inference == "cpu" else policy
+    gpu = None
+    if args.inference == "gpu":
+        from rl.gpu_matrix import GpuMatrix
+        gpu = GpuMatrix(policy, args.workers)
     log = open(run / "log.jsonl", "a")
 
     def nearest(v):
@@ -161,10 +175,12 @@ def main(argv=None):
         return archived[k][0], label_of(archived[k][0]), round(o[k], 3)
 
     measured = 0
-    for it in range(args.iterations):
+    for it in range(args.iterations + 1):
         new = len(pop.decks) - measured
-        pop.measure(run, spec, args.games, args.workers, new if measured else 0, args.seed * 1000 + it)
+        t0 = time.time()
+        speed = pop.measure(run, spec, args.games, args.workers, new if measured else 0, args.seed * 1000 + it, gpu)
         measured = len(pop.decks)
+        t_games = time.time() - t0
         P = pop.wins / np.maximum(pop.games, 1)
         sigma, value = solve(P)
         support = [(i, float(sigma[i])) for i in np.argsort(-sigma) if sigma[i] > 1e-4]
@@ -175,6 +191,12 @@ def main(argv=None):
         print(f"PSRO it {it}: population {len(pop.decks)}, support " + ", ".join(
             f"{pop.names[i][:28]} {w:.2f} [{row['support'][k]['nearest'][1]} {row['support'][k]['nearest'][2]:.2f}]"
             for k, (i, w) in enumerate(support[:8])), flush=True)
+        row["games"] = speed
+        row["seconds"] = {"games": round(t_games, 1)}
+        if it == args.iterations:                  # the last proposals measured; no new search
+            log.write(json.dumps(row) + "\n")
+            break
+        t0 = time.time()
 
         D = np.stack(pop.decks).astype(np.float32)
         model = MatchupModel(table, text)
@@ -192,6 +214,7 @@ def main(argv=None):
         row["builder"] = {"gain_first": blog[0]["gain"], "gain_last": blog[-1]["gain"], "score_last": blog[-1]["final_score"]}
         props = builder.propose(model, Dt[torch.argsort(sig, descending=True)[:8]], Dt, sig, k=args.new,
                                 existing=pop.decks)
+        row["seconds"]["model_and_builder"] = round(time.time() - t0, 1)
         for k, (v, score) in enumerate(props):
             pop.add(v, f"psro{it}-{k} ({nearest(v)[1]}-like)", f"builder it {it}, predicted {score:.3f}")
         row["proposals"] = [{"name": pop.names[-len(props) + k], "predicted": s, "nearest": nearest(v)}
@@ -203,6 +226,10 @@ def main(argv=None):
         # Piloting (fine-tuning the play policy on the new decks) is run separately for now:
         # rl.train --init-from <policy> --matchups-file <new vs population>.
     log.close()
+    (run / "population.json").write_text(json.dumps(pop.as_json()))
+    np.savez(run / "matrix.npz", wins=pop.wins, games=pop.games, names=np.array(pop.names))
+    if gpu is not None:
+        gpu.close()
 
 
 if __name__ == "__main__":

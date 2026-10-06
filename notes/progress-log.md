@@ -471,3 +471,79 @@ Entry format:
   page and noting that step 4 in the code is still the PPO edit policy.
 - **Evidence:** The SVG parses as XML. Not checked on GitHub's renderer.
 - **Next:** The cold-start run `runs/a5-cold1` (started 23:41) is in progress.
+
+### #30 · 2026-10-06 · A5 · PSRO matrix games on the GPU: 14x faster, identical results
+- **Done:** `rl/gpu_matrix.py` plays matchup-matrix games with central GPU inference: a new
+  `games` command in `env/remote_worker.js` (slot-0 policy in both seats, results per game) and
+  greedy serving in `rl/remote.py` (argmax when the request asks for it). Same jobs and seeds as
+  `env/tools/matrix.js`. `rl/psro.py` uses it by default (`--inference gpu|cpu`), keeps the
+  workers loaded across iterations, logs games/s and seconds per phase, and measures the last
+  iteration's proposals before stopping (they were added but never played before).
+  `env/tools/matrix.js` now also writes total decisions per pair (`steps`) and prints decisions
+  per game. The first cold-start run (`runs/a5-cold1`, CPU) was stopped in iteration 0.
+- **Evidence:** 16 random decks on the field pool, 32 games per pair (3,840 games), token pilot
+  `runs/a4-tok/model_it00249.pt`, seed 8: CPU ONNX workers 366 s (10.5 games/s), GPU 26.8 s
+  (143 games/s). All 120 pairs have identical wins and identical decision counts on both paths,
+  so the same Nash mixture. GPU PSRO smoke run (6 decks, 2 iterations) completes, ~65-75 games/s
+  at that small size.
+- **Found:** Random decks make longer games than the archived lists: 211-213 decisions per game
+  (per-pair median 213, 90th percentile 274, max 326) against about 135, with no pathological
+  pair; that alone makes a cold-start matrix ~1.6x dearer per game. The CPU run's ~4-5 games/s in
+  iteration 0 was below the 10.5 measured afterwards on the same decks; not explained.
+- **Next:** The cold-start run `runs/a5-cold2` (16 random decks, 12 iterations, 100 games per
+  pair) on the GPU path.
+
+### #31 · 2026-10-06 · infra · Load cap at ~80% of the machine after three crashes
+- **Done:** The machine crashed or hung three times on 2026-10-04 to 06: a hypervisor bugcheck
+  (0x20001) at 00:53 on the 6th, during the card ablations of #32, and two hangs in sleep that
+  needed the power button. `rl/limits.py` now caps every job: GPU memory at 80% of the card
+  (`set_per_process_memory_fraction`, at most 0.8 even if a flag asks for more), at most 14 Node
+  workers plus 2 torch threads (16 of 20 threads), and a watchdog that warns on stderr when the
+  GPU sits at 95% or more for three 30 s polls or reaches 83 C. `rl.train`, `rl.psro`, `rl.distill`,
+  `rl.crossplay` and `GpuMatrix` (so every script that builds one) apply it; default worker
+  counts drop from 16-18 to 14. Rule in `CLAUDE.md` ("Machine load limits"). Commits 30faf32,
+  77cc51d, and this one for `GpuMatrix`.
+- **Evidence:** A 14 GB allocation is refused under the cap and 4 GB passes; `--workers 16` is
+  cut to 14; one watchdog per process; the watchdog's `nvidia-smi` read works. Under the cap,
+  GPU-matrix ablation games ran at 75-110 games/s (before: 63-83 at 16 workers), with GPU
+  utilization 42% mean and 66% at most, 2.9 GB, 200 W at most, 53 C. `rl.tests`,
+  `env/tools/test_env.js --games 100` and `verify_enumerator.js --games 200` pass.
+- **Found:** Not thermal as far as the logs show: no WHEA or thermal events, and the GPU idles at
+  36 C. GPU utilization can't be capped from PyTorch; a 240 W power limit (default 300 W) from an
+  admin shell is the hard cap. #26's run had sat at 14.3 of 16 GB before its resume.
+- **Next:** The deck-out diagnosis (#32).
+
+### #32 · 2026-10-06 · A5 · Why staples don't come back: the pilot plays for deck-out
+- **Done:** `runs/a5-cold2` (16 random decks, field pool, 12 iterations, 100 games per pair, GPU
+  matrix) finished: population 64, final equilibrium a single deck, `psro11-1` (Wigglytuff-like,
+  48% overlap with the nearest archived list). `notes/scripts/card_ablation.py` measures what a
+  card is worth to a pilot: in every archived deck that plays it, all copies are replaced by the
+  deck's main basic Energy, and the original plays the cut copy, seat-swapped, 200 games per
+  deck. Results in `notes/data/eval/card_ablation_a4tok.json` (token pilot, GPU) and
+  `card_ablation_simplebot.json` (SimpleBot, CPU). Game results now say how each won game ended
+  (`Game.ending`: prizes, deck-out, no-pokemon, other; passed through `env/runner.js` and
+  `env/remote_worker.js`, counted in `GpuMatrix.last["endings"]`).
+- **Evidence:** Staples per deck, archived / random start / PSRO-added / final deck: Computer
+  Search 2.71 / 1.00 / 0.12 / 0, Item Finder 2.12 / 1.19 / 0.12 / 0, Double Colorless Energy
+  3.29 / 0 / 0.04 / 0, Professor Oak 3.38 / 1.50 / 1.15 / 4. Original's win rate over the cut
+  deck, token pilot (± 95%): PlusPower 41.8 ± 1.6, Bill 45.8 ± 1.7, Item Finder 46.5, Computer
+  Search 46.6, Gust of Wind 46.6, Lass 47.3, Super Energy Removal 47.3, Scoop Up 47.9 (all
+  below 50); Energy Removal 52.0, Double Colorless Energy 55.9, Scyther 58.1, Professor Oak 68.2.
+  SimpleBot: PlusPower 40.1 ± 2.2, Item Finder 43.2, Gust 43.7, Computer Search 44.5, Oak 48.9,
+  DCE 51.7. Controls (token pilot, 100 games, Marshall's Haymaker): against an identical copy
+  43% (noise, ± 10), against the deck with its Hitmonchan, Mewtwo and Scyther cut 81%; 0 games
+  cut off. Bill's engine code draws 2, as printed. Endings, 2,208 token-pilot games over the
+  archived field (8 per pair): deck-out 987 (45%), prizes 856 (39%), no Pokémon 365 (17%), 242
+  decisions per game. 200 SimpleBot games: prizes 149 (75%), deck-out 28 (14%), no Pokémon 23
+  (12%), 134 decisions per game.
+- **Found:** The token pilot has learned a stalling game that ends by deck-out almost half the
+  time, so any card that draws or searches speeds its own loss, and the cheapest filler, a basic
+  Energy, beats Bill, Computer Search and Item Finder. PSRO under this pilot is therefore right
+  to drop them: the staples didn't return because the pilot, not the builder, devalues them. Every
+  A5 measurement made with this pilot (matrices, ablations, a5-cold2) carries that bias.
+  SimpleBot misuses the same cards for other reasons (14% deck-outs), so it is no fix. Training
+  rewards a win the same whether by prizes or deck-out, and nothing charges for game length.
+- **Next:** Make the pilot play for prizes: first find whether deck-outs grow during training
+  (`runs/a4-tok` checkpoints, short matrices), then try a short run with a per-turn cost or a
+  smaller reward for deck-out wins, judged by the ending mix and SimpleBot win rate; rerun the
+  ablations and a5-cold2 after.

@@ -55,6 +55,18 @@ class Game {
     }
   }
 
+  // How a won game ended: 'prizes', 'deck-out' (the loser couldn't draw), 'no-pokemon'
+  // (the loser had none in play), or 'other'; null for draws and cut-off games.
+  get ending() {
+    const w = this.winner;
+    if (w !== 1 && w !== 2) return null;
+    const win = this.state.players.find(p => p.id === w), lose = this.state.players.find(p => p.id !== w);
+    if (win.prizes.every(p => p.cards.length === 0)) return 'prizes';
+    if (lose.deck.cards.length === 0) return 'deck-out';
+    if (![lose.active, ...lose.bench].some(s => s.pokemons.cards.length > 0)) return 'no-pokemon';
+    return 'other';
+  }
+
   openPrompt() {
     let best;
     for (const p of this.state.prompts) {

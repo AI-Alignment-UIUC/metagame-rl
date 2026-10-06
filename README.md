@@ -17,14 +17,15 @@ and proven there first.
 ## Status
 
 <!-- status:start -->
-*Updated 2026-10-05.*
+*Updated 2026-10-06.*
 
 **Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup
-matrix. The token + pointer model (A4.2) matches and beats the MLP baseline (A4.1) on all 24
-decks: 93.2-93.3% against SimpleBot to A4.1's 88.5-89.6%, and 66-68% head to head, ahead on
-every deck. A supervised check confirms the implementation and points to model size as its next
-knob. The answer key has three tiers (staples, archetypes, counters), scored on a meta the
-agent drafts from random decks; Phase B targets Worlds 2005 (San Diego).
+matrix. The token + pointer model (A4.2) beats the MLP baseline (A4.1) on all 24 decks, 93.2-93.3%
+against SimpleBot and 66-68% head to head. A5's PSRO loop runs on central GPU inference, but its
+first full cold start brought back none of the field's staples, because the token pilot plays a
+stalling game that ends by deck-out 45% of the time, so every draw or search card makes its deck
+worse. Fixing the pilot to play for prizes comes before any further A5 result; jobs are now capped
+at ~80% of the machine after three crashes.
 
 **Earlier work:**
 
@@ -52,29 +53,32 @@ agent drafts from random decks; Phase B targets Worlds 2005 (San Diego).
   without 2011's missing mechanics. A three-tier answer key (staples, archetypes, counters) now
   scores any population against the archive, and on the SimpleBot matrix the equilibrium support
   is exactly the three decks hardest to counter.
+- **Log #25–32 (A4.2, A5).** The token model, at a third of the MLP's parameters, beats
+  SimpleBot 93.2-93.3% and A4.1 itself 66-68%, and a supervised check confirms it but shows it
+  short of capacity; PSRO's matrix games moved to the GPU, 14x faster with identical results, and
+  the builder is planned as PSRO with a value-aware matchup model. The first full cold start
+  (a5-cold2) dropped Computer Search and Item Finder and never added Double Colorless Energy;
+  card ablations show the pilot is better off with a basic Energy than with PlusPower, Bill,
+  Computer Search, Item Finder or Gust, since 45% of its games end by deck-out (SimpleBot: 14%),
+  which biases every A5 measurement made with it. After three machine crashes, every job is
+  capped at 80% of GPU memory and 16 of 20 threads, with a GPU watchdog.
 
-**Recent (log #25–29):** The token model, at a third of the MLP's parameters, beats SimpleBot
-93.2% (mirror) and 93.3% (field) on A4.1's deals, against A4.1's 89.6% and 88.5%, and beats A4.1
-itself 67.8% and 65.9%, above half on all 24 decks; a supervised test confirms the implementation
-(69.6% agreement with A4.1's choices on held-out games, chance 21.5%) and shows it short of
-capacity. The deck builder is now planned as PSRO with a matchup model that takes the pilot's
-start-of-game value as an input, explored by random restarts with varied edit budgets and by
-ranking candidates optimistically where an ensemble of the model disagrees; a schematic of that
-loop, now shown under A5, marks where the code still differs (step 4 is the PPO edit policy).
+**Recent:** nothing since log #32.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. A5: the first cold-start PSRO run on the field pool (`runs/a5-cold1`, running): do staple
-   counts and Double Colorless Energy come back? If not, find out why.
-2. A4 exit: the trained-policy matchup matrix with the token policy, scored with
+1. Pilot plays for prizes: check whether deck-outs grow across `runs/a4-tok` checkpoints (short
+   matrices with game endings), then a short training run with a per-turn cost or a smaller
+   reward for deck-out wins, judged by the ending mix and the SimpleBot win rate.
+2. With the fixed pilot, rerun the card ablations and the cold start (a5-cold2): do staple counts
+   and Double Colorless Energy come back?
+3. A4 exit: the trained-policy matchup matrix with the token policy, scored with
    `rl/answer_key.py`; a rerun for stability; matchup directions against era write-ups.
-3. A wider or deeper token model (the supervised check shows it underfits).
-4. A5.1: Nash over the trained-policy matrix. A5.2: the matchup model with the value feature
-   and an ensemble, then PSRO with restarts and edit budgets, from random decks; the counter-deck
-   search.
-5. Make league inference batch across snapshots (collection grew from 7 s to 45 s per iteration).
+4. A wider or deeper token model (the supervised check shows it underfits).
+5. A5.1-A5.2: Nash over the trained-policy matrix; the matchup model with the value feature and
+   an ensemble, PSRO with restarts and edit budgets; the counter-deck search.
 6. B1: source the Worlds 2005 top-cut lists; verify the engine's three EX sets against card data
    and rulings; check the near-reprints by hand.
 <!-- status:end -->

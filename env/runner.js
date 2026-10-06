@@ -49,7 +49,7 @@ class Runner {
       }
       for (const a of Object.values(agents)) if (a.forget) a.forget(slot.env.game);
       results.push({ seats: slot.job.seats, decks: [slot.job.deckName, slot.job.deckBName], seed: slot.job.seed,
-        winner: w, steps: slot.t.steps, error: slot.t.error ? String(slot.t.error.message || slot.t.error) : undefined });
+        winner: w, ending: slot.env.game.ending, steps: slot.t.steps, error: slot.t.error ? String(slot.t.error.message || slot.t.error) : undefined });
     };
 
     fill();

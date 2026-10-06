@@ -20,6 +20,7 @@ CPU_THREADS = max(1, int((os.cpu_count() or 1) * LOAD))    # 16 of 20
 MAX_WORKERS = max(1, CPU_THREADS - 2)                       # 14: two threads left for Python
 GPU_MEM_FRACTION = LOAD
 WARN_UTIL, WARN_TEMP = 95, 83                               # %, degrees C
+_watching = False
 
 
 def cap_workers(n: int) -> int:
@@ -39,7 +40,11 @@ def apply(device: str, workers: int = 0, mem_fraction: float = GPU_MEM_FRACTION,
 
 
 def _watch(every: float = 30.0, strikes: int = 3):
-    """Warns on stderr when the GPU sits at >= WARN_UTIL% for `strikes` polls in a row, or runs hot."""
+    """Warns on stderr when the GPU sits at >= WARN_UTIL% for `strikes` polls in a row, or runs hot. One per process."""
+    global _watching
+    if _watching:
+        return
+    _watching = True
     def loop():
         hot = 0
         while True:

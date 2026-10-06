@@ -7,6 +7,10 @@
 //   { "cmd": "collect", "encoding": "identity" | "tokens", "transitions": 20000, "out": "<file>",
 //     "seed": 1, "concurrency": 64, "matchups": [[deckA, deckB], ...],
 //     "opponents": [{ "spec": "self" | "slot:<k>" | "random" | "first" | "heuristic", "weight": 1 }] }
+//   { "cmd": "games", "encoding": "tokens", "decks": [{ name, cards }], "greedy": true, "concurrency": 64,
+//     "jobs": [{ "i": 0, "j": 1, "iSeat": 1, "seed": 7 }] }   (slot 0 in both seats; matrix rows, A5)
+//   { "cmd": "values", "decks": [{ name, cards }], "jobs": [{ "a": 0, "b": 1, "seed": 7 }] }
+//     the pilot's value for deck a (seat 1) at its first decision of a fresh deal (A5 builder)
 //   { "cmd": "quit" }
 // The learner is model slot 0; "slot:k" is another model the learner holds (a league snapshot).
 'use strict';
@@ -33,7 +37,7 @@ const pending = new Map();
 let nextId = 1;
 
 class RemoteAgent {
-  constructor(slot, encoding) { this.slot = slot; this.encoding = encoding; }
+  constructor(slot, encoding, greedy = false) { this.slot = slot; this.encoding = encoding; this.greedy = greedy; }
 
   act(batch) {
     const n = batch.length;
@@ -62,7 +66,7 @@ class RemoteAgent {
       arrays = [['obs', x]];
     }
     arrays.push(['legal_offsets', offsets], ['legal_ids', ids]);
-    F.writeFrame(process.stdout, F.REQUEST, F.packArrays({ id, slot: this.slot, n, encoding: this.encoding }, arrays));
+    F.writeFrame(process.stdout, F.REQUEST, F.packArrays({ id, slot: this.slot, n, encoding: this.encoding, greedy: this.greedy }, arrays));
     return new Promise(resolve => pending.set(id, resolve));
   }
 }
@@ -104,6 +108,46 @@ async function collect(cmd) {
   return { ok: true, out: cmd.out, transitions: out.rec.action.length, games: out.stats.games, seconds: (Date.now() - t0) / 1000, results };
 }
 
+// Plays the listed games with the slot-0 policy in both seats and reports each one's result
+// (rl/gpu_matrix.py); nothing is recorded.
+async function games(cmd) {
+  const t0 = Date.now();
+  const encoding = cmd.encoding || 'tokens';
+  const enc = encoding === 'tokens' ? tokens : identity;
+  const agents = { p: new RemoteAgent(0, encoding, !!cmd.greedy) };
+  let k = 0;
+  const nextJob = () => {
+    if (k >= cmd.jobs.length) return null;
+    const job = cmd.jobs[k++];
+    const [a, b] = job.iSeat === 1 ? [cmd.decks[job.i], cmd.decks[job.j]] : [cmd.decks[job.j], cmd.decks[job.i]];
+    return { deckA: a.cards, deckB: b.cards, deckName: a.name, deckBName: b.name, seed: job.seed, seats: { 1: 'p', 2: 'p' } };
+  };
+  const out = await new Runner(enc, { concurrency: cmd.concurrency || 64 }).run(nextJob, agents);
+  const bySeed = new Map(cmd.jobs.map(j => [j.seed, j]));
+  const results = out.results.map(r => {
+    const job = bySeed.get(r.seed);
+    return { i: job.i, j: job.j, iSeat: job.iSeat, winner: r.winner, ending: r.ending, steps: r.steps, error: r.error };
+  });
+  return { ok: true, games: results.length, seconds: (Date.now() - t0) / 1000, results };
+}
+
+async function values(cmd) {
+  const { Env } = require('./env.js');
+  const agent = new RemoteAgent(0, 'tokens', true);
+  const obs = [];
+  for (const job of cmd.jobs) {
+    const env = new Env(tokens, { u8: true, showOpponentDecklist: true });
+    let t = env.reset(cmd.decks[job.a].cards, cmd.decks[job.b].cards, job.seed);
+    while (!t.done && t.playerId !== 1) t = env.step(t.legal[0]);   // the opponent's setup, if it acts first
+    obs.push(t.done ? null : { obs: t.obs, legal: t.legal });
+  }
+  const live = obs.filter(Boolean);
+  const out = [];
+  for (let i = 0; i < live.length; i += 1024) out.push(...await agent.act(live.slice(i, i + 1024)));
+  let k = 0;
+  return { ok: true, values: obs.map(o => (o ? out[k++].value : 0)) };
+}
+
 let queue = Promise.resolve();
 F.readFrames(process.stdin, (type, payload) => {
   if (type === F.RESPONSE) {
@@ -124,6 +168,8 @@ F.readFrames(process.stdin, (type, payload) => {
         return;
       }
       if (msg.cmd === 'collect') { F.writeJson(process.stdout, await collect(msg)); return; }
+      if (msg.cmd === 'games') { F.writeJson(process.stdout, await games(msg)); return; }
+      if (msg.cmd === 'values') { F.writeJson(process.stdout, await values(msg)); return; }
       throw new Error('unknown command ' + msg.cmd);
     } catch (e) {
       F.writeJson(process.stdout, { ok: false, error: String(e && e.stack || e) });
