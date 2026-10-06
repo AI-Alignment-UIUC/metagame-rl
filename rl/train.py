@@ -225,6 +225,7 @@ def main(argv=None):
     ap.add_argument("--epochs", type=int, default=3)
     ap.add_argument("--minibatch", type=int, default=4096)
     ap.add_argument("--micro-batch", type=int, default=0, help="split each minibatch into chunks of this size (0 = whole)")
+    ap.add_argument("--gpu-mem-fraction", type=float, default=0, help="cap this process's GPU memory (0 = no cap)")
     ap.add_argument("--amp", action="store_true", help="bfloat16 autocast for the forward pass on the GPU")
     ap.add_argument("--gamma", type=float, default=1.0)
     ap.add_argument("--lam", type=float, default=0.95)
@@ -251,6 +252,9 @@ def main(argv=None):
     run = ROOT / args.run
     (run / "policies").mkdir(parents=True, exist_ok=True)
     device = "cuda" if torch.cuda.is_available() else "cpu"
+    if device == "cuda" and args.gpu_mem_fraction:
+        # Leaves the rest of the card to the desktop; the allocator frees its cache before failing.
+        torch.cuda.set_per_process_memory_fraction(args.gpu_mem_fraction)
     torch.manual_seed(args.seed)
     random.seed(args.seed)
 

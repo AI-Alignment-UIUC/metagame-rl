@@ -391,3 +391,46 @@ Entry format:
   Wind and Computer Search 23/24, Scyther 20/24. A real score needs a cold-start population.
 - **Next:** Score the trained-policy matrix (A4 exit) and, in A5, PSRO populations from random
   decks.
+
+### #25 · 2026-10-05 · A4.2 · Supervised check of the token architecture
+- **Done:** `env/tools/distill_data.js`: the A4.1 policy plays itself over all deck pairs (10%
+  random moves) and every decision with more than one option is saved in both encodings with
+  the teacher's greedy choice and the final result. `rl/distill.py` trains a token model (1.6M
+  parameters, as in RL) and a fresh IdentityMLP (5.2M) on the same rows, scores them on held-out
+  games, and checks the token model's ONNX export, candidate permutation and padding trim.
+  Results: `notes/data/eval/a4_distill.json`. Dataset in `runs/distill/` (not committed, 1 GB).
+- **Evidence:** 2,560 games, 397,663 decisions: 0 decisions with two options encoded alike, 0 token
+  or candidate overflows (at most 118 tokens, 41 options). Train 345,596 rows (seeds 1-7), test
+  52,067 (seed 8, other games); chance 21.5%. Token model held-out top-1 69.6% (main phase 67.8%,
+  prompts 75.0%; 2 options 83.6%, 11+ options 58.4%), value MSE 0.664 at its best epoch (3), sign
+  accuracy 71.3% at the end. MLP 78.3% (76.7 / 83.3%), value MSE 0.866 at its best epoch (1),
+  sign accuracy 69.0%. After training: ONNX logits within 1.5e-5 of PyTorch, top choice 100%
+  the same; shuffled candidates give the same logits shuffled (difference 0); trimmed padding
+  identical. 12 epochs: token 4.4 min, MLP 48 s.
+- **Found:** The token model learns the teacher well above chance and predicts the result better
+  than the MLP; the policy gap is expected, since the MLP student reads the teacher's own
+  encoding with 3x the parameters. The token model ends with training loss 0.72 against the
+  MLP's 0.06 and plateaus at about 69.6%: it is short of capacity, not overfitting. Both value
+  heads overfit within a few epochs (one result label per game).
+- **Next:** The RL comparison (#26); a wider or deeper token model is the obvious next knob.
+
+### #26 · 2026-10-05 · A4.2 · Token model matches and beats A4.1
+- **Done:** `runs/a4-tok`: TokenPointerNet (width 192, 3 layers, 1.6M parameters) on the A4.1 task
+  and settings (576 ordered pairs, 16 workers x 4,096 transitions, league snapshots every 25,
+  seed 1, 250 iterations), on the fixed environment of #20. Resumed once at iteration 134 with
+  micro-batch 1,024 and a 60% GPU memory cap (`rl/train.py --gpu-mem-fraction`; same updates)
+  after the desktop lagged. Benchmark with `runs/a4_compare.sh` on A4.1's exit seeds (same
+  deals), summary `notes/data/eval/a4_compare.json` / `.txt`.
+- **Evidence:** In-training vs SimpleBot, token / A4.1: it 24 29.7 / 29.4%, 49 62.7 / 53.6, 99
+  78.0 / 81.1, 149 90.0 / 84.4, 199 88.5 / 85.3, 249 92.6 / 89.1. Exit, 2,400 games, greedy:
+  mirror 93.2% ± 1.0 (A4.1 89.6%), field 93.3% ± 1.0 (A4.1 88.5%); better on 16 / 21 of 24 decks,
+  worse on 5 / 1 by at most 4 points; lowest deck 74% (Viray Rain Dance) / 78% (A4.1 71% / 72%).
+  Head to head, token vs A4.1: mirror 67.8% ± 1.9, field 65.9% ± 1.9, above 50% on 24 of 24 decks
+  in both (lowest 55-57%: Sponge, Electabuzz/Mr. Mime, Haymaker). Cost: 3 h 37 min wall (A4.1
+  3 h 18 min); about 63 s per iteration at the end, of which ~45 s collecting games.
+- **Found:** Game collection grew from 7 s to 45 s per iteration as league snapshots were added
+  (each is its own GPU model, so inference batches split). Before the resume, GPU memory sat at
+  14.3 of 16 GB and the update had slowed to 30-71 s: the run itself was spilling. A4.1 trained
+  before #20's fixes, so it may have lost some training to the loops.
+- **Next:** A4 exit: the trained-policy matrix with the token policy, a rerun for stability,
+  era write-ups; score it with `rl/answer_key.py`.

@@ -20,11 +20,11 @@ and proven there first.
 *Updated 2026-10-05.*
 
 **Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup
-matrix. One MLP policy for all 24 decks (A4.1) beats SimpleBot 88.5-89.6% with every deck above
-70%, and the token + pointer model (A4.2) is training on the same task after two endless loops in
-the environment were found and fixed. The answer key the project is judged by now has three
-tiers (staples, archetypes, counters), scored on a meta the agent drafts from random decks.
-Phase B targets Worlds 2005 (San Diego), which needs about 600 more cards but no new mechanics.
+matrix. The token + pointer model (A4.2) matches and beats the MLP baseline (A4.1) on all 24
+decks: 93.2-93.3% against SimpleBot to A4.1's 88.5-89.6%, and 66-68% head to head, ahead on
+every deck. A supervised check confirms the implementation and points to model size as its next
+knob. The answer key has three tiers (staples, archetypes, counters), scored on a meta the
+agent drafts from random decks; Phase B targets Worlds 2005 (San Diego).
 
 **Earlier work:**
 
@@ -53,20 +53,24 @@ Phase B targets Worlds 2005 (San Diego), which needs about 600 more cards but no
   scores any population against the archive, and on the SimpleBot matrix the equilibrium support
   is exactly the three decks hardest to counter.
 
-**Recent:** none since log #24.
+**Recent (log #25–26):** The token model, at a third of the MLP's parameters, beats SimpleBot
+93.2% (mirror) and 93.3% (field) on A4.1's deals, against A4.1's 89.6% and 88.5%, and beats A4.1
+itself 67.8% and 65.9%, above half on all 24 decks. In a supervised test on 52,067 held-out
+decisions it matches A4.1's choices 69.6% of the time (a fresh MLP reading A4.1's own encoding:
+78.3%; chance 21.5%), predicts results better than the MLP, and its ONNX export, candidate
+permutation and padding checks hold; its training loss stays high, so it is short of capacity.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. A4.2: the token-model run on the fixed environment (`runs/a4-tok`, 250 iterations, A4.1 settings).
-2. Supervised architecture check: token model vs MLP on 398k teacher-labelled states
-   (`rl/distill.py`), plus ONNX / permutation / padding checks.
-3. Compare the two RL policies: learning curves, mirror/field vs SimpleBot, head-to-head, cost.
-4. A4 exit: the trained-policy matrix, its stability across reruns, and era write-ups.
-5. A5.1: Nash over the trained-policy matrix, scored with `rl/answer_key.py`; then PSRO from
-   random decks with the builder, and the counter-deck search.
-6. B1: source the Worlds 2005 top-cut lists; verify the engine's three EX sets against card data
+1. A4 exit: the trained-policy matchup matrix with the token policy, scored with
+   `rl/answer_key.py`; a rerun for stability; matchup directions against era write-ups.
+2. A wider or deeper token model (the supervised check shows it underfits).
+3. A5.1: Nash over the trained-policy matrix; then PSRO from random decks with the builder, and
+   the counter-deck search.
+4. Make league inference batch across snapshots (collection grew from 7 s to 45 s per iteration).
+5. B1: source the Worlds 2005 top-cut lists; verify the engine's three EX sets against card data
    and rulings; check the near-reprints by hand.
 <!-- status:end -->
 
