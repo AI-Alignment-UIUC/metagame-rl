@@ -21,11 +21,11 @@ and proven there first.
 
 **Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup
 matrix. The token + pointer model (A4.2) beats the MLP baseline (A4.1) on all 24 decks, 93.2-93.3%
-against SimpleBot and 66-68% head to head. A5's PSRO loop runs on central GPU inference, but its
-first cold start brought back none of the field's staples: the pilot values PlusPower, Bill,
-Computer Search and Item Finder below a basic Energy. Paying less for deck-out wins cut its
-deck-outs from 39% to 27% at the same strength but left those card values unchanged, so the
-pilot misuses these Trainers for reasons still to be found; jobs are capped at ~80% of the machine.
+against SimpleBot and 66-68% head to head. Of the three A5 deck-builder designs, search scored by
+the pilot's own start-of-game value is the clear winner in a first equal-time comparison: from
+random decks it built a Haymaker 77% like the winning list, even with the archived field, while
+real-game scoring explores too little and the matchup model is exploited by the search. The pilot
+still undervalues PlusPower, Item Finder and Gust of Wind; jobs are capped at ~80% of the machine.
 
 **Earlier work:**
 
@@ -63,26 +63,26 @@ pilot misuses these Trainers for reasons still to be found; jobs are capped at ~
   which biases every A5 measurement made with it. After three machine crashes, every job is
   capped at 80% of GPU memory and 16 of 20 threads, with a GPU watchdog.
 
-**Recent (log #33):** Paying nothing for a deck-out win (`rl/train.py --deckout-win 0`) cut the
-pilot's deck-outs over 15 fine-tuning iterations from 39% (control) to 27% of greedy games and
-raised prize wins from 44% to 56%, with SimpleBot results unchanged (93.0% ± 2.5 vs 95.5% ± 2.0).
-The staples stayed below a basic Energy (PlusPower 43.8%, Computer Search 45.8%, Bill 49.1%), which
-corrects log #32: deck-out explains only part of why the pilot undervalues them.
+**Recent (log #33–34):** Paying nothing for deck-out wins cut the pilot's deck-outs from 39% to 27%
+at the same SimpleBot strength, but left PlusPower, Computer Search and Item Finder below a basic
+Energy, so deck-out is only part of the story. With that pilot, the three builder designs of log #27
+ran from the same 16 random decks for ~20 minutes each: the value-scored search's final deck beats
+the games- and model-scored mixtures 76.5% and 74.3%, matches the archived field (50.3%, against
+37.9% and 26.5%) and is the least exploitable, and it plays DCE, Computer Search and Bill again;
+the matchup model's own predictions were off by 0.59 on average. One seed so far.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. A5: the three builder designs of log #27 compared under the deck-out-0 pilot: search scored by
-   real games, by a matchup-model ensemble, and by the pilot's start-of-game value, with equal
-   wall-clock budgets, each checked on a short run first.
-2. Why the pilot misuses PlusPower, Computer Search and Item Finder: trace when and on what it
+1. Replicate the builder comparison with two more seeds; before ruling the matchup model out,
+   try it with a trust region (candidates near measured decks) or with the value as a feature.
+2. Value-scored PSRO for longer, then on the full pool: do the archetypes and staples hold?
+3. Why the pilot misuses PlusPower, Item Finder and Gust of Wind: trace when and on what it
    plays them.
-3. A4 exit: the trained-policy matchup matrix with the token policy, scored with
+4. A4 exit: the trained-policy matchup matrix with the token policy, scored with
    `rl/answer_key.py`; a rerun for stability; matchup directions against era write-ups.
-4. A wider or deeper token model (the supervised check shows it underfits).
-5. A5.1-A5.2: Nash over the trained-policy matrix; the matchup model with the value feature; the
-   counter-deck search.
+5. A wider or deeper token model (the supervised check shows it underfits).
 6. B1: source the Worlds 2005 top-cut lists; verify the engine's three EX sets against card data
    and rulings; check the near-reprints by hand.
 <!-- status:end -->
@@ -238,7 +238,7 @@ reruns; and its matchup directions agree with era write-ups wherever those exist
 
 ![The A5 PSRO loop: population and real-game matrix, Nash, matchup model, swap search, confirmation with real games, piloting; each step marked built, partly built or planned](notes/schematics/metagame-builder.svg)
 
-*The loop as of log #28 ([full page](notes/schematics/metagame-builder.html)). Step 4 in the code is still the PPO edit policy of `rl/builder.py`, which the plan below replaces.*
+*The loop as of log #28 ([full page](notes/schematics/metagame-builder.html)). Since log #34, step 4 in the code is the restart search of `rl/search.py` (`rl/psro.py --builder games|model|value`); the PPO edit policy remains as `--builder edit`.*
 
 1. **Fixed population.** Nash over the trained-policy matrix of the 24 archived lists. Do
    Wigglytuff and Haymaker sit in the support? Compare against the SimpleBot equilibrium from A2.

@@ -39,7 +39,11 @@ class Env {
     const decks = this.visibleDecks(d.playerId);
     // Token encoders (env/tokens.js) score the options themselves: actions are option indices.
     const tokens = typeof this.encoder.actionId !== 'function';
-    const legal = tokens ? d.options.map((_, i) => i) : d.options.map(o => this.encoder.actionId(o.key));
+    // Past MAX_CAND options the token encoder has no slot to score them, so they are not offered
+    // (built decks can reach ~50+ options; the archived ones at most 29).
+    const legal = tokens ? d.options.slice(0, this.encoder.MAX_CAND).map((_, i) => i)
+      : d.options.map(o => this.encoder.actionId(o.key));
+    if (tokens && d.options.length > this.encoder.MAX_CAND) this.truncated = (this.truncated || 0) + 1;
     const obs = tokens ? this.encoder.encode(g, d.playerId, decks, d.options)
       : this.u8 ? this.encoder.encodeU8(g, d.playerId, decks) : this.encoder.encode(g, d.playerId, decks);
     this.current = { playerId: d.playerId, legal, options: d.options };

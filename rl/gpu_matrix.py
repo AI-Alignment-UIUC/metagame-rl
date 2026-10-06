@@ -43,6 +43,7 @@ def load_policy(path: str, device: str):
 def jobs_for(n: int, games: int, seed: int, new: int = 0, pairs: list = None) -> list:
     if pairs is None:
         pairs = [(i, j) for i in range(n) for j in range(i + 1, n) if not new or j >= n - new]
+    assert 0 <= seed * 1000003 + len(pairs) * games < 2 ** 53, "job seeds must stay exact in JavaScript"
     jobs, k = [], 0
     for i, j in pairs:
         for g in range(games):

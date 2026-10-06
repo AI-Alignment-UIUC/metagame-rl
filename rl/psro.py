@@ -133,6 +133,10 @@ def main(argv=None):
     ap.add_argument("--iterations", type=int, default=10)
     ap.add_argument("--games", type=int, default=100, help="games per pair")
     ap.add_argument("--new", type=int, default=4, help="decks added per iteration")
+    ap.add_argument("--builder", choices=["edit", "games", "model", "value"], default="edit",
+                    help="edit: the PPO edit policy (rl/builder.py); games / model / value: restart search "
+                         "(rl/search.py) scored by real games, a matchup-model ensemble, or the pilot's value")
+    ap.add_argument("--search-seconds", type=float, default=120, help="wall-clock budget per search (rl/search.py)")
     ap.add_argument("--edits", type=int, default=16)
     ap.add_argument("--builder-iters", type=int, default=200)
     ap.add_argument("--pilot-iters", type=int, default=0, help="play-policy fine-tuning iterations per PSRO iteration")
@@ -148,6 +152,7 @@ def main(argv=None):
     args.workers = limits.cap_workers(args.workers)
     limits.apply(dev, args.workers)
     rng = np.random.default_rng(args.seed)
+    srng = np.random.default_rng(args.seed + 7)       # the search's own, so every builder starts from the same decks
     table = json.load(open(ROOT / "notes/data/cards/pool.json", encoding="utf-8"))["cards"]
     text = np.load(ROOT / "notes/data/cards/text_emb.npy")
     archived = archived_decks(Pool())
@@ -174,6 +179,14 @@ def main(argv=None):
         k = int(np.argmax(o))
         return archived[k][0], label_of(archived[k][0]), round(o[k], 3)
 
+    if args.builder != "edit" and gpu is None:
+        raise SystemExit("--builder games/model/value needs --inference gpu")
+    scorer = None
+    if args.builder != "edit":
+        from rl.search import GamesScorer, ModelScorer, ValueScorer
+        scorer = {"games": lambda: GamesScorer(gpu), "value": lambda: ValueScorer(gpu),
+                  "model": lambda: ModelScorer(table, text, dev)}[args.builder]()
+    pending = []                                   # (deck index, predicted score, sigma at proposal)
     measured = 0
     for it in range(args.iterations + 1):
         new = len(pop.decks) - measured
@@ -191,12 +204,42 @@ def main(argv=None):
         print(f"PSRO it {it}: population {len(pop.decks)}, support " + ", ".join(
             f"{pop.names[i][:28]} {w:.2f} [{row['support'][k]['nearest'][1]} {row['support'][k]['nearest'][2]:.2f}]"
             for k, (i, w) in enumerate(support[:8])), flush=True)
+        # How well each proposal's predicted score matched its real win rate against the mixture it
+        # was built for, now that its games are in.
+        if pending:
+            # predicted: the score it was chosen on (confirmation games for model/value); scorer: the
+            # scorer's own estimate (the model's mean, without the optimism bonus)
+            row["realized"] = [{"deck": pop.names[i], "predicted": round(p, 4), "scorer": round(o, 4),
+                                "real": round(float((P[i, :len(sg)] * sg).sum()), 4)} for i, p, o, sg in pending]
+            pending = []
         row["games"] = speed
         row["seconds"] = {"games": round(t_games, 1)}
         if it == args.iterations:                  # the last proposals measured; no new search
             log.write(json.dumps(row) + "\n")
             break
         t0 = time.time()
+
+        if scorer is not None:
+            from rl.search import search
+            confirm = None if args.builder == "games" else GamesScorer(gpu)
+            props, info = search(scorer, pop, sigma, args.new, args.search_seconds, srng,
+                                 lambda pl, r: random_deck(pl, r), confirm=confirm)
+            row["search"] = {k: v for k, v in info.items() if k != "runs"}
+            row["search_runs"] = info["runs"]
+            row["seconds"]["search"] = round(time.time() - t0, 1)
+            for k, (v, score, raw) in enumerate(props):
+                pop.add(v, f"{args.builder}{it}-{k} ({nearest(v)[1]}-like)", f"{args.builder} it {it}, predicted {score:.3f}")
+                own = float(scorer.mean([v])[0]) if args.builder == "model" else raw
+                pending.append((len(pop.decks) - 1, score, own, sigma.copy()))
+            row["proposals"] = [{"name": pop.names[-len(props) + k], "predicted": round(s, 4), "scorer": round(r, 4),
+                                 "nearest": nearest(v)} for k, (v, s, r) in enumerate(props)]
+            print(f"  search: {info['searches']} searches, {info['candidates_scored']} candidates, "
+                  f"{len(props)} proposals in {info['seconds']} s", flush=True)
+            log.write(json.dumps(row) + "\n")
+            log.flush()
+            (run / "population.json").write_text(json.dumps(pop.as_json()))
+            np.savez(run / "matrix.npz", wins=pop.wins, games=pop.games, names=np.array(pop.names))
+            continue
 
         D = np.stack(pop.decks).astype(np.float32)
         model = MatchupModel(table, text)

@@ -574,3 +574,49 @@ Entry format:
 - **Next:** The three builder designs of #27 compared under the R = 0 pilot (games, matchup
   model, pilot value), each checked on a short run first; separately, a trace of how the pilot
   plays PlusPower and Computer Search.
+
+### #34 · 2026-10-06 · A5.2 · The three builder designs compared: the pilot's value wins
+- **Done:** `rl/search.py`: one restart search for PSRO with the three scorers of #27, chosen by
+  `rl/psro.py --builder games|model|value --search-seconds S`. Restarts from a random deck or a
+  support deck kicked 10 random swaps away, an edit budget of 12-60 cards per search, hill
+  climbing by single-card swaps (half the added cards are ones the deck already plays), and new
+  decks at least 10 cards from every deck. Scorers: games, real games against the top 6 support
+  decks weighted by sigma (24 per pair, the same deals for every candidate of a step); model, a
+  5-member ensemble of matchup models refit on resampled results, ranked by mean + 1.0 x spread
+  (no value feature: that is A6's ablation); value, the pilot's start-of-game value against the
+  support decks (8 openings). model and value search for 90% of the budget, then their top 8
+  distinct finalists play real games against the support and the best are proposed (A5.2 step
+  3). The log keeps each proposal's predicted score, the scorer's own estimate and its real win
+  rate once measured. `notes/scripts/compare_builders.py` scores the runs on a shared panel.
+  Fixes found by the smoke runs: the token encoder scores at most 48 options and built decks
+  exceed that, which crashed GPU inference (index out of range) and would have made ONNX agents
+  read the next row's logits, so `env/env.js` now offers only the first 48; `GpuMatrix` job seeds
+  above 2^53 lost precision in Node and mixed up results, so seeds are bounded and asserted.
+- **Evidence:** `runs/builders_compare.sh`: the same 16 random decks (seed 3), field pool, pilot
+  `runs/deckout-w0/model_it00014.pt`, 8 iterations, 4 new decks each, 120 s of search per
+  iteration, 48 games per pair. Wall time games 19.2 min, model 21.1, value 19.0. Candidates
+  scored: games 1,404 (one to three searches per iteration, so 15 proposals, population 31),
+  model 8.6 million, value 643,164 (32 proposals each, population 48). Error of each scorer's
+  own estimate against the proposal's real win rate: games 0.081, model 0.587 (it predicted
+  0.75-0.90 for decks that won 0-61%), value 0.268. Panel (`notes/data/eval/builders_compare.json`):
+  each run's final support (games 5 decks, model 3, value 1) plus the 24 archived lists, 60
+  games per pair, 31,680 games, 0 errors. Final mixtures, against the archived field: games
+  37.9%, model 26.5%, value 50.3%. Head to head: value beats games 76.5% and model 74.3%; model
+  beats games 59.1%. Best panel deck against each mixture: games 84.9% (Pratt's Wigglytuff),
+  model 86.7% (same), value 71.7% (Marshall's Haymaker). Panel Nash: archived 0.875, games
+  0.125, model and value 0. value's final deck overlaps Marshall's Haymaker 77% and plays 4 DCE,
+  3 Computer Search, 3 Bill, 2 Oak, 3 Scyther, 4 Energy Removal, 3 Super Energy Removal, but no
+  Item Finder, Gust of Wind or PlusPower.
+- **Found:** The pilot's value is the best scorer here by every panel measure: it sees ~450x the
+  candidates of real games, stays roughly calibrated, and its deck reaches parity with the human
+  field while the others fall well short. Real-game scoring is the most honest (error 0.08) but
+  affords one or two climbs per iteration, so it explores little. The matchup model is badly
+  exploited: searching a million candidates against a model fitted on 16-48 decks finds the
+  decks it overrates, and confirmation games only pick the least bad of a bad shortlist. Offline,
+  the same model predicts held-out pairs well (MAE 0.06-0.07, 89-92% of directions, 64 decks
+  of a5-cold2) but, trained on 16 decks, predicts new decks no better than 0.5 (MAE 0.25 vs
+  0.26), so it fails exactly where the search takes it. One seed and 60 games per pair: not yet
+  replicated. All three populations still lose to the human lists in the panel Nash.
+- **Next:** Replicate with two more seeds; give the model a trust region (candidates within ~15
+  cards of measured decks) or the value as a feature before ruling it out; then value-scored
+  PSRO for longer, and on the full pool.

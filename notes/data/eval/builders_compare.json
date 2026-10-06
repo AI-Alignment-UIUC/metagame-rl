@@ -1,0 +1,246 @@
+{
+ "games_per_pair": 60,
+ "panel": 33,
+ "from_runs": 9,
+ "matrix": {
+  "games": 31680,
+  "seconds": 207.8,
+  "games_per_s": 152.5,
+  "errors": 0,
+  "cut": 29,
+  "endings": {
+   "no-pokemon": 7782,
+   "prizes": 15510,
+   "deck-out": 8359
+  },
+  "decisions_per_game": 222.5
+ },
+ "head_to_head": {
+  "cmp-games": {
+   "cmp-model": 0.4088,
+   "cmp-value": 0.2349,
+   "archived": 0.3786
+  },
+  "cmp-model": {
+   "cmp-games": 0.5912,
+   "cmp-value": 0.2573,
+   "archived": 0.2654
+  },
+  "cmp-value": {
+   "cmp-games": 0.7651,
+   "cmp-model": 0.7427,
+   "archived": 0.5028
+  },
+  "archived": {
+   "cmp-games": 0.6214,
+   "cmp-model": 0.7346,
+   "cmp-value": 0.4972
+  }
+ },
+ "panel_nash_share": {
+  "cmp-games": 0.125,
+  "cmp-model": 0.0,
+  "cmp-value": 0.0,
+  "archived": 0.875
+ },
+ "archived_staples_mean": {
+  "Computer Search": 2.71,
+  "Item Finder": 2.12,
+  "Double Colorless Energy": 3.29,
+  "Professor Oak": 3.38,
+  "Bill": 2.5,
+  "Gust of Wind": 2.54,
+  "PlusPower": 2.75,
+  "Energy Removal": 2.08,
+  "Super Energy Removal": 1.96,
+  "Scyther": 2.79
+ },
+ "runs": {
+  "cmp-games": {
+   "population": 31,
+   "support": [
+    {
+     "deck": "games2-0 (Haymaker-like)",
+     "weight": 0.32,
+     "nearest": [
+      "Haymaker",
+      0.433
+     ]
+    },
+    {
+     "deck": "games3-0 (Wigglytuff-like)",
+     "weight": 0.2857,
+     "nearest": [
+      "Wigglytuff",
+      0.417
+     ]
+    },
+    {
+     "deck": "games5-0 (Sponge-like)",
+     "weight": 0.2171,
+     "nearest": [
+      "Sponge",
+      0.4
+     ]
+    },
+    {
+     "deck": "games4-1 (Wigglytuff-like)",
+     "weight": 0.1543,
+     "nearest": [
+      "Wigglytuff",
+      0.533
+     ]
+    },
+    {
+     "deck": "random-8",
+     "weight": 0.0229,
+     "nearest": [
+      "Articuno / Hitmonchan / Scyther",
+      0.6
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 0.62,
+    "Item Finder": 0.83,
+    "Double Colorless Energy": 0.37,
+    "Professor Oak": 1.91,
+    "Bill": 0.64,
+    "Gust of Wind": 0.71,
+    "PlusPower": 0.2,
+    "Energy Removal": 1.94,
+    "Super Energy Removal": 3.62,
+    "Scyther": 0.0
+   },
+   "proposals": 15,
+   "chosen_score_vs_real_mae": 0.0812,
+   "scorer_vs_real_mae": 0.0812,
+   "mean_real_vs_its_mixture": 0.4048,
+   "real_by_iteration": [
+    0.428,
+    0.558,
+    0.757,
+    0.333,
+    0.361,
+    0.431,
+    0.324,
+    0.201
+   ],
+   "candidates_scored": 1404,
+   "search_seconds": 983.8,
+   "vs_archived_field": 0.3786,
+   "exploitability": {
+    "best_response": "archived: 11-14 #7 John Pratt (Wigglytuff)",
+    "win": 0.8488
+   }
+  },
+  "cmp-model": {
+   "population": 48,
+   "support": [
+    {
+     "deck": "model6-0 (Articuno / Hitmonchan / Scyther-like)",
+     "weight": 0.5,
+     "nearest": [
+      "Articuno / Hitmonchan / Scyther",
+      0.417
+     ]
+    },
+    {
+     "deck": "model1-0 (Articuno / Hitmonchan / Scyther-like)",
+     "weight": 0.375,
+     "nearest": [
+      "Articuno / Hitmonchan / Scyther",
+      0.5
+     ]
+    },
+    {
+     "deck": "model3-1 (Haymaker-like)",
+     "weight": 0.125,
+     "nearest": [
+      "Haymaker",
+      0.45
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 0.5,
+    "Item Finder": 0.0,
+    "Double Colorless Energy": 0.75,
+    "Professor Oak": 0.0,
+    "Bill": 2.0,
+    "Gust of Wind": 0.12,
+    "PlusPower": 0.0,
+    "Energy Removal": 0.12,
+    "Super Energy Removal": 0.0,
+    "Scyther": 0.0
+   },
+   "proposals": 32,
+   "chosen_score_vs_real_mae": 0.0424,
+   "scorer_vs_real_mae": 0.5874,
+   "mean_real_vs_its_mixture": 0.2359,
+   "real_by_iteration": [
+    0.028,
+    0.406,
+    0.083,
+    0.365,
+    0.161,
+    0.089,
+    0.411,
+    0.344
+   ],
+   "candidates_scored": 8649721,
+   "search_seconds": 890.4,
+   "vs_archived_field": 0.2654,
+   "exploitability": {
+    "best_response": "archived: 11-14 #7 John Pratt (Wigglytuff)",
+    "win": 0.8667
+   }
+  },
+  "cmp-value": {
+   "population": 48,
+   "support": [
+    {
+     "deck": "value5-0 (Haymaker-like)",
+     "weight": 1.0,
+     "nearest": [
+      "Haymaker",
+      0.767
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 3.0,
+    "Item Finder": 0.0,
+    "Double Colorless Energy": 4.0,
+    "Professor Oak": 2.0,
+    "Bill": 3.0,
+    "Gust of Wind": 0.0,
+    "PlusPower": 0.0,
+    "Energy Removal": 4.0,
+    "Super Energy Removal": 3.0,
+    "Scyther": 3.0
+   },
+   "proposals": 32,
+   "chosen_score_vs_real_mae": 0.082,
+   "scorer_vs_real_mae": 0.2684,
+   "mean_real_vs_its_mixture": 0.3545,
+   "real_by_iteration": [
+    0.423,
+    0.496,
+    0.51,
+    0.31,
+    0.294,
+    0.491,
+    0.224,
+    0.089
+   ],
+   "candidates_scored": 643164,
+   "search_seconds": 889.3,
+   "vs_archived_field": 0.5028,
+   "exploitability": {
+    "best_response": "archived: 15+ #1 Andrew Marshall (Haymaker)",
+    "win": 0.7167
+   }
+  }
+ }
+}
