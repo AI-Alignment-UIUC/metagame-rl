@@ -28,6 +28,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+from rl import limits
 from rl.model import IdentityMLP, export_onnx
 from rl.rollouts import read_rollout, concat
 
@@ -211,7 +212,7 @@ def main(argv=None):
                     help='"learner deck|opponent deck" (substring of an archived deck name); repeatable; "all" = every pair')
     ap.add_argument("--both-directions", action="store_true", help="also train each matchup with the decks swapped")
     ap.add_argument("--iterations", type=int, default=100)
-    ap.add_argument("--workers", type=int, default=16)
+    ap.add_argument("--workers", type=int, default=14)
     ap.add_argument("--transitions", type=int, default=4096, help="per worker per iteration")
     ap.add_argument("--concurrency", type=int, default=32)
     ap.add_argument("--inference", choices=["onnx", "gpu"], default="onnx")
@@ -225,7 +226,8 @@ def main(argv=None):
     ap.add_argument("--epochs", type=int, default=3)
     ap.add_argument("--minibatch", type=int, default=4096)
     ap.add_argument("--micro-batch", type=int, default=0, help="split each minibatch into chunks of this size (0 = whole)")
-    ap.add_argument("--gpu-mem-fraction", type=float, default=0, help="cap this process's GPU memory (0 = no cap)")
+    ap.add_argument("--gpu-mem-fraction", type=float, default=0.8,
+                    help="cap this process's GPU memory (at most 0.8, rl/limits.py)")
     ap.add_argument("--amp", action="store_true", help="bfloat16 autocast for the forward pass on the GPU")
     ap.add_argument("--gamma", type=float, default=1.0)
     ap.add_argument("--lam", type=float, default=0.95)
@@ -252,9 +254,9 @@ def main(argv=None):
     run = ROOT / args.run
     (run / "policies").mkdir(parents=True, exist_ok=True)
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    if device == "cuda" and args.gpu_mem_fraction:
-        # Leaves the rest of the card to the desktop; the allocator frees its cache before failing.
-        torch.cuda.set_per_process_memory_fraction(args.gpu_mem_fraction)
+    args.workers = limits.cap_workers(args.workers)
+    args.eval_workers = limits.cap_workers(args.eval_workers)
+    limits.apply(device, args.workers, args.gpu_mem_fraction)
     torch.manual_seed(args.seed)
     random.seed(args.seed)
 

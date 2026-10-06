@@ -15,6 +15,7 @@ from pathlib import Path
 
 import torch
 
+from rl import limits
 from rl.model import build, export_onnx
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -48,11 +49,12 @@ def main(argv=None):
     ap.add_argument("--d1", default="all")
     ap.add_argument("--d2", default="all")
     ap.add_argument("--games", type=int, default=400)
-    ap.add_argument("--workers", type=int, default=18)
+    ap.add_argument("--workers", type=int, default=14)
     ap.add_argument("--seed", type=int, default=11)
     ap.add_argument("--stochastic", action="store_true", help="sample the policy instead of playing its argmax")
     ap.add_argument("--out")
     args = ap.parse_args(argv)
+    args.workers = limits.cap_workers(args.workers)
     x = as_spec(args.policy, greedy=not args.stochastic)
     rows = []
     tmp = ROOT / "runs" / ".crossplay.json"

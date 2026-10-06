@@ -62,7 +62,9 @@ submodule, and then the pin is bumped here.
 
 This machine has crashed or hung three times from 2026-10-04 to 2026-10-06. One was a hypervisor
 bugcheck (0x20001), and two were hangs in sleep that needed the power button. Until that's fixed,
-keep training and eval jobs at about **80% of the machine at most**:
+keep training and eval jobs at about **80% of the machine at most**. `rl/limits.py` enforces this in
+`rl.train`, `rl.psro`, `rl.gpu_matrix`, `rl.distill` and `rl.crossplay`; call `limits.apply()` and
+`limits.cap_workers()` in any new entry point too:
 
 - **GPU memory:** call `torch.cuda.set_per_process_memory_fraction(0.8)` before allocating
   (about 12.8 of 16 GB on the RTX 5070 Ti).

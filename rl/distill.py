@@ -29,6 +29,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+from rl import limits
 from rl.model import IdentityMLP
 from rl.rollouts import read_rollout, concat
 from rl.token_model import build_token_model, export_token_onnx, INPUTS
@@ -210,6 +211,7 @@ def main(argv=None):
     ap.add_argument("--out")
     args = ap.parse_args(argv)
     device = args.device
+    limits.apply(device)
     amp = device == "cuda"
     torch.manual_seed(0)
     seeds = sorted(int(Path(f).name[1:].split(".")[0]) for f in glob.glob(f"{args.data}/d*.tok.bin"))

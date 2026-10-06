@@ -23,6 +23,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
+from rl import limits
 from rl.builder import Builder
 from rl.decks import Pool, archived_decks, overlap
 from rl.matchup import MatchupModel, fit
@@ -127,13 +128,15 @@ def main(argv=None):
     ap.add_argument("--edits", type=int, default=16)
     ap.add_argument("--builder-iters", type=int, default=200)
     ap.add_argument("--pilot-iters", type=int, default=0, help="play-policy fine-tuning iterations per PSRO iteration")
-    ap.add_argument("--workers", type=int, default=18)
+    ap.add_argument("--workers", type=int, default=14)
     ap.add_argument("--seed", type=int, default=1)
     args = ap.parse_args(argv)
 
     run = ROOT / args.run
     run.mkdir(parents=True, exist_ok=True)
     dev = "cuda" if torch.cuda.is_available() else "cpu"
+    args.workers = limits.cap_workers(args.workers)
+    limits.apply(dev, args.workers)
     rng = np.random.default_rng(args.seed)
     table = json.load(open(ROOT / "notes/data/cards/pool.json", encoding="utf-8"))["cards"]
     text = np.load(ROOT / "notes/data/cards/text_emb.npy")
