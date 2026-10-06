@@ -620,3 +620,24 @@ Entry format:
 - **Next:** Replicate with two more seeds; give the model a trust region (candidates within ~15
   cards of measured decks) or the value as a feature before ruling it out; then value-scored
   PSRO for longer, and on the full pool.
+
+### #35 · 2026-10-06 · A5.2 · 2000s result #1 written up; #34's nearest list corrected
+- **Done:** `results/2000s-result-1/`: the builder comparison of #34 as a standalone result, with
+  its own README (question, setup, panel and search tables, the value-built deck beside the nearest
+  archived list, limits, how to reproduce) and its data: the three runs' logs, populations and
+  matrices, the panel results, the launch script, and the pilot checkpoint with the script that
+  made it (7.5 MB). `results/README.md` indexes results by era. Linked from the README's
+  Repository table.
+- **Evidence:** Overlap of `value5-0` with every archived list: Chris Graham's Haymaker
+  (10-and-under #6) 0.767, Ken Knight's Clefable 0.667, Daniel Nino's Haymaker 0.633, Alvin
+  Osborn's Haymaker 0.600; Andrew Marshall's Haymaker (15+ #1) 0.450. Against Graham's list it
+  has the same Hitmonchan / Electabuzz / Scyther / DCE / Energy Removal / Computer Search / Bill
+  core and swaps PlusPower 3, Gust of Wind 2, Scoop Up 2, Ditto 2, Energy Retrieval 2 and one
+  each of Oak, Scyther and Super Energy Removal for 12 Lightning Energy, a Hitmonchan and a Machop
+  (34 Energy against 22).
+- **Found:** Corrects #34: the nearest archived list to value's final deck is Graham's, not
+  Marshall's. Marshall's is the best response to it in the panel (71.7%), which is where #34's
+  wording went wrong. The swaps away from Graham's list are the Trainers the pilot undervalues
+  (#32-33).
+- **Next:** As #34: two more seeds, the model with a trust region or the value feature, then
+  value-scored PSRO longer and on the full pool.

@@ -23,7 +23,7 @@ and proven there first.
 matrix. The token + pointer model (A4.2) beats the MLP baseline (A4.1) on all 24 decks, 93.2-93.3%
 against SimpleBot and 66-68% head to head. Of the three A5 deck-builder designs, search scored by
 the pilot's own start-of-game value is the clear winner in a first equal-time comparison: from
-random decks it built a Haymaker 77% like the winning list, even with the archived field, while
+random decks it built a Haymaker 77% like an archived list, even with the human field ([2000s result #1](results/2000s-result-1/)), while
 real-game scoring explores too little and the matchup model is exploited by the search. The pilot
 still undervalues PlusPower, Item Finder and Gust of Wind; jobs are capped at ~80% of the machine.
 
@@ -63,13 +63,15 @@ still undervalues PlusPower, Item Finder and Gust of Wind; jobs are capped at ~8
   which biases every A5 measurement made with it. After three machine crashes, every job is
   capped at 80% of GPU memory and 16 of 20 threads, with a GPU watchdog.
 
-**Recent (log #33–34):** Paying nothing for deck-out wins cut the pilot's deck-outs from 39% to 27%
+**Recent (log #33–35):** Paying nothing for deck-out wins cut the pilot's deck-outs from 39% to 27%
 at the same SimpleBot strength, but left PlusPower, Computer Search and Item Finder below a basic
 Energy, so deck-out is only part of the story. With that pilot, the three builder designs of log #27
 ran from the same 16 random decks for ~20 minutes each: the value-scored search's final deck beats
 the games- and model-scored mixtures 76.5% and 74.3%, matches the archived field (50.3%, against
 37.9% and 26.5%) and is the least exploitable, and it plays DCE, Computer Search and Bill again;
-the matchup model's own predictions were off by 0.59 on average. One seed so far.
+the matchup model's own predictions were off by 0.59 on average. One seed so far; written up as
+[2000s result #1](results/2000s-result-1/), whose nearest archived list is Chris Graham's Haymaker
+(10-and-under), not the winning list, as log #34 first said.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
@@ -395,6 +397,7 @@ Same exit criteria as A4 and A5, measured against the archived Worlds top cut.
 |---|---|
 | `ryuu-play/` | Submodule: the engine fork, pinned to a commit on `sts-2000-pool`. Engine changes are committed there and the pin is bumped here. |
 | `notes/progress-log.md` | Append-only log of finished todos, from which the Status section is summarized |
+| `results/` | Headline results, one folder each with a README, data and the scripts to reproduce them ([index](results/README.md)); [2000s result #1](results/2000s-result-1/) is the A5.2 builder comparison |
 | `notes/schematics/` | Diagrams of the system, as standalone HTML pages: `metagame-builder.html` (and the `.svg` shown under A5) is the A5 PSRO loop, marked built vs planned |
 | `env/` | The RL environment: seeded game loop, legal-action enumerator and its oracle, encoder, env API, rollout runner and workers; `env/tools/` has the verification, test, benchmark and evaluation scripts |
 | `rl/` | The learner: PyTorch models, ONNX export, rollout reader, PPO training (`python -m rl.train`) |
