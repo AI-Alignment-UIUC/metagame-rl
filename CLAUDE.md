@@ -57,3 +57,18 @@ Edit these files only; don't commit or push unless asked.
 `ryuu-play/` is a submodule pinned to `evcoats/ryuu-play` on `sts-2000-pool`. In a fresh clone,
 run `git submodule update --init --recursive` first. Engine changes are committed in the
 submodule, and then the pin is bumped here.
+
+## Machine load limits
+
+This machine has crashed or hung three times from 2026-10-04 to 2026-10-06. One was a hypervisor
+bugcheck (0x20001), and two were hangs in sleep that needed the power button. Until that's fixed,
+keep training and eval jobs at about **80% of the machine at most**:
+
+- **GPU memory:** call `torch.cuda.set_per_process_memory_fraction(0.8)` before allocating
+  (about 12.8 of 16 GB on the RTX 5070 Ti).
+- **GPU compute:** keep batch sizes and the number of parallel envs on the GPU low enough that
+  `nvidia-smi` shows utilization at about 80% or less while the job runs, not pinned at 100%.
+  Lowering the GPU's power limit (`nvidia-smi -pl <watts>`) is a hard cap, but it needs an
+  admin shell, so ask Evan to run it.
+- **CPU:** use at most 16 of the 20 threads for rollout workers and `torch.set_num_threads`.
+- Check `nvidia-smi` early in each long run and back off if it sits at 100%.
