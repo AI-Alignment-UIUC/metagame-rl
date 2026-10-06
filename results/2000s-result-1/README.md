@@ -145,8 +145,8 @@ PYTHONPATH=. .venv/Scripts/python notes/scripts/compare_builders.py \
 |---|---|
 | `builders_compare.sh` | The three runs as launched |
 | `panel.json` | The panel results above (also `notes/data/eval/builders_compare.json`) |
-| `runs/{games,model,value}/log.jsonl` | Per-iteration PSRO log: support, proposals, predicted vs real, search statistics |
-| `runs/{games,model,value}/population.json` | Every deck each run built, as card lists |
-| `runs/{games,model,value}/matrix.npz` | Each run's real-game matrix (wins, games, names) |
+| `data/{games,model,value}/log.jsonl` | Per-iteration PSRO log: support, proposals, predicted vs real, search statistics |
+| `data/{games,model,value}/population.json` | Every deck each run built, as card lists |
+| `data/{games,model,value}/matrix.npz` | Each run's real-game matrix (wins, games, names) |
 | `pilot/model_it00014.pt` | The pilot checkpoint (1.6M parameters) |
 | `pilot/deckout_test.sh` | How the pilot was made, with its control arm |
