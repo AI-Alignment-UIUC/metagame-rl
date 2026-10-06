@@ -133,10 +133,12 @@ def main(argv=None):
     ap.add_argument("--iterations", type=int, default=10)
     ap.add_argument("--games", type=int, default=100, help="games per pair")
     ap.add_argument("--new", type=int, default=4, help="decks added per iteration")
-    ap.add_argument("--builder", choices=["edit", "games", "model", "value"], default="edit",
-                    help="edit: the PPO edit policy (rl/builder.py); games / model / value: restart search "
-                         "(rl/search.py) scored by real games, a matchup-model ensemble, or the pilot's value")
+    ap.add_argument("--builder", choices=["edit", "games", "model", "value", "strength"], default="edit",
+                    help="edit: the PPO edit policy (rl/builder.py); games / model / value / strength: restart search "
+                         "(rl/search.py) scored by real games, a matchup-model ensemble, the pilot's value, or the deck-strength model (log #39)")
     ap.add_argument("--search-seconds", type=float, default=120, help="wall-clock budget per search (rl/search.py)")
+    ap.add_argument("--strength-model", default="notes/data/eval/strength_model.json",
+                    help="--builder strength: the deck-strength model (notes/scripts/deck_strength.py)")
     ap.add_argument("--edits", type=int, default=16)
     ap.add_argument("--builder-iters", type=int, default=200)
     ap.add_argument("--pilot-iters", type=int, default=0, help="play-policy fine-tuning iterations per PSRO iteration")
@@ -183,9 +185,10 @@ def main(argv=None):
         raise SystemExit("--builder games/model/value needs --inference gpu")
     scorer = None
     if args.builder != "edit":
-        from rl.search import GamesScorer, ModelScorer, ValueScorer
+        from rl.search import GamesScorer, ModelScorer, StrengthScorer, ValueScorer
         scorer = {"games": lambda: GamesScorer(gpu), "value": lambda: ValueScorer(gpu),
-                  "model": lambda: ModelScorer(table, text, dev)}[args.builder]()
+                  "model": lambda: ModelScorer(table, text, dev),
+                  "strength": lambda: StrengthScorer(gpu, str(ROOT / args.strength_model))}[args.builder]()
     pending = []                                   # (deck index, predicted score, sigma at proposal)
     measured = 0
     for it in range(args.iterations + 1):

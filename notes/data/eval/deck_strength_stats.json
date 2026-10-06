@@ -1,0 +1,381 @@
+{
+ "train_decks": 117,
+ "games": {
+  "games": 69120,
+  "seconds": 392.0,
+  "games_per_s": 176.3,
+  "errors": 0,
+  "cut": 64,
+  "endings": {
+   "no-pokemon": 22483,
+   "prizes": 34525,
+   "deck-out": 12048
+  },
+  "decisions_per_game": 186.8
+ },
+ "target_games_per_deck": 285.6,
+ "target_sd": 0.168,
+ "by_stat_games": {
+  "8": {
+   "cv": {
+    "all": {
+     "mae": 0.0711,
+     "spearman": 0.814
+    },
+    "without shape": {
+     "mae": 0.0709,
+     "spearman": 0.823
+    },
+    "without goldfish": {
+     "mae": 0.0719,
+     "spearman": 0.803
+    },
+    "without game_stats": {
+     "mae": 0.0973,
+     "spearman": 0.678
+    },
+    "without value": {
+     "mae": 0.0727,
+     "spearman": 0.827
+    },
+    "without uncertainty": {
+     "mae": 0.0736,
+     "spearman": 0.814
+    },
+    "only shape": {
+     "mae": 0.1313,
+     "spearman": 0.409
+    },
+    "only goldfish": {
+     "mae": 0.1234,
+     "spearman": 0.475
+    },
+    "only game_stats": {
+     "mae": 0.0755,
+     "spearman": 0.793
+    },
+    "only value": {
+     "mae": 0.1324,
+     "spearman": 0.37
+    },
+    "only uncertainty": {
+     "mae": 0.1454,
+     "spearman": -0.151
+    }
+   },
+   "weights": {
+    "basic_energy": -0.112,
+    "special_energy": 0.041,
+    "pokemon": 0.061,
+    "basic_pokemon": -0.109,
+    "trainers": 0.077,
+    "draw": -0.087,
+    "energy_fit": 0.067,
+    "attack_by_t2": -0.019,
+    "attack_by_t3": 0.314,
+    "energy_in_first_10": 0.059,
+    "turns": -0.331,
+    "decisions": 0.943,
+    "deck_out_share": 0.088,
+    "no_pokemon_share": 0.128,
+    "value_start": -0.044,
+    "value_turn5": 0.219,
+    "distance_to_nearest": -0.148
+   },
+   "group_weight": {
+    "shape": 0.554,
+    "goldfish": 0.392,
+    "game_stats": 1.49,
+    "value": 0.263,
+    "uncertainty": 0.148
+   },
+   "variants": {
+    "predicted": [
+     0.371,
+     0.386,
+     0.472,
+     0.408
+    ],
+    "real": [
+     0.497,
+     0.514,
+     0.625,
+     0.714
+    ],
+    "spearman": 0.8
+   }
+  },
+  "16": {
+   "cv": {
+    "all": {
+     "mae": 0.0665,
+     "spearman": 0.844
+    },
+    "without shape": {
+     "mae": 0.0654,
+     "spearman": 0.851
+    },
+    "without goldfish": {
+     "mae": 0.0694,
+     "spearman": 0.812
+    },
+    "without game_stats": {
+     "mae": 0.0979,
+     "spearman": 0.653
+    },
+    "without value": {
+     "mae": 0.0701,
+     "spearman": 0.833
+    },
+    "without uncertainty": {
+     "mae": 0.0665,
+     "spearman": 0.839
+    },
+    "only shape": {
+     "mae": 0.1313,
+     "spearman": 0.409
+    },
+    "only goldfish": {
+     "mae": 0.1234,
+     "spearman": 0.475
+    },
+    "only game_stats": {
+     "mae": 0.0785,
+     "spearman": 0.779
+    },
+    "only value": {
+     "mae": 0.1349,
+     "spearman": 0.313
+    },
+    "only uncertainty": {
+     "mae": 0.1454,
+     "spearman": -0.151
+    }
+   },
+   "weights": {
+    "basic_energy": -0.036,
+    "special_energy": 0.057,
+    "pokemon": -0.056,
+    "basic_pokemon": -0.077,
+    "trainers": 0.07,
+    "draw": -0.164,
+    "energy_fit": 0.088,
+    "attack_by_t2": -0.047,
+    "attack_by_t3": 0.347,
+    "energy_in_first_10": -0.034,
+    "turns": -0.244,
+    "decisions": 0.923,
+    "deck_out_share": 0.007,
+    "no_pokemon_share": 0.026,
+    "value_start": -0.02,
+    "value_turn5": 0.259,
+    "distance_to_nearest": -0.125
+   },
+   "group_weight": {
+    "shape": 0.548,
+    "goldfish": 0.428,
+    "game_stats": 1.2,
+    "value": 0.279,
+    "uncertainty": 0.125
+   },
+   "variants": {
+    "predicted": [
+     0.488,
+     0.466,
+     0.497,
+     0.477
+    ],
+    "real": [
+     0.497,
+     0.514,
+     0.625,
+     0.714
+    ],
+    "spearman": 0.0
+   }
+  },
+  "32": {
+   "cv": {
+    "all": {
+     "mae": 0.0657,
+     "spearman": 0.848
+    },
+    "without shape": {
+     "mae": 0.0652,
+     "spearman": 0.854
+    },
+    "without goldfish": {
+     "mae": 0.0663,
+     "spearman": 0.844
+    },
+    "without game_stats": {
+     "mae": 0.1001,
+     "spearman": 0.665
+    },
+    "without value": {
+     "mae": 0.0672,
+     "spearman": 0.85
+    },
+    "without uncertainty": {
+     "mae": 0.0657,
+     "spearman": 0.843
+    },
+    "only shape": {
+     "mae": 0.1313,
+     "spearman": 0.409
+    },
+    "only goldfish": {
+     "mae": 0.1234,
+     "spearman": 0.475
+    },
+    "only game_stats": {
+     "mae": 0.074,
+     "spearman": 0.805
+    },
+    "only value": {
+     "mae": 0.1286,
+     "spearman": 0.446
+    },
+    "only uncertainty": {
+     "mae": 0.1454,
+     "spearman": -0.151
+    }
+   },
+   "weights": {
+    "basic_energy": -0.057,
+    "special_energy": 0.115,
+    "pokemon": 0.059,
+    "basic_pokemon": -0.15,
+    "trainers": -0.008,
+    "draw": -0.059,
+    "energy_fit": 0.076,
+    "attack_by_t2": -0.187,
+    "attack_by_t3": 0.375,
+    "energy_in_first_10": 0.089,
+    "turns": -0.151,
+    "decisions": 1.002,
+    "deck_out_share": 0.025,
+    "no_pokemon_share": 0.204,
+    "value_start": -0.233,
+    "value_turn5": 0.303,
+    "distance_to_nearest": -0.147
+   },
+   "group_weight": {
+    "shape": 0.524,
+    "goldfish": 0.651,
+    "game_stats": 1.382,
+    "value": 0.536,
+    "uncertainty": 0.147
+   },
+   "variants": {
+    "predicted": [
+     0.327,
+     0.35,
+     0.446,
+     0.468
+    ],
+    "real": [
+     0.497,
+     0.514,
+     0.625,
+     0.714
+    ],
+    "spearman": 1.0
+   }
+  },
+  "all": {
+   "cv": {
+    "all": {
+     "mae": 0.0546,
+     "spearman": 0.896
+    },
+    "without shape": {
+     "mae": 0.0533,
+     "spearman": 0.895
+    },
+    "without goldfish": {
+     "mae": 0.0543,
+     "spearman": 0.898
+    },
+    "without game_stats": {
+     "mae": 0.09,
+     "spearman": 0.735
+    },
+    "without value": {
+     "mae": 0.0561,
+     "spearman": 0.899
+    },
+    "without uncertainty": {
+     "mae": 0.0541,
+     "spearman": 0.893
+    },
+    "only shape": {
+     "mae": 0.1313,
+     "spearman": 0.409
+    },
+    "only goldfish": {
+     "mae": 0.1234,
+     "spearman": 0.475
+    },
+    "only game_stats": {
+     "mae": 0.0673,
+     "spearman": 0.84
+    },
+    "only value": {
+     "mae": 0.1213,
+     "spearman": 0.52
+    },
+    "only uncertainty": {
+     "mae": 0.1454,
+     "spearman": -0.151
+    }
+   },
+   "weights": {
+    "basic_energy": -0.038,
+    "special_energy": 0.038,
+    "pokemon": 0.094,
+    "basic_pokemon": -0.234,
+    "trainers": -0.037,
+    "draw": -0.061,
+    "energy_fit": 0.108,
+    "attack_by_t2": -0.206,
+    "attack_by_t3": 0.347,
+    "energy_in_first_10": 0.026,
+    "turns": -0.092,
+    "decisions": 0.944,
+    "deck_out_share": 0.119,
+    "no_pokemon_share": 0.202,
+    "value_start": -0.182,
+    "value_turn5": 0.386,
+    "distance_to_nearest": -0.125
+   },
+   "group_weight": {
+    "shape": 0.61,
+    "goldfish": 0.579,
+    "game_stats": 1.357,
+    "value": 0.568,
+    "uncertainty": 0.125
+   },
+   "variants": {
+    "predicted": [
+     0.406,
+     0.433,
+     0.58,
+     0.56
+    ],
+    "real": [
+     0.497,
+     0.514,
+     0.625,
+     0.714
+    ],
+    "spearman": 0.8
+   }
+  }
+ },
+ "saved_model": {
+  "path": "notes/data/eval/strength_model.json",
+  "stat_games": "16"
+ },
+ "constant_mae": 0.1423
+}

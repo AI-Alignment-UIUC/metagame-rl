@@ -125,6 +125,43 @@ class ValueScorer:
         return 0.5 + 0.5 * (v * self.w[None, :]).sum(1)
 
 
+class StrengthScorer:
+    """The deck-strength model of rl/strength.py (logs #38-39) on each candidate: `games` real games
+    against the top support decks (game statistics and the value at turn 5), its start-of-game value
+    against them, its decklist (shape, goldfish) and its distance to the population. No opponent
+    context in the model: the support decks are only who the games are played against."""
+    name, candidates = "strength", 6
+    max_steps = 20          # ~2 s a step, so shorter climbs and more restarts in the budget
+
+    def __init__(self, gm, model_path: str, games: int = 16, max_support: int = 4, openings: int = 4):
+        from rl.strength import StrengthModel
+        self.gm, self.games, self.max_support, self.openings = gm, games, max_support, openings
+        self.model = StrengthModel.load(model_path)
+        self.calls = 0
+
+    def prepare(self, pop, sigma, seed):
+        GamesScorer.prepare(self, pop, sigma, seed)
+        self.known = list(pop.decks)
+        self.rng = np.random.default_rng(seed)
+
+    def __call__(self, cands):
+        from rl.strength import deck_features, distance_to_nearest, game_features
+        n = len(self.opp_decks)
+        per = max(2, 2 * round(self.games / n / 2))           # even, so both seats
+        decks = self.opp_decks + [{"name": f"c{k}", "cards": self.pool.names(c)} for k, c in enumerate(cands)]
+        pairs = [(n + k, j) for k in range(len(cands)) for j in range(n)]
+        self.calls += 1
+        self.gm.play(decks, per, self.seed * 1000 + self.calls, pairs=pairs, value_at_turn=5)
+        games = self.gm.results
+        fw = self.gm.values(decks, pairs, self.openings, self.seed + self.calls)
+        bw = self.gm.values(decks, [(b, a) for a, b in pairs], self.openings, self.seed + self.calls + 7)
+        vstart = ((fw - bw) / 2).reshape(len(cands), n) @ self.w
+        feats = [{**deck_features(self.pool, c, self.rng, sims=100), **game_features(games, n + k),
+                  "value_start": float(vstart[k]), "distance_to_nearest": distance_to_nearest(c, self.known)}
+                 for k, c in enumerate(cands)]
+        return 1 / (1 + np.exp(-self.model.logit(feats)))
+
+
 def search(scorer, pop, sigma, k: int, seconds: float, rng, random_deck, restart_random: float = 0.5,
            patience: int = 2, max_steps: int = 60, confirm: GamesScorer = None, finalists: int = 8,
            confirm_share: float = 0.1):
@@ -134,6 +171,7 @@ def search(scorer, pop, sigma, k: int, seconds: float, rng, random_deck, restart
     the support, and the k best by those games are proposed (A5.2 step 3)."""
     pool = pop.pool
     scorer.pool = pool
+    max_steps = getattr(scorer, "max_steps", max_steps)
     t0 = time.time()
     t_search = seconds * (1 - confirm_share) if confirm is not None else seconds
     scorer.prepare(pop, sigma, int(rng.integers(1 << 30)))

@@ -731,3 +731,33 @@ Entry format:
   make single weights unstable, so the group drops are the reliable reading; linear model.
 - **Next:** How few games the statistics need (8, 16, 32 per deck) before they stop helping; if
   few suffice, a search that plays a handful of games per candidate and ranks by this model.
+
+### #39 · 2026-10-06 · A5.2 · The deck-strength model as the search's scorer: accurate, too slow
+- **Done:** `rl/strength.py`: the deck-strength features and model of #38 in one module, used by
+  training and the search alike. `notes/scripts/deck_strength.py` now takes the game statistics
+  from 8, 16 or 32 games per deck (other games than the target's), saves the 16-game model
+  (`notes/data/eval/strength_model.json`) and per-deck data. `rl/search.py` `StrengthScorer`:
+  each candidate plays 16 games against the top 4 support decks (game statistics, value at turn
+  5), its start-of-game value against them (4 deals, both seat orders), its decklist features and
+  its distance to the population, ranked by the model; climbs capped at 20 steps (~2 s a step).
+  `rl/psro.py --builder strength`. `runs/strength_run.sh`: result #1's setup (seed 3, the same
+  16 random decks, 8 iterations, 4 new decks, 120 s, 48 games per pair). The model's weights were
+  fitted on data that includes the archived lists (no decklist enters the search).
+- **Evidence:** Statistics from few games, held-out MAE / rank (constant 0.142): 8 games 0.071 /
+  +0.81, 16 games 0.067 / +0.84, 32 games 0.066 / +0.85, all (~290) 0.055 / +0.90; at 16 games
+  the four Trainer variants are not separated (rank 0.00; they differ by 5-18 points). Search:
+  2 climbs per iteration, 1,740 candidates in all, population 35 (19 added); the first built deck
+  entered the support at iteration 6; final support `strength7-0` (Wigglytuff-like, 0.64),
+  random-15, random-8. Built decks kept 18-25 Energy and PlusPower / Gust; the closest to any
+  Haymaker list is 0.50. Error of the scorer's estimate against real results 0.046. Panel
+  (`notes/data/eval/builders_compare_strength.json`, the four runs' supports plus the 24 archived
+  lists, 60 games per pair): against the field games 37.4%, model 25.9%, value 49.7%, strength
+  30.7%; value's deck beats strength's mixture 90.2%; best panel deck against strength 90.2%.
+- **Found:** The strength scorer is the best calibrated of the four (0.046) and avoids the Energy
+  flood, but at ~2 s a candidate it explores as little as real-game scoring, and 120 s an
+  iteration never gets a climb far from a random deck. Its accuracy cannot buy breadth, and with
+  16 games it cannot tell close variants apart either. The value search finds good basins fast
+  but misranks within them; the strength model ranks within them but cannot find them.
+- **Next:** Two stages: the value search for breadth, then the strength model (with its 16 games)
+  to choose among many finalists and among Energy / Trainer variants of each (block swaps), so
+  the cheap scorer explores and the honest one decides; same setup, then the panel.

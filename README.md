@@ -63,22 +63,23 @@ value overrates Energy against Trainers, which capped that deck at 34 Energy; jo
   which biases every A5 measurement made with it. After three machine crashes, every job is
   capped at 80% of GPU memory and 16 of 20 threads, with a GPU watchdog.
 
-**Recent (log #33–38):** Paying nothing for deck-out wins cut the pilot's deck-outs from 39% to 27%
+**Recent (log #33–39):** Paying nothing for deck-out wins cut the pilot's deck-outs from 39% to 27%
 at the same SimpleBot strength. With that pilot, the value-scored search beat the other two builder
 designs of log #27 ([2000s result #1](results/2000s-result-1/)), but its deck runs 34 Energy because
 the pilot's start-of-game value overrates Energy; putting Graham's Trainers back raises it from 49.9%
 to 63.2% against the field. A deck-strength model with five input groups and no opponent context
-predicts held-out decks' win rates to within 0.058 (rank +0.89) and orders those Trainer variants
-correctly; nearly all of that comes from how the deck plays (decisions per game, endings, the value
-at turn 5), while the start-of-game value gets a negative weight once the rest is known.
+predicts decks' win rates well from only 16 games each (MAE 0.067, rank +0.84), mostly from how
+they play. As the search's scorer it is the best calibrated yet (error 0.046) and keeps the Trainers,
+but it explores too little to find good decks (30.7% against the field): value finds the basins,
+the strength model ranks within them, and neither does both.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. How few games the deck-strength model's game statistics need (8-32 per deck); if few suffice,
-   a search that plays a handful of games per candidate and ranks by that model, compared with
-   result #1's value search on how close it gets to Graham's list (68.1% against the field).
+1. A two-stage builder: the value search for breadth, the strength model (16 games per finalist)
+   to choose among many finalists and their Energy / Trainer block-swap variants; result #1's
+   setup, then the panel: does it reach Graham's list (68.1% against the field)?
 2. Replicate the builder comparison with two more seeds.
 3. Value-scored PSRO for longer, then on the full pool: do the archetypes and staples hold?
 4. A4 exit: the trained-policy matchup matrix with the token policy, scored with
