@@ -22,10 +22,10 @@ and proven there first.
 **Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup
 matrix. The token + pointer model (A4.2) beats the MLP baseline (A4.1) on all 24 decks, 93.2-93.3%
 against SimpleBot and 66-68% head to head. A5's PSRO loop runs on central GPU inference, but its
-first full cold start brought back none of the field's staples, because the token pilot plays a
-stalling game that ends by deck-out 45% of the time, so every draw or search card makes its deck
-worse. Fixing the pilot to play for prizes comes before any further A5 result; jobs are now capped
-at ~80% of the machine after three crashes.
+first cold start brought back none of the field's staples: the pilot values PlusPower, Bill,
+Computer Search and Item Finder below a basic Energy. Paying less for deck-out wins cut its
+deck-outs from 39% to 27% at the same strength but left those card values unchanged, so the
+pilot misuses these Trainers for reasons still to be found; jobs are capped at ~80% of the machine.
 
 **Earlier work:**
 
@@ -63,22 +63,26 @@ at ~80% of the machine after three crashes.
   which biases every A5 measurement made with it. After three machine crashes, every job is
   capped at 80% of GPU memory and 16 of 20 threads, with a GPU watchdog.
 
-**Recent:** nothing since log #32.
+**Recent (log #33):** Paying nothing for a deck-out win (`rl/train.py --deckout-win 0`) cut the
+pilot's deck-outs over 15 fine-tuning iterations from 39% (control) to 27% of greedy games and
+raised prize wins from 44% to 56%, with SimpleBot results unchanged (93.0% ± 2.5 vs 95.5% ± 2.0).
+The staples stayed below a basic Energy (PlusPower 43.8%, Computer Search 45.8%, Bill 49.1%), which
+corrects log #32: deck-out explains only part of why the pilot undervalues them.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. Pilot plays for prizes: check whether deck-outs grow across `runs/a4-tok` checkpoints (short
-   matrices with game endings), then a short training run with a per-turn cost or a smaller
-   reward for deck-out wins, judged by the ending mix and the SimpleBot win rate.
-2. With the fixed pilot, rerun the card ablations and the cold start (a5-cold2): do staple counts
-   and Double Colorless Energy come back?
+1. A5: the three builder designs of log #27 compared under the deck-out-0 pilot: search scored by
+   real games, by a matchup-model ensemble, and by the pilot's start-of-game value, with equal
+   wall-clock budgets, each checked on a short run first.
+2. Why the pilot misuses PlusPower, Computer Search and Item Finder: trace when and on what it
+   plays them.
 3. A4 exit: the trained-policy matchup matrix with the token policy, scored with
    `rl/answer_key.py`; a rerun for stability; matchup directions against era write-ups.
 4. A wider or deeper token model (the supervised check shows it underfits).
-5. A5.1-A5.2: Nash over the trained-policy matrix; the matchup model with the value feature and
-   an ensemble, PSRO with restarts and edit budgets; the counter-deck search.
+5. A5.1-A5.2: Nash over the trained-policy matrix; the matchup model with the value feature; the
+   counter-deck search.
 6. B1: source the Worlds 2005 top-cut lists; verify the engine's three EX sets against card data
    and rulings; check the near-reprints by hand.
 <!-- status:end -->

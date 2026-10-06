@@ -1,0 +1,788 @@
+{
+ "Bill": {
+  "decks": 17,
+  "mean_original_win": 0.4758823529411765,
+  "se": 0.012112665687577904,
+  "rows": [
+   {
+    "deck": "15+ #1 Andrew Marshall (Haymaker)",
+    "copies": 4,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.44
+   },
+   {
+    "deck": "15+ #2 William Lieu (Wigglytuff)",
+    "copies": 3,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.56
+   },
+   {
+    "deck": "15+ #3 Chris Neathery (Haymaker)",
+    "copies": 4,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.47
+   },
+   {
+    "deck": "15+ #5 Marcus Abreu (Wigglytuff)",
+    "copies": 3,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.58
+   },
+   {
+    "deck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+    "copies": 4,
+    "filler": "Fire Energy BS",
+    "original_win": 0.32
+   },
+   {
+    "deck": "15+ #7 Jarod Stein (Wigglytuff)",
+    "copies": 4,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.46
+   },
+   {
+    "deck": "11-14 #2 Kody Barret (Wigglytuff)",
+    "copies": 4,
+    "filler": "Grass Energy BS",
+    "original_win": 0.31
+   },
+   {
+    "deck": "11-14 #4 Zach Froelich (Wigglytuff)",
+    "copies": 4,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.47
+   },
+   {
+    "deck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+    "copies": 3,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.59
+   },
+   {
+    "deck": "11-14 #8 Matt Townend (Wigglytuff)",
+    "copies": 3,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.56
+   },
+   {
+    "deck": "10 and under #1 Joseph Viray (Rain Dance)",
+    "copies": 4,
+    "filler": "Water Energy BS",
+    "original_win": 0.56
+   },
+   {
+    "deck": "10 and under #2 Dean Bartlett (Sponge)",
+    "copies": 4,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.43
+   },
+   {
+    "deck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+    "copies": 3,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.36
+   },
+   {
+    "deck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+    "copies": 3,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.44
+   },
+   {
+    "deck": "10 and under #6 Chris Graham (Haymaker)",
+    "copies": 3,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.45
+   },
+   {
+    "deck": "10 and under #7 Ken Knight (Clefable)",
+    "copies": 4,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.51
+   },
+   {
+    "deck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+    "copies": 3,
+    "filler": "Water Energy BS",
+    "original_win": 0.58
+   }
+  ]
+ },
+ "Computer Search": {
+  "decks": 23,
+  "mean_original_win": 0.4482608695652173,
+  "se": 0.01036975246825976,
+  "rows": [
+   {
+    "deck": "15+ #1 Andrew Marshall (Haymaker)",
+    "copies": 3,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.47
+   },
+   {
+    "deck": "15+ #2 William Lieu (Wigglytuff)",
+    "copies": 4,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.5
+   },
+   {
+    "deck": "15+ #3 Chris Neathery (Haymaker)",
+    "copies": 2,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.39
+   },
+   {
+    "deck": "15+ #4 Alvin Osborn (Haymaker)",
+    "copies": 3,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.44
+   },
+   {
+    "deck": "15+ #5 Marcus Abreu (Wigglytuff)",
+    "copies": 2,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.51
+   },
+   {
+    "deck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+    "copies": 2,
+    "filler": "Fire Energy BS",
+    "original_win": 0.43
+   },
+   {
+    "deck": "15+ #7 Jarod Stein (Wigglytuff)",
+    "copies": 3,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.43
+   },
+   {
+    "deck": "15+ #8 Jay Yu (Wigglytuff)",
+    "copies": 4,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.42
+   },
+   {
+    "deck": "11-14 #1 Jack Savage (Sponge)",
+    "copies": 4,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.39
+   },
+   {
+    "deck": "11-14 #2 Kody Barret (Wigglytuff)",
+    "copies": 4,
+    "filler": "Grass Energy BS",
+    "original_win": 0.26
+   },
+   {
+    "deck": "11-14 #3 Daniel Nino (Haymaker)",
+    "copies": 3,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.37
+   },
+   {
+    "deck": "11-14 #4 Zach Froelich (Wigglytuff)",
+    "copies": 2,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.47
+   },
+   {
+    "deck": "11-14 #5 Derek Bowling (Haymaker)",
+    "copies": 3,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.48
+   },
+   {
+    "deck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+    "copies": 3,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.44
+   },
+   {
+    "deck": "11-14 #7 John Pratt (Wigglytuff)",
+    "copies": 3,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.44
+   },
+   {
+    "deck": "11-14 #8 Matt Townend (Wigglytuff)",
+    "copies": 4,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.61
+   },
+   {
+    "deck": "10 and under #1 Joseph Viray (Rain Dance)",
+    "copies": 4,
+    "filler": "Water Energy BS",
+    "original_win": 0.61
+   },
+   {
+    "deck": "10 and under #3 Brock Christianson (Haymaker)",
+    "copies": 2,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.51
+   },
+   {
+    "deck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+    "copies": 1,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.5
+   },
+   {
+    "deck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+    "copies": 2,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.44
+   },
+   {
+    "deck": "10 and under #6 Chris Graham (Haymaker)",
+    "copies": 3,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.38
+   },
+   {
+    "deck": "10 and under #7 Ken Knight (Clefable)",
+    "copies": 2,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.37
+   },
+   {
+    "deck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+    "copies": 2,
+    "filler": "Water Energy BS",
+    "original_win": 0.45
+   }
+  ]
+ },
+ "Item Finder": {
+  "decks": 18,
+  "mean_original_win": 0.4680555555555555,
+  "se": 0.011761036246605329,
+  "rows": [
+   {
+    "deck": "15+ #1 Andrew Marshall (Haymaker)",
+    "copies": 3,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.42
+   },
+   {
+    "deck": "15+ #2 William Lieu (Wigglytuff)",
+    "copies": 3,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.45
+   },
+   {
+    "deck": "15+ #3 Chris Neathery (Haymaker)",
+    "copies": 3,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.39
+   },
+   {
+    "deck": "15+ #4 Alvin Osborn (Haymaker)",
+    "copies": 3,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.47
+   },
+   {
+    "deck": "15+ #5 Marcus Abreu (Wigglytuff)",
+    "copies": 2,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.52
+   },
+   {
+    "deck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+    "copies": 2,
+    "filler": "Fire Energy BS",
+    "original_win": 0.675
+   },
+   {
+    "deck": "15+ #7 Jarod Stein (Wigglytuff)",
+    "copies": 3,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.41
+   },
+   {
+    "deck": "15+ #8 Jay Yu (Wigglytuff)",
+    "copies": 3,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.45
+   },
+   {
+    "deck": "11-14 #1 Jack Savage (Sponge)",
+    "copies": 3,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.62
+   },
+   {
+    "deck": "11-14 #2 Kody Barret (Wigglytuff)",
+    "copies": 4,
+    "filler": "Grass Energy BS",
+    "original_win": 0.36
+   },
+   {
+    "deck": "11-14 #3 Daniel Nino (Haymaker)",
+    "copies": 3,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.39
+   },
+   {
+    "deck": "11-14 #4 Zach Froelich (Wigglytuff)",
+    "copies": 2,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.43
+   },
+   {
+    "deck": "11-14 #5 Derek Bowling (Haymaker)",
+    "copies": 2,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.45
+   },
+   {
+    "deck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+    "copies": 4,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.25
+   },
+   {
+    "deck": "11-14 #8 Matt Townend (Wigglytuff)",
+    "copies": 3,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.48
+   },
+   {
+    "deck": "10 and under #3 Brock Christianson (Haymaker)",
+    "copies": 2,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.54
+   },
+   {
+    "deck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+    "copies": 4,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.67
+   },
+   {
+    "deck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+    "copies": 2,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.45
+   }
+  ]
+ },
+ "PlusPower": {
+  "decks": 19,
+  "mean_original_win": 0.42026315789473684,
+  "se": 0.011323985629280334,
+  "rows": [
+   {
+    "deck": "15+ #1 Andrew Marshall (Haymaker)",
+    "copies": 3,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.31
+   },
+   {
+    "deck": "15+ #2 William Lieu (Wigglytuff)",
+    "copies": 4,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.49
+   },
+   {
+    "deck": "15+ #4 Alvin Osborn (Haymaker)",
+    "copies": 4,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.34
+   },
+   {
+    "deck": "15+ #5 Marcus Abreu (Wigglytuff)",
+    "copies": 4,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.51
+   },
+   {
+    "deck": "15+ #8 Jay Yu (Wigglytuff)",
+    "copies": 4,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.39
+   },
+   {
+    "deck": "11-14 #1 Jack Savage (Sponge)",
+    "copies": 2,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.45
+   },
+   {
+    "deck": "11-14 #2 Kody Barret (Wigglytuff)",
+    "copies": 4,
+    "filler": "Grass Energy BS",
+    "original_win": 0.34
+   },
+   {
+    "deck": "11-14 #3 Daniel Nino (Haymaker)",
+    "copies": 4,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.41
+   },
+   {
+    "deck": "11-14 #4 Zach Froelich (Wigglytuff)",
+    "copies": 3,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.39
+   },
+   {
+    "deck": "11-14 #5 Derek Bowling (Haymaker)",
+    "copies": 4,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.43
+   },
+   {
+    "deck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+    "copies": 4,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.41
+   },
+   {
+    "deck": "11-14 #7 John Pratt (Wigglytuff)",
+    "copies": 3,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.53
+   },
+   {
+    "deck": "11-14 #8 Matt Townend (Wigglytuff)",
+    "copies": 4,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.45
+   },
+   {
+    "deck": "10 and under #1 Joseph Viray (Rain Dance)",
+    "copies": 4,
+    "filler": "Water Energy BS",
+    "original_win": 0.49
+   },
+   {
+    "deck": "10 and under #3 Brock Christianson (Haymaker)",
+    "copies": 3,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.33
+   },
+   {
+    "deck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+    "copies": 3,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.46
+   },
+   {
+    "deck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+    "copies": 4,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.45
+   },
+   {
+    "deck": "10 and under #6 Chris Graham (Haymaker)",
+    "copies": 3,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.34
+   },
+   {
+    "deck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+    "copies": 2,
+    "filler": "Water Energy BS",
+    "original_win": 0.465
+   }
+  ]
+ },
+ "Professor Oak": {
+  "decks": 24,
+  "mean_original_win": 0.6595833333333333,
+  "se": 0.009672408346300967,
+  "rows": [
+   {
+    "deck": "15+ #1 Andrew Marshall (Haymaker)",
+    "copies": 4,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.51
+   },
+   {
+    "deck": "15+ #2 William Lieu (Wigglytuff)",
+    "copies": 4,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.78
+   },
+   {
+    "deck": "15+ #3 Chris Neathery (Haymaker)",
+    "copies": 3,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.49
+   },
+   {
+    "deck": "15+ #4 Alvin Osborn (Haymaker)",
+    "copies": 3,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.72
+   },
+   {
+    "deck": "15+ #5 Marcus Abreu (Wigglytuff)",
+    "copies": 3,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.64
+   },
+   {
+    "deck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+    "copies": 4,
+    "filler": "Fire Energy BS",
+    "original_win": 0.42
+   },
+   {
+    "deck": "15+ #7 Jarod Stein (Wigglytuff)",
+    "copies": 3,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.67
+   },
+   {
+    "deck": "15+ #8 Jay Yu (Wigglytuff)",
+    "copies": 4,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.87
+   },
+   {
+    "deck": "11-14 #1 Jack Savage (Sponge)",
+    "copies": 4,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.57
+   },
+   {
+    "deck": "11-14 #2 Kody Barret (Wigglytuff)",
+    "copies": 4,
+    "filler": "Grass Energy BS",
+    "original_win": 0.41
+   },
+   {
+    "deck": "11-14 #3 Daniel Nino (Haymaker)",
+    "copies": 4,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.8
+   },
+   {
+    "deck": "11-14 #4 Zach Froelich (Wigglytuff)",
+    "copies": 4,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.73
+   },
+   {
+    "deck": "11-14 #5 Derek Bowling (Haymaker)",
+    "copies": 4,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.83
+   },
+   {
+    "deck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+    "copies": 4,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.75
+   },
+   {
+    "deck": "11-14 #7 John Pratt (Wigglytuff)",
+    "copies": 3,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.82
+   },
+   {
+    "deck": "11-14 #8 Matt Townend (Wigglytuff)",
+    "copies": 3,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.88
+   },
+   {
+    "deck": "10 and under #1 Joseph Viray (Rain Dance)",
+    "copies": 4,
+    "filler": "Water Energy BS",
+    "original_win": 0.72
+   },
+   {
+    "deck": "10 and under #2 Dean Bartlett (Sponge)",
+    "copies": 3,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.48
+   },
+   {
+    "deck": "10 and under #3 Brock Christianson (Haymaker)",
+    "copies": 4,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.7
+   },
+   {
+    "deck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+    "copies": 3,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.47
+   },
+   {
+    "deck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+    "copies": 2,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.58
+   },
+   {
+    "deck": "10 and under #6 Chris Graham (Haymaker)",
+    "copies": 3,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.67
+   },
+   {
+    "deck": "10 and under #7 Ken Knight (Clefable)",
+    "copies": 2,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.62
+   },
+   {
+    "deck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+    "copies": 2,
+    "filler": "Water Energy BS",
+    "original_win": 0.7
+   }
+  ]
+ },
+ "Double Colorless Energy": {
+  "decks": 23,
+  "mean_original_win": 0.5658695652173913,
+  "se": 0.010334854500944046,
+  "rows": [
+   {
+    "deck": "15+ #1 Andrew Marshall (Haymaker)",
+    "copies": 4,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.54
+   },
+   {
+    "deck": "15+ #2 William Lieu (Wigglytuff)",
+    "copies": 4,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.68
+   },
+   {
+    "deck": "15+ #3 Chris Neathery (Haymaker)",
+    "copies": 3,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.49
+   },
+   {
+    "deck": "15+ #4 Alvin Osborn (Haymaker)",
+    "copies": 4,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.55
+   },
+   {
+    "deck": "15+ #5 Marcus Abreu (Wigglytuff)",
+    "copies": 4,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.52
+   },
+   {
+    "deck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+    "copies": 2,
+    "filler": "Fire Energy BS",
+    "original_win": 0.53
+   },
+   {
+    "deck": "15+ #7 Jarod Stein (Wigglytuff)",
+    "copies": 3,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.54
+   },
+   {
+    "deck": "15+ #8 Jay Yu (Wigglytuff)",
+    "copies": 4,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.58
+   },
+   {
+    "deck": "11-14 #1 Jack Savage (Sponge)",
+    "copies": 4,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.53
+   },
+   {
+    "deck": "11-14 #2 Kody Barret (Wigglytuff)",
+    "copies": 4,
+    "filler": "Grass Energy BS",
+    "original_win": 0.61
+   },
+   {
+    "deck": "11-14 #3 Daniel Nino (Haymaker)",
+    "copies": 4,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.56
+   },
+   {
+    "deck": "11-14 #4 Zach Froelich (Wigglytuff)",
+    "copies": 4,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.67
+   },
+   {
+    "deck": "11-14 #5 Derek Bowling (Haymaker)",
+    "copies": 4,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.58
+   },
+   {
+    "deck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+    "copies": 4,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.53
+   },
+   {
+    "deck": "11-14 #7 John Pratt (Wigglytuff)",
+    "copies": 4,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.69
+   },
+   {
+    "deck": "11-14 #8 Matt Townend (Wigglytuff)",
+    "copies": 4,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.64
+   },
+   {
+    "deck": "10 and under #2 Dean Bartlett (Sponge)",
+    "copies": 1,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.44
+   },
+   {
+    "deck": "10 and under #3 Brock Christianson (Haymaker)",
+    "copies": 4,
+    "filler": "Psychic Energy BS",
+    "original_win": 0.6
+   },
+   {
+    "deck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+    "copies": 3,
+    "filler": "Lightning Energy BS",
+    "original_win": 0.54
+   },
+   {
+    "deck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+    "copies": 4,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.63
+   },
+   {
+    "deck": "10 and under #6 Chris Graham (Haymaker)",
+    "copies": 4,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.57
+   },
+   {
+    "deck": "10 and under #7 Ken Knight (Clefable)",
+    "copies": 1,
+    "filler": "Fighting Energy BS",
+    "original_win": 0.5
+   },
+   {
+    "deck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+    "copies": 2,
+    "filler": "Water Energy BS",
+    "original_win": 0.495
+   }
+  ]
+ }
+}

@@ -18,6 +18,7 @@ Example (A3, one matchup, both directions):
       --both-directions --iterations 200 --league --eval-every 20
 """
 import argparse
+import collections
 import json
 import random
 import subprocess
@@ -120,6 +121,7 @@ def ppo_update(model, opt, batch, args, device):
     stats = {"pi_loss": 0.0, "v_loss": 0.0, "entropy": 0.0, "kl": 0.0, "clipfrac": 0.0}
     n = 0
     tok_len = None
+    pace = limits.Pace(device)
     if args.model == "tokens":                # tokens fill from the front; kind 0 is padding
         kind = inputs[1]
         tok_len = ((kind > 0).long() * torch.arange(1, kind.shape[1] + 1, device=device)).amax(1)
@@ -164,6 +166,7 @@ def ppo_update(model, opt, batch, args, device):
                     mb_stats["clipfrac"] += w * ((ratio - 1).abs() > args.clip).float().mean().item()
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
             opt.step()
+            pace.tick()
             for k in stats:
                 stats[k] += mb_stats[k]
             n += 1
@@ -229,6 +232,8 @@ def main(argv=None):
     ap.add_argument("--gpu-mem-fraction", type=float, default=0.8,
                     help="cap this process's GPU memory (at most 0.8, rl/limits.py)")
     ap.add_argument("--amp", action="store_true", help="bfloat16 autocast for the forward pass on the GPU")
+    ap.add_argument("--deckout-win", type=float, default=1.0,
+                    help="reward for a win by deck-out (prizes or knockout: 1), to pay less for stalling")
     ap.add_argument("--gamma", type=float, default=1.0)
     ap.add_argument("--lam", type=float, default=0.95)
     ap.add_argument("--clip", type=float, default=0.2)
@@ -328,7 +333,7 @@ def main(argv=None):
                         {"spec": "onnx:" + s, "weight": (1 - args.self_weight) / len(league)} for s in league]
             opponents += bots
             msgs = [{"cmd": "collect", "encoding": args.model, "transitions": args.transitions,
-                     "concurrency": args.concurrency, "seed": args.seed * 1_000_003 + it * 1009 + w,
+                     "concurrency": args.concurrency, "deckoutWin": args.deckout_win, "seed": args.seed * 1_000_003 + it * 1009 + w,
                      "matchups": matchups, "opponents": opponents, "out": str(run / f"rollout_w{w}.bin"),
                      **({"model": str(policy)} if args.inference == "onnx" else {})} for w in range(args.workers)]
             replies = pool.collect(msgs, models, device) if args.inference == "gpu" else pool.ask_all(msgs)
@@ -353,6 +358,7 @@ def main(argv=None):
             row = {"iteration": it, "transitions": int(len(batch["action"])), "games": len(games),
                    "steps_per_game": float(np.mean([g["steps"] for g in games])) if games else 0,
                    "errors": sum(1 for g in games if g.get("error")),
+                   "endings": dict(collections.Counter(g.get("ending") or "none" for g in games)),
                    "win_vs": {k: round(float(np.mean(v)), 4) for k, v in vs.items()},
                    "collect_s": round(t1 - t0, 1), "train_s": round(t2 - t1, 1), **{k: round(v, 5) for k, v in stats.items()}}
             log.write(json.dumps(row) + "\n")

@@ -13,8 +13,11 @@
 const { Env } = require('./env.js');
 
 class Runner {
-  constructor(encoder, { concurrency = 32, showOpponentDecklist = true } = {}) {
+  // deckoutWin: the reward for a win by deck-out (a win by prizes or knockout is 1), so a pilot
+  // can be paid less for stalling than for taking prizes. Losses are -1 either way.
+  constructor(encoder, { concurrency = 32, showOpponentDecklist = true, deckoutWin = 1 } = {}) {
     this.encoder = encoder;
+    this.deckoutWin = deckoutWin;
     this.concurrency = concurrency;
     this.showOpponentDecklist = showOpponentDecklist;
   }
@@ -41,11 +44,12 @@ class Runner {
     };
     const finish = slot => {
       const w = slot.t.winner;
+      const win = slot.env.game.ending === 'deck-out' ? this.deckoutWin : 1;
       for (const seat of [1, 2]) {
         const i = slot.last[seat];
         if (i === -1) continue;
         rec.done[i] = 1;
-        rec.reward[i] = w === seat ? 1 : (w === 1 || w === 2) ? -1 : 0;
+        rec.reward[i] = w === seat ? win : (w === 1 || w === 2) ? -1 : 0;
       }
       for (const a of Object.values(agents)) if (a.forget) a.forget(slot.env.game);
       results.push({ seats: slot.job.seats, decks: [slot.job.deckName, slot.job.deckBName], seed: slot.job.seed,

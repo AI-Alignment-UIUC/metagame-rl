@@ -101,10 +101,10 @@ async function collect(cmd) {
     const [deckA, deckB] = learnerSeat === 1 ? [da, db] : [db, da];
     return { deckA: deckA.cards, deckB: deckB.cards, deckName: deckA.name, deckBName: deckB.name, seed: cmd.seed * 100003 + n++, seats };
   };
-  const runner = new Runner(enc, { concurrency: cmd.concurrency || 64 });
+  const runner = new Runner(enc, { concurrency: cmd.concurrency || 64, deckoutWin: cmd.deckoutWin ?? 1 });
   const out = await runner.run(nextJob, agents, { record: new Set(['learner']) });
   fs.writeFileSync(cmd.out, packRollout(out.rec, enc.obsSize || 0, { encoding, actionSize: enc.actionSize || enc.MAX_CAND }));
-  const results = out.results.map(r => ({ winner: r.winner, seats: r.seats, decks: r.decks, steps: r.steps, error: r.error }));
+  const results = out.results.map(r => ({ winner: r.winner, ending: r.ending, seats: r.seats, decks: r.decks, steps: r.steps, error: r.error }));
   return { ok: true, out: cmd.out, transitions: out.rec.action.length, games: out.stats.games, seconds: (Date.now() - t0) / 1000, results };
 }
 

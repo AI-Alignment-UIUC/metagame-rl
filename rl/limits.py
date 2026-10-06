@@ -4,8 +4,9 @@ It crashed or hung three times on 2026-10-04 to 06, so jobs keep to about 80% of
 at most 80% of the card, and at most 80% of the CPU threads (16 of 20). Each Node rollout worker
 runs ONNX single-threaded, so it uses about one core; the Python process keeps the rest.
 
-GPU *utilization* can't be capped from PyTorch. The watchdog warns when the card sits near 100%
-or runs hot; the hard cap is a lower power limit set from an admin shell (nvidia-smi -pl 240).
+GPU *utilization* is held to ~80% in training updates by Pace (rests a quarter of each step);
+the watchdog warns when the card still sits near 100% or runs hot. The hard cap is a lower power limit set from an admin shell
+(nvidia-smi -pl 240).
 """
 import os
 import subprocess
@@ -60,3 +61,22 @@ def _watch(every: float = 30.0, strikes: int = 3):
                 print(f"[limits] GPU at {util}% / {temp} C: lower --concurrency or the batch size "
                       f"(cap is ~80%, CLAUDE.md)", file=sys.stderr)
     threading.Thread(target=loop, daemon=True, name="gpu-watch").start()
+
+
+class Pace:
+    """Keeps the GPU busy at most LOAD of the time in a loop of GPU steps: each tick() waits for
+    the GPU, then sleeps (1 / LOAD - 1) x the time since the last tick (a quarter of it at 0.8).
+    Costs that share of the loop's wall time; a no-op on the CPU."""
+
+    def __init__(self, device: str, load: float = LOAD):
+        self.on = device == "cuda" and load < 1
+        self.rest = 1 / load - 1 if self.on else 0.0
+        self.t = time.perf_counter()
+
+    def tick(self):
+        if not self.on:
+            return
+        torch.cuda.synchronize()
+        now = time.perf_counter()
+        time.sleep((now - self.t) * self.rest)
+        self.t = time.perf_counter()

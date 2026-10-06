@@ -547,3 +547,30 @@ Entry format:
   (`runs/a4-tok` checkpoints, short matrices), then try a short run with a per-turn cost or a
   smaller reward for deck-out wins, judged by the ending mix and SimpleBot win rate; rerun the
   ablations and a5-cold2 after.
+
+### #33 · 2026-10-06 · A5 · Paying less for deck-out wins: fewer deck-outs, staples still undervalued
+- **Done:** `rl/train.py --deckout-win R`: a win by deck-out earns R instead of 1 (losses stay
+  -1), via `Runner(deckoutWin)` in `env/runner.js` and both rollout workers; the training log now
+  counts endings per iteration. `rl/limits.py` gained `Pace`, used in the PPO update: after each
+  optimizer step it rests a quarter of the step's time, holding the GPU to ~80% busy (#31's
+  watchdog showed 86% mean during updates without it). Test (`runs/deckout_test.sh`): two
+  15-iteration self-play fine-tunes of `runs/a4-tok/model_it00249.pt`, identical but for R = 0
+  (`runs/deckout-w0`) and R = 1 (`runs/deckout-w1`, the control).
+- **Evidence:** Deck-outs grow during the original training (greedy, 4 games per pair over the
+  field): iteration 24 7%, 74 32%, 149 26%, 249 44%, as games lengthen from 103 to 246 decisions.
+  Sampled self-play, first / mean of last 5 iterations: R = 0 deck-out 55.8 / 34.9%, prizes
+  31.9 / 48.2%; control 61.0 / 55.6%, prizes 25.9 / 29.4%. Greedy, final checkpoints: R = 0
+  deck-out 27%, prizes 56%; control 39% / 44%; it249 44% / 42%. Against SimpleBot (400 games):
+  R = 0 93.0% ± 2.5, control 95.5% ± 2.0. Card ablation (100 games per deck), R = 0 / control:
+  Bill 49.1 / 47.6, Computer Search 45.8 / 44.8, Item Finder 47.2 / 46.8, PlusPower 43.8 / 42.0,
+  Professor Oak 67.8 / 66.0, DCE 57.3 / 56.6 (± 2.0-2.4); files
+  `notes/data/eval/card_ablation_deckout_w{0,1}.json`. With Pace, GPU 46% mean, 53% max over a
+  training update (172 W, 52 C); updates take 24-25 s instead of 20.
+- **Found:** Corrects #32: deck-out is not the whole reason the pilot undervalues the staples.
+  Cutting deck-outs by a third (control 39% to 27%) moved no card's value beyond noise, and
+  PlusPower, which draws nothing, is the most negative card under every pilot. The pilot misuses
+  these Trainers in other ways (when and on what it plays them), not shown yet. R = 0 is kept as
+  the better pilot for A5, at no measurable cost in strength.
+- **Next:** The three builder designs of #27 compared under the R = 0 pilot (games, matchup
+  model, pilot value), each checked on a short run first; separately, a trace of how the pilot
+  plays PlusPower and Computer Search.
