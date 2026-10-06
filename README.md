@@ -53,12 +53,13 @@ agent drafts from random decks; Phase B targets Worlds 2005 (San Diego).
   scores any population against the archive, and on the SimpleBot matrix the equilibrium support
   is exactly the three decks hardest to counter.
 
-**Recent (log #25–26):** The token model, at a third of the MLP's parameters, beats SimpleBot
+**Recent (log #25–27):** The token model, at a third of the MLP's parameters, beats SimpleBot
 93.2% (mirror) and 93.3% (field) on A4.1's deals, against A4.1's 89.6% and 88.5%, and beats A4.1
-itself 67.8% and 65.9%, above half on all 24 decks. In a supervised test on 52,067 held-out
-decisions it matches A4.1's choices 69.6% of the time (a fresh MLP reading A4.1's own encoding:
-78.3%; chance 21.5%), predicts results better than the MLP, and its ONNX export, candidate
-permutation and padding checks hold; its training loss stays high, so it is short of capacity.
+itself 67.8% and 65.9%, above half on all 24 decks; a supervised test confirms the implementation
+(69.6% agreement with A4.1's choices on held-out games, chance 21.5%) and shows it short of
+capacity. The deck builder is now planned as PSRO with a matchup model that takes the pilot's
+start-of-game value as an input, explored by random restarts with varied edit budgets and by
+ranking candidates optimistically where an ensemble of the model disagrees.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
@@ -67,8 +68,9 @@ The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 1. A4 exit: the trained-policy matchup matrix with the token policy, scored with
    `rl/answer_key.py`; a rerun for stability; matchup directions against era write-ups.
 2. A wider or deeper token model (the supervised check shows it underfits).
-3. A5.1: Nash over the trained-policy matrix; then PSRO from random decks with the builder, and
-   the counter-deck search.
+3. A5.1: Nash over the trained-policy matrix. A5.2: the matchup model with the value feature
+   and an ensemble, then PSRO with restarts and edit budgets, from random decks; the counter-deck
+   search.
 4. Make league inference batch across snapshots (collection grew from 7 s to 45 s per iteration).
 5. B1: source the Worlds 2005 top-cut lists; verify the engine's three EX sets against card data
    and rulings; check the near-reprints by hand.
@@ -225,11 +227,37 @@ reruns; and its matchup directions agree with era write-ups wherever those exist
 
 1. **Fixed population.** Nash over the trained-policy matrix of the 24 archived lists. Do
    Wigglytuff and Haymaker sit in the support? Compare against the SimpleBot equilibrium from A2.
-2. **Deck builder.**
-   - A deck-edit policy (10–20 remove-and-add edits under construction rules) inside PSRO.
-   - Diversity: a rectified-Nash meta-solver, exploiter episodes, and a MAP-Elites archive over
-     deck descriptors.
+2. **Deck builder: PSRO with a matchup model.** A deck population, its real-game matchup
+   matrix and its Nash mixture. Each iteration:
+   1. Solve Nash over the population's real-game matrix.
+   2. Search card swaps (under the construction rules), ranked by the matchup model's predicted
+      win rate against the Nash mixture, from several starting decks.
+   3. Play real games for the top few candidates, add them to the population, refit the model.
+
+   - **The matchup model** predicts P(A beats B) from both decks (mean of the token model's card
+     embeddings, so unseen cards are covered) plus the pilot's value at the start of the game,
+     v(A, B), averaged over ~16 opening hands (forward passes, no games). The value feature
+     starts the model at the pilot's own judgment; it learns where the pilot is wrong, mostly on
+     decks the pilot has not trained on. It is fitted on every real game played so far, and only
+     ranks: every number that enters the matrix is from real games.
+   - **Exploration**, by two mechanisms:
+     - **Random restarts with varied edit budgets.** Each search starts from a fresh random
+       legal deck or from a support deck, with a budget, drawn per search, on how many cards it
+       may change: from 8 (refining a support deck) to 60 (a full rewrite). This decides where
+       the search looks: many separate basins rather than one deck refined forever.
+     - **Optimism under uncertainty.** The matchup model is a small ensemble (about 5, trained
+       on resampled games), and candidates are ranked by mean + β × spread. Where the copies
+       disagree is where the model has seen few games, so unusual decks get tried, and the bonus
+       shrinks once their games are in. This decides which candidates get real games.
+     - A new deck joins the population only if it differs from every existing deck by at least
+       ~10 cards, so the population does not fill with near-copies.
+   - **Is exploration working?** Cold starts from different seeds reach overlapping supports (by
+     card overlap); new decks keep entering the support, and the share of the pool tried keeps
+     growing; and the model's error on newly tested decks stays small. Disagreeing seeds with a
+     stalled support mean explore more.
    - New decks get piloting time before their matchup row is trusted.
+   - Left out unless plain search stops finding new support decks: an RL-trained edit policy,
+     MAP-Elites, a rectified-Nash solver, exploiter episodes.
 3. **Two pool sizes.** Develop on the 56 cards the field played, which leaks human card choice
    but is cheap. Make the actual claim on the **full legal Base–Rocket pool** (all legal promos
    are now in: Wizards Black Star Promos #1–#16, fork `64330a4`). Most of those ~233 cards are
@@ -250,8 +278,9 @@ rough replicates of the human field.
 
 #### A6. Play knowledge feeds deck building
 
-- Use the play network's turn-zero value, averaged over opening hands, as the builder's edit
-  reward, and compare it against a standalone matchup model.
+- Measure what the play network's start-of-game value adds to the matchup model (A5.2): the
+  model with and without it, scored by prediction error on newly tested decks, and the value
+  alone as the ranking.
 - Reuse the play encoder's card-interaction weights to score candidate cards.
 
 **Phase A exit gate**, all required before starting Worlds work in earnest:

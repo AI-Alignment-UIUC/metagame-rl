@@ -434,3 +434,20 @@ Entry format:
   before #20's fixes, so it may have lost some training to the loops.
 - **Next:** A4 exit: the trained-policy matrix with the token policy, a rerun for stability,
   era write-ups; score it with `rl/answer_key.py`.
+
+### #27 · 2026-10-05 · A5 · Builder design: PSRO with a matchup model, explored by restarts and optimism
+- **Done:** README A5.2 rewritten (the user's choice among three designs: real-game search only,
+  a matchup model ranking candidates, or the play network's value alone). PSRO proposes card
+  swaps ranked by a matchup model whose inputs are both decks (mean card embeddings from the
+  token model) and the pilot's start-of-game value v(A, B) over ~16 openings; real games decide
+  what enters the matrix. Exploration: random restarts with an edit budget drawn per search
+  (8-60 cards), a 5-model ensemble ranked by mean + beta x spread, and a minimum distance of
+  ~10 cards for a new population deck. Dropped from the plan unless plain search stalls: the
+  RL-trained edit policy, MAP-Elites, rectified Nash, exploiter episodes. A6's first item is now
+  the ablation of the value feature.
+- **Evidence:** Plan only. Cost basis: with the token pilot, 2,400 games took 126-150 s on 16
+  workers (about 16-19 games/s), so 100 games against each of 5 support decks is ~25-30 s per
+  candidate; ranking with the model and confirming the top 5 is ~20x cheaper per step than
+  testing 100 candidates with games.
+- **Next:** Implement in `rl/matchup.py` (value feature, ensemble) and `rl/psro.py` (restarts,
+  budgets, distance rule); develop on the 56-card field pool, then the full pool.
