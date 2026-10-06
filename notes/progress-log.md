@@ -641,3 +641,26 @@ Entry format:
   (#32-33).
 - **Next:** As #34: two more seeds, the model with a trust region or the value feature, then
   value-scored PSRO longer and on the full pool.
+
+### #36 · 2026-10-06 · A5.2 · The value-built deck floods Energy because the value head misjudges it
+- **Done:** `notes/scripts/trainer_restore_test.py`: four 60-card variants, from 2000s result #1's
+  `value5-0` (11 Pokémon, 15 Trainers, 34 Energy) to Chris Graham's list (22 Energy), each
+  scored by the pilot's start-of-game value against the 24 archived lists (16 deals each) and by
+  real games (100 per pair, 10,200 games, 0 errors). Also counted the Trainers across the value
+  run's population.
+- **Evidence:** The search did explore the Trainers: the 16 random starting decks held PlusPower in
+  14, Gust of Wind in 13, Item Finder in 10, but the 32 built decks hold Gust in 0, PlusPower in
+  3, Item Finder in 2, and basic Energy rose from 17.4 to 30.4 per deck. Value-predicted / real
+  win rate against the field (± 0.020): built 0.560 / 0.499; 6 Lightning swapped for PlusPower 3,
+  Gust 2, Oak 1: 0.518 / 0.576; 12 Lightning swapped for Graham's Trainers: 0.477 / 0.632;
+  Graham's list: 0.502 / 0.681. Head to head, Trainers restored beats the built deck 59-63%;
+  Graham's list beats all three variants 59-62%.
+- **Found:** The pilot plays these Trainers well enough to win more with them; its start-of-game
+  value ranks the four decks almost in reverse of their real results. The search followed that
+  value into an Energy flood: the deck stopped where the value head stopped, not because Trainers
+  were unexplored. With #32-33 this fits diminishing returns the value head misses: one Energy
+  for one Trainer in a 22-Energy deck can help, the 30th Energy does not. Result #1's ranking of
+  the three designs stands, but its deck is capped by this error.
+- **Next:** Confirm more of the value search's finalists with real games, or recalibrate the value
+  head on varied decks (train on built and random decks, not only the 24 archived ones); check
+  how far a value search with that fix gets toward Graham's 0.681.

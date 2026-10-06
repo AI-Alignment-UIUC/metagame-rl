@@ -25,7 +25,7 @@ against SimpleBot and 66-68% head to head. Of the three A5 deck-builder designs,
 the pilot's own start-of-game value is the clear winner in a first equal-time comparison: from
 random decks it built a Haymaker 77% like an archived list, even with the human field ([2000s result #1](results/2000s-result-1/)), while
 real-game scoring explores too little and the matchup model is exploited by the search. The pilot
-still undervalues PlusPower, Item Finder and Gust of Wind; jobs are capped at ~80% of the machine.
+value overrates Energy against Trainers, which capped that deck at 34 Energy; jobs are capped at ~80% of the machine.
 
 **Earlier work:**
 
@@ -63,25 +63,24 @@ still undervalues PlusPower, Item Finder and Gust of Wind; jobs are capped at ~8
   which biases every A5 measurement made with it. After three machine crashes, every job is
   capped at 80% of GPU memory and 16 of 20 threads, with a GPU watchdog.
 
-**Recent (log #33–35):** Paying nothing for deck-out wins cut the pilot's deck-outs from 39% to 27%
-at the same SimpleBot strength, but left PlusPower, Computer Search and Item Finder below a basic
-Energy, so deck-out is only part of the story. With that pilot, the three builder designs of log #27
-ran from the same 16 random decks for ~20 minutes each: the value-scored search's final deck beats
-the games- and model-scored mixtures 76.5% and 74.3%, matches the archived field (50.3%, against
-37.9% and 26.5%) and is the least exploitable, and it plays DCE, Computer Search and Bill again;
-the matchup model's own predictions were off by 0.59 on average. One seed so far; written up as
-[2000s result #1](results/2000s-result-1/), whose nearest archived list is Chris Graham's Haymaker
-(10-and-under), not the winning list, as log #34 first said.
+**Recent (log #33–36):** Paying nothing for deck-out wins cut the pilot's deck-outs from 39% to 27%
+at the same SimpleBot strength. With that pilot, the three builder designs of log #27 ran from the
+same 16 random decks for ~20 minutes each ([2000s result #1](results/2000s-result-1/)): the
+value-scored search's final deck beats the other two mixtures 76.5% and 74.3% and matches the
+archived field (50.3%), while the matchup model's predictions were off by 0.59. But that deck runs
+34 Energy because the pilot's start-of-game value misjudges Energy against Trainers: putting
+Graham's Trainers back raises it to 63.2% against the field, a ranking the value inverts.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. Replicate the builder comparison with two more seeds; before ruling the matchup model out,
+1. Fix the value score's Energy bias: confirm more search finalists with real games, or
+   recalibrate the value head on varied decks; measure how close a value search then gets to
+   Graham's list (68.1% against the field).
+2. Replicate the builder comparison with two more seeds; before ruling the matchup model out,
    try it with a trust region (candidates near measured decks) or with the value as a feature.
-2. Value-scored PSRO for longer, then on the full pool: do the archetypes and staples hold?
-3. Why the pilot misuses PlusPower, Item Finder and Gust of Wind: trace when and on what it
-   plays them.
+3. Value-scored PSRO for longer, then on the full pool: do the archetypes and staples hold?
 4. A4 exit: the trained-policy matchup matrix with the token policy, scored with
    `rl/answer_key.py`; a rerun for stability; matchup directions against era write-ups.
 5. A wider or deeper token model (the supervised check shows it underfits).
