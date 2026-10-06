@@ -761,3 +761,54 @@ Entry format:
 - **Next:** Two stages: the value search for breadth, then the strength model (with its 16 games)
   to choose among many finalists and among Energy / Trainer variants of each (block swaps), so
   the cheap scorer explores and the honest one decides; same setup, then the panel.
+
+### #40 · 2026-10-06 · A5 · The loop closed: piloting every PSRO iteration
+- **Done:** `rl/psro.py --pilot-iters N`: after each iteration's proposals, the pilot is
+  fine-tuned N PPO iterations (`rl.train`, self-play, deck-out wins pay `--pilot-deckout-win`, 0
+  by default) on the new decks against the top 6 support decks both ways, the support among
+  itself and 8 random population pairs; the GPU matrix is reloaded with the new checkpoint (its
+  workers are closed while training runs) and the whole matrix is re-measured under it. Rollout
+  files are deleted after each step (~200 MB). `runs/iterated_run.sh`: result #1's value search
+  (seed 3, 16 random decks, 8 iterations, 4 new decks, 120 s, 48 games per pair) with
+  `--pilot-iters 5`; pilots in `runs/cmp-value-iter/pilot/itNN/`.
+- **Evidence:** Piloting took 133-160 s per iteration; deck-outs in the last training iteration
+  fell 0.40, 0.30, 0.22, 0.12 over the first four steps, then 0.12-0.22. Mean Energy of the
+  proposals by iteration 22.5, 28.2, 31.2, 30.8, 29.2, 30.8, 31.8, 30.5; mean |value - real| of
+  the proposals 0.191, 0.150, 0.175, 0.187, 0.137, 0.083, 0.145, 0.038. Final equilibrium one
+  deck, `value5-1` (Articuno / Hitmonchan-like, 57% overlap): 32 Energy, 4 DCE, 4 Oak, no
+  PlusPower, Gust or Computer Search. Panel (#41's, six runs' supports plus the 24 archived
+  lists, 60 games per pair) under the original pilot: against the field 60.7%, best panel deck
+  against it 70.0%, beats result #1's value deck 58.3%; under its own final pilot: field 71.9%,
+  exploitability 53.3%, 0.30 of the panel's Nash (the first built decks with any).
+- **Found:** Closing the loop made the strongest metagame so far, the first built mixture that
+  beats the archived field (60.7% under the pilot all runs share), but not by fixing the Energy
+  bias: the proposals stayed at ~30 Energy and the value's error fell only at the end. The pilot
+  and the decks co-adapt: the same deck gains 11 points under the pilot trained on its games.
+  Graham's list is still ahead (68.1% against the field under the original pilot, #36).
+- **Next:** #41, the same loop with stochastic deck picking.
+
+### #41 · 2026-10-06 · A5 · Stochastic deck picking in the closed loop: diverse, human-like, weaker
+- **Done:** `rl/search.py --search-temperature T` (`rl/psro.py`): climb steps, finalists and
+  proposals drawn from softmax(score / T) without replacement instead of the best (a climb keeps
+  the best deck it visited); 0 is the greedy search. At T = 0.03 a 0.55 / 0.52 / 0.50 / 0.40
+  choice goes 65 / 23 / 12 / 0.4%. `runs/iterated_t03_run.sh`: #40's run with T = 0.03.
+  `notes/scripts/compare_builders.py` panels of all six runs (games, model, value, strength, the
+  greedy loop, the stochastic loop) under three pilots: `notes/data/eval/loop_panel_{orig,greedyloop,stochloop}.json`.
+- **Evidence:** Mean Energy of the proposals by iteration 19.2, 23.0, 20.0, 20.2, 25.8, 25.0,
+  20.8, 24.0; mean |value - real| 0.106, 0.034, 0.142, 0.121, 0.039, 0.087, 0.034, 0.134. Final
+  equilibrium five decks: Wigglytuff-like 0.36 (25 Energy), Rain Dance-like 0.35 (24 Energy,
+  3 Gust, 3 Computer Search), random-15 0.16, Haymaker-like 0.08, Rain Dance-like 0.05; 19-25
+  Energy, PlusPower in 3 of 5. Against the field (pilots: original / greedy loop's /
+  stochastic loop's): games 37.4 / 38.0 / 39.0%, model 25.4 / 31.5 / 28.7%, value (result #1)
+  50.6 / 56.8 / 53.7%, strength 29.9 / 33.9 / 33.9%, greedy loop 60.7 / 71.9 / 60.2%,
+  stochastic loop 32.9 / 41.5 / 43.1%. The greedy loop's mixture beats the stochastic loop's
+  72.5 / 75.8 / 59.4%. The archived lists keep the panel's whole Nash except under the greedy
+  loop's pilot (0.70).
+- **Found:** Sampling did what it was meant to: the proposals kept human-like Energy counts and
+  Trainer packages, the value stayed better calibrated on average, and the equilibrium spread over
+  four archetypes instead of one. But those decks are weaker in every panel; under these pilots
+  the Energy-heavy deck is genuinely strong (#36 showed Trainers help a 34-Energy shell, not
+  that fewer Energy wins in general). Both are single seeds, and search outcomes vary a lot by
+  seed, so neither ranking is settled.
+- **Next:** Two more seeds of both loops; a longer stochastic run (diverse populations may need
+  more iterations to converge); score both against the answer key (staples, archetypes).

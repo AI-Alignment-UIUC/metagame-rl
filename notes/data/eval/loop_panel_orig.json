@@ -1,0 +1,471 @@
+{
+ "games_per_pair": 60,
+ "panel": 42,
+ "from_runs": 18,
+ "matrix": {
+  "games": 51660,
+  "seconds": 406.8,
+  "games_per_s": 127.0,
+  "errors": 0,
+  "cut": 69,
+  "endings": {
+   "no-pokemon": 11016,
+   "prizes": 25747,
+   "deck-out": 14828
+  },
+  "decisions_per_game": 224.9
+ },
+ "head_to_head": {
+  "cmp-games": {
+   "cmp-model": 0.4145,
+   "cmp-value": 0.2259,
+   "cmp-strength": 0.5937,
+   "cmp-value-iter": 0.1862,
+   "cmp-value-iter-t03": 0.5425,
+   "archived": 0.3745
+  },
+  "cmp-model": {
+   "cmp-games": 0.5855,
+   "cmp-value": 0.2354,
+   "cmp-strength": 0.5609,
+   "cmp-value-iter": 0.2438,
+   "cmp-value-iter-t03": 0.4919,
+   "archived": 0.2542
+  },
+  "cmp-value": {
+   "cmp-games": 0.7741,
+   "cmp-model": 0.7646,
+   "cmp-strength": 0.8381,
+   "cmp-value-iter": 0.4167,
+   "cmp-value-iter-t03": 0.7073,
+   "archived": 0.5056
+  },
+  "cmp-strength": {
+   "cmp-games": 0.4063,
+   "cmp-model": 0.4391,
+   "cmp-value": 0.1619,
+   "cmp-value-iter": 0.1679,
+   "cmp-value-iter-t03": 0.4285,
+   "archived": 0.2992
+  },
+  "cmp-value-iter": {
+   "cmp-games": 0.8138,
+   "cmp-model": 0.7562,
+   "cmp-value": 0.5833,
+   "cmp-strength": 0.8321,
+   "cmp-value-iter-t03": 0.7248,
+   "archived": 0.6073
+  },
+  "cmp-value-iter-t03": {
+   "cmp-games": 0.4575,
+   "cmp-model": 0.5081,
+   "cmp-value": 0.2927,
+   "cmp-strength": 0.5715,
+   "cmp-value-iter": 0.2752,
+   "archived": 0.3287
+  },
+  "archived": {
+   "cmp-games": 0.6255,
+   "cmp-model": 0.7458,
+   "cmp-value": 0.4944,
+   "cmp-strength": 0.7008,
+   "cmp-value-iter": 0.3927,
+   "cmp-value-iter-t03": 0.6713
+  }
+ },
+ "panel_nash_share": {
+  "cmp-games": 0.0,
+  "cmp-model": 0.0,
+  "cmp-value": 0.0,
+  "cmp-strength": 0.0,
+  "cmp-value-iter": 0.0,
+  "cmp-value-iter-t03": 0.0,
+  "archived": 1.0
+ },
+ "archived_staples_mean": {
+  "Computer Search": 2.71,
+  "Item Finder": 2.12,
+  "Double Colorless Energy": 3.29,
+  "Professor Oak": 3.38,
+  "Bill": 2.5,
+  "Gust of Wind": 2.54,
+  "PlusPower": 2.75,
+  "Energy Removal": 2.08,
+  "Super Energy Removal": 1.96,
+  "Scyther": 2.79
+ },
+ "runs": {
+  "cmp-games": {
+   "population": 31,
+   "support": [
+    {
+     "deck": "games2-0 (Haymaker-like)",
+     "weight": 0.32,
+     "nearest": [
+      "Haymaker",
+      0.433
+     ]
+    },
+    {
+     "deck": "games3-0 (Wigglytuff-like)",
+     "weight": 0.2857,
+     "nearest": [
+      "Wigglytuff",
+      0.417
+     ]
+    },
+    {
+     "deck": "games5-0 (Sponge-like)",
+     "weight": 0.2171,
+     "nearest": [
+      "Sponge",
+      0.4
+     ]
+    },
+    {
+     "deck": "games4-1 (Wigglytuff-like)",
+     "weight": 0.1543,
+     "nearest": [
+      "Wigglytuff",
+      0.533
+     ]
+    },
+    {
+     "deck": "random-8",
+     "weight": 0.0229,
+     "nearest": [
+      "Articuno / Hitmonchan / Scyther",
+      0.6
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 0.62,
+    "Item Finder": 0.83,
+    "Double Colorless Energy": 0.37,
+    "Professor Oak": 1.91,
+    "Bill": 0.64,
+    "Gust of Wind": 0.71,
+    "PlusPower": 0.2,
+    "Energy Removal": 1.94,
+    "Super Energy Removal": 3.62,
+    "Scyther": 0.0
+   },
+   "proposals": 15,
+   "chosen_score_vs_real_mae": 0.0812,
+   "scorer_vs_real_mae": 0.0812,
+   "mean_real_vs_its_mixture": 0.4048,
+   "real_by_iteration": [
+    0.428,
+    0.558,
+    0.757,
+    0.333,
+    0.361,
+    0.431,
+    0.324,
+    0.201
+   ],
+   "candidates_scored": 1404,
+   "search_seconds": 983.8,
+   "vs_archived_field": 0.3745,
+   "exploitability": {
+    "best_response": "archived: 11-14 #7 John Pratt (Wigglytuff)",
+    "win": 0.8387
+   }
+  },
+  "cmp-model": {
+   "population": 48,
+   "support": [
+    {
+     "deck": "model6-0 (Articuno / Hitmonchan / Scyther-like)",
+     "weight": 0.5,
+     "nearest": [
+      "Articuno / Hitmonchan / Scyther",
+      0.417
+     ]
+    },
+    {
+     "deck": "model1-0 (Articuno / Hitmonchan / Scyther-like)",
+     "weight": 0.375,
+     "nearest": [
+      "Articuno / Hitmonchan / Scyther",
+      0.5
+     ]
+    },
+    {
+     "deck": "model3-1 (Haymaker-like)",
+     "weight": 0.125,
+     "nearest": [
+      "Haymaker",
+      0.45
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 0.5,
+    "Item Finder": 0.0,
+    "Double Colorless Energy": 0.75,
+    "Professor Oak": 0.0,
+    "Bill": 2.0,
+    "Gust of Wind": 0.12,
+    "PlusPower": 0.0,
+    "Energy Removal": 0.12,
+    "Super Energy Removal": 0.0,
+    "Scyther": 0.0
+   },
+   "proposals": 32,
+   "chosen_score_vs_real_mae": 0.0424,
+   "scorer_vs_real_mae": 0.5874,
+   "mean_real_vs_its_mixture": 0.2359,
+   "real_by_iteration": [
+    0.028,
+    0.406,
+    0.083,
+    0.365,
+    0.161,
+    0.089,
+    0.411,
+    0.344
+   ],
+   "candidates_scored": 8649721,
+   "search_seconds": 890.4,
+   "vs_archived_field": 0.2542,
+   "exploitability": {
+    "best_response": "archived: 11-14 #7 John Pratt (Wigglytuff)",
+    "win": 0.85
+   }
+  },
+  "cmp-value": {
+   "population": 48,
+   "support": [
+    {
+     "deck": "value5-0 (Haymaker-like)",
+     "weight": 1.0,
+     "nearest": [
+      "Haymaker",
+      0.767
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 3.0,
+    "Item Finder": 0.0,
+    "Double Colorless Energy": 4.0,
+    "Professor Oak": 2.0,
+    "Bill": 3.0,
+    "Gust of Wind": 0.0,
+    "PlusPower": 0.0,
+    "Energy Removal": 4.0,
+    "Super Energy Removal": 3.0,
+    "Scyther": 3.0
+   },
+   "proposals": 32,
+   "chosen_score_vs_real_mae": 0.082,
+   "scorer_vs_real_mae": 0.2684,
+   "mean_real_vs_its_mixture": 0.3545,
+   "real_by_iteration": [
+    0.423,
+    0.496,
+    0.51,
+    0.31,
+    0.294,
+    0.491,
+    0.224,
+    0.089
+   ],
+   "candidates_scored": 643164,
+   "search_seconds": 889.3,
+   "vs_archived_field": 0.5056,
+   "exploitability": {
+    "best_response": "archived: 11-14 #7 John Pratt (Wigglytuff)",
+    "win": 0.7167
+   }
+  },
+  "cmp-strength": {
+   "population": 35,
+   "support": [
+    {
+     "deck": "strength7-0 (Wigglytuff-like)",
+     "weight": 0.6429,
+     "nearest": [
+      "Wigglytuff",
+      0.5
+     ]
+    },
+    {
+     "deck": "random-15",
+     "weight": 0.2143,
+     "nearest": [
+      "Rain Dance",
+      0.633
+     ]
+    },
+    {
+     "deck": "random-8",
+     "weight": 0.1429,
+     "nearest": [
+      "Articuno / Hitmonchan / Scyther",
+      0.6
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 1.71,
+    "Item Finder": 1.14,
+    "Double Colorless Energy": 0.0,
+    "Professor Oak": 2.0,
+    "Bill": 0.93,
+    "Gust of Wind": 0.36,
+    "PlusPower": 0.93,
+    "Energy Removal": 3.07,
+    "Super Energy Removal": 0.64,
+    "Scyther": 0.0
+   },
+   "proposals": 19,
+   "chosen_score_vs_real_mae": 0.0455,
+   "scorer_vs_real_mae": 0.1209,
+   "mean_real_vs_its_mixture": 0.3676,
+   "real_by_iteration": [
+    0.342,
+    0.338,
+    0.346,
+    0.301,
+    0.36,
+    0.434,
+    0.453,
+    0.316
+   ],
+   "candidates_scored": 1740,
+   "search_seconds": 906.0,
+   "vs_archived_field": 0.2992,
+   "exploitability": {
+    "best_response": "archived: 11-14 #7 John Pratt (Wigglytuff)",
+    "win": 0.8512
+   }
+  },
+  "cmp-value-iter": {
+   "population": 48,
+   "support": [
+    {
+     "deck": "value5-1 (Articuno / Hitmonchan / Scyther-like)",
+     "weight": 1.0,
+     "nearest": [
+      "Articuno / Hitmonchan / Scyther",
+      0.567
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 0.0,
+    "Item Finder": 0.0,
+    "Double Colorless Energy": 4.0,
+    "Professor Oak": 4.0,
+    "Bill": 0.0,
+    "Gust of Wind": 0.0,
+    "PlusPower": 0.0,
+    "Energy Removal": 4.0,
+    "Super Energy Removal": 0.0,
+    "Scyther": 4.0
+   },
+   "proposals": 32,
+   "chosen_score_vs_real_mae": 0.07,
+   "scorer_vs_real_mae": 0.1383,
+   "mean_real_vs_its_mixture": 0.4955,
+   "real_by_iteration": [
+    0.49,
+    0.664,
+    0.548,
+    0.328,
+    0.5,
+    0.611,
+    0.38,
+    0.442
+   ],
+   "candidates_scored": 554288,
+   "search_seconds": 896.7,
+   "vs_archived_field": 0.6073,
+   "exploitability": {
+    "best_response": "archived: 15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+    "win": 0.7
+   }
+  },
+  "cmp-value-iter-t03": {
+   "population": 48,
+   "support": [
+    {
+     "deck": "value5-0 (Wigglytuff-like)",
+     "weight": 0.3607,
+     "nearest": [
+      "Wigglytuff",
+      0.55
+     ]
+    },
+    {
+     "deck": "value7-1 (Rain Dance-like)",
+     "weight": 0.347,
+     "nearest": [
+      "Rain Dance",
+      0.6
+     ]
+    },
+    {
+     "deck": "random-15",
+     "weight": 0.1598,
+     "nearest": [
+      "Rain Dance",
+      0.633
+     ]
+    },
+    {
+     "deck": "value3-0 (Haymaker-like)",
+     "weight": 0.0822,
+     "nearest": [
+      "Haymaker",
+      0.517
+     ]
+    },
+    {
+     "deck": "value5-1 (Rain Dance-like)",
+     "weight": 0.0502,
+     "nearest": [
+      "Rain Dance",
+      0.583
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 2.12,
+    "Item Finder": 0.24,
+    "Double Colorless Energy": 1.07,
+    "Professor Oak": 2.97,
+    "Bill": 1.73,
+    "Gust of Wind": 1.3,
+    "PlusPower": 0.92,
+    "Energy Removal": 1.39,
+    "Super Energy Removal": 1.41,
+    "Scyther": 0.58
+   },
+   "proposals": 32,
+   "chosen_score_vs_real_mae": 0.0755,
+   "scorer_vs_real_mae": 0.0871,
+   "mean_real_vs_its_mixture": 0.4592,
+   "real_by_iteration": [
+    0.449,
+    0.54,
+    0.415,
+    0.461,
+    0.398,
+    0.481,
+    0.471,
+    0.459
+   ],
+   "candidates_scored": 443760,
+   "search_seconds": 910.2,
+   "vs_archived_field": 0.3287,
+   "exploitability": {
+    "best_response": "archived: 15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+    "win": 0.8117
+   }
+  }
+ }
+}

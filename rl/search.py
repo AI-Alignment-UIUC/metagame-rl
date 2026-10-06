@@ -162,13 +162,33 @@ class StrengthScorer:
         return 1 / (1 + np.exp(-self.model.logit(feats)))
 
 
+def softmax_order(scores, tau: float, rng) -> list:
+    """Indices in the order they are drawn without replacement from softmax(scores / tau); with
+    tau = 0, best first (deterministic)."""
+    scores = np.asarray(scores, dtype=np.float64)
+    if tau <= 0:
+        return list(np.argsort(-scores, kind="stable"))
+    left, out = list(range(len(scores))), []
+    while left:
+        z = scores[left] / tau
+        p = np.exp(z - z.max())
+        k = int(rng.choice(len(left), p=p / p.sum()))
+        out.append(left.pop(k))
+    return out
+
+
 def search(scorer, pop, sigma, k: int, seconds: float, rng, random_deck, restart_random: float = 0.5,
            patience: int = 2, max_steps: int = 60, confirm: GamesScorer = None, finalists: int = 8,
-           confirm_share: float = 0.1):
+           confirm_share: float = 0.1, temperature: float = 0.0):
     """Restarts + hill climbing within `seconds`; returns up to k (deck, score, scorer's score)
     proposals and a log of the searches. With `confirm` (a GamesScorer), the search stops at
     (1 - confirm_share) of the budget, the `finalists` best distinct decks play real games against
-    the support, and the k best by those games are proposed (A5.2 step 3)."""
+    the support, and the k best by those games are proposed (A5.2 step 3).
+
+    temperature > 0 samples instead of taking the best (log #40): each climb step moves to a deck
+    drawn from softmax(score / T) over the current deck and its candidates (so it can step down; the
+    climb returns the best deck it visited), and finalists and proposals are drawn the same way
+    without replacement. 0 is the greedy search of result #1."""
     pool = pop.pool
     scorer.pool = pool
     max_steps = getattr(scorer, "max_steps", max_steps)
@@ -186,6 +206,7 @@ def search(scorer, pop, sigma, k: int, seconds: float, rng, random_deck, restart
             start, origin = pop.decks[i].copy(), f"support {pop.names[i]}"
         budget = int(rng.integers(MIN_CHANGED + 2, 61))
         cur, cur_score, stall, steps, scored = start, None, 0, 0, 0
+        best_deck, best_score = None, -np.inf
         if origin != "random":                 # kick a support deck MIN_CHANGED swaps away first
             while changed(cur, start) < MIN_CHANGED:
                 cur = random_swap(pool, cur, rng)
@@ -202,19 +223,32 @@ def search(scorer, pop, sigma, k: int, seconds: float, rng, random_deck, restart
             s = scorer([cur] + cands)          # the current deck rescored with the candidates
             scored += len(cands)
             cur_score = float(s[0])
-            best = int(np.argmax(s[1:]))
-            if s[1 + best] > s[0]:
-                cur, cur_score, stall = cands[best], float(s[1 + best]), 0
+            if cur_score > best_score:
+                best_deck, best_score = cur, cur_score
+            if temperature > 0:
+                pick = softmax_order(s, temperature, rng)[0]
+                if pick == 0:
+                    stall += 1
+                else:
+                    cur, cur_score, stall = cands[pick - 1], float(s[pick]), 0
             else:
-                stall += 1
+                best = int(np.argmax(s[1:]))
+                if s[1 + best] > s[0]:
+                    cur, cur_score, stall = cands[best], float(s[1 + best]), 0
+                else:
+                    stall += 1
+            if cur_score > best_score:
+                best_deck, best_score = cur, cur_score
             steps += 1
         if cur_score is not None:
+            cur, cur_score = best_deck, best_score
             finals.append((cur, cur_score))
             runs.append({"origin": origin, "budget": budget, "steps": steps, "scored": scored,
                          "changed": changed(cur, start), "score": round(cur_score, 4)})
     def distinct(items, n):
         out = []
-        for v, sc in sorted(items, key=lambda x: -x[1]):
+        for i in softmax_order([sc for _, sc in items], temperature, rng):
+            v, sc = items[i]
             if all(changed(v, u) >= MIN_CHANGED for u in list(pop.decks) + [c[0] for c in out]):
                 out.append((v, sc))
             if len(out) == n:
@@ -232,7 +266,7 @@ def search(scorer, pop, sigma, k: int, seconds: float, rng, random_deck, restart
             confirm.pool = pool
             confirm.prepare(pop, sigma, int(rng.integers(1 << 30)))
             real = confirm([v for v, _ in top])
-            order = np.argsort(-real)[:k]
+            order = softmax_order(real, temperature, rng)[:k]
             chosen = [(top[i][0], float(real[i]), top[i][1]) for i in order]
         t_confirm = time.time() - t1
     info = {"scorer": scorer.name, "seconds": round(time.time() - t0, 1), "prepare_s": round(t_prep, 1),

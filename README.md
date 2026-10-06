@@ -21,11 +21,11 @@ and proven there first.
 
 **Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup
 matrix. The token + pointer model (A4.2) beats the MLP baseline (A4.1) on all 24 decks, 93.2-93.3%
-against SimpleBot and 66-68% head to head. Of the three A5 deck-builder designs, search scored by
-the pilot's own start-of-game value is the clear winner in a first equal-time comparison: from
-random decks it built a Haymaker 77% like an archived list, even with the human field ([2000s result #1](results/2000s-result-1/)), while
-real-game scoring explores too little and the matchup model is exploited by the search. The pilot
-value overrates Energy against Trainers, which capped that deck at 34 Energy; jobs are capped at ~80% of the machine.
+against SimpleBot and 66-68% head to head. In A5, scoring candidate decks by the pilot's own
+start-of-game value beat the other builder designs ([2000s result #1](results/2000s-result-1/)), and
+closing the loop, fine-tuning the pilot on each iteration's new decks, made the first built metagame
+that beats the archived human field (60.7%), though still with ~30 Energy and below Graham's list;
+sampling decks instead of taking the best keeps human-like decks but plays weaker. One seed each.
 
 **Earlier work:**
 
@@ -63,25 +63,27 @@ value overrates Energy against Trainers, which capped that deck at 34 Energy; jo
   which biases every A5 measurement made with it. After three machine crashes, every job is
   capped at 80% of GPU memory and 16 of 20 threads, with a GPU watchdog.
 
-**Recent (log #33–39):** Paying nothing for deck-out wins cut the pilot's deck-outs from 39% to 27%
-at the same SimpleBot strength. With that pilot, the value-scored search beat the other two builder
-designs of log #27 ([2000s result #1](results/2000s-result-1/)), but its deck runs 34 Energy because
-the pilot's start-of-game value overrates Energy; putting Graham's Trainers back raises it from 49.9%
-to 63.2% against the field. A deck-strength model with five input groups and no opponent context
-predicts decks' win rates well from only 16 games each (MAE 0.067, rank +0.84), mostly from how
-they play. As the search's scorer it is the best calibrated yet (error 0.046) and keeps the Trainers,
-but it explores too little to find good decks (30.7% against the field): value finds the basins,
-the strength model ranks within them, and neither does both.
+- **Log #33–40 (A5, A6).** With a pilot paid nothing for deck-out wins, the value-scored search
+  beat real-game and matchup-model scoring ([2000s result #1](results/2000s-result-1/)) but flooded
+  its deck with Energy, which the start-of-game value overrates, while a deck-strength model built
+  on game statistics ranks decks well but searches too slowly to use alone. Closing the loop,
+  piloting every PSRO iteration, gave the first built mixture to beat the archived field (60.7%),
+  still at ~30 Energy and below Graham's list (68.1%). Jobs are capped at ~80% of the machine
+  after three crashes.
+
+**Recent (log #41):** Sampling the search's choices from softmax(score / 0.03) in the closed loop kept
+proposals at 19-26 Energy with Trainer packages, kept the value better calibrated on average, and
+spread the equilibrium over Wigglytuff, Rain Dance and Haymaker-like decks; but those decks score
+33-43% against the field, against 60-72% for the greedy loop's single deck. One seed each.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. A two-stage builder: the value search for breadth, the strength model (16 games per finalist)
-   to choose among many finalists and their Energy / Trainer block-swap variants; result #1's
-   setup, then the panel: does it reach Graham's list (68.1% against the field)?
-2. Replicate the builder comparison with two more seeds.
-3. Value-scored PSRO for longer, then on the full pool: do the archetypes and staples hold?
+1. Two more seeds of the greedy and stochastic closed loops, and a longer stochastic run.
+2. Score the loops' populations with `rl/answer_key.py` (staples, archetypes, counters).
+3. Forced exploration of the Energy / Trainer balance (block swaps) in the closed loop; does it
+   reach Graham's list (68.1% against the field)?
 4. A4 exit: the trained-policy matchup matrix with the token policy, scored with
    `rl/answer_key.py`; a rerun for stability; matchup directions against era write-ups.
 5. A wider or deeper token model (the supervised check shows it underfits).

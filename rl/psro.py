@@ -18,6 +18,7 @@ import argparse
 import json
 import re
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -137,11 +138,16 @@ def main(argv=None):
                     help="edit: the PPO edit policy (rl/builder.py); games / model / value / strength: restart search "
                          "(rl/search.py) scored by real games, a matchup-model ensemble, the pilot's value, or the deck-strength model (log #39)")
     ap.add_argument("--search-seconds", type=float, default=120, help="wall-clock budget per search (rl/search.py)")
+    ap.add_argument("--search-temperature", type=float, default=0.0,
+                    help="sample climb steps, finalists and proposals from softmax(score / T) (0: greedy)")
     ap.add_argument("--strength-model", default="notes/data/eval/strength_model.json",
                     help="--builder strength: the deck-strength model (notes/scripts/deck_strength.py)")
     ap.add_argument("--edits", type=int, default=16)
     ap.add_argument("--builder-iters", type=int, default=200)
-    ap.add_argument("--pilot-iters", type=int, default=0, help="play-policy fine-tuning iterations per PSRO iteration")
+    ap.add_argument("--pilot-iters", type=int, default=0,
+                    help="play-policy fine-tuning (PPO) iterations per PSRO iteration on games with the new decks; "
+                         "the whole matrix is then re-measured under the new pilot (log #40)")
+    ap.add_argument("--pilot-deckout-win", type=float, default=0.0, help="rl.train --deckout-win for the piloting step")
     ap.add_argument("--workers", type=int, default=14)
     ap.add_argument("--inference", choices=["gpu", "cpu"], default="gpu",
                     help="matrix games with central GPU inference (rl/gpu_matrix.py) or CPU ONNX workers (matrix.js)")
@@ -191,6 +197,43 @@ def main(argv=None):
                   "strength": lambda: StrengthScorer(gpu, str(ROOT / args.strength_model))}[args.builder]()
     pending = []                                   # (deck index, predicted score, sigma at proposal)
     measured = 0
+
+    def pilot(it, new_idx, support):
+        """Piloting (A5, "pressure flows down"): fine-tune the play policy on the new decks against
+        the support and on the support among itself, then reload the GPU matrix with it. Returns
+        the log entry; the caller re-measures the whole matrix under the new pilot."""
+        nonlocal policy, gpu
+        t0 = time.time()
+        d = lambda i: {"name": pop.names[i], "cards": pool.names(pop.decks[i])}
+        sup = support[:6]
+        matchups = [[d(a), d(b)] for a in new_idx for b in sup] + [[d(b), d(a)] for a in new_idx for b in sup] +                    [[d(a), d(b)] for a in sup for b in sup]
+        others = [i for i in range(len(pop.decks)) if i not in new_idx and i not in sup]
+        for a, b in rng.choice(others, size=(min(8, len(others) // 2), 2), replace=False).tolist() if len(others) >= 2 else []:
+            matchups.append([d(a), d(b)])
+        out = f"{args.run}/pilot/it{it:02d}"
+        (ROOT / out).mkdir(parents=True, exist_ok=True)
+        (ROOT / out / "matchups.json").write_text(json.dumps(matchups))
+        gpu.close()                                # the trainer's workers take the CPU budget meanwhile
+        torch.cuda.empty_cache()                   # and the card: two processes, one 16 GB GPU
+        cmd = [sys.executable, "-m", "rl.train", "--run", out, "--matchups-file", f"{out}/matchups.json",
+               "--iterations", str(args.pilot_iters), "--transitions", "4096", "--concurrency", "48",
+               "--inference", "gpu", "--model", "tokens", "--micro-batch", "1024", "--amp",
+               "--init-from", policy, "--deckout-win", str(args.pilot_deckout_win),
+               "--snapshot-every", str(args.pilot_iters), "--seed", str(args.seed * 100 + it)]
+        with open(ROOT / out / "train.log", "w") as f:
+            subprocess.run(cmd, cwd=ROOT, check=True, stdout=f, stderr=subprocess.STDOUT)
+        for f in (ROOT / out).glob("rollout_w*.bin"):
+            f.unlink()                             # ~10 MB each, not needed after training
+        policy = f"{out}/model_it{args.pilot_iters - 1:05d}.pt"
+        from rl.gpu_matrix import GpuMatrix
+        gpu = GpuMatrix(policy, args.workers)
+        if scorer is not None and hasattr(scorer, "gm"):
+            scorer.gm = gpu
+        rows = [json.loads(l) for l in open(ROOT / out / "log.jsonl") if '"endings"' in l]
+        e = rows[-1]["endings"] if rows else {}
+        return {"policy": policy, "matchups": len(matchups), "seconds": round(time.time() - t0, 1),
+                "deck_out_share_last": round(e.get("deck-out", 0) / max(sum(e.values()), 1), 3)}
+
     for it in range(args.iterations + 1):
         new = len(pop.decks) - measured
         t0 = time.time()
@@ -226,7 +269,8 @@ def main(argv=None):
             from rl.search import search
             confirm = None if args.builder == "games" else GamesScorer(gpu)
             props, info = search(scorer, pop, sigma, args.new, args.search_seconds, srng,
-                                 lambda pl, r: random_deck(pl, r), confirm=confirm)
+                                 lambda pl, r: random_deck(pl, r), confirm=confirm,
+                                 temperature=args.search_temperature)
             row["search"] = {k: v for k, v in info.items() if k != "runs"}
             row["search_runs"] = info["runs"]
             row["seconds"]["search"] = round(time.time() - t0, 1)
@@ -235,7 +279,12 @@ def main(argv=None):
                 own = float(scorer.mean([v])[0]) if args.builder == "model" else raw
                 pending.append((len(pop.decks) - 1, score, own, sigma.copy()))
             row["proposals"] = [{"name": pop.names[-len(props) + k], "predicted": round(s, 4), "scorer": round(r, 4),
+                                 "energy": int(v[[c["id"] for c in table if c["superType"] == 3]].sum()),
                                  "nearest": nearest(v)} for k, (v, s, r) in enumerate(props)]
+            if args.pilot_iters and props:
+                row["pilot"] = pilot(it, list(range(len(pop.decks) - len(props), len(pop.decks))), [i for i, _ in support])
+                measured = 0                       # the pilot changed: re-measure every pair
+                print(f"  pilot: {row['pilot']}", flush=True)
             print(f"  search: {info['searches']} searches, {info['candidates_scored']} candidates, "
                   f"{len(props)} proposals in {info['seconds']} s", flush=True)
             log.write(json.dumps(row) + "\n")
