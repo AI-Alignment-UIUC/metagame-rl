@@ -664,3 +664,33 @@ Entry format:
 - **Next:** Confirm more of the value search's finalists with real games, or recalibrate the value
   head on varied decks (train on built and random decks, not only the 24 archived ones); check
   how far a value search with that fix gets toward Graham's 0.681.
+
+### #37 · 2026-10-06 · A6 · What the matchup model should see: inputs help, the data is the limit
+- **Done:** `notes/scripts/matchup_ablation.py`: five antisymmetric matchup models on every deck and
+  result of 2000s result #1's three runs (merged): the pilot's value alone (calibrated, both seat
+  orders, 16 deals), deck-shape features alone (counts of Energy, Pokémon, Basics, Trainers, draw
+  cards, the share of basic Energy some attack needs, and a goldfish proxy: the chance a Basic can
+  pay its cheapest attack by turn 2 / 3), value + shape, the card-embedding model of
+  `rl/matchup.py`, and all of them. Scored on held-out decks (5 folds by deck), then trained on
+  everything and asked to rank log #36's four Trainer variants against the 24 archived lists
+  (never in the data). Results in `notes/data/eval/matchup_ablation.json`.
+  `GpuMatrix.values` now sends at most 4,096 deals per forward pass: one pass of ~40k states
+  ran into the 80% memory cap.
+- **Evidence:** 95 decks, 2,481 pairs, 130,608 games. Held-out error / winner right / rank of the
+  held-out decks (Spearman): value 0.236 / 57.0% / +0.27; shape 0.191 / 70.4% / +0.64; value +
+  shape 0.189 / 69.8% / +0.65; embed 0.157 / 77.5% / +0.73; all 0.161 / 76.7% / +0.69. Ranking
+  of the four variants against their real order (0.499 < 0.576 < 0.632 < 0.681): value -0.20,
+  shape -1.00, value + shape -1.00, embed -0.40, all -0.80; the raw value (0.663, 0.625, 0.634,
+  0.637) also puts the 34-Energy deck first. Learned shape weights: basic Energy +0.14,
+  Trainers -0.14, Basic Pokémon +0.74, attack by turn 3 +0.25.
+- **Found:** With ~100 decks of data, the card-embedding model now generalizes to new decks (log
+  #34 found it no better than a coin from 16 decks), and the value adds nothing on top of it. But
+  every model ranks the Trainer variants wrong, and the shape models exactly backwards, because
+  the data teaches it: every deck in these runs is either a random deck (17 Energy, scattered
+  Trainers) or an Energy-heavy built deck, so more Energy and fewer Trainers goes with winning.
+  No deck in it is a coherent Trainer-heavy list, and no input can recover what the data never
+  shows. The search's own bias shapes the data every model learns from.
+- **Next:** Put the missing contrast in the data: real games for controlled variants (a good
+  shell with N Energy vs Trainers, as in #36) and the archived lists, then refit; and in the
+  search, explore the Energy / Trainer balance on purpose (swap blocks of Energy for Trainers)
+  rather than only single cards.

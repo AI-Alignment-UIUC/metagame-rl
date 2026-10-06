@@ -96,16 +96,20 @@ class GpuMatrix:
 
     def values(self, decks: list, pairs: list, openings: int, seed: int) -> np.ndarray:
         """The pilot's start-of-game value v(a, b) for deck a against deck b, averaged over
-        `openings` deals (forward passes only, no games). pairs: [(a, b)] -> array [len(pairs)]."""
+        `openings` deals (forward passes only, no games). pairs: [(a, b)] -> array [len(pairs)].
+        Sent in chunks of at most `chunk` deals: all of a chunk's states go through one forward pass."""
         jobs = [{"a": a, "b": b, "seed": seed * 1000003 + k * openings + o, "pair": k}
                 for k, (a, b) in enumerate(pairs) for o in range(openings)]
-        shards = [jobs[w::self.workers] for w in range(self.workers)]
-        msgs = [{"cmd": "values", "decks": decks, "jobs": sh} for sh in shards]
-        replies = self.pool.collect(msgs, {0: self.model}, self.device)
         tot = np.zeros(len(pairs))
-        for sh, rep in zip(shards, replies):
-            for j, v in zip(sh, rep["values"]):
-                tot[j["pair"]] += v
+        chunk = 4096
+        for c in range(0, len(jobs), chunk):
+            part = jobs[c:c + chunk]
+            shards = [part[w::self.workers] for w in range(self.workers)]
+            msgs = [{"cmd": "values", "decks": decks, "jobs": sh} for sh in shards]
+            replies = self.pool.collect(msgs, {0: self.model}, self.device)
+            for sh, rep in zip(shards, replies):
+                for j, v in zip(sh, rep["values"]):
+                    tot[j["pair"]] += v
         return tot / openings
 
     def close(self):

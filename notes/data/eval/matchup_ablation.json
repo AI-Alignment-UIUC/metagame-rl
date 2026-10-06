@@ -1,0 +1,134 @@
+{
+ "decks": 95,
+ "pairs": 2481,
+ "games": 130608,
+ "features": [
+  "basic_energy",
+  "special_energy",
+  "pokemon",
+  "basic_pokemon",
+  "trainers",
+  "draw",
+  "energy_fit",
+  "attack_by_t2",
+  "attack_by_t3",
+  "energy_in_first_10"
+ ],
+ "held_out": {
+  "value": {
+   "nll": 0.6863,
+   "mae": 0.2363,
+   "direction": 0.57,
+   "deck_rank_spearman": 0.268
+  },
+  "shape": {
+   "nll": 0.6379,
+   "mae": 0.1912,
+   "direction": 0.7037,
+   "deck_rank_spearman": 0.642
+  },
+  "value+shape": {
+   "nll": 0.6359,
+   "mae": 0.1887,
+   "direction": 0.6984,
+   "deck_rank_spearman": 0.652
+  },
+  "embed": {
+   "nll": 0.6287,
+   "mae": 0.1569,
+   "direction": 0.7753,
+   "deck_rank_spearman": 0.731
+  },
+  "all": {
+   "nll": 0.6325,
+   "mae": 0.1611,
+   "direction": 0.7673,
+   "deck_rank_spearman": 0.687
+  }
+ },
+ "variants": {
+  "value": {
+   "predicted": [
+    0.599,
+    0.576,
+    0.582,
+    0.583
+   ],
+   "spearman_vs_real": -0.2,
+   "alpha": 1.237
+  },
+  "shape": {
+   "predicted": [
+    0.587,
+    0.553,
+    0.526,
+    0.491
+   ],
+   "spearman_vs_real": -1.0,
+   "weights": {
+    "basic_energy": 0.14300000667572021,
+    "special_energy": 0.04600000008940697,
+    "pokemon": -0.5920000076293945,
+    "basic_pokemon": 0.7419999837875366,
+    "trainers": -0.14100000262260437,
+    "draw": 0.16599999368190765,
+    "energy_fit": 0.041999999433755875,
+    "attack_by_t2": 0.1979999989271164,
+    "attack_by_t3": 0.25099998712539673,
+    "energy_in_first_10": 0.14399999380111694
+   }
+  },
+  "value+shape": {
+   "predicted": [
+    0.639,
+    0.604,
+    0.595,
+    0.559
+   ],
+   "spearman_vs_real": -1.0,
+   "weights": {
+    "basic_energy": 0.09300000220537186,
+    "special_energy": 0.01600000075995922,
+    "pokemon": -0.4959999918937683,
+    "basic_pokemon": 0.6159999966621399,
+    "trainers": -0.008999999612569809,
+    "draw": 0.10899999737739563,
+    "energy_fit": 0.04800000041723251,
+    "attack_by_t2": 0.22100000083446503,
+    "attack_by_t3": 0.2720000147819519,
+    "energy_in_first_10": 0.16599999368190765
+   },
+   "alpha": 1.202
+  },
+  "embed": {
+   "predicted": [
+    0.684,
+    0.684,
+    0.69,
+    0.674
+   ],
+   "spearman_vs_real": -0.4
+  },
+  "all": {
+   "predicted": [
+    0.694,
+    0.707,
+    0.691,
+    0.671
+   ],
+   "spearman_vs_real": -0.8
+  },
+  "real": [
+   0.499,
+   0.576,
+   0.632,
+   0.681
+  ],
+  "value_raw": [
+   0.663,
+   0.625,
+   0.634,
+   0.637
+  ]
+ }
+}
