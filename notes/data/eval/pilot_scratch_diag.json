@@ -1,0 +1,10 @@
+{
+ "scratch_vs_simplebot_random_decks": {
+  "win": 0.6725,
+  "ci95": 0.04599153155745087
+ },
+ "original_vs_simplebot_random_decks": {
+  "win": 0.555,
+  "ci95": 0.0487026477719641
+ }
+}

@@ -2,9 +2,9 @@
 Four 60-card variants, from the built deck (34 Energy) to Chris Graham's list (22 Energy): the pilot's
 start-of-game value against the 24 archived lists (16 deals each) beside real games (100 per pair).
 
-Run: PYTHONPATH=. .venv/Scripts/python notes/scripts/trainer_restore_test.py
+Run: PYTHONPATH=. .venv/Scripts/python notes/scripts/trainer_restore_test.py [pilot.pt] (default: result #1's pilot)
 """
-import json, numpy as np
+import json, sys, numpy as np
 from rl.decks import Pool, archived_decks
 from rl.gpu_matrix import GpuMatrix
 pool = Pool()
@@ -28,7 +28,7 @@ for _, c in variants: assert pool.legal(pool.vector(c)), _
 field = [{"name": n, "cards": pool.names(v)} for n, v in arch]
 decks = field + [{"name": n, "cards": c} for n, c in variants]
 F, V = len(field), len(variants)
-gm = GpuMatrix("results/2000s-result-1/pilot/model_it00014.pt", 14)
+gm = GpuMatrix(sys.argv[1] if len(sys.argv) > 1 else "results/2000s-result-1/pilot/model_it00014.pt", 14)
 try:
     vals = gm.values(decks, [(F + k, j) for k in range(V) for j in range(F)], 16, 5).reshape(V, F)
     W, G, _ = gm.play(decks, 100, 17, pairs=[(F + k, j) for k in range(V) for j in range(F)] +

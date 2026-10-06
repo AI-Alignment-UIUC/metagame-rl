@@ -1,0 +1,20 @@
+{
+ "policy": "runs/pilot-scratch/model_it00249.pt",
+ "d1": "all",
+ "d2": "all",
+ "stochastic": false,
+ "rows": [
+  {
+   "opponent": "runs/deckout-w0/model_it00014.pt",
+   "n": 400,
+   "win": 0.135,
+   "ci95": 0.03348891010468988,
+   "dir1": 0.135,
+   "dir1_ci95": 0.04736047085914581,
+   "dir2": 0.135,
+   "dir2_ci95": 0.04736047085914581,
+   "cut": 0,
+   "errors": 0
+  }
+ ]
+}

@@ -812,3 +812,34 @@ Entry format:
   seed, so neither ranking is settled.
 - **Next:** Two more seeds of both loops; a longer stochastic run (diverse populations may need
   more iterations to converge); score both against the answer key (staples, archetypes).
+
+### #42 · 2026-10-06 · A4 / A5 · A pilot that never sees a human list
+- **Done:** `notes/scripts/pilot_decks.py`: 512 random legal decks with no human deck shape (1-4
+  Pokémon lines, Energy uniform 8-34, 75% of it of the Pokémon's types, Trainers at random; the
+  card pool is still the field's 56 cards) and 2,048 random matchups. `runs/pilot_scratch_run.sh`:
+  `runs/a4-tok`'s settings (token model, 1.6M parameters, league, 250 iterations) trained from
+  scratch on those decks only, deck-out wins paying 0 from the start; evaluated against SimpleBot
+  on the archived decks every 25 iterations (evaluation only). Diagnostics (`runs/pilot_diag.sh`):
+  SimpleBot on 24 held-out random decks, head to head with result #1's pilot on the archived
+  decks, log #36's Energy-bias test, and endings. Results in
+  `notes/data/eval/pilot_scratch_{diag,h2h}.json`.
+- **Evidence:** Against SimpleBot on the archived decks by iteration (scratch / original a4-tok):
+  24 40.5 / 29.7%, 49 47.7 / 62.7, 74 54.5, 99 60.9 / 78.0, 124 62.0, 149 61.9 / 90.0, 174 76.5,
+  199 76.2 / 88.5, 224 73.4, 249 78.7% ± 4.0 / 92.6. On held-out random decks against SimpleBot:
+  scratch 67.3% ± 4.6, result #1's pilot 55.5% ± 4.9. Head to head on the archived decks, scratch
+  wins 13.5% ± 3.3 against result #1's pilot. Endings on the archived field: deck-out 19%, prizes
+  66%, no Pokémon 14% (result #1's pilot: 27 / 56 / 17%; a4-tok it249: 44 / 42 / 14%), 181
+  decisions per game. Energy-bias test, value-predicted / real against the field (± 0.020): built
+  34-Energy deck 0.607 / 0.623; 6 Lightning for Trainers 0.629 / 0.605; 12 Lightning for Graham's
+  Trainers 0.605 / 0.620; Graham's list 0.635 / 0.613. Wall time ~4 h (collection grew from 7 s
+  to 55 s an iteration as league snapshots were added, as in #26).
+- **Found:** Without human lists the pilot learns slower on the archived decks and ends ~14 points
+  below the human-trained pilot there, and loses to it badly on its home decks, but it generalizes
+  better to unseen random decks (+12 points) and stalls far less. Its value head no longer
+  overrates Energy: it rates Graham's list highest and its predictions are within 0.03 of real
+  results. But under this pilot the four variants all score 0.61-0.62: deck choice barely changes
+  its results (spread 2 points against 18 under result #1's pilot), so it would give the deck
+  builder little signal. Unbiased but weak: deck differences only show with a strong pilot.
+- **Next:** Make the human-free pilot stronger before using it for deck building (longer training,
+  a larger model since #25 found underfitting, exploiters, self-imitation), then rerun the closed
+  loop with it. See `notes/analysis-2026-10-06.md`.

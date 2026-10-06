@@ -20,12 +20,12 @@ and proven there first.
 *Updated 2026-10-06.*
 
 **Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup
-matrix. The token + pointer model (A4.2) beats the MLP baseline (A4.1) on all 24 decks, 93.2-93.3%
-against SimpleBot and 66-68% head to head. In A5, scoring candidate decks by the pilot's own
-start-of-game value beat the other builder designs ([2000s result #1](results/2000s-result-1/)), and
-closing the loop, fine-tuning the pilot on each iteration's new decks, made the first built metagame
-that beats the archived human field (60.7%), though still with ~30 Energy and below Graham's list;
-sampling decks instead of taking the best keeps human-like decks but plays weaker. One seed each.
+matrix. In A5, scoring candidate decks by the pilot's own value beat the other builder designs
+([2000s result #1](results/2000s-result-1/)), and piloting every PSRO iteration made the first built
+metagame to beat the archived field (60.7%), still Energy-heavy. Every builder sees decks through the
+pilot: one trained on human lists is strong but biased, while one trained only on random decks is
+calibrated and unbiased but too weak to tell good decks from bad, so a stronger human-free pilot comes
+next ([analysis and plan](notes/analysis-2026-10-06.md)).
 
 **Earlier work:**
 
@@ -71,25 +71,27 @@ sampling decks instead of taking the best keeps human-like decks but plays weake
   still at ~30 Energy and below Graham's list (68.1%). Jobs are capped at ~80% of the machine
   after three crashes.
 
-**Recent (log #41):** Sampling the search's choices from softmax(score / 0.03) in the closed loop kept
-proposals at 19-26 Energy with Trainer packages, kept the value better calibrated on average, and
-spread the equilibrium over Wigglytuff, Rain Dance and Haymaker-like decks; but those decks score
-33-43% against the field, against 60-72% for the greedy loop's single deck. One seed each.
+**Recent (log #41–42):** Sampling deck choices (τ = 0.03) in the closed loop kept decks human-like
+and the equilibrium diverse but weaker (33-43% against the field). A pilot trained only on random
+decks, never on a human list, reaches 78.7% against SimpleBot on the archived decks (human-trained:
+92.6%) and 67.3% on unseen random decks (55.5%), stalls less (19% deck-outs), and its value no longer
+overrates Energy; but deck choice barely moves its results (2-point spread across log #36's variants,
+against 18), so it gives the builder little signal yet.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
-**Next:**
+**Next:** (from [the 2026-10-06 analysis](notes/analysis-2026-10-06.md))
 
-1. Two more seeds of the greedy and stochastic closed loops, and a longer stochastic run.
-2. Score the loops' populations with `rl/answer_key.py` (staples, archetypes, counters).
-3. Card-agnostic exploration in the closed loop (multi-card random moves, a novelty bonus, a higher
-   entropy bonus in piloting): does self-discovery reach an Energy shell with Trainers? No
-   card-specific moves or human-derived priors (see A5 exit: self-discovery).
-4. A4 exit: the trained-policy matchup matrix with the token policy, scored with
-   `rl/answer_key.py`; a rerun for stability; matchup directions against era write-ups.
-5. A wider or deeper token model (the supervised check shows it underfits).
-6. B1: source the Worlds 2005 top-cut lists; verify the engine's three EX sets against card data
-   and rulings; check the near-reprints by hand.
+1. A stronger human-free pilot: batch league snapshots (collection grew from 7 s to 55 s an
+   iteration), then a longer run with a larger token model, self-imitation and auxiliary heads;
+   judged by how much deck choice moves its results.
+2. Search safeguards: pessimistic acceptance (ensemble mean − κ·std), a trust region around
+   real-tested decks, and the real-win-rate-vs-search-pressure curve.
+3. A regret-curated deck curriculum for the pilot (PLR / ACCEL) in place of per-iteration piloting.
+4. Response diversity with an adaptive weight (DPP gain, DvD) instead of temperature; α-Rank beside
+   Nash.
+5. Replication: two more seeds of result #1 and both closed loops.
+6. The full card pool with an engine-bug detector; then B1 (Worlds 2005 lists, EX-set checks).
 <!-- status:end -->
 
 ---
@@ -400,6 +402,7 @@ Same exit criteria as A4 and A5, measured against the archived Worlds top cut.
 |---|---|
 | `ryuu-play/` | Submodule: the engine fork, pinned to a commit on `sts-2000-pool`. Engine changes are committed there and the pin is bumped here. |
 | `notes/progress-log.md` | Append-only log of finished todos, from which the Status section is summarized |
+| `notes/analysis-2026-10-06.md` | Analysis of logs #30-42 with a literature survey and the ranked next steps |
 | `results/` | Headline results, one folder each with a README, data and the scripts to reproduce them ([index](results/README.md)); [2000s result #1](results/2000s-result-1/) is the A5.2 builder comparison |
 | `notes/schematics/` | Diagrams of the system, as standalone HTML pages: `metagame-builder.html` (and the `.svg` shown under A5) is the A5 PSRO loop, marked built vs planned |
 | `env/` | The RL environment: seeded game loop, legal-action enumerator and its oracle, encoder, env API, rollout runner and workers; `env/tools/` has the verification, test, benchmark and evaluation scripts |
