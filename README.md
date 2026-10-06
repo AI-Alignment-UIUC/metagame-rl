@@ -20,11 +20,11 @@ and proven there first.
 *Updated 2026-10-05.*
 
 **Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup
-matrix. A PPO self-play policy beats SimpleBot 97-98% in one matchup, and one MLP policy for all
-24 decks (A4.1) beats it 88.5-89.6% with every deck above 70%. The token + pointer model (A4.2)
-trains at 17 s per update, plays the MLP directly, and is retraining after its first run exposed
-two endless loops, now fixed. Phase B targets Worlds 2005 (San Diego): its card gap matches
-2011's, about 600 cards to the full legal pool, and it needs no new engine mechanics.
+matrix. One MLP policy for all 24 decks (A4.1) beats SimpleBot 88.5-89.6% with every deck above
+70%, and the token + pointer model (A4.2) is training on the same task after two endless loops in
+the environment were found and fixed. The answer key the project is judged by now has three
+tiers (staples, archetypes, counters), scored on a meta the agent drafts from random decks.
+Phase B targets Worlds 2005 (San Diego), which needs about 600 more cards but no new mechanics.
 
 **Earlier work:**
 
@@ -44,14 +44,16 @@ two endless loops, now fixed. Phase B targets Worlds 2005 (San Diego): its card 
   directions, and the stronger (run c) beats the other 57.8%. The token model, central GPU
   inference and the A5 pieces (matchup model, edit builder, PSRO loop) are built and tested.
 
-**Recent (log #17–22):** Under SimpleBot piloting the 24 x 24 matrix's equilibrium has no Haymaker
-list in its support, and A4.1 met its per-deck exit (re-scored on the fixed environment: mirror
-89.6%, field 88.5%, lowest Viray Rain Dance 71-72%, gains down to ~1 point per 25 iterations).
-Token-model training was made to fit and run fast, mixed MLP-vs-token games work, and the two
-loops the token run hit (Metronome copying Metronome; start-then-undo cycles, behind every game
-A4.1's exit had cut off) are fixed. Measured by printing, Worlds 2005 and 2011 need about the same
-share of their archived cards implemented (~72% and ~71% of names), but 2011 also needs the Lost
-Zone and LEGEND cards, so Phase B moved from 2011 to 2005.
+- **Log #17–24 (A2–A4.2, B1, A5 tooling).** A4.1, one MLP policy for all 24 decks, met its
+  per-deck exit (re-scored: mirror 89.6%, field 88.5% vs SimpleBot) once two environment loops
+  were fixed (Metronome copying Metronome; start-then-undo cycles), the loops behind every game
+  its exit had cut off and the stall that the token-model run, now trainable at scale, exposed.
+  Phase B moved to Worlds 2005 (San Diego) after a by-printing measurement showed 2011's card gap
+  without 2011's missing mechanics. A three-tier answer key (staples, archetypes, counters) now
+  scores any population against the archive, and on the SimpleBot matrix the equilibrium support
+  is exactly the three decks hardest to counter.
+
+**Recent:** none since log #24.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
@@ -62,7 +64,8 @@ The full record is in [`notes/progress-log.md`](notes/progress-log.md).
    (`rl/distill.py`), plus ONNX / permutation / padding checks.
 3. Compare the two RL policies: learning curves, mirror/field vs SimpleBot, head-to-head, cost.
 4. A4 exit: the trained-policy matrix, its stability across reruns, and era write-ups.
-5. A5.1: Nash over the trained-policy matrix; then PSRO with the builder.
+5. A5.1: Nash over the trained-policy matrix, scored with `rl/answer_key.py`; then PSRO from
+   random decks with the builder, and the counter-deck search.
 6. B1: source the Worlds 2005 top-cut lists; verify the engine's three EX sets against card data
    and rulings; check the near-reprints by hand.
 <!-- status:end -->
@@ -82,11 +85,22 @@ the top level is an **equilibrium mixture of decks, not one best deck**. The thr
 coupled: play skill decides which decks look good, and the decks in the field decide which
 play skills matter.
 
-**Ground truth.** Archived tournament results are the answer key. An agent that starts from the
-card pool and lands on the archetypes humans actually played has shown something that win rates
-against its own checkpoints cannot. Human metagames are not equilibria, so the robust
-comparison is **archetype rediscovery** (does the archetype appear in the agent's equilibrium
-support, measured by card overlap with archived lists). Matching meta *shares* is not the goal.
+**Ground truth.** Archived tournament results are the answer key. The agent drafts its own meta
+from random decks on the full card pool and never sees the archived lists; its meta is what it
+knows about decks. An agent that lands on what humans actually played has shown something that
+win rates against its own checkpoints cannot. Human metagames are not equilibria, so matching
+meta *shares* is not the goal. The comparison has three tiers (`rl/answer_key.py`):
+
+1. **Staples:** cards nearly every top deck plays, at near-fixed counts. In the 2000 field,
+   Professor Oak is in 24 of 24 lists, and Double Colorless Energy, Gust of Wind and Computer
+   Search in 23. These hardly depend on the opponent, so the agent's decks should agree even
+   where the archetype mix differs. Scored by inclusion, and by count within one copy. Staples
+   such as Gust of Wind and Energy Removal only earn their slot under a pilot that uses them
+   well, so this tier also tests play.
+2. **Archetypes:** does each archived archetype appear in the agent's equilibrium support, by
+   card overlap with the archived lists?
+3. **The meta:** the counter table (each deck's best counter, with its win rate and how
+   exploitable the deck is) and matchup directions, checked against era write-ups.
 
 ---
 
@@ -217,10 +231,18 @@ reruns; and its matchup directions agree with era write-ups wherever those exist
    are now in: Wizards Black Star Promos #1–#16, fork `64330a4`). Most of those ~233 cards are
    unexercised by tests, so a cold-start builder will find engine bugs and treat them as
    strategies; expand verification first.
+4. **Counters.** For every deck in the agent's population, its best counter and that counter's
+   win rate (the deck's exploitability), from the matchup matrix. Then a counter-deck search:
+   the builder aimed at one opponent deck instead of the meta mixture, over the whole pool, with
+   the matchup model proposing and real games confirming. It answers "what beats X best?",
+   possibly with a deck no one played. The archived decks are also scored as held-out entries
+   against the agent's equilibrium: how would each human list have fared in the agent's meta?
 
-**Exit:** from a cold start on the full pool, archived archetypes appear in the equilibrium
-support (by card overlap), and the result replicates across seeds. The three age divisions
-serve as rough replicates of the human field.
+**Exit:** from a cold start on the full pool, scored with the three-tier answer key: the agent's
+mixture plays the field's staples at near-field counts, archived archetypes appear in the
+equilibrium support (by card overlap), and the counters and matchup directions agree with era
+write-ups where those exist. The result replicates across seeds. The three age divisions serve as
+rough replicates of the human field.
 
 #### A6. Play knowledge feeds deck building
 

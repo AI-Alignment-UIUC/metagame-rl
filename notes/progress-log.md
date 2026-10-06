@@ -369,3 +369,25 @@ Entry format:
   (Maron, Yoneda, Gonzalez, Hill) from pokumon.com; not cross-checked against a second source.
 - **Next:** Source the Worlds 2005 top-cut lists; verify the engine's EX sets (card data,
   rulings) before B2 adds the six missing sets.
+
+### #24 · 2026-10-05 · A5 · Three-tier answer key and counter table
+- **Done:** `rl/answer_key.py` scores a deck population (an agent's meta: decks, matchup matrix,
+  its Nash mixture) against the archived field in three tiers: staples (cards in at least 75% of
+  archived lists; recall at weighted inclusion >= 0.5, counts within one copy of the field's
+  median), archetypes (best card overlap of each archived archetype with an equilibrium-support
+  deck, rediscovered at >= 0.5), and the counter table (each deck's best counter, its win rate =
+  the deck's exploitability). README: ground-truth section rewritten around a meta drafted from
+  random decks with the archive used only to score it; A5 gains item 4 (counter table,
+  single-opponent counter-deck search, archived decks as held-out entries) and a three-tier exit.
+- **Evidence:** Baseline on the SimpleBot 24 x 24 matrix (`notes/data/eval/answer_key_simplebot.json`),
+  where the "agent" is SimpleBot's Nash over the human lists: 7 staples, 6 played (86%; Item
+  Finder missing), counts within one for 83% (5 of 6); archetypes 6 of 8 at overlap >= 0.5
+  (trivially 1.00 for the three in the support, since the population is the archive). The three
+  hardest decks to exploit form a cycle and are the Nash support: Bartlett Sponge (best counter
+  Manquez Wigglytuff 57%), Diamond Articuno/Hitmonchan/Scyther (Bartlett 63%), Pratt Wigglytuff
+  (Diamond 65%); most other Wigglytuff and Haymaker lists have an 85-93% counter. 100 games per
+  pair (about ±10 points per cell).
+- **Found:** Field staples in the 2000 lists: Professor Oak 24/24, Double Colorless Energy, Gust of
+  Wind and Computer Search 23/24, Scyther 20/24. A real score needs a cold-start population.
+- **Next:** Score the trained-policy matrix (A4 exit) and, in A5, PSRO populations from random
+  decks.

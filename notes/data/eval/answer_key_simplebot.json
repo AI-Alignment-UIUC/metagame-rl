@@ -1,0 +1,288 @@
+{
+ "nash": {
+  "15+ #1 Andrew Marshall (Haymaker)": 0.0,
+  "15+ #2 William Lieu (Wigglytuff)": 0.0,
+  "15+ #3 Chris Neathery (Haymaker)": 0.0,
+  "15+ #4 Alvin Osborn (Haymaker)": 0.0,
+  "15+ #5 Marcus Abreu (Wigglytuff)": 0.0,
+  "15+ #6 Darren Guiao (Hitmonchan / Magmar)": 0.0,
+  "15+ #7 Jarod Stein (Wigglytuff)": 0.0,
+  "15+ #8 Jay Yu (Wigglytuff)": 0.0,
+  "11-14 #1 Jack Savage (Sponge)": 0.0,
+  "11-14 #2 Kody Barret (Wigglytuff)": 0.0,
+  "11-14 #3 Daniel Nino (Haymaker)": 0.0,
+  "11-14 #4 Zach Froelich (Wigglytuff)": 0.0,
+  "11-14 #5 Derek Bowling (Haymaker)": 0.0,
+  "11-14 #6 Ben Ferguson (Wigglytuff)": 0.0,
+  "11-14 #7 John Pratt (Wigglytuff)": 0.40624999999999994,
+  "11-14 #8 Matt Townend (Wigglytuff)": 0.0,
+  "10 and under #1 Joseph Viray (Rain Dance)": 0.0,
+  "10 and under #2 Dean Bartlett (Sponge)": 0.46875000000000006,
+  "10 and under #3 Brock Christianson (Haymaker)": 0.0,
+  "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)": 0.0,
+  "10 and under #5 Gilbert Manquez (Wigglytuff)": 0.0,
+  "10 and under #6 Chris Graham (Haymaker)": 0.0,
+  "10 and under #7 Ken Knight (Clefable)": 0.0,
+  "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)": 0.125
+ },
+ "staples": {
+  "staples": 7,
+  "recall": 0.8571428571428571,
+  "count_agreement": 0.8333333333333334,
+  "agent_only": [],
+  "rows": [
+   {
+    "card": "Professor Oak",
+    "field_share": 1.0,
+    "field_median": 3.5,
+    "agent_share": 1.0,
+    "agent_median": 3.0
+   },
+   {
+    "card": "Computer Search",
+    "field_share": 0.9583333333333334,
+    "field_median": 3.0,
+    "agent_share": 0.53125,
+    "agent_median": 3.0
+   },
+   {
+    "card": "Double Colorless Energy",
+    "field_share": 0.9583333333333334,
+    "field_median": 4.0,
+    "agent_share": 1.0,
+    "agent_median": 2.0
+   },
+   {
+    "card": "Gust of Wind",
+    "field_share": 0.9583333333333334,
+    "field_median": 3.0,
+    "agent_share": 1.0,
+    "agent_median": 2.0
+   },
+   {
+    "card": "Scyther",
+    "field_share": 0.8333333333333334,
+    "field_median": 3.5,
+    "agent_share": 1.0,
+    "agent_median": 3.0
+   },
+   {
+    "card": "PlusPower",
+    "field_share": 0.7916666666666666,
+    "field_median": 4.0,
+    "agent_share": 0.53125,
+    "agent_median": 3.0
+   },
+   {
+    "card": "Item Finder",
+    "field_share": 0.75,
+    "field_median": 3.0,
+    "agent_share": 0.0,
+    "agent_median": 0.0
+   },
+   {
+    "card": "Energy Removal",
+    "field_share": 0.7083333333333334,
+    "field_median": 3.0,
+    "agent_share": 1.0,
+    "agent_median": 2.0
+   },
+   {
+    "card": "Super Energy Removal",
+    "field_share": 0.7083333333333334,
+    "field_median": 3.0,
+    "agent_share": 1.0,
+    "agent_median": 2.0
+   },
+   {
+    "card": "Switch",
+    "field_share": 0.3333333333333333,
+    "field_median": 2.0,
+    "agent_share": 1.0,
+    "agent_median": 3.0
+   },
+   {
+    "card": "Fire Energy",
+    "field_share": 0.25,
+    "field_median": 7.5,
+    "agent_share": 0.875,
+    "agent_median": 7.0
+   },
+   {
+    "card": "Magmar",
+    "field_share": 0.25,
+    "field_median": 3.0,
+    "agent_share": 0.875,
+    "agent_median": 3.0
+   }
+  ]
+ },
+ "archetypes": {
+  "archetypes": 8,
+  "rediscovered": 6,
+  "rows": [
+   {
+    "archetype": "Wigglytuff",
+    "best_overlap": 1.0,
+    "closest_support_deck": "11-14 #7 John Pratt (Wigglytuff)"
+   },
+   {
+    "archetype": "Sponge",
+    "best_overlap": 1.0,
+    "closest_support_deck": "10 and under #2 Dean Bartlett (Sponge)"
+   },
+   {
+    "archetype": "Articuno / Hitmonchan / Scyther",
+    "best_overlap": 1.0,
+    "closest_support_deck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)"
+   },
+   {
+    "archetype": "Hitmonchan / Magmar",
+    "best_overlap": 0.6833333333333333,
+    "closest_support_deck": "11-14 #7 John Pratt (Wigglytuff)"
+   },
+   {
+    "archetype": "Haymaker",
+    "best_overlap": 0.6333333333333333,
+    "closest_support_deck": "11-14 #7 John Pratt (Wigglytuff)"
+   },
+   {
+    "archetype": "Electabuzz / Mr. Mime",
+    "best_overlap": 0.6333333333333333,
+    "closest_support_deck": "10 and under #2 Dean Bartlett (Sponge)"
+   },
+   {
+    "archetype": "Clefable",
+    "best_overlap": 0.48333333333333334,
+    "closest_support_deck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)"
+   },
+   {
+    "archetype": "Rain Dance",
+    "best_overlap": 0.4166666666666667,
+    "closest_support_deck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)"
+   }
+  ]
+ },
+ "counters": [
+  {
+   "deck": "10 and under #2 Dean Bartlett (Sponge)",
+   "best_counter": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+   "counter_win": 0.57
+  },
+  {
+   "deck": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "best_counter": "10 and under #2 Dean Bartlett (Sponge)",
+   "counter_win": 0.63
+  },
+  {
+   "deck": "11-14 #7 John Pratt (Wigglytuff)",
+   "best_counter": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "counter_win": 0.65
+  },
+  {
+   "deck": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+   "best_counter": "11-14 #7 John Pratt (Wigglytuff)",
+   "counter_win": 0.66
+  },
+  {
+   "deck": "10 and under #7 Ken Knight (Clefable)",
+   "best_counter": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "counter_win": 0.745
+  },
+  {
+   "deck": "10 and under #1 Joseph Viray (Rain Dance)",
+   "best_counter": "10 and under #2 Dean Bartlett (Sponge)",
+   "counter_win": 0.75
+  },
+  {
+   "deck": "15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+   "best_counter": "10 and under #1 Joseph Viray (Rain Dance)",
+   "counter_win": 0.76
+  },
+  {
+   "deck": "10 and under #3 Brock Christianson (Haymaker)",
+   "best_counter": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "counter_win": 0.77
+  },
+  {
+   "deck": "15+ #3 Chris Neathery (Haymaker)",
+   "best_counter": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "counter_win": 0.82
+  },
+  {
+   "deck": "15+ #1 Andrew Marshall (Haymaker)",
+   "best_counter": "11-14 #7 John Pratt (Wigglytuff)",
+   "counter_win": 0.85
+  },
+  {
+   "deck": "10 and under #6 Chris Graham (Haymaker)",
+   "best_counter": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "counter_win": 0.85
+  },
+  {
+   "deck": "15+ #4 Alvin Osborn (Haymaker)",
+   "best_counter": "10 and under #2 Dean Bartlett (Sponge)",
+   "counter_win": 0.86
+  },
+  {
+   "deck": "15+ #8 Jay Yu (Wigglytuff)",
+   "best_counter": "15+ #3 Chris Neathery (Haymaker)",
+   "counter_win": 0.86
+  },
+  {
+   "deck": "11-14 #3 Daniel Nino (Haymaker)",
+   "best_counter": "10 and under #2 Dean Bartlett (Sponge)",
+   "counter_win": 0.86
+  },
+  {
+   "deck": "11-14 #5 Derek Bowling (Haymaker)",
+   "best_counter": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "counter_win": 0.86
+  },
+  {
+   "deck": "11-14 #6 Ben Ferguson (Wigglytuff)",
+   "best_counter": "11-14 #7 John Pratt (Wigglytuff)",
+   "counter_win": 0.86
+  },
+  {
+   "deck": "11-14 #8 Matt Townend (Wigglytuff)",
+   "best_counter": "11-14 #7 John Pratt (Wigglytuff)",
+   "counter_win": 0.86
+  },
+  {
+   "deck": "15+ #5 Marcus Abreu (Wigglytuff)",
+   "best_counter": "11-14 #7 John Pratt (Wigglytuff)",
+   "counter_win": 0.87
+  },
+  {
+   "deck": "11-14 #4 Zach Froelich (Wigglytuff)",
+   "best_counter": "11-14 #7 John Pratt (Wigglytuff)",
+   "counter_win": 0.87
+  },
+  {
+   "deck": "10 and under #4 Mitch Morris (Electabuzz / Mr. Mime)",
+   "best_counter": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+   "counter_win": 0.88
+  },
+  {
+   "deck": "11-14 #1 Jack Savage (Sponge)",
+   "best_counter": "11-14 #7 John Pratt (Wigglytuff)",
+   "counter_win": 0.89
+  },
+  {
+   "deck": "11-14 #2 Kody Barret (Wigglytuff)",
+   "best_counter": "10 and under #5 Gilbert Manquez (Wigglytuff)",
+   "counter_win": 0.89
+  },
+  {
+   "deck": "15+ #2 William Lieu (Wigglytuff)",
+   "best_counter": "10 and under #8 Devin Diamond (Articuno / Hitmonchan / Scyther)",
+   "counter_win": 0.91
+  },
+  {
+   "deck": "15+ #7 Jarod Stein (Wigglytuff)",
+   "best_counter": "11-14 #7 John Pratt (Wigglytuff)",
+   "counter_win": 0.93
+  }
+ ]
+}
