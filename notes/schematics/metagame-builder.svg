@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1090" height="740" viewBox="0 0 1090 740" role="img" aria-label="PSRO loop: population and real-game matrix, Nash mixture, matchup model, swap search, confirmation with real games, piloting, then back to the population. Inputs are random starting decks, the play policy and the card pool. Output is scored against the archive on staples, archetypes and counters.">
+      <style>
+.bx{stroke-width:1.25}
+.c-ring{fill:#ffffff;stroke:#1c2024;stroke-opacity:.55}
+.c-in{fill:#f4f5f2;stroke:#8a9097}
+.c-head{fill:#efe9f7;stroke:#6b4c9a}
+.t{font:600 13.5px Archivo,"Helvetica Neue",Arial,sans-serif;fill:#1c2024}
+.m{font:400 11px "JetBrains Mono",Consolas,"DejaVu Sans Mono",monospace;fill:#5b6168}
+.mk{font:500 11px "JetBrains Mono",Consolas,"DejaVu Sans Mono",monospace}
+.n{font:700 13.5px "JetBrains Mono",Consolas,"DejaVu Sans Mono",monospace;fill:#5b6168}
+.tag{font:500 10px "JetBrains Mono",Consolas,"DejaVu Sans Mono",monospace;letter-spacing:.04em}
+.k-state{fill:#2f5d8a}.k-head{fill:#6b4c9a}.pl{fill:#a8661b}
+.tg-built{fill:#2e7a5b}.tg-plan{fill:#a8661b}.tg-part{fill:#2f5d8a}
+.tgb-built{fill:#e5f2ec;stroke:#2e7a5b;stroke-width:1}
+.tgb-plan{fill:#fbf1e3;stroke:#a8661b;stroke-width:1}
+.tgb-part{fill:#e8eff7;stroke:#2f5d8a;stroke-width:1}
+.ln{fill:none;stroke:#8a9097;stroke-width:1.4}
+.ln-plan{fill:none;stroke:#8a9097;stroke-width:1.3;stroke-dasharray:4 4}
+.ah{fill:#8a9097}
+</style>
+<rect x="0" y="0" width="1090" height="740" fill="#f4f5f2"/>
+      <defs>
+        <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
+      </defs>
+
+      <!-- Inputs -->
+      <rect class="bx c-in" x="16" y="20" width="320" height="80" rx="4"/>
+      <text class="t" x="30" y="44">Cold start</text>
+      <text class="m" x="30" y="64">N random legal decks: 2–4 Pokémon lines,</text>
+      <text class="m" x="30" y="80">16–22 basic Energy, Trainers for the rest</text>
+
+      <rect class="bx c-in" x="380" y="20" width="320" height="80" rx="4"/>
+      <text class="t" x="394" y="44">Play level: TokenPointerNet</text>
+      <text class="m" x="394" y="64">pilots every game in the matrix;</text>
+      <text class="m" x="394" y="80">its start-of-game value feeds the model</text>
+
+      <rect class="bx c-in" x="744" y="20" width="320" height="80" rx="4"/>
+      <text class="t" x="758" y="44">Card pool</text>
+      <text class="m" x="758" y="64">develop: the 56 cards the field played</text>
+      <text class="m" x="758" y="80">claim: full Base–Rocket pool (~233)</text>
+
+      <path class="ln" d="M100,100 L100,149" marker-end="url(#a)"/>
+      <path class="ln" d="M470,100 L470,124 L260,124 L260,149" marker-end="url(#a)"/>
+      <text class="mk k-state" x="276" y="140">pilot</text>
+      <path class="ln-plan" d="M610,100 L610,124 L824,124 L824,149" marker-end="url(#a)"/>
+      <text class="mk pl" x="760" y="140">v(A,B)</text>
+      <path class="ln" d="M1064,60 L1078,60 L1078,450 L1065,450" marker-end="url(#a)"/>
+      <text class="mk k-state" x="1072" y="270" text-anchor="end">cards</text>
+
+      <!-- 1 Population -->
+      <rect class="bx c-ring" x="16" y="150" width="320" height="160" rx="4"/>
+      <text class="n" x="30" y="174">1</text><text class="t" x="48" y="174">Population + real-game matrix</text>
+      <rect class="tgb-built" x="282" y="183" width="44" height="17" rx="8.5"/><text class="tag tg-built" x="304" y="195" text-anchor="middle">built</text>
+      <text class="m" x="30" y="218">decks as 60-card count vectors</text>
+      <text class="m" x="30" y="234">wins / games for every pair</text>
+      <text class="m" x="30" y="250">100 games per pair, seat-swapped</text>
+      <text class="m" x="30" y="266">only the new rows are played</text>
+      <text class="m" x="30" y="290">env/tools/matrix.js</text>
+
+      <!-- 2 Nash -->
+      <rect class="bx c-ring" x="380" y="150" width="320" height="160" rx="4"/>
+      <text class="n" x="394" y="174">2</text><text class="t" x="412" y="174">Nash equilibrium</text>
+      <rect class="tgb-built" x="646" y="183" width="44" height="17" rx="8.5"/><text class="tag tg-built" x="668" y="195" text-anchor="middle">built</text>
+      <text class="m" x="394" y="218">symmetric zero-sum game, solved as an LP</text>
+      <text class="mk k-state" x="394" y="238">max_x min_j Σ_i x_i (W_ij − ½)</text>
+      <text class="m" x="394" y="258">→ mixture σ; support = decks with σ &gt; 0</text>
+      <text class="m" x="394" y="274">σ is the predicted meta</text>
+      <text class="m" x="394" y="290">rl/nash.py</text>
+
+      <!-- 3 Matchup model -->
+      <rect class="bx c-ring" x="744" y="150" width="320" height="160" rx="4"/>
+      <text class="n" x="758" y="174">3</text><text class="t" x="776" y="174">Matchup model</text>
+      <rect class="tgb-part" x="966" y="183" width="88" height="17" rx="8.5"/><text class="tag tg-part" x="1010" y="195" text-anchor="middle">partly built</text>
+      <text class="m" x="758" y="218">P(A beats B) from both decklists</text>
+      <text class="m" x="758" y="234">mean card embedding → MLP, antisymmetric</text>
+      <text class="m" x="758" y="250">refit on every game played so far</text>
+      <text class="mk pl" x="758" y="274">+ v(A,B), mean of ~16 opening hands</text>
+      <text class="mk pl" x="758" y="290">ensemble ×5 on resampled games</text>
+
+      <!-- 4 Search -->
+      <rect class="bx c-ring" x="744" y="370" width="320" height="160" rx="4"/>
+      <text class="n" x="758" y="394">4</text><text class="t" x="776" y="394">Swap search</text>
+      <rect class="tgb-plan" x="994" y="403" width="60" height="17" rx="8.5"/><text class="tag tg-plan" x="1024" y="415" text-anchor="middle">planned</text>
+      <text class="m" x="758" y="438">restart: a random deck or a support deck</text>
+      <text class="m" x="758" y="454">edit budget per search: 8 → 60 cards</text>
+      <text class="m" x="758" y="470">legal swaps: 60 cards, ≤4 per name, ≥1 Basic</text>
+      <text class="mk k-state" x="758" y="494">rank: Σ_j σ_j P(deck beats j)</text>
+      <text class="mk pl" x="758" y="512">      + β · ensemble spread</text>
+
+      <!-- 5 Confirm -->
+      <rect class="bx c-ring" x="380" y="370" width="320" height="160" rx="4"/>
+      <text class="n" x="394" y="394">5</text><text class="t" x="412" y="394">Confirm with real games</text>
+      <rect class="tgb-part" x="602" y="403" width="88" height="17" rx="8.5"/><text class="tag tg-part" x="646" y="415" text-anchor="middle">partly built</text>
+      <text class="m" x="394" y="438">only the top few candidates</text>
+      <text class="m" x="394" y="454">~100 games vs each of 5 support decks</text>
+      <text class="m" x="394" y="470">≈ 25–30 s per candidate, 16 workers</text>
+      <text class="m" x="394" y="494">joins only if ≥ ~10 cards differ</text>
+      <text class="m" x="394" y="510">from every deck already in</text>
+
+      <!-- 6 Pilot -->
+      <rect class="bx c-ring" x="16" y="370" width="320" height="160" rx="4"/>
+      <text class="n" x="30" y="394">6</text><text class="t" x="48" y="394">Pilot the new decks</text>
+      <rect class="tgb-part" x="238" y="403" width="88" height="17" rx="8.5"/><text class="tag tg-part" x="282" y="415" text-anchor="middle">manual now</text>
+      <text class="m" x="30" y="438">fine-tune the play policy on games</text>
+      <text class="m" x="30" y="454">that include the new decks, before</text>
+      <text class="m" x="30" y="470">their matchup row is trusted</text>
+      <text class="m" x="30" y="494">rl.train --init-from, run separately</text>
+
+      <!-- ring arrows -->
+      <path class="ln" d="M336,230 L379,230" marker-end="url(#a)"/>
+      <text class="mk k-state" x="358" y="222" text-anchor="middle">W</text>
+      <path class="ln" d="M700,230 L743,230" marker-end="url(#a)"/>
+      <text class="mk k-state" x="722" y="222" text-anchor="middle">σ</text>
+      <path class="ln" d="M904,310 L904,369" marker-end="url(#a)"/>
+      <text class="mk k-state" x="912" y="344">model, σ</text>
+      <path class="ln" d="M744,450 L701,450" marker-end="url(#a)"/>
+      <text class="mk k-state" x="722" y="442" text-anchor="middle">top</text>
+      <path class="ln" d="M380,450 L337,450" marker-end="url(#a)"/>
+      <text class="mk k-state" x="358" y="442" text-anchor="middle">new</text>
+      <path class="ln" d="M176,370 L176,311" marker-end="url(#a)"/>
+      <text class="mk k-state" x="184" y="344">add, play new rows</text>
+      <text class="m" x="540" y="344" text-anchor="middle">one PSRO iteration</text>
+
+      <!-- output -->
+      <path class="ln" d="M540,530 L540,589" marker-end="url(#a)"/>
+      <text class="mk k-state" x="548" y="564">after the last iteration: decks, W, σ</text>
+      <rect class="bx c-head" x="16" y="590" width="1048" height="134" rx="4"/>
+      <text class="t" x="30" y="614">Scored against the archived field, which the builder never sees</text>
+      <rect class="tgb-built" x="1010" y="602" width="44" height="17" rx="8.5"/><text class="tag tg-built" x="1032" y="614" text-anchor="middle">built</text>
+      <text class="mk k-head" x="30" y="642">Staples</text>
+      <text class="m" x="30" y="660">cards nearly every top deck plays:</text>
+      <text class="m" x="30" y="676">Professor Oak 24/24, DCE, Gust of Wind,</text>
+      <text class="m" x="30" y="692">Computer Search 23/24; scored by</text>
+      <text class="m" x="30" y="708">inclusion and count within one copy</text>
+      <text class="mk k-head" x="380" y="642">Archetypes</text>
+      <text class="m" x="380" y="660">does each archived archetype show</text>
+      <text class="m" x="380" y="676">up in the equilibrium support?</text>
+      <text class="m" x="380" y="692">by card overlap, rediscovered at ≥ 0.5</text>
+      <text class="mk k-head" x="744" y="642">Counters</text>
+      <text class="m" x="744" y="660">each deck's best counter and its win</text>
+      <text class="m" x="744" y="676">rate (how exploitable the deck is);</text>
+      <text class="m" x="744" y="692">matchup directions vs era write-ups</text>
+      <text class="m" x="744" y="708">rl/answer_key.py</text>
+    </svg>

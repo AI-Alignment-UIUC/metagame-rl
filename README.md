@@ -53,26 +53,29 @@ agent drafts from random decks; Phase B targets Worlds 2005 (San Diego).
   scores any population against the archive, and on the SimpleBot matrix the equilibrium support
   is exactly the three decks hardest to counter.
 
-**Recent (log #25–27):** The token model, at a third of the MLP's parameters, beats SimpleBot
+**Recent (log #25–29):** The token model, at a third of the MLP's parameters, beats SimpleBot
 93.2% (mirror) and 93.3% (field) on A4.1's deals, against A4.1's 89.6% and 88.5%, and beats A4.1
 itself 67.8% and 65.9%, above half on all 24 decks; a supervised test confirms the implementation
 (69.6% agreement with A4.1's choices on held-out games, chance 21.5%) and shows it short of
 capacity. The deck builder is now planned as PSRO with a matchup model that takes the pilot's
 start-of-game value as an input, explored by random restarts with varied edit budgets and by
-ranking candidates optimistically where an ensemble of the model disagrees.
+ranking candidates optimistically where an ensemble of the model disagrees; a schematic of that
+loop, now shown under A5, marks where the code still differs (step 4 is the PPO edit policy).
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. A4 exit: the trained-policy matchup matrix with the token policy, scored with
+1. A5: the first cold-start PSRO run on the field pool (`runs/a5-cold1`, running): do staple
+   counts and Double Colorless Energy come back? If not, find out why.
+2. A4 exit: the trained-policy matchup matrix with the token policy, scored with
    `rl/answer_key.py`; a rerun for stability; matchup directions against era write-ups.
-2. A wider or deeper token model (the supervised check shows it underfits).
-3. A5.1: Nash over the trained-policy matrix. A5.2: the matchup model with the value feature
+3. A wider or deeper token model (the supervised check shows it underfits).
+4. A5.1: Nash over the trained-policy matrix. A5.2: the matchup model with the value feature
    and an ensemble, then PSRO with restarts and edit budgets, from random decks; the counter-deck
    search.
-4. Make league inference batch across snapshots (collection grew from 7 s to 45 s per iteration).
-5. B1: source the Worlds 2005 top-cut lists; verify the engine's three EX sets against card data
+5. Make league inference batch across snapshots (collection grew from 7 s to 45 s per iteration).
+6. B1: source the Worlds 2005 top-cut lists; verify the engine's three EX sets against card data
    and rulings; check the near-reprints by hand.
 <!-- status:end -->
 
@@ -224,6 +227,10 @@ the result holds against held-out league checkpoints, not only its training oppo
 reruns; and its matchup directions agree with era write-ups wherever those exist.
 
 #### A5. Metagame level
+
+![The A5 PSRO loop: population and real-game matrix, Nash, matchup model, swap search, confirmation with real games, piloting; each step marked built, partly built or planned](notes/schematics/metagame-builder.svg)
+
+*The loop as of log #28 ([full page](notes/schematics/metagame-builder.html)). Step 4 in the code is still the PPO edit policy of `rl/builder.py`, which the plan below replaces.*
 
 1. **Fixed population.** Nash over the trained-policy matrix of the 24 archived lists. Do
    Wigglytuff and Haymaker sit in the support? Compare against the SimpleBot equilibrium from A2.
@@ -380,6 +387,7 @@ Same exit criteria as A4 and A5, measured against the archived Worlds top cut.
 |---|---|
 | `ryuu-play/` | Submodule: the engine fork, pinned to a commit on `sts-2000-pool`. Engine changes are committed there and the pin is bumped here. |
 | `notes/progress-log.md` | Append-only log of finished todos, from which the Status section is summarized |
+| `notes/schematics/` | Diagrams of the system, as standalone HTML pages: `metagame-builder.html` (and the `.svg` shown under A5) is the A5 PSRO loop, marked built vs planned |
 | `env/` | The RL environment: seeded game loop, legal-action enumerator and its oracle, encoder, env API, rollout runner and workers; `env/tools/` has the verification, test, benchmark and evaluation scripts |
 | `rl/` | The learner: PyTorch models, ONNX export, rollout reader, PPO training (`python -m rl.train`) |
 | `notes/tcg-rl-research-notes.md` | The research log and RL design, including the comparison with [Pokemon_TCG_RL](https://github.com/SuryaSGit/Pokemon_TCG_RL) (v4) |

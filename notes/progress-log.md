@@ -451,3 +451,23 @@ Entry format:
   testing 100 candidates with games.
 - **Next:** Implement in `rl/matchup.py` (value feature, ensemble) and `rl/psro.py` (restarts,
   budgets, distance rule); develop on the 56-card field pool, then the full pool.
+
+### #28 · 2026-10-05 · A5 · Metagame-builder schematic in the repo
+- **Done:** `notes/schematics/metagame-builder.html`, a standalone page diagramming the A5 PSRO
+  loop (population and real-game matrix, Nash, matchup model, swap search, confirmation,
+  piloting) with each step marked built, partly built or planned, and the three-tier scoring.
+  Linked from the README's Repository table.
+- **Evidence:** Drawn from `rl/psro.py`, `rl/nash.py`, `rl/matchup.py`, `rl/builder.py`,
+  `rl/decks.py`, README A5 and log #24/#27. Not rendered in a browser from the repo copy (the
+  same page was viewed as a published artifact).
+- **Found:** The code and the #27 plan differ at step 4: `rl/psro.py` still proposes decks with
+  the PPO edit policy of `rl/builder.py`, which #27 drops for restarts with edit budgets; the
+  distance rule is 0.1 (6 cards) against the planned ~10.
+- **Next:** A first cold-start PSRO run on the field pool to see whether staples come back.
+
+### #29 · 2026-10-05 · A5 · Schematic shown in the README
+- **Done:** `notes/schematics/metagame-builder.svg`, the diagram of #28 as a standalone light-theme
+  SVG (system font fallbacks), embedded at the top of README A5 with a caption linking the full
+  page and noting that step 4 in the code is still the PPO edit policy.
+- **Evidence:** The SVG parses as XML. Not checked on GitHub's renderer.
+- **Next:** The cold-start run `runs/a5-cold1` (started 23:41) is in progress.
