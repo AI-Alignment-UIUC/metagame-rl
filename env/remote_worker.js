@@ -122,11 +122,12 @@ async function games(cmd) {
     const [a, b] = job.iSeat === 1 ? [cmd.decks[job.i], cmd.decks[job.j]] : [cmd.decks[job.j], cmd.decks[job.i]];
     return { deckA: a.cards, deckB: b.cards, deckName: a.name, deckBName: b.name, seed: job.seed, seats: { 1: 'p', 2: 'p' } };
   };
-  const out = await new Runner(enc, { concurrency: cmd.concurrency || 64 }).run(nextJob, agents);
+  const out = await new Runner(enc, { concurrency: cmd.concurrency || 64, valueAtTurn: cmd.valueAtTurn || 0 }).run(nextJob, agents);
   const bySeed = new Map(cmd.jobs.map(j => [j.seed, j]));
   const results = out.results.map(r => {
     const job = bySeed.get(r.seed);
-    return { i: job.i, j: job.j, iSeat: job.iSeat, winner: r.winner, ending: r.ending, steps: r.steps, error: r.error };
+    return { i: job.i, j: job.j, iSeat: job.iSeat, seed: job.seed, winner: r.winner, ending: r.ending, turns: r.turns, valueAt: r.valueAt,
+             steps: r.steps, error: r.error };
   });
   return { ok: true, games: results.length, seconds: (Date.now() - t0) / 1000, results };
 }

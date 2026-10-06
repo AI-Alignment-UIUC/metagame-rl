@@ -63,16 +63,17 @@ class GpuMatrix:
         self.pool = RemotePool(workers)
         self.workers, self.concurrency, self.greedy = workers, concurrency, greedy
 
-    def play(self, decks: list, games: int, seed: int, new: int = 0, pairs: list = None):
+    def play(self, decks: list, games: int, seed: int, new: int = 0, pairs: list = None, value_at_turn: int = 0):
         """decks: [{name, cards}] -> (wins, games, steps) as [n, n] arrays; mirrors filled with 0.5.
         `pairs` [(i, j)] plays only those pairs instead of all (or all involving the last `new`)."""
         n = len(decks)
         jobs = jobs_for(n, games, seed, new, pairs)
         shards = [jobs[w::self.workers] for w in range(self.workers)]   # interleaved: every worker gets every pair
         msgs = [{"cmd": "games", "encoding": self.encoding, "decks": decks, "jobs": s, "greedy": self.greedy,
-                 "concurrency": self.concurrency} for s in shards]
+                 "concurrency": self.concurrency, "valueAtTurn": value_at_turn} for s in shards]
         t0 = time.time()
         replies = self.pool.collect(msgs, {0: self.model}, self.device)   # fp32, as the ONNX pilot
+        self.results = [x for rep in replies for x in rep["results"]]   # per game, for analyses
         W, G, S = np.zeros((n, n)), np.zeros((n, n)), np.zeros((n, n))
         errors = cut = 0
         endings = {}

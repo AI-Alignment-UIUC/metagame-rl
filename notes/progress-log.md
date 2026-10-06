@@ -694,3 +694,40 @@ Entry format:
   shell with N Energy vs Trainers, as in #36) and the archived lists, then refit; and in the
   search, explore the Energy / Trainer balance on purpose (swap blocks of Energy for Trainers)
   rather than only single cards.
+
+### #38 · 2026-10-06 · A6 · A deck-strength model with five input groups: game statistics carry it
+- **Done:** `notes/scripts/deck_strength.py`: no opponent context; predicts a deck's win rate
+  against the 24 archived lists from five standardized input groups with a binomial logistic
+  model: shape (counts, Energy fit), goldfish (attack by turn 2 / 3, Energy in the first 10),
+  game statistics (turns and decisions per game, deck-out and no-Pokémon endings), value (the
+  pilot's start-of-game value and its value at game turn 5 in play), uncertainty (cards changed
+  from the nearest other deck). Decks: all of 2000s result #1's runs plus the archived lists
+  (Graham's held out), 117 in all, each against the field at 40 games per pair; alternating pairs
+  of games give the target, the rest the statistics and in-play value, so no input comes from
+  the games it predicts. Held out: log #36's four Trainer variants. `env/runner.js` can record
+  each seat's value at a given turn (`valueAtTurn`) and reports game turns; the remote worker
+  returns them with each game's seed; `GpuMatrix.play` keeps per-game results (`.results`).
+  Results in `notes/data/eval/deck_strength.json`.
+- **Evidence:** 115,200 games at 150 games/s, 0 errors, 100 cut off; about 476 target games per
+  deck; win-rate sd 0.171. Held-out (5 folds by deck) MAE / rank correlation: constant 0.146 /
+  0; all groups 0.058 / +0.89; only game statistics 0.066 / +0.84; only value 0.119 / +0.53;
+  only goldfish 0.128 / +0.43; only shape 0.133 / +0.41; only uncertainty 0.147 / -0.12. Without
+  game statistics 0.087 / +0.75; without any one other group 0.053-0.058 / +0.89 to +0.91. Group
+  |weight| per sd: game statistics 1.45, shape 0.67, value 0.62, goldfish 0.18, uncertainty
+  0.12. Largest weights: decisions per game +0.95, value at turn 5 +0.43, Basic Pokémon -0.25,
+  no-Pokémon endings +0.23, start-of-game value -0.19. Trainer variants, predicted / real:
+  0.385 / 0.525, 0.421 / 0.582, 0.536 / 0.635, 0.590 / 0.700, so the order is right (rank +1.0)
+  but the level is ~0.12 low; their decisions per game rise 209, 227, 253, 257 as Trainers come
+  back, while the start-of-game value falls 0.325, 0.253, 0.262, 0.270.
+- **Found:** How a deck plays carries almost all of the signal: game statistics alone nearly
+  match everything, and dropping them is the only removal that hurts. Decisions per game is the
+  strongest single input; it rises with Trainers, so it reads as "this deck has things to do".
+  Given the rest, the start-of-game value gets a negative weight while the turn-5 value is
+  positive: the opening judgment is the misleading part, as in #36. Shape, goldfish and
+  uncertainty add nothing once game statistics are in, and uncertainty predicts nothing alone,
+  as expected of a trust signal. With the archived lists in the data the Trainer variants are
+  now ranked right (#37 had them backwards). Caveats: the statistics came from ~480 games per
+  deck, which would already measure its win rate directly; correlated inputs (turns, decisions)
+  make single weights unstable, so the group drops are the reliable reading; linear model.
+- **Next:** How few games the statistics need (8, 16, 32 per deck) before they stop helping; if
+  few suffice, a search that plays a handful of games per candidate and ranks by this model.

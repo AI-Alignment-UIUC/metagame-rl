@@ -63,23 +63,23 @@ value overrates Energy against Trainers, which capped that deck at 34 Energy; jo
   which biases every A5 measurement made with it. After three machine crashes, every job is
   capped at 80% of GPU memory and 16 of 20 threads, with a GPU watchdog.
 
-**Recent (log #33–37):** Paying nothing for deck-out wins cut the pilot's deck-outs from 39% to 27%
-at the same SimpleBot strength. With that pilot, the three builder designs of log #27 ran from the
-same 16 random decks for ~20 minutes each ([2000s result #1](results/2000s-result-1/)): the
-value-scored search's final deck beats the other two 76.5% and 74.3% and matches the archived field
-(50.3%). But it runs 34 Energy because the pilot's value overrates Energy against Trainers: putting
-Graham's Trainers back raises it to 63.2%. A matchup model fitted on all 95 decks of those runs
-generalizes to new decks (77.5% of winners right), yet every input mix ranks those Trainer variants
-wrong, because no deck in the data is a coherent Trainer-heavy list.
+**Recent (log #33–38):** Paying nothing for deck-out wins cut the pilot's deck-outs from 39% to 27%
+at the same SimpleBot strength. With that pilot, the value-scored search beat the other two builder
+designs of log #27 ([2000s result #1](results/2000s-result-1/)), but its deck runs 34 Energy because
+the pilot's start-of-game value overrates Energy; putting Graham's Trainers back raises it from 49.9%
+to 63.2% against the field. A deck-strength model with five input groups and no opponent context
+predicts held-out decks' win rates to within 0.058 (rank +0.89) and orders those Trainer variants
+correctly; nearly all of that comes from how the deck plays (decisions per game, endings, the value
+at turn 5), while the start-of-game value gets a negative weight once the rest is known.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. Put the Energy / Trainer contrast in the data: real games for controlled variants of good
-   shells and for the archived lists, refit the matchup model, and let the search swap blocks of
-   Energy for Trainers; measure how close a search then gets to Graham's list (68.1%).
-2. Replicate the builder comparison with two more seeds, with the refitted model as a fourth arm.
+1. How few games the deck-strength model's game statistics need (8-32 per deck); if few suffice,
+   a search that plays a handful of games per candidate and ranks by that model, compared with
+   result #1's value search on how close it gets to Graham's list (68.1% against the field).
+2. Replicate the builder comparison with two more seeds.
 3. Value-scored PSRO for longer, then on the full pool: do the archetypes and staples hold?
 4. A4 exit: the trained-policy matchup matrix with the token policy, scored with
    `rl/answer_key.py`; a rerun for stability; matchup directions against era write-ups.

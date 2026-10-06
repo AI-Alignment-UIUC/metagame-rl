@@ -15,9 +15,12 @@ const { Env } = require('./env.js');
 class Runner {
   // deckoutWin: the reward for a win by deck-out (a win by prizes or knockout is 1), so a pilot
   // can be paid less for stalling than for taking prizes. Losses are -1 either way.
-  constructor(encoder, { concurrency = 32, showOpponentDecklist = true, deckoutWin = 1 } = {}) {
+  // valueAtTurn: if set, each result also has valueAt { 1, 2 }: the value each seat's agent gave
+  // at its first decision on or after that game turn (null if the game ended first).
+  constructor(encoder, { concurrency = 32, showOpponentDecklist = true, deckoutWin = 1, valueAtTurn = 0 } = {}) {
     this.encoder = encoder;
     this.deckoutWin = deckoutWin;
+    this.valueAtTurn = valueAtTurn;
     this.concurrency = concurrency;
     this.showOpponentDecklist = showOpponentDecklist;
   }
@@ -33,7 +36,7 @@ class Runner {
       const env = new Env(enc, { u8: true, showOpponentDecklist: this.showOpponentDecklist });
       const usesEngine = [1, 2].some(s => agents[job.seats[s]].engine);
       const t = env.reset(job.deckA, job.deckB, job.seed, { backup: usesEngine });
-      return { job, env, t, id: jobCount++, last: { 1: -1, 2: -1 } };
+      return { job, env, t, id: jobCount++, last: { 1: -1, 2: -1 }, valueAt: { 1: null, 2: null } };
     };
     const fill = () => {
       while (slots.length < this.concurrency) {
@@ -53,7 +56,8 @@ class Runner {
       }
       for (const a of Object.values(agents)) if (a.forget) a.forget(slot.env.game);
       results.push({ seats: slot.job.seats, decks: [slot.job.deckName, slot.job.deckBName], seed: slot.job.seed,
-        winner: w, ending: slot.env.game.ending, steps: slot.t.steps, error: slot.t.error ? String(slot.t.error.message || slot.t.error) : undefined });
+        winner: w, ending: slot.env.game.ending, turns: slot.env.game.state.turn,
+        ...(this.valueAtTurn ? { valueAt: slot.valueAt } : {}), steps: slot.t.steps, error: slot.t.error ? String(slot.t.error.message || slot.t.error) : undefined });
     };
 
     fill();
@@ -85,6 +89,9 @@ class Runner {
         const out = await agents[name].act(group.map(s => ({ obs: s.t.obs, legal: s.t.legal, env: s.env })));
         const keep = record.has(name);
         group.forEach((s, i) => {
+          if (this.valueAtTurn && s.valueAt[s.t.playerId] === null && s.env.game.state.turn >= this.valueAtTurn) {
+            s.valueAt[s.t.playerId] = out[i].value;
+          }
           if (keep) {
             const k = rec.action.length;
             rec.obs.push(s.t.obs);
