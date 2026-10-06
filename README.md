@@ -82,8 +82,9 @@ The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 1. Two more seeds of the greedy and stochastic closed loops, and a longer stochastic run.
 2. Score the loops' populations with `rl/answer_key.py` (staples, archetypes, counters).
-3. Forced exploration of the Energy / Trainer balance (block swaps) in the closed loop; does it
-   reach Graham's list (68.1% against the field)?
+3. Card-agnostic exploration in the closed loop (multi-card random moves, a novelty bonus, a higher
+   entropy bonus in piloting): does self-discovery reach an Energy shell with Trainers? No
+   card-specific moves or human-derived priors (see A5 exit: self-discovery).
 4. A4 exit: the trained-policy matchup matrix with the token policy, scored with
    `rl/answer_key.py`; a rerun for stability; matchup directions against era write-ups.
 5. A wider or deeper token model (the supervised check shows it underfits).
