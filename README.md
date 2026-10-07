@@ -108,14 +108,15 @@ Replication is running, and Phase B (Worlds 2005) has started in parallel.
   still at ~30 Energy and below Graham's list (68.1%). Jobs are capped at ~80% of the machine
   after three crashes.
 
-**Recent (log #41–44):** A pilot trained only on random decks is calibrated but barely tells decks
+**Recent (log #41–45):** A pilot trained only on random decks is calibrated but barely tells decks
 apart, and searching with it still converged on 34-35 Energy decks; an edit head on its encoder got
 there faster, while a novelty bonus in the same embedding found a 10 / 24 / 26 Wigglytuff deck that
 beats the field 70.2% and every other arm 65-81% (one seed; the value scorer's deal noise, as large as
-real swap differences, is now fixable with `--common-deals`). Phase B started: on the engine's
-`worlds-2005` branch the Birds and ZapTurnDos lists build and play with 0 errors over 100 checked games,
-the 2005 legal pool is 959 cards of which the engine has 340, and the checks turned up three engine
-card bugs (fixed) and an env hang on "flip until tails" attacks (not yet fixed).
+real swap differences, is now fixable with `--common-deals`). Phase B started on the engine's
+`worlds-2005` branch: Birds and ZapTurnDos build and play, the 2005 legal pool is 959 cards of which the
+engine has 340, and a random-deck fuzz now plays 1,500/1,500 games over all of them after fixing an
+engine hang (Signs of Evolution) and three card bugs; a "flip until tails" hang in the env, which
+Geodude Fossil can also trigger in the 2000 full pool, is not yet fixed.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 

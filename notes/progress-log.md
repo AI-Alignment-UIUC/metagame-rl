@@ -923,3 +923,31 @@ Entry format:
   not configured. The builder must enforce one Pokémon ★ per deck.
 - **Next:** The flip cap in `env/engine.js`; the six audit fixes; 2005 rules in the env; then ZRE
   (Magmar TRR, Rayquaza ex DX) and Blastoise ex / Nidoqueen; push `worlds-2005` to the fork.
+
+### #45 · 2026-10-07 · B2 · Worlds 2005 engine under more tests: a fuzz, one engine hang fixed
+- **Done:** `notes/scripts/ryuu_2005_fuzz.js`: seeded SimpleBot games between random legal decks drawn
+  from all 340 2005-legal cards the engine has (card-agnostic shape: 2-3 Pokémon lines with their
+  evolutions, 13-19 basic Energy of their types, 0-3 Special Energy, random Trainers, one Pokémon ★),
+  forcing a random attack or Trainer on 30% of turns, with `--only N` to trace one game and a
+  diagnosis of stuck positions. Engine `worlds-2005` `47a7676`: Signs of Evolution (Caterpie RG,
+  Wurmple RS, Eevee SS) trims an illegal choice (mixed lines, a repeated name) to a legal one instead of
+  asking again, with a spec; rebuilt the sets and SimpleBot packages in the worktree (its build
+  predated the last commit). Fixed a harness flaw in the fuzz and in `ryuu_promo_fuzz.js`: after a
+  rejected forced action the store restores its backup as a new State object, and the loop let the
+  bots decide on the stale, half-applied one.
+- **Evidence:** Full sets spec suite on `worlds-2005`: 801/801 (the agent had run 110). The 2000
+  checks on `worlds-2005`: 68/68 interaction tests and 23/23 rulings, as on `sts-2000-pool`. The
+  agent's 27 interaction checks: 27/27. The new Caterpie spec fails on the old code and passes on the
+  fix. Fuzz, 1,500 games: first run hung at game 10 (profiled with `node --prof`: the loop was in Signs
+  of Evolution under SimpleBot's attack simulation); after the engine fix 1,481 finished, 16 stuck and
+  3 errors, all traced to the harness flaw; after that fix 1,500/1,500 finished in 123 s, with 456 of
+  483 attacks and 55/55 Trainers accepted at least once (the 27 never reached are mostly fossil
+  Pokémon, which the random decks do not build). `verify_enumerator` with the preload, 300 Birds /
+  ZapTurnDos games: 0 engine errors, 0 mismatches over 43,004 decisions and 15,347 prompts. Promo fuzz
+  (2000) after its fix: 400/400.
+- **Found:** "Ask again until the answer is legal" loops forever under a deterministic chooser; the
+  remaining prompt loops in the sets are coin-flip loops (Rayquaza ★, Linoone RS, Blastoise ex RG,
+  capped, and Geodude FO, a Base-era card). Geodude FO's "flip until tails" also hangs the env's
+  forced-flip legality trial, so the A5 full pool can hang the 2000 env too, not only 2005 decks.
+- **Next:** The flip cap in `env/engine.js` once the running experiments finish; fossil lines in the
+  fuzz's decks; the six audited EX text fixes.

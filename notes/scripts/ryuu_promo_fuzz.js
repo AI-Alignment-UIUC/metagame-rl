@@ -132,6 +132,9 @@ function playGame(deckA, deckB, seed) {
               return { result: 'error', actions, error: `forced ${move.constructor.name}: ${e && e.message || e}`, stack: e && e.stack };
             }
             count(`(rejected) ${use || move.constructor.name} -> ${e.message}`);
+            // The store restored its backup as a new State object; `st` above is the half-applied
+            // one, so read the state again before a bot decides on it.
+            continue;
           }
         }
       }
