@@ -1,6 +1,13 @@
-# Pokémon TCG metagame RL
+# Metagame RL: Pokémon TCG first
 
-A reinforcement-learning project on the Pokémon Trading Card Game. The environment is
+A reinforcement-learning project on trading-card-game metagames. It starts with the Pokémon
+Trading Card Game, and the methods are meant to carry over to other TCGs later. The roadmap:
+
+1. **July 2000 Super Trainer Showdown** (Pokémon, Base–Rocket): the proving ground (Phase A, now)
+2. **Worlds 2005, San Diego** (Pokémon, EX era): a full World Championships metagame (Phase B)
+3. **Magic: The Gathering**: a second game, once the approach holds on Pokémon (not started)
+
+The Pokémon environment is
 [evcoats/ryuu-play](https://github.com/evcoats/ryuu-play) (branch `sts-2000-pool`), a fork of
 [keeshii/ryuu-play](https://github.com/keeshii/ryuu-play), the open-source Pokémon TCG simulator
 in TypeScript. The fork is included here as the `ryuu-play/` submodule.
@@ -9,8 +16,8 @@ in TypeScript. The fork is included here as the `ryuu-play/` submodule.
 to build the decks worth playing, and then is checked against a real historical tournament
 metagame that it never saw.
 
-The end target is a full **World Championships metagame**. The first target is deliberately
-much smaller: the **July 2000 Super Trainer Showdown (California)**. It has a 56-card field
+For Pokémon, the end target is a full **World Championships metagame**. The first target is
+deliberately much smaller: the **July 2000 Super Trainer Showdown (California)**. It has a 56-card field
 that is now fully implemented in the engine and verified. Every part of the system gets built
 and proven there first.
 
