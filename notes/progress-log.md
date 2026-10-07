@@ -843,3 +843,50 @@ Entry format:
 - **Next:** Make the human-free pilot stronger before using it for deck building (longer training,
   a larger model since #25 found underfitting, exploiters, self-imitation), then rerun the closed
   loop with it. See `notes/analysis-2026-10-06.md`.
+
+### #43 · 2026-10-07 · A5 · The pilot's representations in the search: novelty finds a real deck, the edit head overfits the value faster
+- **Done:** `rl/deck_head.py` (commits `4b2075a`, `2cae02b`, `7055b83`): `GpuMatrix.values(states=True)`
+  returns the start-of-game states the value is read at and the encoder's token 0 (`TokenPointerNet.encode`
+  split out of `forward`; `env/remote_worker.js` reports which deals produced a reading). From them,
+  `--novelty λ`: score + λ × mean distance to the 5 nearest population decks in the pilot's embedding
+  (averaged over deals, weighted over the support; 1 = the population's median spacing), and `--edit-head`:
+  a pointer head on the frozen encoder scoring add / remove for every card (cross-attention initialized
+  from the pilot's), trained by regression on every climb step's scored swaps and proposing half of each
+  step's swaps. `--common-deals`: the value scorer's deals seeded by (opponent, deal) instead of the
+  candidate's position. `rl/tests.py` checks the head's shapes, 120 proposals for legality and the
+  novelty scale (PASS). Runs (`runs/head_novelty_run.sh`): log #34's settings (cold:16, seed 3, 8
+  iterations, 48 games per pair, 4 new decks, 120 s search) under the scratch pilot (#42), four arms:
+  base, head, novelty 0.03, both; panels of the four runs' supports plus the 24 archived lists, 60 games
+  per pair, under the scratch pilot and under result #1's pilot (`notes/data/eval/hn_panel_{scratch,orig}.json`).
+- **Evidence:** In the search, head swaps improved the value more often than random swaps in every
+  iteration (head arm mean 67% against 47%; both arm 61% against 45%) and gave each step's best
+  candidate in most iterations, but scoring the states halved throughput (29,310 candidates per search
+  against 57,310). Equilibrium decks (Pokémon / Trainers / Energy): base 20 / 6 / 34 (0.87),
+  head 21 / 4 / 35 (0.52), both 17 / 7 / 35 (0.73), novelty one deck at 1.00, Wigglytuff + Magmar
+  10 / 24 / 26 with 4 Super Potion, 3 Bill, 3 Energy Retrieval. Against the archived field (scratch
+  pilot / result #1's pilot): base 55.3 / 38.7%, head 47.3 / 30.1, novelty **70.2 / 45.7**, both
+  50.5 / 30.5; exploitability in the panel 0.81 / 0.76 / 0.62 / 0.70 (scratch pilot). The novelty
+  mixture beats base, head and both 80.9, 65.0, 69.8% (scratch) and 63.8, 76.8, 75.2% (result #1's
+  pilot) and holds 0.42 of the panel's Nash under the scratch pilot.
+- **Found:** (1) The value search's attractor is a Pokémon pile with 34+ Energy and almost no
+  Trainers, even under the human-free pilot. The edit head learns the scorer's preferences and so
+  reaches that attractor faster: more optimization pressure on the same proxy, worse real decks. The
+  novelty bonus pushed the search off it and found a Wigglytuff deck with a Trainer package, the
+  field's most-played archetype (10 of 24), in its first iteration. One seed: replication running
+  (`runs/hn_replicate.sh`). (2) The value scorer's deals depended on a candidate's position in the
+  batch, so the same deck scored with a standard deviation of 0.018-0.026 across positions, as large as
+  real one-card swaps (0.022-0.038): the greedy value search of result #1 and logs #34-41 partly chased
+  deal luck. With `--common-deals` the same deck scores identically and swap differences shrink to
+  0.013-0.023. (3) The pilot's count embedding (`aux`, one row per count) is still at its random
+  initialization in both pilots (rows identical between them at every count), so counts are read
+  through fixed random vectors with no order; counts never seen in training (archived lists hold at
+  most 19 of one basic Energy, result #1's builder reached 31) map to arbitrary vectors. A plausible
+  part of #36's Energy overrating, not tested. (4) A loop variable in the head's statistics shadowed
+  the proposal count, so the first head and both runs proposed 8 decks an iteration; they were rerun
+  (the buggy runs are in `runs/hn-buggy/`). The rerun of both also dropped no-op swaps from the head's
+  data, which the head arm did not.
+- **Next:** Seeds 4-5 of base and novelty, and both with common deals (running). If novelty holds,
+  make it the default and tune λ (or adapt it, DvD); try an ordinal count encoding (count as a number
+  plus a thermometer code) in the next pilot. Keep the edit head only as a proposal source under a
+  pessimistic or trust-region acceptance. Phase B started in parallel: the Birds list and the 2005
+  legal pool (engine branch `worlds-2005`).

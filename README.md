@@ -53,15 +53,16 @@ gives a biased or blind builder, so pilot strength is the bottleneck.
 ## Status
 
 <!-- status:start -->
-*Updated 2026-10-06.*
+*Updated 2026-10-07.*
 
 **Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup
 matrix. In A5, scoring candidate decks by the pilot's own value beat the other builder designs
 ([2000s result #1](results/2000s-result-1/)), and piloting every PSRO iteration made the first built
-metagame to beat the archived field (60.7%), still Energy-heavy. Every builder sees decks through the
-pilot: one trained on human lists is strong but biased, while one trained only on random decks is
-calibrated and unbiased but too weak to tell good decks from bad, so a stronger human-free pilot comes
-next ([analysis and plan](notes/analysis-2026-10-06.md)).
+metagame to beat the archived field (60.7%), but value-driven search keeps converging on Energy-heavy
+decks with few Trainers. A novelty bonus in the pilot's own deck embedding broke that pattern in one
+seed: it found a Wigglytuff deck with a full Trainer package that beats the field 70% under the
+human-free pilot, while an edit head trained on the value only reached the Energy-heavy decks faster.
+Replication is running, and Phase B (Worlds 2005) has started in parallel.
 
 **Earlier work:**
 
@@ -107,27 +108,28 @@ next ([analysis and plan](notes/analysis-2026-10-06.md)).
   still at ~30 Energy and below Graham's list (68.1%). Jobs are capped at ~80% of the machine
   after three crashes.
 
-**Recent (log #41–42):** Sampling deck choices (τ = 0.03) in the closed loop kept decks human-like
-and the equilibrium diverse but weaker (33-43% against the field). A pilot trained only on random
-decks, never on a human list, reaches 78.7% against SimpleBot on the archived decks (human-trained:
-92.6%) and 67.3% on unseen random decks (55.5%), stalls less (19% deck-outs), and its value no longer
-overrates Energy; but deck choice barely moves its results (2-point spread across log #36's variants,
-against 18), so it gives the builder little signal yet.
+**Recent (log #41–43):** Sampling deck choices kept decks human-like but weaker, and a pilot trained
+only on random decks is calibrated and generalizes better but barely tells decks apart (2-point spread
+across #36's variants, against 18). Searching with that pilot still converged on 34-35 Energy decks with
+4-7 Trainers, and an edit head on its encoder, though its swaps raise the value more often than random
+ones (67% against 47%), got there faster; a novelty bonus in the same embedding instead found a
+10 / 24 / 26 Wigglytuff deck that beats the field 70.2% and every other arm 65-81% (one seed). The value
+scorer was also found to give each candidate different deals, noise as large as real swap differences,
+now fixed by `--common-deals`.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
-**Next:** (from [the 2026-10-06 analysis](notes/analysis-2026-10-06.md))
+**Next:**
 
-1. A stronger human-free pilot: batch league snapshots (collection grew from 7 s to 55 s an
-   iteration), then a longer run with a larger token model, self-imitation and auxiliary heads;
-   judged by how much deck choice moves its results.
-2. Search safeguards: pessimistic acceptance (ensemble mean − κ·std), a trust region around
-   real-tested decks, and the real-win-rate-vs-search-pressure curve.
-3. A regret-curated deck curriculum for the pilot (PLR / ACCEL) in place of per-iteration piloting.
-4. Response diversity with an adaptive weight (DPP gain, DvD) instead of temperature; α-Rank beside
-   Nash.
-5. Replication: two more seeds of result #1 and both closed loops.
-6. The full card pool with an engine-bug detector; then B1 (Worlds 2005 lists, EX-set checks).
+1. Replicate the novelty result (seeds 4-5) and test common deals; if it holds, make novelty the default
+   and adapt its weight (DvD) instead of fixing it at 0.03.
+2. A stronger human-free pilot: batch league snapshots, then a longer run with a larger token model and
+   an ordinal count encoding (the count embedding never trained, #43), judged by how much deck choice
+   moves its results.
+3. Search safeguards: pessimistic acceptance, a trust region around real-tested decks; keep the edit head
+   only as a proposal source under them.
+4. A regret-curated deck curriculum for the pilot (PLR / ACCEL), with novelty finding candidates.
+5. Phase B in parallel: the Birds list buildable, the 2005 legal pool, then the next-cheapest lists.
 <!-- status:end -->
 
 ---
