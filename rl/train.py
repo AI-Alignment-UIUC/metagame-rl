@@ -192,7 +192,8 @@ def build_model(args, info):
         t = info["tokens"]
         return build_token_model(str(ROOT / "notes/data/cards/pool.json"), str(ROOT / "notes/data/cards/text_emb.npy"),
                                  t["names"], t["globF"], t["slotF"], t["maxTok"], t["maxCand"],
-                                 d=args.d, layers=args.tok_layers, heads=args.heads)
+                                 d=args.d, layers=args.tok_layers, heads=args.heads,
+                                 count_features=args.count_features)
     i = info["identity"] if "identity" in info else info
     return IdentityMLP(i["obsSize"], i["actionSize"], args.hidden, args.layers)
 
@@ -225,6 +226,8 @@ def main(argv=None):
     ap.add_argument("--d", type=int, default=192, help="token model width")
     ap.add_argument("--tok-layers", type=int, default=3)
     ap.add_argument("--heads", type=int, default=4)
+    ap.add_argument("--count-features", action="store_true",
+                    help="token model: ordered count features (rl/token_model.py count_features)")
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--epochs", type=int, default=3)
     ap.add_argument("--minibatch", type=int, default=4096)

@@ -110,16 +110,32 @@ class CrossBlock(nn.Module):
         return c + self.ff(self.ln2(c))
 
 
+# Ordered features of a token's aux value (the copy count of a card token, or a slot index), added
+# with count_features=True: the value itself on two scales and a thermometer code (aux >= k), so
+# count n sits between n-1 and n+1 and a count never seen in training is read from the ones that
+# were. The aux embedding alone gives every count an unrelated random vector that barely moves in
+# training (2-6% of its norm, log #46), and a count never seen is pure initialization.
+COUNT_THRESHOLDS = (1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 18, 21, 25, 30, 35, 40)
+COUNT_F = 2 + len(COUNT_THRESHOLDS)
+
+
+def count_features(aux: torch.Tensor) -> torch.Tensor:
+    a = aux.float().unsqueeze(-1)
+    k = torch.tensor(COUNT_THRESHOLDS, dtype=torch.float32, device=aux.device)
+    return torch.cat([a / 8.0, a / 32.0, (a >= k).float()], dim=-1)
+
+
 class TokenPointerNet(nn.Module):
     def __init__(self, card_table: list, text_emb: np.ndarray, n_names: int, glob_f: int, slot_f: int,
-                 max_tok: int, max_cand: int, d: int = 192, layers: int = 3, heads: int = 4):
+                 max_tok: int, max_cand: int, d: int = 192, layers: int = 3, heads: int = 4,
+                 count_features: bool = False):
         super().__init__()
         feats = torch.from_numpy(card_feature_matrix(card_table))
         self.register_buffer("card_feats", feats)
         self.register_buffer("text_emb", torch.from_numpy(text_emb.astype(np.float32)))
         n_cards = feats.shape[0]
         self.cfg = dict(kind="TokenPointerNet", n_names=n_names, glob_f=glob_f, slot_f=slot_f, max_tok=max_tok,
-                        max_cand=max_cand, d=d, layers=layers, heads=heads)
+                        max_cand=max_cand, d=d, layers=layers, heads=heads, count_features=count_features)
         self.max_tok, self.max_cand, self.glob_f, self.slot_f = max_tok, max_cand, glob_f, slot_f
         self.action_size = max_cand
         self.card_struct = nn.Linear(feats.shape[1], d)
@@ -128,6 +144,10 @@ class TokenPointerNet(nn.Module):
         nn.init.zeros_(self.card_resid.weight)
         self.kind = nn.Embedding(NUM_KINDS, d)
         self.aux = nn.Embedding(256, d)
+        self.count_features = count_features
+        if count_features:
+            nn.init.normal_(self.aux.weight, std=0.02)   # small, so training can actually move it
+            self.count_proj = nn.Linear(COUNT_F, d)
         self.glob = nn.Linear(glob_f, d)
         self.slot_num = nn.Linear(slot_f, d)
         self.blocks = nn.ModuleList([Block(d, heads, 2 * d) for _ in range(layers)])
@@ -154,6 +174,8 @@ class TokenPointerNet(nn.Module):
         B, T = tok_card.shape
         mask = tok_kind > 0
         x = self.card_emb(tok_card) + self.kind(tok_kind) + self.aux(tok_aux)
+        if self.count_features:
+            x = x + self.count_proj(count_features(tok_aux))
         g = self.glob(glob.float() / 48.0)[:, None, :]
         s = self.slot_num(slots.float().view(B, 12, self.slot_f) / 48.0)
         pad = torch.zeros(B, T - 13, x.shape[-1], dtype=x.dtype, device=x.device)

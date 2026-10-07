@@ -32,7 +32,7 @@ def as_spec(x: str, greedy: bool = True) -> str:
         from rl.token_model import build_token_model, export_token_onnx
         m = build_token_model(str(ROOT / "notes/data/cards/pool.json"), str(ROOT / "notes/data/cards/text_emb.npy"),
                               cfg["n_names"], cfg["glob_f"], cfg["slot_f"], cfg["max_tok"], cfg["max_cand"],
-                              d=cfg["d"], layers=cfg["layers"], heads=cfg["heads"])
+                              d=cfg["d"], layers=cfg["layers"], heads=cfg["heads"], count_features=cfg.get("count_features", False))
         m.load_state_dict(state["model"])
         export_token_onnx(m, str(onnx))
         return f"onnxtok:{onnx}" + (":greedy" if greedy else "")
