@@ -24,6 +24,7 @@ import collections
 import glob
 import html
 import json
+import os
 import re
 import urllib.request
 from pathlib import Path
@@ -43,7 +44,8 @@ ARCHIVE_CODE = {"HS": "hgss1", "UL": "hgss2", "UD": "hgss3", "TM": "hgss4", "CL"
                 "SV": "pl3", "AR": "pl4"}
 # The engine's printed set codes (end of fullName) -> pokemon-tcg-data ids.
 ENGINE_SET = {"BS": "base1", "JU": "base2", "FO": "base3", "TR": "base5", "PR": "basep",
-              "RS": "ex1", "SS": "ex2", "RG": "ex6",
+              "RS": "ex1", "SS": "ex2", "DR": "ex3", "MA": "ex4", "HL": "ex5", "RG": "ex6", "TRR": "ex7",
+              "DX": "ex8", "EM": "ex9", "POP1": "pop1", "NP": "np",
               "DP": "dp1", "MD": "dp5", "LA": "dp6", "SF": "dp7", "GE": "dp4", "PL": "pl1",
               "HGSS": "hgss1", "UNL": "hgss2", "UND": "hgss3", "TRM": "hgss4", "COL": "col1",
               "BW": "bw1", "EPO": "bw2", "NVI": "bw3", "NXD": "bw4", "DEX": "bw5", "DRX": "bw6", "BCR": "bw7",
@@ -136,7 +138,8 @@ def parse_archive(path: Path) -> list:
 def engine_cards() -> dict:
     """norm(name) -> list of pokemon-tcg-data set ids (None where the engine's set code is unmapped)."""
     idx = collections.defaultdict(list)
-    for f in glob.glob(str(ROOT / "ryuu-play/packages/sets/src/**/*.ts"), recursive=True):
+    engine = Path(os.environ.get("RYUU_PLAY") or ROOT / "ryuu-play")          # the engine checkout (or a worktree)
+    for f in glob.glob(str(engine / "packages/sets/src/**/*.ts"), recursive=True):
         t = open(f, encoding="utf-8").read()
         q = r"'((?:[^'\\]|\\.)*)'"
         nm = re.search(r"public name: string = " + q, t)

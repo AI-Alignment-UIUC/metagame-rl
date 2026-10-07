@@ -1,0 +1,10597 @@
+{
+ "format": "2004-05 Modified (Worlds 2005)",
+ "sets": [
+  "ex1",
+  "ex2",
+  "ex3",
+  "ex4",
+  "ex5",
+  "ex6",
+  "ex7",
+  "ex8",
+  "ex9",
+  "pop1",
+  "tk1a",
+  "tk1b"
+ ],
+ "promos": [
+  "np",
+  1,
+  27
+ ],
+ "excluded_by_date": [
+  "tk2a",
+  "tk2b"
+ ],
+ "printings": 1014,
+ "distinct_cards": 959,
+ "engine_printings": 363,
+ "engine_distinct_cards": 319,
+ "engine_legal_fullnames": [
+  "Aerodactyl ex SS",
+  "Aggron RS",
+  "Aggron ex SS",
+  "Anorith SS",
+  "Anorith SS-2",
+  "Arbok SS",
+  "Arcanine RG",
+  "Arcanine SS",
+  "Armaldo SS",
+  "Aron RS",
+  "Aron RS-2",
+  "Aron RS-3",
+  "Aron SS",
+  "Articuno ex RG",
+  "Azumarill SS",
+  "Azurill SS",
+  "Baltoy SS",
+  "Battle Frontier EM",
+  "Beautifly RS",
+  "Beedrill RG",
+  "Bellsprout RG",
+  "Bill's Maintenance RG",
+  "Blastoise ex RG",
+  "Blaziken RS",
+  "Blaziken RS-2",
+  "Breloom RS",
+  "Breloom SS",
+  "Bulbasaur RG",
+  "Bulbasaur RG-2",
+  "Butterfree RG",
+  "Cacnea SS",
+  "Cacnea SS-2",
+  "Cacturne SS",
+  "Camerupt RS",
+  "Carvanha RS",
+  "Cascoon RS",
+  "Caterpie RG",
+  "Celio's Network RG",
+  "Chansey RG",
+  "Chansey ex RS",
+  "Charizard ex RG",
+  "Charmander RG",
+  "Charmander RG-2",
+  "Charmander RG-3",
+  "Charmeleon RG",
+  "Claw Fossil SS",
+  "Clefable ex RG",
+  "Clefairy RG",
+  "Cloyster RG",
+  "Combusken RS",
+  "Combusken RS-2",
+  "Cradily SS",
+  "Cubone RG",
+  "Cyndaquil SS",
+  "Darkness Energy RS",
+  "Delcatty RS",
+  "Delcatty RS-2",
+  "Delcatty SS",
+  "Dewgong RG",
+  "Diglett RG",
+  "Ditto RG",
+  "Dodrio RG",
+  "Doduo RG",
+  "Donphan RS",
+  "Double Full Heal SS",
+  "Drowzee RG",
+  "Dugtrio RG",
+  "Dunsparce SS",
+  "Dusclops SS",
+  "Duskull SS",
+  "Duskull SS-2",
+  "Dustox RS",
+  "EXP.ALL RG",
+  "Eevee SS",
+  "Ekans SS",
+  "Electabuzz SS",
+  "Electabuzz ex RS",
+  "Electrike RS",
+  "Electrike RS-2",
+  "Electrike RS-3",
+  "Electrode ex RG",
+  "Elekid SS",
+  "Energy Removal 2 RG",
+  "Energy Removal 2 RS",
+  "Energy Restore RS",
+  "Energy Search RS",
+  "Energy Switch RG",
+  "Energy Switch RS",
+  "Espeon SS",
+  "Exeggcute RG",
+  "Exeggutor RG",
+  "Farfetch'd RG",
+  "Fearow RG",
+  "Fearow SS",
+  "Fighting Energy RS",
+  "Fire Energy RS",
+  "Flareon SS",
+  "Gardevoir RS",
+  "Gardevoir ex SS",
+  "Gastly RG",
+  "Gengar ex RG",
+  "Goldeen RS",
+  "Golduck SS",
+  "Grass Energy RS",
+  "Great Ball RG",
+  "Grovyle RS",
+  "Grovyle RS-2",
+  "Growlithe RG",
+  "Growlithe SS",
+  "Gyarados ex RG",
+  "Hariyama RS",
+  "Hariyama RS-2",
+  "Haunter RG",
+  "Hitmonchan ex RS",
+  "Hypno RG",
+  "Illumise SS",
+  "Ivysaur RG",
+  "Jigglypuff RG",
+  "Jolteon SS",
+  "Kabuto SS",
+  "Kabutops ex SS",
+  "Kakuna RG",
+  "Kangaskhan RG",
+  "Kecleon SS",
+  "Kingler RG",
+  "Kirlia RS",
+  "Kirlia RS-2",
+  "Kirlia SS",
+  "Koffing RS",
+  "Krabby RG",
+  "Lady Outing RS",
+  "Lairon RS",
+  "Lairon RS-2",
+  "Lairon SS",
+  "Lanette's Net Search SS",
+  "Lapras ex RS",
+  "Lickitung RG",
+  "Life Herb RG",
+  "Lightning Energy RS",
+  "Lileep SS",
+  "Lileep SS-2",
+  "Linoone RS",
+  "Linoone SS",
+  "Lombre SS",
+  "Lombre SS-2",
+  "Lotad SS",
+  "Lotad SS-2",
+  "Ludicolo SS",
+  "Lum Berry RS",
+  "Lunatone SS",
+  "Magikarp RG",
+  "Magmar ex RS",
+  "Magnemite RG",
+  "Magneton RG",
+  "Makuhita RS",
+  "Makuhita RS-2",
+  "Makuhita RS-3",
+  "Manectric RS",
+  "Manectric RS-2",
+  "Mankey RG",
+  "Marill SS",
+  "Marowak RG",
+  "Marshtomp RS",
+  "Marshtomp RS-2",
+  "Mawile SS",
+  "Meowth RG",
+  "Metal Energy RS",
+  "Metapod RG",
+  "Mewtwo ex RS",
+  "Mightyena RS",
+  "Mightyena RS-2",
+  "Moltres ex RG",
+  "Mr. Mime ex RG",
+  "Mr. Mime ex RG-2",
+  "Mr. Stone's Project EM",
+  "Mt. Moon RG",
+  "Mudkip RS",
+  "Mudkip RS-2",
+  "Multi Energy RG",
+  "Multi Energy SS",
+  "Murkrow SS",
+  "Mysterious Fossil SS",
+  "Natu SS",
+  "Nidoking RG",
+  "Nidoqueen RG",
+  "Nidoran F RG",
+  "Nidoran M RG",
+  "Nidorina RG",
+  "Nidorino RG",
+  "Nosepass RS",
+  "Numel RS",
+  "Nuzleaf SS",
+  "Nuzleaf SS-2",
+  "Omanyte SS",
+  "Omastar SS",
+  "Onix RG",
+  "Onix SS",
+  "Oran Berry RS",
+  "Paras RG",
+  "Parasect RG",
+  "Pelipper RS",
+  "Pelipper SS",
+  "Persian RG",
+  "Phanpy RS",
+  "Pichu SS",
+  "Pidgeot RG",
+  "Pidgeotto RG",
+  "Pidgey RG",
+  "Pikachu RG",
+  "Pikachu SS",
+  "Poke Ball RG",
+  "PokeDex HANDY909 RG",
+  "Pokemon Reversal RG",
+  "Poké Ball RS",
+  "PokéNav RS",
+  "Pokémon Reversal RS",
+  "Poliwag RG",
+  "Poliwhirl RG",
+  "Poliwrath RG",
+  "Ponyta RG",
+  "Poochyena RS",
+  "Poochyena RS-2",
+  "Poochyena RS-3",
+  "Porygon RG",
+  "Potion RG",
+  "Potion RS",
+  "Primeape RG",
+  "Prof. Oak's Research RG",
+  "Professor Birch RS",
+  "Psychic Energy RS",
+  "Psyduck SS",
+  "Quilava SS",
+  "Raichu RG",
+  "Raichu ex SS",
+  "Rainbow Energy RS",
+  "Ralts RS",
+  "Ralts RS-2",
+  "Ralts RS-3",
+  "Ralts SS",
+  "Rapidash RG",
+  "Rare Candy SS",
+  "Raticate RG",
+  "Rattata RG",
+  "Rayquaza ★ DX",
+  "Root Fossil SS",
+  "Sableye SS",
+  "Sandshrew SS",
+  "Sandslash SS",
+  "Sceptile RS",
+  "Sceptile RS-2",
+  "Scott EM",
+  "Scyther RG",
+  "Scyther ex RS",
+  "Seaking RS",
+  "Seedot SS",
+  "Seedot SS-2",
+  "Seel RG",
+  "Seviper SS",
+  "Sharpedo RS",
+  "Shellder RG",
+  "Shiftry SS",
+  "Shiftry SS-2",
+  "Shroomish RS",
+  "Shroomish SS",
+  "Silcoon RS",
+  "Skitty RS",
+  "Skitty RS-2",
+  "Skitty RS-3",
+  "Skitty SS",
+  "Slaking RS",
+  "Slakoth RS",
+  "Slakoth SS",
+  "Slowbro RG",
+  "Slowpoke RG",
+  "Sneasel ex RS",
+  "Snorlax RG",
+  "Solrock SS",
+  "Spearow RG",
+  "Spearow SS",
+  "Squirtle RG",
+  "Squirtle RG-2",
+  "Steelix SS",
+  "Super Scoop Up RG",
+  "Swampert RS",
+  "Swampert RS-2",
+  "Swellow RS",
+  "Switch RG",
+  "Switch RS",
+  "Taillow RS",
+  "Tangela RG",
+  "Tauros RG",
+  "Torchic RS",
+  "Torchic RS-2",
+  "Trapinch SS",
+  "Treecko RS",
+  "Treecko RS-2",
+  "Typhlosion ex SS",
+  "Umbreon SS",
+  "VS Seeker RG",
+  "Vaporeon SS",
+  "Venomoth RG",
+  "Venonat RG",
+  "Venusaur ex RG",
+  "Victreebel RG",
+  "Vigoroth RS",
+  "Vigoroth SS",
+  "Volbeat SS",
+  "Voltorb RG",
+  "Wailmer RS",
+  "Wailmer SS",
+  "Wailord RS",
+  "Wailord ex SS",
+  "Wally's Training SS",
+  "Wartortle RG",
+  "Water Energy RS",
+  "Weedle RG",
+  "Weepinbell RG",
+  "Weezing RS",
+  "Wigglytuff RG",
+  "Wingull RS",
+  "Wingull SS",
+  "Wobbuffet SS",
+  "Wurmple RS",
+  "Wynaut SS",
+  "Xatu SS",
+  "Zangoose SS",
+  "Zapdos ex RG",
+  "Zigzagoon RS",
+  "Zigzagoon SS"
+ ],
+ "cards": [
+  {
+   "id": "ex1-1",
+   "name": "Aggron",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-2",
+   "name": "Beautifly",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-3",
+   "name": "Blaziken",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-4",
+   "name": "Camerupt",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-5",
+   "name": "Delcatty",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-6",
+   "name": "Dustox",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-7",
+   "name": "Gardevoir",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-8",
+   "name": "Hariyama",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-9",
+   "name": "Manectric",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-10",
+   "name": "Mightyena",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-11",
+   "name": "Sceptile",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-12",
+   "name": "Slaking",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-13",
+   "name": "Swampert",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-14",
+   "name": "Wailord",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-15",
+   "name": "Blaziken",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-16",
+   "name": "Breloom",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-17",
+   "name": "Donphan",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-18",
+   "name": "Nosepass",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-19",
+   "name": "Pelipper",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-20",
+   "name": "Sceptile",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-21",
+   "name": "Seaking",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-22",
+   "name": "Sharpedo",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-23",
+   "name": "Swampert",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-24",
+   "name": "Weezing",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-25",
+   "name": "Aron",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-26",
+   "name": "Cascoon",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-27",
+   "name": "Combusken",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-28",
+   "name": "Combusken",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-29",
+   "name": "Delcatty",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-30",
+   "name": "Electrike",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-31",
+   "name": "Grovyle",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-32",
+   "name": "Grovyle",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-33",
+   "name": "Hariyama",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-34",
+   "name": "Kirlia",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-35",
+   "name": "Kirlia",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-36",
+   "name": "Lairon",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-37",
+   "name": "Lairon",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-38",
+   "name": "Linoone",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-39",
+   "name": "Manectric",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-40",
+   "name": "Marshtomp",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-41",
+   "name": "Marshtomp",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-42",
+   "name": "Mightyena",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-43",
+   "name": "Silcoon",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-44",
+   "name": "Skitty",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-45",
+   "name": "Slakoth",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-46",
+   "name": "Swellow",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-47",
+   "name": "Vigoroth",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-48",
+   "name": "Wailmer",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-49",
+   "name": "Aron",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-50",
+   "name": "Aron",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-51",
+   "name": "Carvanha",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-52",
+   "name": "Electrike",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-53",
+   "name": "Electrike",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-54",
+   "name": "Koffing",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-55",
+   "name": "Goldeen",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-56",
+   "name": "Makuhita",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-57",
+   "name": "Makuhita",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-58",
+   "name": "Makuhita",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-59",
+   "name": "Mudkip",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-60",
+   "name": "Mudkip",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-61",
+   "name": "Numel",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-62",
+   "name": "Phanpy",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-63",
+   "name": "Poochyena",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-64",
+   "name": "Poochyena",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-65",
+   "name": "Poochyena",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-66",
+   "name": "Ralts",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-67",
+   "name": "Ralts",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-68",
+   "name": "Ralts",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-69",
+   "name": "Shroomish",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-70",
+   "name": "Skitty",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-71",
+   "name": "Skitty",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-72",
+   "name": "Taillow",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-73",
+   "name": "Torchic",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-74",
+   "name": "Torchic",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-75",
+   "name": "Treecko",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-76",
+   "name": "Treecko",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-77",
+   "name": "Wingull",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-78",
+   "name": "Wurmple",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-79",
+   "name": "Zigzagoon",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-80",
+   "name": "Energy Removal 2",
+   "set": "ex1",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-81",
+   "name": "Energy Restore",
+   "set": "ex1",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-82",
+   "name": "Energy Switch",
+   "set": "ex1",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-83",
+   "name": "Lady Outing",
+   "set": "ex1",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-84",
+   "name": "Lum Berry",
+   "set": "ex1",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Pokémon Tool"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-85",
+   "name": "Oran Berry",
+   "set": "ex1",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Pokémon Tool"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-86",
+   "name": "Poké Ball",
+   "set": "ex1",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-87",
+   "name": "Pokémon Reversal",
+   "set": "ex1",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-88",
+   "name": "PokéNav",
+   "set": "ex1",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-89",
+   "name": "Professor Birch",
+   "set": "ex1",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-90",
+   "name": "Energy Search",
+   "set": "ex1",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-91",
+   "name": "Potion",
+   "set": "ex1",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-92",
+   "name": "Switch",
+   "set": "ex1",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-93",
+   "name": "Darkness Energy",
+   "set": "ex1",
+   "supertype": "Energy",
+   "subtypes": [
+    "Special"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-94",
+   "name": "Metal Energy",
+   "set": "ex1",
+   "supertype": "Energy",
+   "subtypes": [
+    "Special"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-95",
+   "name": "Rainbow Energy",
+   "set": "ex1",
+   "supertype": "Energy",
+   "subtypes": [
+    "Special"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-96",
+   "name": "Chansey ex",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-97",
+   "name": "Electabuzz ex",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-98",
+   "name": "Hitmonchan ex",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-99",
+   "name": "Lapras ex",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-100",
+   "name": "Magmar ex",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-101",
+   "name": "Mewtwo ex",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-102",
+   "name": "Scyther ex",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-103",
+   "name": "Sneasel ex",
+   "set": "ex1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-104",
+   "name": "Grass Energy",
+   "set": "ex1",
+   "supertype": "Energy",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-105",
+   "name": "Fighting Energy",
+   "set": "ex1",
+   "supertype": "Energy",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-106",
+   "name": "Water Energy",
+   "set": "ex1",
+   "supertype": "Energy",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-107",
+   "name": "Psychic Energy",
+   "set": "ex1",
+   "supertype": "Energy",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-108",
+   "name": "Fire Energy",
+   "set": "ex1",
+   "supertype": "Energy",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex1-109",
+   "name": "Lightning Energy",
+   "set": "ex1",
+   "supertype": "Energy",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-1",
+   "name": "Armaldo",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-2",
+   "name": "Cacturne",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-3",
+   "name": "Cradily",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-4",
+   "name": "Dusclops",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-5",
+   "name": "Flareon",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-6",
+   "name": "Jolteon",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-7",
+   "name": "Ludicolo",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-8",
+   "name": "Lunatone",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-9",
+   "name": "Mawile",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-10",
+   "name": "Sableye",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-11",
+   "name": "Seviper",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-12",
+   "name": "Shiftry",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-13",
+   "name": "Solrock",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-14",
+   "name": "Zangoose",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-15",
+   "name": "Arcanine",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-16",
+   "name": "Espeon",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-17",
+   "name": "Golduck",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-18",
+   "name": "Kecleon",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-19",
+   "name": "Omastar",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-20",
+   "name": "Pichu",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-21",
+   "name": "Sandslash",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-22",
+   "name": "Shiftry",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-23",
+   "name": "Steelix",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-24",
+   "name": "Umbreon",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-25",
+   "name": "Vaporeon",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-26",
+   "name": "Wobbuffet",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-27",
+   "name": "Anorith",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-28",
+   "name": "Anorith",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-29",
+   "name": "Arbok",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-30",
+   "name": "Azumarill",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-31",
+   "name": "Azurill",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-32",
+   "name": "Baltoy",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-33",
+   "name": "Breloom",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-34",
+   "name": "Delcatty",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-35",
+   "name": "Electabuzz",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-36",
+   "name": "Elekid",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-37",
+   "name": "Fearow",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-38",
+   "name": "Illumise",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-39",
+   "name": "Kabuto",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-40",
+   "name": "Kirlia",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-41",
+   "name": "Lairon",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-42",
+   "name": "Lileep",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-43",
+   "name": "Lileep",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-44",
+   "name": "Linoone",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-45",
+   "name": "Lombre",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-46",
+   "name": "Lombre",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-47",
+   "name": "Murkrow",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-48",
+   "name": "Nuzleaf",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-49",
+   "name": "Nuzleaf",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-50",
+   "name": "Pelipper",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-51",
+   "name": "Quilava",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-52",
+   "name": "Vigoroth",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-53",
+   "name": "Volbeat",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-54",
+   "name": "Wynaut",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-55",
+   "name": "Xatu",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-56",
+   "name": "Aron",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-57",
+   "name": "Cacnea",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-58",
+   "name": "Cacnea",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-59",
+   "name": "Cyndaquil",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-60",
+   "name": "Dunsparce",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-61",
+   "name": "Duskull",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-62",
+   "name": "Duskull",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-63",
+   "name": "Eevee",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-64",
+   "name": "Ekans",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-65",
+   "name": "Growlithe",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-66",
+   "name": "Lotad",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-67",
+   "name": "Lotad",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-68",
+   "name": "Marill",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-69",
+   "name": "Natu",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-70",
+   "name": "Omanyte",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-71",
+   "name": "Onix",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-72",
+   "name": "Pikachu",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-73",
+   "name": "Psyduck",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-74",
+   "name": "Ralts",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-75",
+   "name": "Sandshrew",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-76",
+   "name": "Seedot",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-77",
+   "name": "Seedot",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-78",
+   "name": "Shroomish",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-79",
+   "name": "Skitty",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-80",
+   "name": "Slakoth",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-81",
+   "name": "Spearow",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-82",
+   "name": "Trapinch",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-83",
+   "name": "Wailmer",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-84",
+   "name": "Wingull",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-85",
+   "name": "Zigzagoon",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-86",
+   "name": "Double Full Heal",
+   "set": "ex2",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-87",
+   "name": "Lanette's Net Search",
+   "set": "ex2",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-88",
+   "name": "Rare Candy",
+   "set": "ex2",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-89",
+   "name": "Wally's Training",
+   "set": "ex2",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-90",
+   "name": "Claw Fossil",
+   "set": "ex2",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-91",
+   "name": "Mysterious Fossil",
+   "set": "ex2",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-92",
+   "name": "Root Fossil",
+   "set": "ex2",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-93",
+   "name": "Multi Energy",
+   "set": "ex2",
+   "supertype": "Energy",
+   "subtypes": [
+    "Special"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-94",
+   "name": "Aerodactyl ex",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-95",
+   "name": "Aggron ex",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-96",
+   "name": "Gardevoir ex",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-97",
+   "name": "Kabutops ex",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-98",
+   "name": "Raichu ex",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-99",
+   "name": "Typhlosion ex",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex2-100",
+   "name": "Wailord ex",
+   "set": "ex2",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex3-1",
+   "name": "Absol",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-2",
+   "name": "Altaria",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-3",
+   "name": "Crawdaunt",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-4",
+   "name": "Flygon",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-5",
+   "name": "Golem",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-6",
+   "name": "Grumpig",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-7",
+   "name": "Minun",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-8",
+   "name": "Plusle",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-9",
+   "name": "Roselia",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-10",
+   "name": "Salamence",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-11",
+   "name": "Shedinja",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-12",
+   "name": "Torkoal",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-13",
+   "name": "Crawdaunt",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-14",
+   "name": "Dragonair",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-15",
+   "name": "Flygon",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-16",
+   "name": "Girafarig",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-17",
+   "name": "Magneton",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-18",
+   "name": "Ninjask",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-19",
+   "name": "Salamence",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-20",
+   "name": "Shelgon",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-21",
+   "name": "Skarmory",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-22",
+   "name": "Vibrava",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-23",
+   "name": "Bagon",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-24",
+   "name": "Camerupt",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-25",
+   "name": "Combusken",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-26",
+   "name": "Dratini",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-27",
+   "name": "Flaaffy",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-28",
+   "name": "Forretress",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-29",
+   "name": "Graveler",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-30",
+   "name": "Graveler",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-31",
+   "name": "Grovyle",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-32",
+   "name": "Gyarados",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-33",
+   "name": "Horsea",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-34",
+   "name": "Houndoom",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-35",
+   "name": "Magneton",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-36",
+   "name": "Marshtomp",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-37",
+   "name": "Meditite",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-38",
+   "name": "Ninjask",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-39",
+   "name": "Seadra",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-40",
+   "name": "Seadra",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-41",
+   "name": "Shelgon",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-42",
+   "name": "Shelgon",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-43",
+   "name": "Shuppet",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-44",
+   "name": "Snorunt",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-45",
+   "name": "Swellow",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-46",
+   "name": "Vibrava",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-47",
+   "name": "Vibrava",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-48",
+   "name": "Whiscash",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-49",
+   "name": "Bagon",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-50",
+   "name": "Bagon",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-51",
+   "name": "Barboach",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-52",
+   "name": "Corphish",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-53",
+   "name": "Corphish",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-54",
+   "name": "Corphish",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-55",
+   "name": "Geodude",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-56",
+   "name": "Geodude",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-57",
+   "name": "Grimer",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-58",
+   "name": "Horsea",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-59",
+   "name": "Houndour",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-60",
+   "name": "Magikarp",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-61",
+   "name": "Magnemite",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-62",
+   "name": "Magnemite",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-63",
+   "name": "Magnemite",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-64",
+   "name": "Mareep",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-65",
+   "name": "Mudkip",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-66",
+   "name": "Nincada",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-67",
+   "name": "Nincada",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-68",
+   "name": "Nincada",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-69",
+   "name": "Numel",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-70",
+   "name": "Numel",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-71",
+   "name": "Pineco",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-72",
+   "name": "Slugma",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-73",
+   "name": "Spoink",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-74",
+   "name": "Spoink",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-75",
+   "name": "Swablu",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-76",
+   "name": "Taillow",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-77",
+   "name": "Torchic",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-78",
+   "name": "Trapinch",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-79",
+   "name": "Trapinch",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-80",
+   "name": "Treecko",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-81",
+   "name": "Wurmple",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-82",
+   "name": "Balloon Berry",
+   "set": "ex3",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Pokémon Tool"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-83",
+   "name": "Buffer Piece",
+   "set": "ex3",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Pokémon Tool"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-84",
+   "name": "Energy Recycle System",
+   "set": "ex3",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-85",
+   "name": "High Pressure System",
+   "set": "ex3",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Stadium"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-86",
+   "name": "Low Pressure System",
+   "set": "ex3",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Stadium"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-87",
+   "name": "Mr. Briney's Compassion",
+   "set": "ex3",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-88",
+   "name": "TV Reporter",
+   "set": "ex3",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-89",
+   "name": "Ampharos ex",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-90",
+   "name": "Dragonite ex",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-91",
+   "name": "Golem ex",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-92",
+   "name": "Kingdra ex",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-93",
+   "name": "Latias ex",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-94",
+   "name": "Latios ex",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-95",
+   "name": "Magcargo ex",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-96",
+   "name": "Muk ex",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-97",
+   "name": "Rayquaza ex",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-98",
+   "name": "Charmander",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "ex3-99",
+   "name": "Charmeleon",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex3-100",
+   "name": "Charizard",
+   "set": "ex3",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-1",
+   "name": "Team Aqua's Cacturne",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-2",
+   "name": "Team Aqua's Crawdaunt",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-3",
+   "name": "Team Aqua's Kyogre",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-4",
+   "name": "Team Aqua's Manectric",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-5",
+   "name": "Team Aqua's Sharpedo",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-6",
+   "name": "Team Aqua's Walrein",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-7",
+   "name": "Team Magma's Aggron",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-8",
+   "name": "Team Magma's Claydol",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-9",
+   "name": "Team Magma's Groudon",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-10",
+   "name": "Team Magma's Houndoom",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-11",
+   "name": "Team Magma's Rhydon",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-12",
+   "name": "Team Magma's Torkoal",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-13",
+   "name": "Raichu",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-14",
+   "name": "Team Aqua's Crawdaunt",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-15",
+   "name": "Team Aqua's Mightyena",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-16",
+   "name": "Team Aqua's Sealeo",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-17",
+   "name": "Team Aqua's Seviper",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-18",
+   "name": "Team Aqua's Sharpedo",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-19",
+   "name": "Team Magma's Camerupt",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-20",
+   "name": "Team Magma's Lairon",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-21",
+   "name": "Team Magma's Mightyena",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-22",
+   "name": "Team Magma's Rhydon",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-23",
+   "name": "Team Magma's Zangoose",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-24",
+   "name": "Team Aqua's Cacnea",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-25",
+   "name": "Team Aqua's Carvanha",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-26",
+   "name": "Team Aqua's Corphish",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-27",
+   "name": "Team Aqua's Electrike",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-28",
+   "name": "Team Aqua's Lanturn",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-29",
+   "name": "Team Aqua's Manectric",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-30",
+   "name": "Team Aqua's Mightyena",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-31",
+   "name": "Team Aqua's Sealeo",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-32",
+   "name": "Team Magma's Baltoy",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-33",
+   "name": "Team Magma's Claydol",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-34",
+   "name": "Team Magma's Houndoom",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-35",
+   "name": "Team Magma's Houndour",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-36",
+   "name": "Team Magma's Lairon",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-37",
+   "name": "Team Magma's Mightyena",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-38",
+   "name": "Team Magma's Rhyhorn",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-39",
+   "name": "Bulbasaur",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-40",
+   "name": "Cubone",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-41",
+   "name": "Jigglypuff",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-42",
+   "name": "Meowth",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-43",
+   "name": "Pikachu",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-44",
+   "name": "Psyduck",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-45",
+   "name": "Slowpoke",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-46",
+   "name": "Squirtle",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-47",
+   "name": "Team Aqua's Carvanha",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-48",
+   "name": "Team Aqua's Carvanha",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-49",
+   "name": "Team Aqua's Chinchou",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-50",
+   "name": "Team Aqua's Corphish",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-51",
+   "name": "Team Aqua's Corphish",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-52",
+   "name": "Team Aqua's Electrike",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-53",
+   "name": "Team Aqua's Electrike",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-54",
+   "name": "Team Aqua's Poochyena",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-55",
+   "name": "Team Aqua's Poochyena",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-56",
+   "name": "Team Aqua's Spheal",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-57",
+   "name": "Team Aqua's Spheal",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-58",
+   "name": "Team Magma's Aron",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-59",
+   "name": "Team Magma's Aron",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-60",
+   "name": "Team Magma's Baltoy",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-61",
+   "name": "Team Magma's Baltoy",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-62",
+   "name": "Team Magma's Houndour",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-63",
+   "name": "Team Magma's Houndour",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-64",
+   "name": "Team Magma's Numel",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-65",
+   "name": "Team Magma's Poochyena",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-66",
+   "name": "Team Magma's Poochyena",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-67",
+   "name": "Team Magma's Rhyhorn",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-68",
+   "name": "Team Magma's Rhyhorn",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-69",
+   "name": "Team Aqua Schemer",
+   "set": "ex4",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-70",
+   "name": "Team Magma Schemer",
+   "set": "ex4",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-71",
+   "name": "Archie",
+   "set": "ex4",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-72",
+   "name": "Dual Ball",
+   "set": "ex4",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-73",
+   "name": "Maxie",
+   "set": "ex4",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-74",
+   "name": "Strength Charm",
+   "set": "ex4",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Pokémon Tool"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-75",
+   "name": "Team Aqua Ball",
+   "set": "ex4",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-76",
+   "name": "Team Aqua Belt",
+   "set": "ex4",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Pokémon Tool"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-77",
+   "name": "Team Aqua Conspirator",
+   "set": "ex4",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-78",
+   "name": "Team Aqua Hideout",
+   "set": "ex4",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Stadium"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-79",
+   "name": "Team Aqua Technical Machine 01",
+   "set": "ex4",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Technical Machine"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-80",
+   "name": "Team Magma Ball",
+   "set": "ex4",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-81",
+   "name": "Team Magma Belt",
+   "set": "ex4",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Pokémon Tool"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-82",
+   "name": "Team Magma Conspirator",
+   "set": "ex4",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-83",
+   "name": "Team Magma Hideout",
+   "set": "ex4",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Stadium"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-84",
+   "name": "Team Magma Technical Machine 01",
+   "set": "ex4",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Technical Machine"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-85",
+   "name": "Warp Point",
+   "set": "ex4",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-86",
+   "name": "Aqua Energy",
+   "set": "ex4",
+   "supertype": "Energy",
+   "subtypes": [
+    "Special"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-87",
+   "name": "Magma Energy",
+   "set": "ex4",
+   "supertype": "Energy",
+   "subtypes": [
+    "Special"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-88",
+   "name": "Double Rainbow Energy",
+   "set": "ex4",
+   "supertype": "Energy",
+   "subtypes": [
+    "Special"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-89",
+   "name": "Blaziken ex",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-90",
+   "name": "Cradily ex",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-91",
+   "name": "Entei ex",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-92",
+   "name": "Raikou ex",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-93",
+   "name": "Sceptile ex",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-94",
+   "name": "Suicune ex",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-95",
+   "name": "Swampert ex",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-96",
+   "name": "Absol",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex4-97",
+   "name": "Jirachi",
+   "set": "ex4",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-1",
+   "name": "Banette",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-2",
+   "name": "Claydol",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-3",
+   "name": "Crobat",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-4",
+   "name": "Dark Celebi",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-5",
+   "name": "Electrode",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-6",
+   "name": "Exploud",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-7",
+   "name": "Heracross",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-8",
+   "name": "Jirachi",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-9",
+   "name": "Machamp",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-10",
+   "name": "Medicham",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-11",
+   "name": "Metagross",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-12",
+   "name": "Milotic",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-13",
+   "name": "Pinsir",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-14",
+   "name": "Shiftry",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-15",
+   "name": "Walrein",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-16",
+   "name": "Bellossom",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-17",
+   "name": "Chimecho",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-18",
+   "name": "Gorebyss",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-19",
+   "name": "Huntail",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-20",
+   "name": "Masquerain",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-21",
+   "name": "Metang",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-22",
+   "name": "Ninetales",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-23",
+   "name": "Rain Castform",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-24",
+   "name": "Relicanth",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-25",
+   "name": "Snow-cloud Castform",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-26",
+   "name": "Sunny Castform",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-27",
+   "name": "Tropius",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-28",
+   "name": "Beldum",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-29",
+   "name": "Beldum",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-30",
+   "name": "Castform",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-31",
+   "name": "Claydol",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-32",
+   "name": "Corsola",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-33",
+   "name": "Dodrio",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-34",
+   "name": "Glalie",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-35",
+   "name": "Gloom",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-36",
+   "name": "Golbat",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-37",
+   "name": "Igglybuff",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-38",
+   "name": "Lanturn",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-39",
+   "name": "Loudred",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-40",
+   "name": "Luvdisc",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-41",
+   "name": "Machoke",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-42",
+   "name": "Medicham",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-43",
+   "name": "Metang",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-44",
+   "name": "Metang",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-45",
+   "name": "Nuzleaf",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-46",
+   "name": "Rhydon",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-47",
+   "name": "Sealeo",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-48",
+   "name": "Spinda",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-49",
+   "name": "Starmie",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-50",
+   "name": "Swalot",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-51",
+   "name": "Tentacruel",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-52",
+   "name": "Baltoy",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-53",
+   "name": "Baltoy",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-54",
+   "name": "Beldum",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-55",
+   "name": "Chikorita",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-56",
+   "name": "Chinchou",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-57",
+   "name": "Chinchou",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-58",
+   "name": "Clamperl",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-59",
+   "name": "Cyndaquil",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-60",
+   "name": "Doduo",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-61",
+   "name": "Feebas",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-62",
+   "name": "Gulpin",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-63",
+   "name": "Jigglypuff",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-64",
+   "name": "Machop",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-65",
+   "name": "Meditite",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-66",
+   "name": "Meditite",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-67",
+   "name": "Minun",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-68",
+   "name": "Oddish",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-69",
+   "name": "Plusle",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-70",
+   "name": "Rhyhorn",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-71",
+   "name": "Seedot",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-72",
+   "name": "Shuppet",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-73",
+   "name": "Snorunt",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-74",
+   "name": "Spheal",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-75",
+   "name": "Staryu",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-76",
+   "name": "Surskit",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-77",
+   "name": "Tentacool",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-78",
+   "name": "Togepi",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-79",
+   "name": "Totodile",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-80",
+   "name": "Voltorb",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-81",
+   "name": "Vulpix",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-82",
+   "name": "Whismur",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-83",
+   "name": "Zubat",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-84",
+   "name": "Ancient Technical Machine [Ice]",
+   "set": "ex5",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Technical Machine"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-85",
+   "name": "Ancient Technical Machine [Rock]",
+   "set": "ex5",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Technical Machine"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-86",
+   "name": "Ancient Technical Machine [Steel]",
+   "set": "ex5",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Technical Machine"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-87",
+   "name": "Ancient Tomb",
+   "set": "ex5",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Stadium"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-88",
+   "name": "Desert Ruins",
+   "set": "ex5",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Stadium"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-89",
+   "name": "Island Cave",
+   "set": "ex5",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Stadium"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-90",
+   "name": "Life Herb",
+   "set": "ex5",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-91",
+   "name": "Magnetic Storm",
+   "set": "ex5",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Stadium"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-92",
+   "name": "Steven's Advice",
+   "set": "ex5",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-93",
+   "name": "Groudon ex",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-94",
+   "name": "Kyogre ex",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-95",
+   "name": "Metagross ex",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-96",
+   "name": "Ninetales ex",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-97",
+   "name": "Regice ex",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-98",
+   "name": "Regirock ex",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-99",
+   "name": "Registeel ex",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-100",
+   "name": "Vileplume ex",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-101",
+   "name": "Wigglytuff ex",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex5-102",
+   "name": "Groudon",
+   "set": "ex5",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex6-1",
+   "name": "Beedrill",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-2",
+   "name": "Butterfree",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-3",
+   "name": "Dewgong",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-4",
+   "name": "Ditto",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-5",
+   "name": "Exeggutor",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-6",
+   "name": "Kangaskhan",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-7",
+   "name": "Marowak",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-8",
+   "name": "Nidoking",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-9",
+   "name": "Nidoqueen",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-10",
+   "name": "Pidgeot",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-11",
+   "name": "Poliwrath",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-12",
+   "name": "Raichu",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-13",
+   "name": "Rapidash",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-14",
+   "name": "Slowbro",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-15",
+   "name": "Snorlax",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-16",
+   "name": "Tauros",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-17",
+   "name": "Victreebel",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-18",
+   "name": "Arcanine",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-19",
+   "name": "Chansey",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-20",
+   "name": "Cloyster",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-21",
+   "name": "Dodrio",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-22",
+   "name": "Dugtrio",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-23",
+   "name": "Farfetch'd",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-24",
+   "name": "Fearow",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-25",
+   "name": "Hypno",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-26",
+   "name": "Kingler",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-27",
+   "name": "Magneton",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-28",
+   "name": "Primeape",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-29",
+   "name": "Scyther",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-30",
+   "name": "Tangela",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-31",
+   "name": "Charmeleon",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-32",
+   "name": "Drowzee",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-33",
+   "name": "Exeggcute",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-34",
+   "name": "Haunter",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-35",
+   "name": "Ivysaur",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-36",
+   "name": "Kakuna",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-37",
+   "name": "Lickitung",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-38",
+   "name": "Mankey",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-39",
+   "name": "Metapod",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-40",
+   "name": "Nidorina",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-41",
+   "name": "Nidorino",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-42",
+   "name": "Onix",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-43",
+   "name": "Parasect",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-44",
+   "name": "Persian",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-45",
+   "name": "Pidgeotto",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-46",
+   "name": "Poliwhirl",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-47",
+   "name": "Porygon",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-48",
+   "name": "Raticate",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-49",
+   "name": "Venomoth",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-50",
+   "name": "Wartortle",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-51",
+   "name": "Weepinbell",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-52",
+   "name": "Wigglytuff",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-53",
+   "name": "Bellsprout",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-54",
+   "name": "Bulbasaur",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-55",
+   "name": "Bulbasaur",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-56",
+   "name": "Caterpie",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-57",
+   "name": "Charmander",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-58",
+   "name": "Charmander",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-59",
+   "name": "Clefairy",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-60",
+   "name": "Cubone",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-61",
+   "name": "Diglett",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-62",
+   "name": "Doduo",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-63",
+   "name": "Gastly",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-64",
+   "name": "Growlithe",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-65",
+   "name": "Jigglypuff",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-66",
+   "name": "Krabby",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-67",
+   "name": "Magikarp",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-68",
+   "name": "Magnemite",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-69",
+   "name": "Meowth",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-70",
+   "name": "Nidoran ♀",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-71",
+   "name": "Nidoran ♂",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-72",
+   "name": "Paras",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-73",
+   "name": "Pidgey",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-74",
+   "name": "Pikachu",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-75",
+   "name": "Poliwag",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-76",
+   "name": "Ponyta",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-77",
+   "name": "Rattata",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-78",
+   "name": "Seel",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-79",
+   "name": "Shellder",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-80",
+   "name": "Slowpoke",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-81",
+   "name": "Spearow",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-82",
+   "name": "Squirtle",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-83",
+   "name": "Squirtle",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-84",
+   "name": "Venonat",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-85",
+   "name": "Voltorb",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-86",
+   "name": "Weedle",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-87",
+   "name": "Bill's Maintenance",
+   "set": "ex6",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-88",
+   "name": "Celio's Network",
+   "set": "ex6",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-89",
+   "name": "Energy Removal 2",
+   "set": "ex6",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-90",
+   "name": "Energy Switch",
+   "set": "ex6",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-91",
+   "name": "EXP.ALL",
+   "set": "ex6",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Pokémon Tool"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-92",
+   "name": "Great Ball",
+   "set": "ex6",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-93",
+   "name": "Life Herb",
+   "set": "ex6",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-94",
+   "name": "Mt. Moon",
+   "set": "ex6",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Stadium"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-95",
+   "name": "Poké Ball",
+   "set": "ex6",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-96",
+   "name": "PokéDex HANDY909",
+   "set": "ex6",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-97",
+   "name": "Pokémon Reversal",
+   "set": "ex6",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-98",
+   "name": "Prof. Oak's Research",
+   "set": "ex6",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-99",
+   "name": "Super Scoop Up",
+   "set": "ex6",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-100",
+   "name": "VS Seeker",
+   "set": "ex6",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-101",
+   "name": "Potion",
+   "set": "ex6",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-102",
+   "name": "Switch",
+   "set": "ex6",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-103",
+   "name": "Multi Energy",
+   "set": "ex6",
+   "supertype": "Energy",
+   "subtypes": [
+    "Special"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-104",
+   "name": "Blastoise ex",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-105",
+   "name": "Charizard ex",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-106",
+   "name": "Clefable ex",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-107",
+   "name": "Electrode ex",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-108",
+   "name": "Gengar ex",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-109",
+   "name": "Gyarados ex",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-110",
+   "name": "Mr. Mime ex",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-111",
+   "name": "Mr. Mime ex",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-112",
+   "name": "Venusaur ex",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-113",
+   "name": "Charmander",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-114",
+   "name": "Articuno ex",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-115",
+   "name": "Moltres ex",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex6-116",
+   "name": "Zapdos ex",
+   "set": "ex6",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex7-1",
+   "name": "Azumarill",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-2",
+   "name": "Dark Ampharos",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-3",
+   "name": "Dark Crobat",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-4",
+   "name": "Dark Electrode",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-5",
+   "name": "Dark Houndoom",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-6",
+   "name": "Dark Hypno",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-7",
+   "name": "Dark Marowak",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-8",
+   "name": "Dark Octillery",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-9",
+   "name": "Dark Slowking",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-10",
+   "name": "Dark Steelix",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-11",
+   "name": "Jumpluff",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-12",
+   "name": "Kingdra",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-13",
+   "name": "Piloswine",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-14",
+   "name": "Togetic",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-15",
+   "name": "Dark Dragonite",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-16",
+   "name": "Dark Muk",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-17",
+   "name": "Dark Raticate",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-18",
+   "name": "Dark Sandslash",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-19",
+   "name": "Dark Tyranitar",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-20",
+   "name": "Dark Tyranitar",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-21",
+   "name": "Delibird",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-22",
+   "name": "Furret",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-23",
+   "name": "Ledian",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-24",
+   "name": "Magby",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-25",
+   "name": "Misdreavus",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-26",
+   "name": "Quagsire",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-27",
+   "name": "Qwilfish",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-28",
+   "name": "Yanma",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-29",
+   "name": "Dark Arbok",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-30",
+   "name": "Dark Ariados",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-31",
+   "name": "Dark Dragonair",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-32",
+   "name": "Dark Dragonair",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-33",
+   "name": "Dark Flaaffy",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-34",
+   "name": "Dark Golbat",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-35",
+   "name": "Dark Golduck",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-36",
+   "name": "Dark Gyarados",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-37",
+   "name": "Dark Houndoom",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-38",
+   "name": "Dark Magcargo",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-39",
+   "name": "Dark Magneton",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-40",
+   "name": "Dark Pupitar",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-41",
+   "name": "Dark Pupitar",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-42",
+   "name": "Dark Weezing",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-43",
+   "name": "Heracross",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-44",
+   "name": "Magmar",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-45",
+   "name": "Mantine",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-46",
+   "name": "Rocket's Meowth",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-47",
+   "name": "Rocket's Wobbuffet",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-48",
+   "name": "Seadra",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-49",
+   "name": "Skiploom",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-50",
+   "name": "Togepi",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-51",
+   "name": "Cubone",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-52",
+   "name": "Dratini",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-53",
+   "name": "Dratini",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-54",
+   "name": "Drowzee",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-55",
+   "name": "Ekans",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-56",
+   "name": "Grimer",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-57",
+   "name": "Hoppip",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-58",
+   "name": "Horsea",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-59",
+   "name": "Houndour",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-60",
+   "name": "Houndour",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-61",
+   "name": "Koffing",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-62",
+   "name": "Larvitar",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-63",
+   "name": "Larvitar",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-64",
+   "name": "Ledyba",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-65",
+   "name": "Magikarp",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-66",
+   "name": "Magnemite",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-67",
+   "name": "Mareep",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-68",
+   "name": "Marill",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-69",
+   "name": "Onix",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-70",
+   "name": "Psyduck",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-71",
+   "name": "Rattata",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-72",
+   "name": "Rattata",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-73",
+   "name": "Remoraid",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-74",
+   "name": "Sandshrew",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-75",
+   "name": "Sentret",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-76",
+   "name": "Slowpoke",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-77",
+   "name": "Slugma",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-78",
+   "name": "Spinarak",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-79",
+   "name": "Swinub",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-80",
+   "name": "Voltorb",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-81",
+   "name": "Wooper",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-82",
+   "name": "Zubat",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-83",
+   "name": "Copycat",
+   "set": "ex7",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-84",
+   "name": "Pokémon Retriever",
+   "set": "ex7",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Rocket's Secret Machine"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-85",
+   "name": "Pow! Hand Extension",
+   "set": "ex7",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Rocket's Secret Machine"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-86",
+   "name": "Rocket's Admin.",
+   "set": "ex7",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-87",
+   "name": "Rocket's Hideout",
+   "set": "ex7",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Stadium"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-88",
+   "name": "Rocket's Mission",
+   "set": "ex7",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-89",
+   "name": "Rocket's Poké Ball",
+   "set": "ex7",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-90",
+   "name": "Rocket's Tricky Gym",
+   "set": "ex7",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Stadium"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-91",
+   "name": "Surprise! Time Machine",
+   "set": "ex7",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Rocket's Secret Machine"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-92",
+   "name": "Swoop! Teleporter",
+   "set": "ex7",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Rocket's Secret Machine"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-93",
+   "name": "Venture Bomb",
+   "set": "ex7",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Rocket's Secret Machine"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-94",
+   "name": "Dark Metal Energy",
+   "set": "ex7",
+   "supertype": "Energy",
+   "subtypes": [
+    "Special"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-95",
+   "name": "R Energy",
+   "set": "ex7",
+   "supertype": "Energy",
+   "subtypes": [
+    "Special"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-96",
+   "name": "Rocket's Articuno ex",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-97",
+   "name": "Rocket's Entei ex",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-98",
+   "name": "Rocket's Hitmonchan ex",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-99",
+   "name": "Rocket's Mewtwo ex",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-100",
+   "name": "Rocket's Moltres ex",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-101",
+   "name": "Rocket's Scizor ex",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-102",
+   "name": "Rocket's Scyther ex",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-103",
+   "name": "Rocket's Sneasel ex",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-104",
+   "name": "Rocket's Snorlax ex",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-105",
+   "name": "Rocket's Suicune ex",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-106",
+   "name": "Rocket's Zapdos ex",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-107",
+   "name": "Mudkip ★",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "Star"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-108",
+   "name": "Torchic ★",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "Star"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-109",
+   "name": "Treecko ★",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "Star"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-110",
+   "name": "Charmeleon",
+   "set": "ex7",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex7-111",
+   "name": "Here Comes Team Rocket!",
+   "set": "ex7",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-1",
+   "name": "Altaria",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-2",
+   "name": "Beautifly",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-3",
+   "name": "Breloom",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-4",
+   "name": "Camerupt",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-5",
+   "name": "Claydol",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-6",
+   "name": "Crawdaunt",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-7",
+   "name": "Dusclops",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-8",
+   "name": "Gyarados",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-9",
+   "name": "Jirachi",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-10",
+   "name": "Ludicolo",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-11",
+   "name": "Metagross",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-12",
+   "name": "Mightyena",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-13",
+   "name": "Ninjask",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-14",
+   "name": "Shedinja",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-15",
+   "name": "Slaking",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-16",
+   "name": "Deoxys",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-17",
+   "name": "Deoxys",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-18",
+   "name": "Deoxys",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-19",
+   "name": "Ludicolo",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-20",
+   "name": "Magcargo",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-21",
+   "name": "Pelipper",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-22",
+   "name": "Rayquaza",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-23",
+   "name": "Sableye",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-24",
+   "name": "Seaking",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-25",
+   "name": "Shiftry",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-26",
+   "name": "Skarmory",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-27",
+   "name": "Tropius",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-28",
+   "name": "Whiscash",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-29",
+   "name": "Xatu",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-30",
+   "name": "Donphan",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-31",
+   "name": "Golbat",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-32",
+   "name": "Grumpig",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-33",
+   "name": "Lombre",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-34",
+   "name": "Lombre",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-35",
+   "name": "Lotad",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-36",
+   "name": "Lunatone",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-37",
+   "name": "Magcargo",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-38",
+   "name": "Manectric",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-39",
+   "name": "Masquerain",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-40",
+   "name": "Metang",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-41",
+   "name": "Minun",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-42",
+   "name": "Nosepass",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-43",
+   "name": "Nuzleaf",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-44",
+   "name": "Plusle",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-45",
+   "name": "Shelgon",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-46",
+   "name": "Silcoon",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-47",
+   "name": "Solrock",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-48",
+   "name": "Starmie",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-49",
+   "name": "Swellow",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-50",
+   "name": "Vigoroth",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-51",
+   "name": "Weezing",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-52",
+   "name": "Bagon",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-53",
+   "name": "Baltoy",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-54",
+   "name": "Barboach",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-55",
+   "name": "Beldum",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-56",
+   "name": "Carvanha",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-57",
+   "name": "Corphish",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-58",
+   "name": "Duskull",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-59",
+   "name": "Electrike",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-60",
+   "name": "Electrike",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-61",
+   "name": "Goldeen",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-62",
+   "name": "Koffing",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-63",
+   "name": "Lotad",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-64",
+   "name": "Magikarp",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-65",
+   "name": "Makuhita",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-66",
+   "name": "Natu",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-67",
+   "name": "Nincada",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-68",
+   "name": "Numel",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-69",
+   "name": "Phanpy",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-70",
+   "name": "Poochyena",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-71",
+   "name": "Seedot",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-72",
+   "name": "Shroomish",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-73",
+   "name": "Slakoth",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-74",
+   "name": "Slugma",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-75",
+   "name": "Slugma",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-76",
+   "name": "Spoink",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-77",
+   "name": "Staryu",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-78",
+   "name": "Surskit",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-79",
+   "name": "Swablu",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-80",
+   "name": "Taillow",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-81",
+   "name": "Wingull",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-82",
+   "name": "Wurmple",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-83",
+   "name": "Zubat",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-84",
+   "name": "Balloon Berry",
+   "set": "ex8",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Pokémon Tool"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-85",
+   "name": "Crystal Shard",
+   "set": "ex8",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Pokémon Tool"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-86",
+   "name": "Energy Charge",
+   "set": "ex8",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-87",
+   "name": "Lady Outing",
+   "set": "ex8",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "ex8-88",
+   "name": "Master Ball",
+   "set": "ex8",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-89",
+   "name": "Meteor Falls",
+   "set": "ex8",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Stadium"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-90",
+   "name": "Professor Cozmo's Discovery",
+   "set": "ex8",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-91",
+   "name": "Space Center",
+   "set": "ex8",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Stadium"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-92",
+   "name": "Strength Charm",
+   "set": "ex8",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Pokémon Tool"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-93",
+   "name": "Boost Energy",
+   "set": "ex8",
+   "supertype": "Energy",
+   "subtypes": [
+    "Special"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-94",
+   "name": "Heal Energy",
+   "set": "ex8",
+   "supertype": "Energy",
+   "subtypes": [
+    "Special"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-95",
+   "name": "Scramble Energy",
+   "set": "ex8",
+   "supertype": "Energy",
+   "subtypes": [
+    "Special"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-96",
+   "name": "Crobat ex",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-97",
+   "name": "Deoxys ex",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-98",
+   "name": "Deoxys ex",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-99",
+   "name": "Deoxys ex",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-100",
+   "name": "Hariyama ex",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-101",
+   "name": "Manectric ex",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-102",
+   "name": "Rayquaza ex",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-103",
+   "name": "Salamence ex",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-104",
+   "name": "Sharpedo ex",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-105",
+   "name": "Latias ★",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "Star"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-106",
+   "name": "Latios ★",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "Star"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex8-107",
+   "name": "Rayquaza ★",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "Star"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex8-108",
+   "name": "Rocket's Raikou ex",
+   "set": "ex8",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-1",
+   "name": "Blaziken",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-2",
+   "name": "Deoxys",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-3",
+   "name": "Exploud",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-4",
+   "name": "Gardevoir",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-5",
+   "name": "Groudon",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-6",
+   "name": "Kyogre",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-7",
+   "name": "Manectric",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-8",
+   "name": "Milotic",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-9",
+   "name": "Rayquaza",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-10",
+   "name": "Sceptile",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-11",
+   "name": "Swampert",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-12",
+   "name": "Chimecho",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-13",
+   "name": "Glalie",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-14",
+   "name": "Groudon",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-15",
+   "name": "Kyogre",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-16",
+   "name": "Manectric",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-17",
+   "name": "Nosepass",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-18",
+   "name": "Relicanth",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-19",
+   "name": "Rhydon",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-20",
+   "name": "Seviper",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-21",
+   "name": "Zangoose",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-22",
+   "name": "Breloom",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-23",
+   "name": "Camerupt",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-24",
+   "name": "Claydol",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-25",
+   "name": "Combusken",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-26",
+   "name": "Dodrio",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-27",
+   "name": "Electrode",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-28",
+   "name": "Grovyle",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-29",
+   "name": "Grumpig",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-30",
+   "name": "Grumpig",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-31",
+   "name": "Hariyama",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-32",
+   "name": "Illumise",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-33",
+   "name": "Kirlia",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-34",
+   "name": "Linoone",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-35",
+   "name": "Loudred",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-36",
+   "name": "Marshtomp",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-37",
+   "name": "Minun",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-38",
+   "name": "Ninetales",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-39",
+   "name": "Plusle",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-40",
+   "name": "Swalot",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-41",
+   "name": "Swellow",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-42",
+   "name": "Volbeat",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-43",
+   "name": "Baltoy",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-44",
+   "name": "Cacnea",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-45",
+   "name": "Doduo",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-46",
+   "name": "Duskull",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-47",
+   "name": "Electrike",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-48",
+   "name": "Electrike",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-49",
+   "name": "Feebas",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-50",
+   "name": "Feebas",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-51",
+   "name": "Gulpin",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-52",
+   "name": "Larvitar",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-53",
+   "name": "Luvdisc",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-54",
+   "name": "Makuhita",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-55",
+   "name": "Meditite",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-56",
+   "name": "Mudkip",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-57",
+   "name": "Numel",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-58",
+   "name": "Numel",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-59",
+   "name": "Pichu",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-60",
+   "name": "Pikachu",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-61",
+   "name": "Ralts",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-62",
+   "name": "Rhyhorn",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-63",
+   "name": "Shroomish",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-64",
+   "name": "Snorunt",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-65",
+   "name": "Spoink",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-66",
+   "name": "Spoink",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-67",
+   "name": "Swablu",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-68",
+   "name": "Taillow",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-69",
+   "name": "Torchic",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-70",
+   "name": "Treecko",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-71",
+   "name": "Voltorb",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-72",
+   "name": "Vulpix",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-73",
+   "name": "Whismur",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-74",
+   "name": "Zigzagoon",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-75",
+   "name": "Battle Frontier",
+   "set": "ex9",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Stadium"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex9-76",
+   "name": "Double Full Heal",
+   "set": "ex9",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "ex9-77",
+   "name": "Lanette's Net Search",
+   "set": "ex9",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "ex9-78",
+   "name": "Lum Berry",
+   "set": "ex9",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Pokémon Tool"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-79",
+   "name": "Mr. Stone's Project",
+   "set": "ex9",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex9-80",
+   "name": "Oran Berry",
+   "set": "ex9",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Pokémon Tool"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-81",
+   "name": "PokéNav",
+   "set": "ex9",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "ex9-82",
+   "name": "Professor Birch",
+   "set": "ex9",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "ex9-83",
+   "name": "Rare Candy",
+   "set": "ex9",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "ex9-84",
+   "name": "Scott",
+   "set": "ex9",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "exact"
+  },
+  {
+   "id": "ex9-85",
+   "name": "Wally's Training",
+   "set": "ex9",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Supporter"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "ex9-86",
+   "name": "Darkness Energy",
+   "set": "ex9",
+   "supertype": "Energy",
+   "subtypes": [
+    "Special"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-87",
+   "name": "Double Rainbow Energy",
+   "set": "ex9",
+   "supertype": "Energy",
+   "subtypes": [
+    "Special"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-88",
+   "name": "Metal Energy",
+   "set": "ex9",
+   "supertype": "Energy",
+   "subtypes": [
+    "Special"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-89",
+   "name": "Multi Energy",
+   "set": "ex9",
+   "supertype": "Energy",
+   "subtypes": [
+    "Special"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-90",
+   "name": "Altaria ex",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-91",
+   "name": "Cacturne ex",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-92",
+   "name": "Camerupt ex",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-93",
+   "name": "Deoxys ex",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-94",
+   "name": "Dusclops ex",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-95",
+   "name": "Medicham ex",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-96",
+   "name": "Milotic ex",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-97",
+   "name": "Raichu ex",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-98",
+   "name": "Regice ex",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-99",
+   "name": "Regirock ex",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-100",
+   "name": "Registeel ex",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "ex9-101",
+   "name": "Grass Energy",
+   "set": "ex9",
+   "supertype": "Energy",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "ex9-102",
+   "name": "Fire Energy",
+   "set": "ex9",
+   "supertype": "Energy",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "ex9-103",
+   "name": "Water Energy",
+   "set": "ex9",
+   "supertype": "Energy",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "ex9-104",
+   "name": "Lightning Energy",
+   "set": "ex9",
+   "supertype": "Energy",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "ex9-105",
+   "name": "Psychic Energy",
+   "set": "ex9",
+   "supertype": "Energy",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "ex9-106",
+   "name": "Fighting Energy",
+   "set": "ex9",
+   "supertype": "Energy",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "ex9-107",
+   "name": "Farfetch'd",
+   "set": "ex9",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "np-1",
+   "name": "Kyogre ex",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "EX"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "np-2",
+   "name": "Groudon ex",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic",
+    "EX"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "np-3",
+   "name": "Treecko",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "np-4",
+   "name": "Grovyle",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "np-5",
+   "name": "Mudkip",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "np-6",
+   "name": "Torchic",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "np-7",
+   "name": "Treecko",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "np-8",
+   "name": "Torchic",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "np-9",
+   "name": "Combusken",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "np-10",
+   "name": "Mudkip",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "np-11",
+   "name": "Marshtomp",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "np-12",
+   "name": "Pikachu",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "np-13",
+   "name": "Meowth",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "np-14",
+   "name": "Latias",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "np-15",
+   "name": "Latios",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "np-16",
+   "name": "Treecko",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "np-17",
+   "name": "Torchic",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "np-18",
+   "name": "Mudkip",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "np-19",
+   "name": "Whismur",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "np-20",
+   "name": "Ludicolo",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "np-21",
+   "name": "Jirachi",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "np-22",
+   "name": "Beldum",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "np-23",
+   "name": "Metang",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "np-24",
+   "name": "Chimecho",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "np-25",
+   "name": "Flygon",
+   "set": "np",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "np-26",
+   "name": "Tropical Wind",
+   "set": "np",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "np-27",
+   "name": "Tropical Tidal Wave",
+   "set": "np",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "pop1-1",
+   "name": "Blaziken",
+   "set": "pop1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "pop1-2",
+   "name": "Metagross",
+   "set": "pop1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "pop1-3",
+   "name": "Rayquaza",
+   "set": "pop1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "pop1-4",
+   "name": "Sceptile",
+   "set": "pop1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "pop1-5",
+   "name": "Swampert",
+   "set": "pop1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "pop1-6",
+   "name": "Beautifly",
+   "set": "pop1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "pop1-7",
+   "name": "Masquerain",
+   "set": "pop1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "pop1-8",
+   "name": "Murkrow",
+   "set": "pop1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "pop1-9",
+   "name": "Pupitar",
+   "set": "pop1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "pop1-10",
+   "name": "Torkoal",
+   "set": "pop1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "pop1-11",
+   "name": "Larvitar",
+   "set": "pop1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "pop1-12",
+   "name": "Minun",
+   "set": "pop1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "pop1-13",
+   "name": "Plusle",
+   "set": "pop1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "pop1-14",
+   "name": "Surskit",
+   "set": "pop1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "pop1-15",
+   "name": "Swellow",
+   "set": "pop1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "pop1-16",
+   "name": "Armaldo ex",
+   "set": "pop1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "pop1-17",
+   "name": "Tyranitar ex",
+   "set": "pop1",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 2",
+    "ex"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "tk1a-1",
+   "name": "Bagon",
+   "set": "tk1a",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "tk1a-2",
+   "name": "Combusken",
+   "set": "tk1a",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "tk1a-3",
+   "name": "Delcatty",
+   "set": "tk1a",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "tk1a-4",
+   "name": "Latias",
+   "set": "tk1a",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "tk1a-5",
+   "name": "Numel",
+   "set": "tk1a",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "tk1a-6",
+   "name": "Skitty",
+   "set": "tk1a",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "tk1a-7",
+   "name": "Torchic",
+   "set": "tk1a",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "tk1a-8",
+   "name": "Potion",
+   "set": "tk1a",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "tk1a-9",
+   "name": "Energy Search",
+   "set": "tk1a",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "tk1a-10",
+   "name": "Fire Energy",
+   "set": "tk1a",
+   "supertype": "Energy",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "tk1b-1",
+   "name": "Electrike",
+   "set": "tk1b",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "tk1b-2",
+   "name": "Latios",
+   "set": "tk1b",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "tk1b-3",
+   "name": "Linoone",
+   "set": "tk1b",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "tk1b-4",
+   "name": "Magnemite",
+   "set": "tk1b",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "tk1b-5",
+   "name": "Magneton",
+   "set": "tk1b",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Stage 1"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "tk1b-6",
+   "name": "Pikachu",
+   "set": "tk1b",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "tk1b-7",
+   "name": "Zigzagoon",
+   "set": "tk1b",
+   "supertype": "Pokémon",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "tk1b-8",
+   "name": "Potion",
+   "set": "tk1b",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "reprint"
+  },
+  {
+   "id": "tk1b-9",
+   "name": "Energy Search",
+   "set": "tk1b",
+   "supertype": "Trainer",
+   "subtypes": [
+    "Item"
+   ],
+   "status": "missing"
+  },
+  {
+   "id": "tk1b-10",
+   "name": "Lightning Energy",
+   "set": "tk1b",
+   "supertype": "Energy",
+   "subtypes": [
+    "Basic"
+   ],
+   "status": "reprint"
+  }
+ ]
+}
