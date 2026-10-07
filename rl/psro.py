@@ -145,6 +145,8 @@ def main(argv=None):
     ap.add_argument("--edit-head", action="store_true",
                     help="--builder value: train an edit head on the pilot's encoder from the search's scored swaps "
                          "and let it propose --head-share of the swaps (rl/deck_head.py)")
+    ap.add_argument("--common-deals", action="store_true",
+                    help="--builder value: score every candidate on the same deals (common random numbers)")
     ap.add_argument("--head-share", type=float, default=0.5)
     ap.add_argument("--head-tau", type=float, default=0.5)
     ap.add_argument("--strength-model", default="notes/data/eval/strength_model.json",
@@ -205,7 +207,7 @@ def main(argv=None):
                 from rl.deck_head import EditLearner
                 edit = EditLearner(gpu.model, pool.n, dev, seed=args.seed)
             return ValueScorer(gpu, novelty=args.novelty, edit=edit, head_share=args.head_share if edit else 0.0,
-                               head_tau=args.head_tau)
+                               head_tau=args.head_tau, common_deals=args.common_deals)
         scorer = {"games": lambda: GamesScorer(gpu), "value": value_scorer,
                   "model": lambda: ModelScorer(table, text, dev),
                   "strength": lambda: StrengthScorer(gpu, str(ROOT / args.strength_model))}[args.builder]()

@@ -95,15 +95,21 @@ class GpuMatrix:
                      "errors": errors, "cut": int(cut), "endings": endings, "decisions_per_game": round(float(np.triu(S, 1).sum()) / max(total, 1), 1)}
         return W, G, S
 
-    def values(self, decks: list, pairs: list, openings: int, seed: int, states: bool = False):
+    def values(self, decks: list, pairs: list, openings: int, seed: int, states: bool = False,
+               common_deals: bool = False):
         """The pilot's start-of-game value v(a, b) for deck a against deck b, averaged over
         `openings` deals (forward passes only, no games). pairs: [(a, b)] -> array [len(pairs)].
         Sent in chunks of at most `chunk` deals: all of a chunk's states go through one forward pass.
 
         states=True also returns the states the values were read at, one per deal in the order
         (pair, opening): {"live": [J] (0 if the game ended in setup), "pooled": [J, d] (the encoder's
-        token 0), and the five token inputs}, for deck embeddings and the edit head (rl/deck_head.py)."""
-        jobs = [{"a": a, "b": b, "seed": seed * 1000003 + k * openings + o, "pair": k, "job": k * openings + o}
+        token 0), and the five token inputs}, for deck embeddings and the edit head (rl/deck_head.py).
+
+        common_deals=True seeds each deal by (opponent b, opening) instead of by the pair's position,
+        so every deck facing b gets the same deals (common random numbers): the same deck always
+        scores the same, and two decks' scores differ by the decks, not by the luck of the deal."""
+        key = (lambda k, b: b) if common_deals else (lambda k, b: k)
+        jobs = [{"a": a, "b": b, "seed": seed * 1000003 + key(k, b) * openings + o, "pair": k, "job": k * openings + o}
                 for k, (a, b) in enumerate(pairs) for o in range(openings)]
         tot = np.zeros(len(pairs))
         out = None

@@ -113,7 +113,7 @@ class ValueScorer:
     name, candidates = "value", 12
 
     def __init__(self, gm, openings: int = 8, max_support: int = 6, novelty: float = 0.0, edit=None,
-                 head_share: float = 0.5, head_tau: float = 0.5, train_every: int = 20):
+                 head_share: float = 0.5, head_tau: float = 0.5, train_every: int = 20, common_deals: bool = False):
         """novelty > 0 adds novelty x the deck's novelty in the pilot's own embedding (rl/deck_head.py:
         mean distance to the 5 nearest population decks, 1 = the population's typical spacing).
         edit: an rl.deck_head.EditLearner, trained on every climb step's scored swaps and proposing
@@ -122,6 +122,7 @@ class ValueScorer:
         self.novelty, self.edit = novelty, edit
         self.head_share, self.head_tau, self.train_every = head_share, head_tau, train_every
         self.cache, self.observed, self.head_loss = {}, 0, []
+        self.common_deals = common_deals       # the same deals for every candidate (GpuMatrix.values)
 
     def prepare(self, pop, sigma, seed):
         GamesScorer.prepare(self, pop, sigma, seed)
@@ -132,7 +133,8 @@ class ValueScorer:
             n = len(self.opp_decks)
             decks = self.opp_decks + [{"name": f"p{k}", "cards": pop.pool.names(v)} for k, v in enumerate(pop.decks)]
             pairs = [(n + k, j) for k in range(len(pop.decks)) for j in range(n)]
-            _, st = self.gm.values(decks, pairs, self.openings, self.seed + 1, states=True)
+            _, st = self.gm.values(decks, pairs, self.openings, self.seed if self.common_deals else self.seed + 1,
+                                   states=True, common_deals=self.common_deals)
             self.nov = Novelty(deck_embeddings(st, len(pop.decks), n, self.openings, self.w))
         if self.edit is not None:
             self.edit.pilot = self.gm.model           # the pilot may have been fine-tuned since
@@ -153,9 +155,10 @@ class ValueScorer:
         decks = self.opp_decks + [{"name": f"c{k}", "cards": self.pool.names(c)} for k, c in enumerate(cands)]
         pairs = [(n + k, j) for k in range(len(cands)) for j in range(n)]
         if self.nov is None and self.edit is None:
-            v = self.gm.values(decks, pairs, self.openings, self.seed).reshape(len(cands), n)
+            v = self.gm.values(decks, pairs, self.openings, self.seed,
+                               common_deals=self.common_deals).reshape(len(cands), n)
             return 0.5 + 0.5 * (v * self.w[None, :]).sum(1)
-        v, st = self.gm.values(decks, pairs, self.openings, self.seed, states=True)
+        v, st = self.gm.values(decks, pairs, self.openings, self.seed, states=True, common_deals=self.common_deals)
         self.base = 0.5 + 0.5 * (v.reshape(len(cands), n) * self.w[None, :]).sum(1)
         if self.edit is not None:
             self.cache = {c.tobytes(): self._deck_states(st, k, n) for k, c in enumerate(cands)}
@@ -180,8 +183,11 @@ class ValueScorer:
         if self.edit is None or cur.tobytes() not in self.cache:
             return
         states, w = self.cache[cur.tobytes()]
-        swaps = np.array([[int(np.argmax(c - cur)), int(np.argmax(cur - c))] for c in cands])
-        self.edit.add(states, w, swaps, self.base[1:] - self.base[0])
+        real = [q for q, c in enumerate(cands) if not (c == cur).all()]    # a swap can put back what it took out
+        if len(real) < 2:
+            return
+        swaps = np.array([[int(np.argmax(cands[q] - cur)), int(np.argmax(cur - cands[q]))] for q in real])
+        self.edit.add(states, w, swaps, self.base[1:][real] - self.base[0])
         self.observed += 1
         if self.observed % self.train_every == 0:
             self.head_loss.append(self.edit.train(5))
