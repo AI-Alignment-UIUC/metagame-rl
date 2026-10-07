@@ -108,14 +108,14 @@ Replication is running, and Phase B (Worlds 2005) has started in parallel.
   still at ~30 Energy and below Graham's list (68.1%). Jobs are capped at ~80% of the machine
   after three crashes.
 
-**Recent (log #41–43):** Sampling deck choices kept decks human-like but weaker, and a pilot trained
-only on random decks is calibrated and generalizes better but barely tells decks apart (2-point spread
-across #36's variants, against 18). Searching with that pilot still converged on 34-35 Energy decks with
-4-7 Trainers, and an edit head on its encoder, though its swaps raise the value more often than random
-ones (67% against 47%), got there faster; a novelty bonus in the same embedding instead found a
-10 / 24 / 26 Wigglytuff deck that beats the field 70.2% and every other arm 65-81% (one seed). The value
-scorer was also found to give each candidate different deals, noise as large as real swap differences,
-now fixed by `--common-deals`.
+**Recent (log #41–44):** A pilot trained only on random decks is calibrated but barely tells decks
+apart, and searching with it still converged on 34-35 Energy decks; an edit head on its encoder got
+there faster, while a novelty bonus in the same embedding found a 10 / 24 / 26 Wigglytuff deck that
+beats the field 70.2% and every other arm 65-81% (one seed; the value scorer's deal noise, as large as
+real swap differences, is now fixable with `--common-deals`). Phase B started: on the engine's
+`worlds-2005` branch the Birds and ZapTurnDos lists build and play with 0 errors over 100 checked games,
+the 2005 legal pool is 959 cards of which the engine has 340, and the checks turned up three engine
+card bugs (fixed) and an env hang on "flip until tails" attacks (not yet fixed).
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
@@ -129,7 +129,8 @@ The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 3. Search safeguards: pessimistic acceptance, a trust region around real-tested decks; keep the edit head
    only as a proposal source under them.
 4. A regret-curated deck curriculum for the pilot (PLR / ACCEL), with novelty finding candidates.
-5. Phase B in parallel: the Birds list buildable, the 2005 legal pool, then the next-cheapest lists.
+5. Phase B in parallel: the env's coin-flip hang, six audited EX card fixes and 2005 rules in the env,
+   then ZRE, Blastoise ex and Nidoqueen.
 <!-- status:end -->
 
 ---

@@ -890,3 +890,36 @@ Entry format:
   plus a thermometer code) in the next pilot. Keep the edit head only as a proposal source under a
   pessimistic or trust-region acceptance. Phase B started in parallel: the Birds list and the 2005
   legal pool (engine branch `worlds-2005`).
+
+### #44 · 2026-10-07 · B1 / B2 · Worlds 2005: Birds and ZapTurnDos build and play; the legal pool
+- **Done:** Engine branch `worlds-2005` (worktree `../ryuu-play-worlds2005`, local, not pushed; the
+  submodule pin is unchanged): Scott, Mr. Stone's Project, Battle Frontier (EM), Rayquaza ★ (DX)
+  (`b5f6974`); Voltorb, Electrode, Steven's Advice (HL), Dual Ball (MA), Electrike, Manectric, Master
+  Ball, Space Center (DX) (`d297403`); TV Reporter, High Pressure System, Mr. Briney's Compassion (DR),
+  Island Cave, Desert Ruins (HL), Rocket's Admin., Copycat, Rocket's Mission, Swoop! Teleporter,
+  Pokémon Retriever, Pow! Hand Extension (TRR), Strength Charm (DX) (`e78cb4e`); fixes to Slaking RS's
+  Lazy (`74a4662`), EXP. ALL RG (`e9229e1`) and Rain Dish SS (`b213f41`). Main repo (`9f4c979`,
+  `3ae9a72`): `notes/scripts/ryuu_legal_pool_2005.py` (legal pool from set codes),
+  `notes/scripts/ryuu_2005_cards_tests.js` (interaction checks, expected values written from the
+  printed text first), `notes/scripts/ryuu_2005_env_preload.js` (verification-only coin-flip cap), and
+  2005 set codes in `notes/scripts/ryuu_coverage_season.py`. Done by a background agent; checked here.
+- **Evidence:** 110/110 engine specs on the new and touched cards; 27/27 interaction checks (rerun
+  independently in this session: 27/27); card-data check 0 mismatches on the new cards, and 2 left of
+  279 RS/SS/RG/DX/EM Pokémon after re-pairing printings (Aggron ex Weakness order, cosmetic; Clefable ex
+  stage, likely a data error). `verify_enumerator` with the preload: 50 Birds mirror games and 50 Birds
+  vs ZapTurnDos games, all finished, 0 engine errors, 0 mismatches over ~14,700 decisions and ~4,900
+  prompts. Legal pool (RS–EM, POP 1, Trainer Kit 1, promos 1–27; Trainer Kit 2 left out as released
+  March 2006): 1,014 printings, 959 distinct cards; the engine has 384 printings (340 cards), RS, SS and
+  RG complete. Coverage: Birds 60/60, ZapTurnDos 60/60 (one name alias), ZRE 54, Blastoise ex 51,
+  Nidoqueen 51, Blaziken 47.
+- **Found:** (1) The local pokemon-tcg-data cache held Ruby & Sapphire under Sandstorm's file; refetched,
+  which cleared every list's unresolved count (the cache is gitignored). (2) A hang in the env, not the
+  engine: `env/engine.js` `trial()` forces every coin flip to one side, so "flip until tails" attacks
+  (Rayquaza ★'s Spiral Rush, Linoone RS) never end; the first 50-game check ran 37 min before it was
+  killed. The env fix waits for the running experiments (they load `env/`). (3) An audit of existing
+  EX cards found six more text mismatches, not yet fixed: Wally's Training, Rare Candy SS (refuses a
+  Stage 1), Electrode ex's Extra Energy Bomb, Squirtle RG's Smash Turn, Blaziken RS's Fire Stream,
+  Blastoise ex's Energy Rain. (4) The env still uses the 2000 rules object; 2005 first-turn rules are
+  not configured. The builder must enforce one Pokémon ★ per deck.
+- **Next:** The flip cap in `env/engine.js`; the six audit fixes; 2005 rules in the env; then ZRE
+  (Magmar TRR, Rayquaza ex DX) and Blastoise ex / Nidoqueen; push `worlds-2005` to the fork.
