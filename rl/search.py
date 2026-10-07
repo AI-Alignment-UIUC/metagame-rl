@@ -297,8 +297,8 @@ def search(scorer, pop, sigma, k: int, seconds: float, rng, random_deck, restart
             if getattr(scorer, "edit", None) is not None:
                 scorer.observe(cur, cands)
                 base = scorer.base
-                for k, sk in enumerate(src):
-                    by_src[sk].append(float(base[1 + k] - base[0]))
+                for q, sk in enumerate(src):
+                    by_src[sk].append(float(base[1 + q] - base[0]))
                 if head is not None:
                     best_src[src[int(np.argmax(base[1:]))]] += 1
             cur_score = float(s[0])
