@@ -2,8 +2,8 @@
  "year": 2005,
  "lists": {
   "4 Corners": {
-   "exact": 22,
-   "missing": 31,
+   "exact": 36,
+   "missing": 17,
    "different": 7
   },
   "Birds": {
@@ -11,105 +11,100 @@
    "reprint": 4
   },
   "Blastoise ex": {
-   "exact": 41,
-   "different": 8,
-   "missing": 11
+   "exact": 51,
+   "different": 6,
+   "missing": 3
   },
   "Blaziken": {
-   "exact": 39,
-   "missing": 14,
-   "different": 7
+   "exact": 47,
+   "missing": 7,
+   "different": 6
   },
   "Dark Slowking": {
-   "missing": 38,
+   "missing": 20,
    "different": 4,
-   "exact": 14,
+   "exact": 32,
    "near-reprint": 4
   },
   "Dark Steelix": {
-   "missing": 31,
-   "different": 6,
-   "near-reprint": 15,
-   "exact": 8
+   "missing": 17,
+   "different": 4,
+   "exact": 24,
+   "near-reprint": 15
   },
   "Dark Tyranitar": {
-   "missing": 43,
-   "exact": 13,
+   "missing": 26,
+   "exact": 30,
    "near-reprint": 4
   },
   "DragTrode": {
-   "missing": 27,
-   "different": 15,
-   "exact": 7,
+   "missing": 17,
+   "different": 12,
+   "exact": 23,
    "reprint": 4,
-   "near-reprint": 7
+   "near-reprint": 4
   },
   "LudiCargo": {
-   "exact": 25,
-   "different": 4,
-   "missing": 31
+   "exact": 38,
+   "different": 3,
+   "missing": 19
   },
   "Medicham": {
-   "missing": 34,
+   "missing": 16,
    "different": 4,
+   "exact": 33,
    "reprint": 3,
-   "exact": 15,
    "near-reprint": 4
   },
   "Metagross": {
-   "exact": 25,
-   "missing": 30,
+   "exact": 36,
+   "missing": 19,
    "different": 1,
    "near-reprint": 4
   },
   "Muk": {
-   "missing": 28,
-   "different": 5,
+   "missing": 14,
+   "different": 4,
+   "exact": 35,
    "reprint": 3,
-   "exact": 20,
    "near-reprint": 4
   },
   "Nidoqueen": {
-   "exact": 34,
-   "missing": 22,
-   "different": 4
+   "exact": 47,
+   "missing": 13
   },
   "PowTar": {
-   "missing": 33,
-   "exact": 17,
-   "different": 6,
+   "missing": 20,
+   "exact": 33,
+   "different": 3,
    "near-reprint": 4
   },
   "Rock Lock": {
-   "exact": 22,
-   "missing": 32,
-   "different": 2,
+   "exact": 32,
+   "missing": 24,
    "near-reprint": 4
   },
   "Sharpedo ex": {
-   "missing": 27,
+   "missing": 13,
    "different": 4,
-   "exact": 18,
+   "exact": 32,
    "reprint": 3,
    "near-reprint": 8
   },
   "Vileplume": {
-   "missing": 25,
-   "different": 7,
-   "exact": 25,
+   "missing": 10,
+   "different": 5,
+   "exact": 42,
    "near-reprint": 3
   },
   "ZapTurnDos": {
-   "exact": 36,
-   "different": 12,
-   "missing": 7,
+   "exact": 58,
    "reprint": 1,
-   "near-reprint": 4
+   "missing": 1
   },
   "ZRE": {
-   "different": 9,
-   "exact": 30,
-   "missing": 18,
+   "different": 6,
+   "exact": 51,
    "reprint": 3
   }
  },
@@ -212,8 +207,10 @@
    "count": 3,
    "name": "TV Reporter",
    "printing": "ex3-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex3"
+   ]
   },
   {
    "deck": "4 Corners",
@@ -230,32 +227,40 @@
    "count": 3,
    "name": "Steven\u2019s Advice",
    "printing": "ex5-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "4 Corners",
    "count": 1,
    "name": "Rocket\u2019s Admin",
    "printing": "ex7-86",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "4 Corners",
    "count": 3,
    "name": "Swoop! Teleporter",
    "printing": "ex7-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "4 Corners",
    "count": 2,
    "name": "Pokemon Retriever",
    "printing": "ex7-84",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "4 Corners",
@@ -283,16 +288,20 @@
    "count": 1,
    "name": "Strength Charm",
    "printing": "ex8-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex8"
+   ]
   },
   {
    "deck": "4 Corners",
    "count": 1,
    "name": "Pow! Hand Extension",
    "printing": "ex7-85",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "4 Corners",
@@ -626,16 +635,19 @@
    "count": 3,
    "name": "TV Reporter",
    "printing": "ex3-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex3"
+   ]
   },
   {
    "deck": "Blastoise ex",
    "count": 2,
    "name": "Copycat",
    "printing": "ex7-83",
-   "status": "different",
+   "status": "exact",
    "engine_sets": [
+    "ex7",
     "sm7"
    ]
   },
@@ -654,8 +666,10 @@
    "count": 1,
    "name": "Rocket\u2019s Admin",
    "printing": "ex7-86",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Blastoise ex",
@@ -683,32 +697,40 @@
    "count": 1,
    "name": "Swoop! Teleporter",
    "printing": "ex7-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Blastoise ex",
    "count": 1,
    "name": "Pokemon Retriever",
    "printing": "ex7-84",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Blastoise ex",
    "count": 1,
    "name": "High Pressure System",
    "printing": "ex3-85",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex3"
+   ]
   },
   {
    "deck": "Blastoise ex",
    "count": 1,
    "name": "Island Cave",
    "printing": "ex5-89",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "Blastoise ex",
@@ -867,24 +889,29 @@
    "count": 3,
    "name": "TV Reporter",
    "printing": "ex3-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex3"
+   ]
   },
   {
    "deck": "Blaziken",
    "count": 2,
    "name": "Steven\u2019s Advice",
    "printing": "ex5-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "Blaziken",
    "count": 1,
    "name": "Copycat",
    "printing": "ex7-83",
-   "status": "different",
+   "status": "exact",
    "engine_sets": [
+    "ex7",
     "sm7"
    ]
   },
@@ -893,8 +920,10 @@
    "count": 1,
    "name": "Rocket\u2019s Admin",
    "printing": "ex7-86",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Blaziken",
@@ -933,8 +962,10 @@
    "count": 1,
    "name": "Pokemon Retriever",
    "printing": "ex7-84",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Blaziken",
@@ -999,8 +1030,10 @@
    "count": 4,
    "name": "Steven\u2019s Advice",
    "printing": "ex5-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "Dark Slowking",
@@ -1015,8 +1048,10 @@
    "count": 2,
    "name": "Rocket\u2019s Mission",
    "printing": "ex7-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Dark Slowking",
@@ -1031,8 +1066,10 @@
    "count": 4,
    "name": "Swoop! Teleporter",
    "printing": "ex7-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Dark Slowking",
@@ -1047,8 +1084,10 @@
    "count": 4,
    "name": "Strength Charm",
    "printing": "ex8-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex8"
+   ]
   },
   {
    "deck": "Dark Slowking",
@@ -1065,8 +1104,10 @@
    "count": 4,
    "name": "Pokemon Retriever",
    "printing": "ex7-84",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Dark Slowking",
@@ -1122,32 +1163,39 @@
    "count": 4,
    "name": "TV Reporter",
    "printing": "ex3-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex3"
+   ]
   },
   {
    "deck": "Dark Steelix",
    "count": 3,
    "name": "Rocket\u2019s Admin",
    "printing": "ex7-86",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Dark Steelix",
    "count": 3,
    "name": "Steven\u2019s Advice",
    "printing": "ex5-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "Dark Steelix",
    "count": 2,
    "name": "Copycat",
    "printing": "ex7-83",
-   "status": "different",
+   "status": "exact",
    "engine_sets": [
+    "ex7",
     "sm7"
    ]
   },
@@ -1156,8 +1204,10 @@
    "count": 4,
    "name": "Swoop! Teleporter",
    "printing": "ex7-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Dark Steelix",
@@ -1310,24 +1360,30 @@
    "count": 4,
    "name": "Steven\u2019s Advice",
    "printing": "ex5-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "Dark Tyranitar",
    "count": 4,
    "name": "TV Reporter",
    "printing": "ex3-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex3"
+   ]
   },
   {
    "deck": "Dark Tyranitar",
    "count": 4,
    "name": "Rocket\u2019s Admin",
    "printing": "ex7-86",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Dark Tyranitar",
@@ -1344,16 +1400,20 @@
    "count": 1,
    "name": "Mr. Briney\u2019s Compassion",
    "printing": "ex3-87",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex3"
+   ]
   },
   {
    "deck": "Dark Tyranitar",
    "count": 3,
    "name": "Desert Ruins",
    "printing": "ex5-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "Dark Tyranitar",
@@ -1387,8 +1447,10 @@
    "count": 1,
    "name": "Pokemon Retriever",
    "printing": "ex7-84",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Dark Tyranitar",
@@ -1501,6 +1563,7 @@
    "engine_sets": [
     "base1",
     "base5",
+    "ex5",
     "ex6"
    ]
   },
@@ -1527,8 +1590,9 @@
    "count": 3,
    "name": "Copycat",
    "printing": "ex7-83",
-   "status": "different",
+   "status": "exact",
    "engine_sets": [
+    "ex7",
     "sm7"
    ]
   },
@@ -1537,24 +1601,30 @@
    "count": 3,
    "name": "Steven\u2019s Advice",
    "printing": "ex5-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "DragTrode",
    "count": 2,
    "name": "Rocket\u2019s Admin",
    "printing": "ex7-86",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "DragTrode",
    "count": 2,
    "name": "Mr. Briney\u2019s Compassion",
    "printing": "ex3-87",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex3"
+   ]
   },
   {
    "deck": "DragTrode",
@@ -1569,8 +1639,9 @@
    "count": 3,
    "name": "Dual Ball",
    "printing": "ex4-72",
-   "status": "near-reprint",
+   "status": "exact",
    "engine_sets": [
+    "ex4",
     "hgss2"
    ]
   },
@@ -1579,8 +1650,10 @@
    "count": 1,
    "name": "Pow! Hand Extension",
    "printing": "ex7-85",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "DragTrode",
@@ -1600,8 +1673,10 @@
    "count": 2,
    "name": "Desert Ruins",
    "printing": "ex5-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "DragTrode",
@@ -1745,24 +1820,29 @@
    "count": 2,
    "name": "Rocket\u2019s Admin",
    "printing": "ex7-86",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "LudiCargo",
    "count": 1,
    "name": "Steven\u2019s Advice",
    "printing": "ex5-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "LudiCargo",
    "count": 1,
    "name": "Copycat",
    "printing": "ex7-83",
-   "status": "different",
+   "status": "exact",
    "engine_sets": [
+    "ex7",
     "sm7"
    ]
   },
@@ -1771,8 +1851,10 @@
    "count": 1,
    "name": "TV Reporter",
    "printing": "ex3-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex3"
+   ]
   },
   {
    "deck": "LudiCargo",
@@ -1787,8 +1869,10 @@
    "count": 1,
    "name": "Mr. Briney\u2019s Compassion",
    "printing": "ex3-87",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex3"
+   ]
   },
   {
    "deck": "LudiCargo",
@@ -1827,16 +1911,20 @@
    "count": 1,
    "name": "Swoop! Teleporter",
    "printing": "ex7-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "LudiCargo",
    "count": 1,
    "name": "Strength Charm",
    "printing": "ex8-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex8"
+   ]
   },
   {
    "deck": "LudiCargo",
@@ -1851,8 +1939,10 @@
    "count": 1,
    "name": "Pokemon Retriever",
    "printing": "ex7-84",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "LudiCargo",
@@ -1870,8 +1960,10 @@
    "count": 4,
    "name": "Desert Ruins",
    "printing": "ex5-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "LudiCargo",
@@ -1965,16 +2057,20 @@
    "count": 4,
    "name": "Rocket\u2019s Admin",
    "printing": "ex7-86",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Medicham",
    "count": 4,
    "name": "TV Reporter",
    "printing": "ex3-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex3"
+   ]
   },
   {
    "deck": "Medicham",
@@ -1991,8 +2087,10 @@
    "count": 2,
    "name": "Steven\u2019s Advice",
    "printing": "ex5-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "Medicham",
@@ -2010,16 +2108,20 @@
    "count": 4,
    "name": "Pow! Hand Extension",
    "printing": "ex7-85",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Medicham",
    "count": 4,
    "name": "Swoop! Teleporter",
    "printing": "ex7-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Medicham",
@@ -2177,8 +2279,10 @@
    "count": 4,
    "name": "Steven\u2019s Advice",
    "printing": "ex5-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "Metagross",
@@ -2195,16 +2299,20 @@
    "count": 3,
    "name": "TV Reporter",
    "printing": "ex3-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex3"
+   ]
   },
   {
    "deck": "Metagross",
    "count": 2,
    "name": "Rocket\u2019s Admin",
    "printing": "ex7-86",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Metagross",
@@ -2251,8 +2359,10 @@
    "count": 1,
    "name": "Strength Charm",
    "printing": "ex8-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex8"
+   ]
   },
   {
    "deck": "Metagross",
@@ -2267,8 +2377,10 @@
    "count": 1,
    "name": "Island Cave",
    "printing": "ex5-89",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "Metagross",
@@ -2342,24 +2454,30 @@
    "count": 4,
    "name": "TV Reporter",
    "printing": "ex3-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex3"
+   ]
   },
   {
    "deck": "Muk",
    "count": 3,
    "name": "Steven\u2019s Advice",
    "printing": "ex5-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "Muk",
    "count": 3,
    "name": "Rocket\u2019s Admin",
    "printing": "ex7-86",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Muk",
@@ -2386,8 +2504,9 @@
    "count": 1,
    "name": "Copycat",
    "printing": "ex7-83",
-   "status": "different",
+   "status": "exact",
    "engine_sets": [
+    "ex7",
     "sm7"
    ]
   },
@@ -2396,8 +2515,10 @@
    "count": 4,
    "name": "Swoop! Teleporter",
    "printing": "ex7-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Muk",
@@ -2552,8 +2673,9 @@
    "count": 4,
    "name": "Copycat",
    "printing": "ex7-83",
-   "status": "different",
+   "status": "exact",
    "engine_sets": [
+    "ex7",
     "sm7"
    ]
   },
@@ -2562,32 +2684,40 @@
    "count": 2,
    "name": "Rocket\u2019s Admin",
    "printing": "ex7-86",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Nidoqueen",
    "count": 2,
    "name": "Steven\u2019s Advice",
    "printing": "ex5-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "Nidoqueen",
    "count": 1,
    "name": "Mr. Briney\u2019s Compassion",
    "printing": "ex3-87",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex3"
+   ]
   },
   {
    "deck": "Nidoqueen",
    "count": 4,
    "name": "Desert Ruins",
    "printing": "ex5-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "Nidoqueen",
@@ -2691,6 +2821,7 @@
    "engine_sets": [
     "base1",
     "base5",
+    "ex5",
     "ex6"
    ]
   },
@@ -2787,8 +2918,9 @@
    "count": 3,
    "name": "Copycat",
    "printing": "ex7-83",
-   "status": "different",
+   "status": "exact",
    "engine_sets": [
+    "ex7",
     "sm7"
    ]
   },
@@ -2797,32 +2929,40 @@
    "count": 2,
    "name": "TV Reporter",
    "printing": "ex3-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex3"
+   ]
   },
   {
    "deck": "PowTar",
    "count": 2,
    "name": "Rocket\u2019s Admin",
    "printing": "ex7-86",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "PowTar",
    "count": 1,
    "name": "Steven\u2019s Advice",
    "printing": "ex5-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "PowTar",
    "count": 4,
    "name": "Pow! Hand Extension",
    "printing": "ex7-85",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "PowTar",
@@ -2840,8 +2980,10 @@
    "count": 3,
    "name": "Swoop! Teleporter",
    "printing": "ex7-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "PowTar",
@@ -2856,8 +2998,10 @@
    "count": 1,
    "name": "Pokemon Retriever",
    "printing": "ex7-84",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "PowTar",
@@ -3010,24 +3154,29 @@
    "count": 2,
    "name": "Steven\u2019s Advice",
    "printing": "ex5-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "Rock Lock",
    "count": 2,
    "name": "Rocket\u2019s Admin",
    "printing": "ex7-86",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Rock Lock",
    "count": 2,
    "name": "Copycat",
    "printing": "ex7-83",
-   "status": "different",
+   "status": "exact",
    "engine_sets": [
+    "ex7",
     "sm7"
    ]
   },
@@ -3046,8 +3195,10 @@
    "count": 1,
    "name": "Mr. Briney\u2019s Compassion",
    "printing": "ex3-87",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex3"
+   ]
   },
   {
    "deck": "Rock Lock",
@@ -3081,8 +3232,10 @@
    "count": 3,
    "name": "Desert Ruins",
    "printing": "ex5-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "Rock Lock",
@@ -3179,24 +3332,30 @@
    "count": 3,
    "name": "Steven\u2019s Advice",
    "printing": "ex5-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "Sharpedo ex",
    "count": 3,
    "name": "Rocket\u2019s Admin",
    "printing": "ex7-86",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Sharpedo ex",
    "count": 3,
    "name": "TV Reporter",
    "printing": "ex3-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex3"
+   ]
   },
   {
    "deck": "Sharpedo ex",
@@ -3245,8 +3404,10 @@
    "count": 4,
    "name": "Swoop! Teleporter",
    "printing": "ex7-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Sharpedo ex",
@@ -3261,8 +3422,10 @@
    "count": 1,
    "name": "Pokemon Retriever",
    "printing": "ex7-84",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Sharpedo ex",
@@ -3365,24 +3528,29 @@
    "count": 4,
    "name": "TV Reporter",
    "printing": "ex3-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex3"
+   ]
   },
   {
    "deck": "Vileplume",
    "count": 3,
    "name": "Steven\u2019s Advice",
    "printing": "ex5-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "Vileplume",
    "count": 2,
    "name": "Copycat",
    "printing": "ex7-83",
-   "status": "different",
+   "status": "exact",
    "engine_sets": [
+    "ex7",
     "sm7"
    ]
   },
@@ -3391,8 +3559,10 @@
    "count": 1,
    "name": "Rocket\u2019s Admin",
    "printing": "ex7-86",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Vileplume",
@@ -3410,8 +3580,10 @@
    "count": 4,
    "name": "Swoop! Teleporter",
    "printing": "ex7-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "Vileplume",
@@ -3440,8 +3612,10 @@
    "count": 3,
    "name": "Master Ball",
    "printing": "ex8-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex8"
+   ]
   },
   {
    "deck": "Vileplume",
@@ -3497,9 +3671,10 @@
    "count": 3,
    "name": "Manectric",
    "printing": "ex8-38",
-   "status": "different",
+   "status": "exact",
    "engine_sets": [
-    "ex1"
+    "ex1",
+    "ex8"
    ]
   },
   {
@@ -3507,9 +3682,10 @@
    "count": 4,
    "name": "Electrike",
    "printing": "ex8-60",
-   "status": "different",
+   "status": "exact",
    "engine_sets": [
-    "ex1"
+    "ex1",
+    "ex8"
    ]
   },
   {
@@ -3517,10 +3693,11 @@
    "count": 1,
    "name": "Electrode",
    "printing": "ex5-5",
-   "status": "different",
+   "status": "exact",
    "engine_sets": [
     "base1",
-    "base2"
+    "base2",
+    "ex5"
    ]
   },
   {
@@ -3528,10 +3705,11 @@
    "count": 4,
    "name": "Voltorb",
    "printing": "ex5-80",
-   "status": "different",
+   "status": "exact",
    "engine_sets": [
     "base1",
     "base5",
+    "ex5",
     "ex6"
    ]
   },
@@ -3560,8 +3738,10 @@
    "count": 2,
    "name": "Steven\u2019s Advice",
    "printing": "ex5-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex5"
+   ]
   },
   {
    "deck": "ZapTurnDos",
@@ -3586,8 +3766,9 @@
    "count": 4,
    "name": "Dual Ball",
    "printing": "ex4-72",
-   "status": "near-reprint",
+   "status": "exact",
    "engine_sets": [
+    "ex4",
     "hgss2"
    ]
   },
@@ -3618,8 +3799,10 @@
    "count": 2,
    "name": "Master Ball",
    "printing": "ex8-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex8"
+   ]
   },
   {
    "deck": "ZapTurnDos",
@@ -3649,8 +3832,10 @@
    "count": 2,
    "name": "Space Center",
    "printing": "ex8-91",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex8"
+   ]
   },
   {
    "deck": "ZapTurnDos",
@@ -3700,10 +3885,11 @@
    "count": 3,
    "name": "Voltorb",
    "printing": "ex5-80",
-   "status": "different",
+   "status": "exact",
    "engine_sets": [
     "base1",
     "base5",
+    "ex5",
     "ex6"
    ]
   },
@@ -3743,16 +3929,20 @@
    "count": 4,
    "name": "Rocket\u2019s Admin",
    "printing": "ex7-86",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "ZRE",
    "count": 4,
    "name": "TV Reporter",
    "printing": "ex3-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex3"
+   ]
   },
   {
    "deck": "ZRE",
@@ -3769,16 +3959,20 @@
    "count": 2,
    "name": "Rocket\u2019s Mission",
    "printing": "ex7-88",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "ZRE",
    "count": 4,
    "name": "Pow! Hand Extension",
    "printing": "ex7-85",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex7"
+   ]
   },
   {
    "deck": "ZRE",
@@ -3809,16 +4003,20 @@
    "count": 2,
    "name": "Strength Charm",
    "printing": "ex8-92",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex8"
+   ]
   },
   {
    "deck": "ZRE",
    "count": 2,
    "name": "Space Center",
    "printing": "ex8-91",
-   "status": "missing",
-   "engine_sets": []
+   "status": "exact",
+   "engine_sets": [
+    "ex8"
+   ]
   },
   {
    "deck": "ZRE",
