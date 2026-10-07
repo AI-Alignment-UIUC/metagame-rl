@@ -30,7 +30,7 @@ for (const m of ['legal.js', 'oracle.js']) {
     throw new Error('ryuu_2005_env_preload.js must load before env/' + m + ' (it replaces engine.accepts/tryAction)');
   }
 }
-{
+if (engine.MAX_SAME_FLIPS === undefined) {   // env/engine.js caps flips itself since log #46; keep this only for older checkouts
   const { C, newStore } = engine;
   const TURN_ENDED = { turnEnded: true };
   const reduceEffectUntilTurnEnds = function (state, effect) {

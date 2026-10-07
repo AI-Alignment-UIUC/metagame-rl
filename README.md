@@ -59,10 +59,11 @@ gives a biased or blind builder, so pilot strength is the bottleneck.
 matrix. In A5, scoring candidate decks by the pilot's own value beat the other builder designs
 ([2000s result #1](results/2000s-result-1/)), and piloting every PSRO iteration made the first built
 metagame to beat the archived field (60.7%), but value-driven search keeps converging on Energy-heavy
-decks with few Trainers. A novelty bonus in the pilot's own deck embedding broke that pattern in one
-seed: it found a Wigglytuff deck with a full Trainer package that beats the field 70% under the
-human-free pilot, while an edit head trained on the value only reached the Energy-heavy decks faster.
-Replication is running, and Phase B (Worlds 2005) has started in parallel.
+decks with few Trainers. Better search does not fix this: an edit head, less scoring noise and a
+novelty bonus each move the search harder or more widely, and only novelty helps, by 8 points on
+average and not in every seed, so the pilot's value is the bottleneck. Phase B (Worlds 2005) has
+started in parallel: two lists build and play, and the engine passes its spec suite and a random-deck
+fuzz over all 340 2005 cards it has.
 
 **Earlier work:**
 
@@ -108,30 +109,30 @@ Replication is running, and Phase B (Worlds 2005) has started in parallel.
   still at ~30 Energy and below Graham's list (68.1%). Jobs are capped at ~80% of the machine
   after three crashes.
 
-**Recent (log #41–45):** A pilot trained only on random decks is calibrated but barely tells decks
-apart, and searching with it still converged on 34-35 Energy decks; an edit head on its encoder got
-there faster, while a novelty bonus in the same embedding found a 10 / 24 / 26 Wigglytuff deck that
-beats the field 70.2% and every other arm 65-81% (one seed; the value scorer's deal noise, as large as
-real swap differences, is now fixable with `--common-deals`). Phase B started on the engine's
-`worlds-2005` branch: Birds and ZapTurnDos build and play, the 2005 legal pool is 959 cards of which the
-engine has 340, and a random-deck fuzz now plays 1,500/1,500 games over all of them after fixing an
-engine hang (Signs of Evolution) and three card bugs; a "flip until tails" hang in the env, which
-Geodude Fossil can also trigger in the 2000 full pool, is not yet fixed.
+**Recent (log #41–46):** A pilot trained only on random decks is calibrated but barely tells decks
+apart, and searching with it converges on 32-36 Energy decks: an edit head on its encoder got there
+faster, removing the scorer's deal noise made decks worse, and a novelty bonus in the same embedding
+beat the plain search in 3 of 4 seeds by 8 points on average under that pilot (1.5 under result #1's),
+its one Trainer-rich deck (24 Trainers, 71.8% against the field) being mostly seed luck. Phase B
+started on the engine's `worlds-2005` branch: Birds and ZapTurnDos build and play, the 2005 legal pool
+is 959 cards of which the engine has 340, and a random-deck fuzz plays 1,500/1,500 games over all of
+them after fixing an engine hang and three card bugs; the env's "flip until tails" hang, which Geodude
+Fossil could also trigger in the 2000 full pool, is fixed with no change to any 2000 game.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. Replicate the novelty result (seeds 4-5) and test common deals; if it holds, make novelty the default
-   and adapt its weight (DvD) instead of fixing it at 0.03.
-2. A stronger human-free pilot: batch league snapshots, then a longer run with a larger token model and
-   an ordinal count encoding (the count embedding never trained, #43), judged by how much deck choice
-   moves its results.
-3. Search safeguards: pessimistic acceptance, a trust region around real-tested decks; keep the edit head
-   only as a proposal source under them.
-4. A regret-curated deck curriculum for the pilot (PLR / ACCEL), with novelty finding candidates.
-5. Phase B in parallel: the env's coin-flip hang, six audited EX card fixes and 2005 rules in the env,
-   then ZRE, Blastoise ex and Nidoqueen.
+1. A better objective before more search: a stronger human-free pilot (batch league snapshots, a
+   larger token model, an ordinal count encoding since the count embedding never trained), judged by
+   how much deck choice moves its results.
+2. Search safeguards against the value's errors: pessimistic acceptance, a trust region around
+   real-tested decks; novelty on by default, the edit head and common deals off until the value improves.
+3. A regret-curated deck curriculum for the pilot (PLR / ACCEL), with novelty finding candidates.
+4. Phase B verification beyond self-written tests: rule invariants checked in the fuzz, tests written by
+   an independent author, and EX-era official rulings as ground truth.
+5. Phase B content: 2005 rules in the env, six audited card-text fixes, then ZRE, Blastoise ex and
+   Nidoqueen.
 <!-- status:end -->
 
 ---

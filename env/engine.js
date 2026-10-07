@@ -131,12 +131,18 @@ function reduceEffectUntilTurnEnds(state, effect) {
   return C.Store.prototype.reduceEffect.call(this, state, effect);
 }
 
+// A trial forces every coin flip to `flip`, but at most MAX_SAME_FLIPS times in a row, then the
+// other side once: a "flip until you get tails" attack (Geodude FO, Linoone RS, Rayquaza Star DX)
+// never ends under all heads, and the trial looped forever (log #44). Attacks with a fixed number
+// of flips are unaffected (none flips more than 32 coins).
+const MAX_SAME_FLIPS = 32;
+
 function trial(state, action, flip, from) {
   const store = newStore(C.deepClone(state, [C.Card]));
   if (from !== undefined) store.cardRanks = from.cardRanks;
   store.reduceEffect = reduceEffectUntilTurnEnds;
   store.reduce = reduceWithoutBackupOrCheck;
-  let flips = 0;
+  let flips = 0, same = 0;
   try {
     store.dispatch(action);
     for (;;) {
@@ -144,7 +150,11 @@ function trial(state, action, flip, from) {
         && (q.type === 'Coin flip' || q.type === 'Shuffle deck' || q.type === 'Choose prize'));
       if (!p) break;
       let result;
-      if (p.type === 'Coin flip') { result = flip; flips++; }
+      if (p.type === 'Coin flip') {
+        result = same < MAX_SAME_FLIPS ? flip : !flip;
+        same = same < MAX_SAME_FLIPS ? same + 1 : 0;
+        flips++;
+      }
       else if (p.type === 'Shuffle deck') {
         const player = store.state.players.find(q => q.id === p.playerId);
         result = player.deck.cards.map((_, i) => i);
@@ -167,4 +177,4 @@ function stateAfter(state, action, from) {
   return r.ok ? (r.state || null) : null;
 }
 
-module.exports = { RYUU, C, S, cm, FORMAT, RULES, newState, newStore, accepts, tryAction, stateAfter };
+module.exports = { RYUU, C, S, cm, FORMAT, RULES, newState, newStore, accepts, tryAction, stateAfter, MAX_SAME_FLIPS };

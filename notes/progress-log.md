@@ -951,3 +951,33 @@ Entry format:
   forced-flip legality trial, so the A5 full pool can hang the 2000 env too, not only 2005 decks.
 - **Next:** The flip cap in `env/engine.js` once the running experiments finish; fossil lines in the
   fuzz's decks; the six audited EX text fixes.
+
+### #46 · 2026-10-07 · A5 / A1 · Novelty does not replicate as a clear win; the env's flip cap; a correction to #43
+- **Done:** `runs/hn_replicate.sh`: base and novelty 0.03 at seeds 4 and 5, and both at seed 3 with
+  `--common-deals`, all with #43's settings under the scratch pilot; one panel of the eight runs'
+  supports plus the 24 archived lists, 60 games per pair, under the scratch pilot and result #1's pilot
+  (`notes/data/eval/hn_rep_panel_{scratch,orig}.json`). `env/engine.js` `trial()` now forces a coin
+  flip to one side at most 32 times in a row (`MAX_SAME_FLIPS`, exported), so "flip until tails"
+  attacks end; `notes/scripts/ryuu_2005_env_preload.js` keeps its own copy only for engines without it.
+- **Evidence:** Against the archived field (scratch pilot / result #1's pilot), base vs novelty: seed 3
+  56.2 / 40.5 vs 71.8 / 43.3; seed 4 42.2 / 32.1 vs 58.4 / 34.2; seed 5 60.4 / 39.6 vs 53.6 / 36.6;
+  seed 3 with common deals 43.2 / 31.8 vs 50.6 / 35.9. Novelty is ahead in 3 of 4 pairs under both
+  pilots, by a mean of 8.1 points under the scratch pilot and 1.5 under result #1's. Main equilibrium
+  decks (Trainers / basic Energy): novelty seed 3 24 / 21, seed 4 2 / 36, seed 5 2-7 / 32-35, seed 3
+  with common deals 7-18 / 27-33; base seed 5 found a 19 / 24 Hitmonchan / Magmar deck without novelty.
+  The seed-3 novelty mixture holds the whole Nash of the eight-run panel under the scratch pilot.
+  Common deals (seed 3): base 43.2 against 56.2 without, novelty 50.6 against 71.8. Flip cap:
+  `trace_hash` over 300 seeded 2000 games identical before and after (e332007...); `test_env` 100
+  games PASS; `verify_enumerator` 50 Birds / ZapTurnDos games PASS on the env's own cap.
+- **Found:** (1) Correction to #43: its deck counts took any card with "Energy" in its name as Energy,
+  so Energy Retrieval and Energy Removal were counted twice; the seed-3 novelty deck is 15 Pokémon /
+  24 Trainers / 21 basic Energy, not 10 / 24 / 26 (#43's other decks were also slightly off). (2) The
+  Trainer-rich deck was mostly seed luck: in seeds 4 and 5 novelty also converged on 32-36 Energy, and
+  base found a Trainer deck on its own at seed 5. Novelty helps on average, modestly and not reliably;
+  #43's headline overstated it. (3) Removing the deal noise made both arms worse at seed 3 (one seed):
+  consistent with #43's edit head, more accurate optimization of this pilot's value gives worse real
+  decks, so the noise was acting as a regularizer. The bottleneck is the objective (the pilot's value),
+  not the search.
+- **Next:** Improve the objective before the search: a stronger human-free pilot with an ordinal count
+  encoding, and pessimistic / trust-region acceptance against real games. Keep novelty on as a cheap
+  default; drop the edit head and common deals from the default until the value is better.
