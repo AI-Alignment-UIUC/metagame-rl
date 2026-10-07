@@ -147,6 +147,8 @@ def main(argv=None):
                          "and let it propose --head-share of the swaps (rl/deck_head.py)")
     ap.add_argument("--common-deals", action="store_true",
                     help="--builder value: score every candidate on the same deals (common random numbers)")
+    ap.add_argument("--head-mode", choices=["propose", "screen", "combine", "agree"], default="propose",
+                    help="--edit-head: how the head meets the value (rl/search.py ValueScorer)")
     ap.add_argument("--head-share", type=float, default=0.5)
     ap.add_argument("--head-tau", type=float, default=0.5)
     ap.add_argument("--strength-model", default="notes/data/eval/strength_model.json",
@@ -206,8 +208,9 @@ def main(argv=None):
             if args.edit_head:
                 from rl.deck_head import EditLearner
                 edit = EditLearner(gpu.model, pool.n, dev, seed=args.seed)
-            return ValueScorer(gpu, novelty=args.novelty, edit=edit, head_share=args.head_share if edit else 0.0,
-                               head_tau=args.head_tau, common_deals=args.common_deals)
+            propose = edit is not None and args.head_mode == "propose"
+            return ValueScorer(gpu, novelty=args.novelty, edit=edit, head_share=args.head_share if propose else 0.0,
+                               head_tau=args.head_tau, common_deals=args.common_deals, head_mode=args.head_mode)
         scorer = {"games": lambda: GamesScorer(gpu), "value": value_scorer,
                   "model": lambda: ModelScorer(table, text, dev),
                   "strength": lambda: StrengthScorer(gpu, str(ROOT / args.strength_model))}[args.builder]()

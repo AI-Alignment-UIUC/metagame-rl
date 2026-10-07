@@ -113,16 +113,26 @@ class ValueScorer:
     name, candidates = "value", 12
 
     def __init__(self, gm, openings: int = 8, max_support: int = 6, novelty: float = 0.0, edit=None,
-                 head_share: float = 0.5, head_tau: float = 0.5, train_every: int = 20, common_deals: bool = False):
+                 head_share: float = 0.5, head_tau: float = 0.5, train_every: int = 20, common_deals: bool = False,
+                 head_mode: str = "propose", head_beta: float = 1.0):
         """novelty > 0 adds novelty x the deck's novelty in the pilot's own embedding (rl/deck_head.py:
         mean distance to the 5 nearest population decks, 1 = the population's typical spacing).
         edit: an rl.deck_head.EditLearner, trained on every climb step's scored swaps and proposing
-        head_share of the swaps from the second step of a climb on."""
+        head_share of the swaps from the second step of a climb on.
+
+        head_mode, how the head's predicted change meets the value (log #47):
+          propose  the head proposes head_share of each step's swaps (sampled, head_tau)
+          screen   4x as many random swaps are drawn; the head keeps the `candidates` it rates best,
+                   and only those are scored by the value
+          combine  steps go to the best of value change + head_beta x the head's prediction (in the
+                   step's value units); the score kept for a deck stays the value's
+          agree    steps only go to swaps that both the value and the head say improve the deck"""
         self.gm, self.openings, self.max_support = gm, openings, max_support
         self.novelty, self.edit = novelty, edit
         self.head_share, self.head_tau, self.train_every = head_share, head_tau, train_every
         self.cache, self.observed, self.head_loss = {}, 0, []
         self.common_deals = common_deals       # the same deals for every candidate (GpuMatrix.values)
+        self.head_mode, self.head_beta = head_mode, head_beta
 
     def prepare(self, pop, sigma, seed):
         GamesScorer.prepare(self, pop, sigma, seed)
@@ -177,6 +187,18 @@ class ValueScorer:
         a, r = self.edit.scores(states, w)
         a, r = a.cpu().numpy(), r.cpu().numpy()
         return [self.edit.propose(self.pool, cur, a, r, rng, self.head_tau) for _ in range(m)]
+
+    def head_predict(self, cur, cands):
+        """The head's predicted score change of each candidate swap from cur, standardized over
+        them (z units), or None before the head has data or when cur's states are not cached."""
+        if self.edit is None or not self.edit.buf or cur.tobytes() not in self.cache or not cands:
+            return None
+        states, w = self.cache[cur.tobytes()]
+        a, r = self.edit.scores(states, w)
+        a, r = a.cpu().numpy(), r.cpu().numpy()
+        pred = np.array([a[int(np.argmax(c - cur))] + r[int(np.argmax(cur - c))] if not (c == cur).all() else 0.0
+                         for c in cands])
+        return (pred - pred.mean()) / (pred.std() + 1e-9)
 
     def observe(self, cur, cands):
         """After a climb step: the current deck's states and the base score change of each swap."""
@@ -267,6 +289,7 @@ def search(scorer, pop, sigma, k: int, seconds: float, rng, random_deck, restart
     support = [i for i in np.argsort(-sigma) if sigma[i] > 1e-3]
     finals, runs = [], []
     by_src, best_src = ([], []), [0, 0]      # score changes of random (0) and head (1) swaps
+    agree_stats = [0, 0]                     # agree mode: swaps the head called improvements, swaps judged
     while time.time() - t0 < t_search:
         if rng.random() < restart_random or not support:
             start, origin = random_deck(pool, rng), "random"
@@ -296,10 +319,33 @@ def search(scorer, pop, sigma, k: int, seconds: float, rng, random_deck, restart
                 if changed(c, start) <= budget and pool.legal(c):
                     cands.append(c)
                     src.append(0)
+            mode = getattr(scorer, "head_mode", "propose") if getattr(scorer, "edit", None) is not None else None
+            if mode == "screen":
+                for _ in range(scorer.candidates * 16):
+                    if len(cands) >= scorer.candidates * 4:
+                        break
+                    c = random_swap(pool, cur, rng)
+                    if changed(c, start) <= budget and pool.legal(c):
+                        cands.append(c)
+                pz = scorer.head_predict(cur, cands)
+                if pz is not None:
+                    keep = list(np.argsort(-pz, kind="stable")[:scorer.candidates])
+                    cands, src = [cands[q] for q in keep], [1] * len(keep)
+                else:
+                    cands, src = cands[:scorer.candidates], [0] * min(len(cands), scorer.candidates)
             if not cands:
                 break
+            pred = scorer.head_predict(cur, cands) if mode in ("combine", "agree") else None
             s = scorer([cur] + cands)          # the current deck rescored with the candidates
             scored += len(cands)
+            sel = np.array(s, dtype=np.float64)   # what the step chooses by; s stays the value's score
+            if pred is not None:
+                if mode == "combine":
+                    sel[1:] = sel[1:] + scorer.head_beta * pred * float(np.std(sel[1:] - sel[0]))
+                else:
+                    sel[1:][pred <= 0] = -np.inf
+                    agree_stats[0] += int((pred > 0).sum())
+                    agree_stats[1] += len(pred)
             if getattr(scorer, "edit", None) is not None:
                 scorer.observe(cur, cands)
                 base = scorer.base
@@ -311,14 +357,14 @@ def search(scorer, pop, sigma, k: int, seconds: float, rng, random_deck, restart
             if cur_score > best_score:
                 best_deck, best_score = cur, cur_score
             if temperature > 0:
-                pick = softmax_order(s, temperature, rng)[0]
+                pick = softmax_order(np.where(np.isfinite(sel), sel, -1e9), temperature, rng)[0]
                 if pick == 0:
                     stall += 1
                 else:
                     cur, cur_score, stall = cands[pick - 1], float(s[pick]), 0
             else:
-                best = int(np.argmax(s[1:]))
-                if s[1 + best] > s[0]:
+                best = int(np.argmax(sel[1:]))
+                if sel[1 + best] > sel[0]:
                     cur, cur_score, stall = cands[best], float(s[1 + best]), 0
                 else:
                     stall += 1
@@ -365,6 +411,9 @@ def search(scorer, pop, sigma, k: int, seconds: float, rng, random_deck, restart
                                 "improve": round(float(np.mean(np.array(d) > 0)), 4) if d else None}
                          for name, d in zip(("random", "head"), by_src)}
         info["best_from"] = {"random": best_src[0], "head": best_src[1]}
+        info["head_mode"] = getattr(scorer, "head_mode", None)
+        if agree_stats[1]:
+            info["head_positive_share"] = round(agree_stats[0] / agree_stats[1], 4)
         info["head_loss"] = [round(x, 4) for x in getattr(scorer, "head_loss", []) if x is not None][-5:]
     if getattr(scorer, "nov", None) is not None:
         info["novelty_scale"] = round(scorer.nov.scale, 4)
