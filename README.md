@@ -1,7 +1,7 @@
-# Metagame RL: Pokémon TCG first
+# Metagame RL
 
-A reinforcement-learning project on trading-card-game metagames. It starts with the Pokémon
-Trading Card Game, and the methods are meant to carry over to other TCGs later. The roadmap:
+A reinforcement-learning project on trading-card-game metagames. The first and main focus is the Pokémon
+Trading Card Game (PTCG); other TCGs come later. The roadmap:
 
 1. **July 2000 Super Trainer Showdown** (Pokémon, Base–Rocket): the proving ground (Phase A, now)
 2. **Worlds 2005, San Diego** (Pokémon, EX era): a full World Championships metagame (Phase B)
