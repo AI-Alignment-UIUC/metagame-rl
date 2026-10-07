@@ -14,4 +14,7 @@ new = """      // Ask every agent at once: with central GPU inference each agent
         const [name, group] = groups[gi];
         const out = outs[gi];
         const keep = record.has(name);"""
-assert old in s; s = s.replace(old, new); open(p, 'w', encoding='utf-8').write(s); print("runner patched")
+if new in s:
+    print("runner already patched")
+else:
+    assert old in s; s = s.replace(old, new); open(p, 'w', encoding='utf-8').write(s); print("runner patched")
