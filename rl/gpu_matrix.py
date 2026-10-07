@@ -95,23 +95,50 @@ class GpuMatrix:
                      "errors": errors, "cut": int(cut), "endings": endings, "decisions_per_game": round(float(np.triu(S, 1).sum()) / max(total, 1), 1)}
         return W, G, S
 
-    def values(self, decks: list, pairs: list, openings: int, seed: int) -> np.ndarray:
+    def values(self, decks: list, pairs: list, openings: int, seed: int, states: bool = False):
         """The pilot's start-of-game value v(a, b) for deck a against deck b, averaged over
         `openings` deals (forward passes only, no games). pairs: [(a, b)] -> array [len(pairs)].
-        Sent in chunks of at most `chunk` deals: all of a chunk's states go through one forward pass."""
-        jobs = [{"a": a, "b": b, "seed": seed * 1000003 + k * openings + o, "pair": k}
+        Sent in chunks of at most `chunk` deals: all of a chunk's states go through one forward pass.
+
+        states=True also returns the states the values were read at, one per deal in the order
+        (pair, opening): {"live": [J] (0 if the game ended in setup), "pooled": [J, d] (the encoder's
+        token 0), and the five token inputs}, for deck embeddings and the edit head (rl/deck_head.py)."""
+        jobs = [{"a": a, "b": b, "seed": seed * 1000003 + k * openings + o, "pair": k, "job": k * openings + o}
                 for k, (a, b) in enumerate(pairs) for o in range(openings)]
         tot = np.zeros(len(pairs))
+        out = None
         chunk = 4096
         for c in range(0, len(jobs), chunk):
             part = jobs[c:c + chunk]
             shards = [part[w::self.workers] for w in range(self.workers)]
             msgs = [{"cmd": "values", "decks": decks, "jobs": sh} for sh in shards]
-            replies = self.pool.collect(msgs, {0: self.model}, self.device)
-            for sh, rep in zip(shards, replies):
+            self.pool.capture = {} if states else None
+            try:
+                replies = self.pool.collect(msgs, {0: self.model}, self.device)
+                cap, self.pool.capture = self.pool.capture, None
+            finally:
+                self.pool.capture = None
+            for w, (sh, rep) in enumerate(zip(shards, replies)):
                 for j, v in zip(sh, rep["values"]):
                     tot[j["pair"]] += v
-        return tot / openings
+                if not states or not sh:
+                    continue
+                got = cap.get(w, [])
+                arrs = {k: np.concatenate([g[0][k] for g in got]) for k in got[0][0]} if got else {}
+                pooled = np.concatenate([g[1] for g in got]) if got else None
+                live = [j for j, l in zip(sh, rep["live"]) if l]
+                assert len(live) == (len(pooled) if got else 0), "captured states do not match the live deals"
+                if out is None and got:
+                    out = {"live": np.zeros(len(jobs), np.uint8),
+                           "pooled": np.zeros((len(jobs), pooled.shape[1]), np.float32),
+                           **{k: np.zeros((len(jobs),) + a.shape[1:], a.dtype) for k, a in arrs.items()}}
+                idx = np.array([j["job"] for j in live], dtype=np.int64)
+                if len(idx):
+                    out["live"][idx] = 1
+                    out["pooled"][idx] = pooled
+                    for k, a in arrs.items():
+                        out[k][idx] = a
+        return (tot / openings, out) if states else tot / openings
 
     def close(self):
         self.pool.close()

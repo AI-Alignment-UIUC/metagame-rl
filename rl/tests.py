@@ -5,6 +5,9 @@
   mask allows, followed by any addition it allows, leaves a legal deck, and every single-card
   swap that leaves a legal deck is allowed by the masks
 - random legal decks (rl/psro.py) are legal
+- edit head (rl/deck_head.py): scores every card, its proposals are legal swaps, and a deck's
+  novelty is about 1 for a member of the reference set (in units of its own spacing) and large far
+  from it
 """
 import json
 import sys
@@ -62,6 +65,32 @@ def main():
                         failures.append(f"{name}: masks forbid a legal swap {pool.full_name[r]} -> {pool.full_name[a]}")
                     checked += 1
         print(f"{name} pool: {checked} single-card swaps checked")
+    from rl.deck_head import EditHead, EditLearner, Novelty
+    from rl.token_model import TokenPointerNet
+    pilot = TokenPointerNet(table, text, n_names=8, glob_f=82, slot_f=20, max_tok=128, max_cand=48).eval()
+    learner = EditLearner(pilot, Pool().n, "cpu")
+    B, T = 3, 128
+    states = {"tok_card": rng.integers(1, Pool().n, (B, T)).astype(np.int16),
+              "tok_kind": np.ones((B, T), np.uint8), "tok_aux": np.ones((B, T), np.uint8),
+              "glob": np.zeros((B, 82), np.uint8), "slots": np.zeros((B, 240), np.uint8)}
+    a, r = learner.scores(states, np.full(B, 1 / B))
+    if a.shape != (Pool().n,) or r.shape != (Pool().n,):
+        failures.append(f"edit head: scores shaped {tuple(a.shape)}, {tuple(r.shape)}")
+    learner.add(states, np.full(B, 1 / B), np.array([[1, 2], [3, 4], [5, 6]]), np.array([0.1, -0.1, 0.0]))
+    if not np.isfinite(learner.train(2, batch=1)):
+        failures.append("edit head: training loss not finite")
+    a, r = learner.scores(states, np.full(B, 1 / B))
+    for name, v in archived[:6]:
+        for _ in range(20):
+            w = learner.propose(Pool(), v, a.numpy() + rng.normal(size=a.shape), r.numpy(), rng, 0.5)
+            if not Pool().legal(w) or np.abs(w - v).sum() != 2:
+                failures.append(f"edit head: illegal proposal for {name}")
+    Z = rng.normal(size=(10, 16))
+    nov = Novelty(Z)
+    near, far = float(nov(Z[:1])[0]), float(nov(Z[:1] + 100.0)[0])
+    if not (near < 2.0 < 10.0 < far):
+        failures.append(f"novelty: a member scores {near:.2f}, a far deck {far:.2f}")
+    print(f"edit head: {Pool().n} cards scored, 120 proposals checked; novelty scale {nov.scale:.3f}")
     for f in failures[:20]:
         print("FAIL", f)
     print("FAIL" if failures else "PASS")

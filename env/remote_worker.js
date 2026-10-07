@@ -146,7 +146,7 @@ async function values(cmd) {
   const out = [];
   for (let i = 0; i < live.length; i += 1024) out.push(...await agent.act(live.slice(i, i + 1024)));
   let k = 0;
-  return { ok: true, values: obs.map(o => (o ? out[k++].value : 0)) };
+  return { ok: true, values: obs.map(o => (o ? out[k++].value : 0)), live: obs.map(o => (o ? 1 : 0)) };
 }
 
 let queue = Promise.resolve();

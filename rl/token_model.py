@@ -148,8 +148,9 @@ class TokenPointerNet(nn.Module):
     def card_emb(self, ids):
         return self.card_struct(self.card_feats[ids]) + self.card_text(self.text_emb[ids]) + self.card_resid(ids)
 
-    def forward(self, tok_card, tok_kind, tok_aux, glob, slots, cand, n_cand):
-        tok_card, tok_kind, tok_aux, cand = tok_card.long(), tok_kind.long(), tok_aux.long(), cand.long()
+    def encode(self, tok_card, tok_kind, tok_aux, glob, slots):
+        """The state's encoded tokens [B, T, d] and their mask [B, T]; token 0 is the pooled state."""
+        tok_card, tok_kind, tok_aux = tok_card.long(), tok_kind.long(), tok_aux.long()
         B, T = tok_card.shape
         mask = tok_kind > 0
         x = self.card_emb(tok_card) + self.kind(tok_kind) + self.aux(tok_aux)
@@ -159,7 +160,12 @@ class TokenPointerNet(nn.Module):
         x = x + torch.cat([g, s, pad], dim=1)
         for b in self.blocks:
             x = b(x, mask)
-        x = self.ln_out(x)
+        return self.ln_out(x), mask
+
+    def forward(self, tok_card, tok_kind, tok_aux, glob, slots, cand, n_cand, return_pooled: bool = False):
+        cand = cand.long()
+        B = tok_card.shape[0]
+        x, mask = self.encode(tok_card, tok_kind, tok_aux, glob, slots)
         pooled = x[:, 0]
 
         cand = cand.view(B, self.max_cand, 6)
@@ -179,7 +185,8 @@ class TokenPointerNet(nn.Module):
         logits = self.score(c).squeeze(-1)
         valid = torch.arange(self.max_cand, device=cand.device)[None, :] < n_cand.long().view(B, 1)
         logits = logits.masked_fill(~valid, -1e9)
-        return logits, torch.tanh(self.value(pooled)).squeeze(-1)
+        value = torch.tanh(self.value(pooled)).squeeze(-1)
+        return (logits, value, pooled) if return_pooled else (logits, value)
 
     def config(self) -> dict:
         return dict(self.cfg)

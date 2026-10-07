@@ -112,17 +112,79 @@ class ValueScorer:
     sigma, mapped to [0, 1] so it reads like a win rate."""
     name, candidates = "value", 12
 
-    def __init__(self, gm, openings: int = 8, max_support: int = 6):
+    def __init__(self, gm, openings: int = 8, max_support: int = 6, novelty: float = 0.0, edit=None,
+                 head_share: float = 0.5, head_tau: float = 0.5, train_every: int = 20):
+        """novelty > 0 adds novelty x the deck's novelty in the pilot's own embedding (rl/deck_head.py:
+        mean distance to the 5 nearest population decks, 1 = the population's typical spacing).
+        edit: an rl.deck_head.EditLearner, trained on every climb step's scored swaps and proposing
+        head_share of the swaps from the second step of a climb on."""
         self.gm, self.openings, self.max_support = gm, openings, max_support
+        self.novelty, self.edit = novelty, edit
+        self.head_share, self.head_tau, self.train_every = head_share, head_tau, train_every
+        self.cache, self.observed, self.head_loss = {}, 0, []
 
-    prepare = GamesScorer.prepare
+    def prepare(self, pop, sigma, seed):
+        GamesScorer.prepare(self, pop, sigma, seed)
+        self.cache = {}
+        self.nov = None
+        if self.novelty > 0:
+            from rl.deck_head import Novelty, deck_embeddings
+            n = len(self.opp_decks)
+            decks = self.opp_decks + [{"name": f"p{k}", "cards": pop.pool.names(v)} for k, v in enumerate(pop.decks)]
+            pairs = [(n + k, j) for k in range(len(pop.decks)) for j in range(n)]
+            _, st = self.gm.values(decks, pairs, self.openings, self.seed + 1, states=True)
+            self.nov = Novelty(deck_embeddings(st, len(pop.decks), n, self.openings, self.w))
+        if self.edit is not None:
+            self.edit.pilot = self.gm.model           # the pilot may have been fine-tuned since
+            if self.edit.buf:
+                self.head_loss.append(self.edit.train(60))
+
+    def _deck_states(self, st, k, n):
+        """Deck k's live states of the last call and their weights (w over opponents, even over deals)."""
+        o = self.openings
+        rows = np.arange(k * n * o, (k + 1) * n * o)
+        live = st["live"][rows].astype(bool)
+        per_opp = st["live"][rows].reshape(n, o).sum(1)
+        w = np.repeat(self.w / np.maximum(per_opp, 1), o)[live]
+        return {key: st[key][rows[live]] for key in ("tok_card", "tok_kind", "tok_aux", "glob", "slots")}, w / w.sum()
 
     def __call__(self, cands):
         n = len(self.opp_decks)
         decks = self.opp_decks + [{"name": f"c{k}", "cards": self.pool.names(c)} for k, c in enumerate(cands)]
         pairs = [(n + k, j) for k in range(len(cands)) for j in range(n)]
-        v = self.gm.values(decks, pairs, self.openings, self.seed).reshape(len(cands), n)
-        return 0.5 + 0.5 * (v * self.w[None, :]).sum(1)
+        if self.nov is None and self.edit is None:
+            v = self.gm.values(decks, pairs, self.openings, self.seed).reshape(len(cands), n)
+            return 0.5 + 0.5 * (v * self.w[None, :]).sum(1)
+        v, st = self.gm.values(decks, pairs, self.openings, self.seed, states=True)
+        self.base = 0.5 + 0.5 * (v.reshape(len(cands), n) * self.w[None, :]).sum(1)
+        if self.edit is not None:
+            self.cache = {c.tobytes(): self._deck_states(st, k, n) for k, c in enumerate(cands)}
+        if self.nov is None:
+            return self.base
+        from rl.deck_head import deck_embeddings
+        self.last_novelty = self.nov(deck_embeddings(st, len(cands), n, self.openings, self.w))
+        return self.base + self.novelty * self.last_novelty
+
+    def head_swaps(self, cur, m, rng):
+        """m swaps proposed by the edit head for the current deck, or None before the head has
+        data or when the deck's states are not in the last call."""
+        if self.edit is None or not self.edit.buf or cur.tobytes() not in self.cache:
+            return None
+        states, w = self.cache[cur.tobytes()]
+        a, r = self.edit.scores(states, w)
+        a, r = a.cpu().numpy(), r.cpu().numpy()
+        return [self.edit.propose(self.pool, cur, a, r, rng, self.head_tau) for _ in range(m)]
+
+    def observe(self, cur, cands):
+        """After a climb step: the current deck's states and the base score change of each swap."""
+        if self.edit is None or cur.tobytes() not in self.cache:
+            return
+        states, w = self.cache[cur.tobytes()]
+        swaps = np.array([[int(np.argmax(c - cur)), int(np.argmax(cur - c))] for c in cands])
+        self.edit.add(states, w, swaps, self.base[1:] - self.base[0])
+        self.observed += 1
+        if self.observed % self.train_every == 0:
+            self.head_loss.append(self.edit.train(5))
 
 
 class StrengthScorer:
@@ -198,6 +260,7 @@ def search(scorer, pop, sigma, k: int, seconds: float, rng, random_deck, restart
     t_prep = time.time() - t0
     support = [i for i in np.argsort(-sigma) if sigma[i] > 1e-3]
     finals, runs = [], []
+    by_src, best_src = ([], []), [0, 0]      # score changes of random (0) and head (1) swaps
     while time.time() - t0 < t_search:
         if rng.random() < restart_random or not support:
             start, origin = random_deck(pool, rng), "random"
@@ -211,17 +274,33 @@ def search(scorer, pop, sigma, k: int, seconds: float, rng, random_deck, restart
             while changed(cur, start) < MIN_CHANGED:
                 cur = random_swap(pool, cur, rng)
         while steps < max_steps and stall < patience and time.time() - t0 < t_search:
-            cands = []
+            cands, src = [], []
+            m_head = int(round(scorer.candidates * getattr(scorer, "head_share", 0.0)))
+            head = scorer.head_swaps(cur, m_head * 4, rng) if m_head and hasattr(scorer, "head_swaps") else None
+            for c in head or []:
+                if changed(c, start) <= budget and pool.legal(c) and not (c == cur).all():
+                    cands.append(c)
+                    src.append(1)
+                if len(cands) == m_head:
+                    break
             for _ in range(scorer.candidates * 4):
+                if len(cands) >= scorer.candidates:
+                    break
                 c = random_swap(pool, cur, rng)
                 if changed(c, start) <= budget and pool.legal(c):
                     cands.append(c)
-                if len(cands) == scorer.candidates:
-                    break
+                    src.append(0)
             if not cands:
                 break
             s = scorer([cur] + cands)          # the current deck rescored with the candidates
             scored += len(cands)
+            if getattr(scorer, "edit", None) is not None:
+                scorer.observe(cur, cands)
+                base = scorer.base
+                for k, sk in enumerate(src):
+                    by_src[sk].append(float(base[1 + k] - base[0]))
+                if head is not None:
+                    best_src[src[int(np.argmax(base[1:]))]] += 1
             cur_score = float(s[0])
             if cur_score > best_score:
                 best_deck, best_score = cur, cur_score
@@ -275,4 +354,12 @@ def search(scorer, pop, sigma, k: int, seconds: float, rng, random_deck, restart
             "from_random": sum(r["origin"] == "random" for r in runs), "runs": runs}
     if getattr(scorer, "fits", None):
         info["model_fit"] = scorer.fits
+    if any(by_src):
+        info["swaps"] = {name: {"n": len(d), "mean_delta": round(float(np.mean(d)), 5) if d else None,
+                                "improve": round(float(np.mean(np.array(d) > 0)), 4) if d else None}
+                         for name, d in zip(("random", "head"), by_src)}
+        info["best_from"] = {"random": best_src[0], "head": best_src[1]}
+        info["head_loss"] = [round(x, 4) for x in getattr(scorer, "head_loss", []) if x is not None][-5:]
+    if getattr(scorer, "nov", None) is not None:
+        info["novelty_scale"] = round(scorer.nov.scale, 4)
     return chosen, info

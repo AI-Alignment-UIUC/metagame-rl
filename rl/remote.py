@@ -51,6 +51,7 @@ class RemotePool:
         self.procs = [subprocess.Popen(["node", str(ROOT / "env" / "remote_worker.js")], cwd=ROOT,
                                        stdin=subprocess.PIPE, stdout=subprocess.PIPE, bufsize=0) for _ in range(n)]
         self.q = queue.Queue()
+        self.capture = None     # {worker: [(inputs, pooled)]} while set: slot 0's token inputs and pooled states
         for i, p in enumerate(self.procs):
             threading.Thread(target=self._reader, args=(i, p), daemon=True).start()
 
@@ -130,7 +131,15 @@ class RemotePool:
             if group[0][1]["encoding"] == "tokens":
                 inputs = [cat(k) for k in TOKEN_INPUTS]
                 inputs = [x.view(B, -1) if k != "n_cand" else x for k, x in zip(TOKEN_INPUTS, inputs)]
-                logits, value = model(*inputs)
+                if self.capture is not None and slot == 0:
+                    logits, value, pooled = model(*inputs, return_pooled=True)
+                    pooled, start = pooled.float().cpu().numpy(), 0
+                    for (i, h, a), n in zip(group, ns):
+                        self.capture.setdefault(i, []).append(
+                            ({k: a[k].reshape(n, -1) for k in TOKEN_INPUTS[:5]}, pooled[start:start + n]))
+                        start += n
+                else:
+                    logits, value = model(*inputs)
             else:
                 logits, value = model(cat("obs").view(B, -1))
             rows, cols, row = [], [], 0

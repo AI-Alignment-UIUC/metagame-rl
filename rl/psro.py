@@ -140,6 +140,13 @@ def main(argv=None):
     ap.add_argument("--search-seconds", type=float, default=120, help="wall-clock budget per search (rl/search.py)")
     ap.add_argument("--search-temperature", type=float, default=0.0,
                     help="sample climb steps, finalists and proposals from softmax(score / T) (0: greedy)")
+    ap.add_argument("--novelty", type=float, default=0.0,
+                    help="--builder value: add this x the deck's novelty in the pilot's embedding (rl/deck_head.py)")
+    ap.add_argument("--edit-head", action="store_true",
+                    help="--builder value: train an edit head on the pilot's encoder from the search's scored swaps "
+                         "and let it propose --head-share of the swaps (rl/deck_head.py)")
+    ap.add_argument("--head-share", type=float, default=0.5)
+    ap.add_argument("--head-tau", type=float, default=0.5)
     ap.add_argument("--strength-model", default="notes/data/eval/strength_model.json",
                     help="--builder strength: the deck-strength model (notes/scripts/deck_strength.py)")
     ap.add_argument("--edits", type=int, default=16)
@@ -192,7 +199,14 @@ def main(argv=None):
     scorer = None
     if args.builder != "edit":
         from rl.search import GamesScorer, ModelScorer, StrengthScorer, ValueScorer
-        scorer = {"games": lambda: GamesScorer(gpu), "value": lambda: ValueScorer(gpu),
+        def value_scorer():
+            edit = None
+            if args.edit_head:
+                from rl.deck_head import EditLearner
+                edit = EditLearner(gpu.model, pool.n, dev, seed=args.seed)
+            return ValueScorer(gpu, novelty=args.novelty, edit=edit, head_share=args.head_share if edit else 0.0,
+                               head_tau=args.head_tau)
+        scorer = {"games": lambda: GamesScorer(gpu), "value": value_scorer,
                   "model": lambda: ModelScorer(table, text, dev),
                   "strength": lambda: StrengthScorer(gpu, str(ROOT / args.strength_model))}[args.builder]()
     pending = []                                   # (deck index, predicted score, sigma at proposal)
