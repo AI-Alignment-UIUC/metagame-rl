@@ -14,6 +14,35 @@ much smaller: the **July 2000 Super Trainer Showdown (California)**. It has a 56
 that is now fully implemented in the engine and verified. Every part of the system gets built
 and proven there first.
 
+## In short
+
+**The approach, in three parts:**
+
+1. **A pilot** (one transformer policy) learns by self-play to play any deck.
+2. **A builder** edits decks, judging each one through the pilot's own value and representations.
+3. **PSRO** keeps the decks worth playing as an equilibrium mixture, since card metagames are
+   rock–paper–scissors rather than one best deck.
+
+The input is only the rules and the card pool: no human decklists, card-specific rules or fitted
+priors. The test is whether the result matches a real tournament field it never saw. (Phase A
+still has two priors to remove: the builder uses only the 56 cards the field played, and random
+starting decks are shaped like human decks, with 16–22 Energy.)
+
+**What is new:**
+
+- **The test is self-discovery.** Does an agent that starts from random decks rediscover what humans
+  actually played? Archived lists are used only as the answer key (staples, archetypes, counters),
+  never as input.
+- **Play and deck building are learned together, by one model.** The builder sees decks the way
+  the pilot plays them, so deck quality is defined by play.
+- **No prior work combines these for the Pokémon TCG.** We found no published RL work on its deck
+  building and play. The closest are surrogate-assisted deck search in Hearthstone and a single
+  draft-and-battle policy in Legends of Code and Magic (see the
+  [2026-10-06 analysis](notes/analysis-2026-10-06.md)).
+
+**The main lesson so far:** every deck judgment passes through the pilot. A biased or weak pilot
+gives a biased or blind builder, so pilot strength is the bottleneck.
+
 ## Status
 
 <!-- status:start -->
