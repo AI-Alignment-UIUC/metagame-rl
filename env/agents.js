@@ -84,7 +84,7 @@ class OnnxTokenAgent {
     return new OnnxTokenAgent(session, enc, opts);
   }
 
-  async act(batch) {
+  async act(batch, raw = false) {
     const ort = require('onnxruntime-node');
     const n = batch.length, e = this.enc;
     const tc = new Int16Array(n * e.MAX_TOK), tk = new Uint8Array(n * e.MAX_TOK), ta = new Uint8Array(n * e.MAX_TOK);
@@ -102,9 +102,20 @@ class OnnxTokenAgent {
       n_cand: new ort.Tensor('int32', nc, [n]),
     });
     const logits = out.logits.data, value = out.value.data;
+    if (raw) return { logits, value };
     return batch.map((b, i) => {
       const s = sampleMasked(logits, i * e.MAX_CAND, b.legal, this.rng, this.greedy);
       return { action: s.action, logp: s.logp, value: value[i] };
+    });
+  }
+
+  // Per state: the legal actions in order of the policy's preference, the best one, and the value.
+  async evaluate(batch) {
+    const { logits, value } = await this.act(batch, true);
+    const M = this.enc.MAX_CAND;
+    return batch.map((b, i) => {
+      const order = [...b.legal].sort((x, y) => logits[i * M + y] - logits[i * M + x]);
+      return { order, best: order[0], value: value[i] };
     });
   }
 }
@@ -303,3 +314,74 @@ function score(game, me) {
 
 module.exports.SearchAgent = SearchAgent;
 module.exports.heuristicIndex = heuristicIndex;
+
+// Flat policy-guided search over the token pilot (log #47), a first step toward ISMCTS. At a
+// main-phase decision with several options it takes the pilot's `k` most likely moves; for each,
+// `dets` copies of the game are made with what the deciding player can't see re-dealt at random
+// (Game.clone with a viewer), the move is played, and the pilot plays on (greedy, both seats)
+// until the turn changes or the game ends. The line is scored by the result, or the pilot's value
+// read from the deciding player's side; the move with the best mean wins. Prompts and single-option
+// decisions are left to the pilot. Rollouts of one decision run in lockstep, one batch per step.
+class PolicySearchAgent {
+  constructor(pilot, enc, { k = 4, dets = 4, maxSteps = 40, seed = 0 } = {}) {
+    this.pilot = pilot;
+    this.enc = enc;
+    this.k = k; this.dets = dets; this.maxSteps = maxSteps;
+    this.rng = new Rng(seed);
+  }
+
+  async act(batch) {
+    const base = await this.pilot.evaluate(batch);
+    const out = [];
+    for (let i = 0; i < batch.length; i++) {
+      const b = batch[i], e = base[i];
+      const d = b.env.game.decision();
+      if (d.prompt || b.legal.length < 2) { out.push({ action: e.best, logp: 0, value: e.value }); continue; }
+      out.push(await this.search(b, e));
+    }
+    return out;
+  }
+
+  async search(b, e) {
+    const { Env } = require('./env.js');
+    const me = b.env.current.playerId;
+    const cands = e.order.slice(0, this.k);
+    const startTurn = b.env.game.state.turn;
+    const lines = [];
+    for (const a of cands) {
+      for (let r = 0; r < this.dets; r++) {
+        const env = new Env(this.enc, { showOpponentDecklist: b.env.showOpponentDecklist, u8: b.env.u8 });
+        env.game = b.env.game.clone(new Rng(this.rng.u32()), me);
+        env.decklists = b.env.decklists;
+        env.observe();
+        lines.push({ a, env, t: env.step(a), score: null });
+      }
+    }
+    for (let step = 0; step < this.maxSteps; step++) {
+      const live = [];
+      for (const l of lines) {
+        if (l.score !== null) continue;
+        if (l.t.done) { l.score = l.t.winner === me ? 1 : (l.t.winner === 1 || l.t.winner === 2) ? -1 : 0; continue; }
+        live.push(l);
+      }
+      if (!live.length) break;
+      const ev = await this.pilot.evaluate(live.map(l => ({ obs: l.t.obs, legal: l.t.legal })));
+      live.forEach((l, i) => {
+        if (l.env.game.state.turn !== startTurn) {
+          l.score = l.t.playerId === me ? ev[i].value : -ev[i].value;
+        } else {
+          l.t = l.env.step(ev[i].best);
+        }
+      });
+    }
+    for (const l of lines) if (l.score === null) l.score = 0;   // still in the turn after maxSteps
+    let best = cands[0], bestMean = -Infinity;
+    for (const a of cands) {
+      const s = lines.filter(l => l.a === a).map(l => l.score);
+      const m = s.reduce((x, y) => x + y, 0) / s.length;
+      if (m > bestMean) { bestMean = m; best = a; }
+    }
+    return { action: best, logp: 0, value: bestMean };
+  }
+}
+module.exports.PolicySearchAgent = PolicySearchAgent;

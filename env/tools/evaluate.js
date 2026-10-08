@@ -39,6 +39,15 @@ async function makeAgent(spec, enc, seed) {
   if (spec === 'heuristic') return new HeuristicAgent();
   if (spec.startsWith('search')) { const [, r, d] = spec.split(':'); return new SearchAgent({ rollouts: Number(r || 8), depth: Number(d || 2), seed }); }
   if (spec === 'simplebot') return new SimpleBotAgent();
+  if (spec.startsWith('psearch:')) {
+    // psearch:<token.onnx>[:k[:dets]] - flat policy-guided search (env/agents.js PolicySearchAgent)
+    const { OnnxTokenAgent, PolicySearchAgent } = require('../agents.js');
+    const { TokenEncoder } = require('../tokens.js');
+    const [file, k, dets] = spec.slice(8).split(':');
+    const te = new TokenEncoder();
+    const pilot = await OnnxTokenAgent.load(file, te, { seed, greedy: true });
+    return new PolicySearchAgent(pilot, te, { k: Number(k || 4), dets: Number(dets || 4), seed });
+  }
   if (spec.startsWith('onnxtok:')) {
     const { OnnxTokenAgent } = require('../agents.js');
     const { TokenEncoder } = require('../tokens.js');
@@ -74,7 +83,7 @@ async function worker(from, to) {
   const { archivedDecks } = require('../decks.js');
   const decks = DECKS_FILE ? require('../decks.js').decksFromFile(DECKS_FILE) : archivedDecks();
   // A token-model agent needs token observations (the other agents choose by option either way).
-  const tok = [X, Y].some(sp => sp.startsWith('onnxtok:'));
+  const tok = [X, Y].some(sp => sp.startsWith('onnxtok:') || sp.startsWith('psearch:'));
   const enc = tok ? new (require('../tokens.js').TokenEncoder)() : identityEncoder();
   const agents = { x: await makeAgent(X, enc, AGENT_SEED * 7919 + from), y: await makeAgent(Y, enc, AGENT_SEED * 104729 + from) };
   const d1 = pickDecks(decks, D1), d2 = pickDecks(decks, D2);
