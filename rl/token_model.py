@@ -128,14 +128,15 @@ def count_features(aux: torch.Tensor) -> torch.Tensor:
 class TokenPointerNet(nn.Module):
     def __init__(self, card_table: list, text_emb: np.ndarray, n_names: int, glob_f: int, slot_f: int,
                  max_tok: int, max_cand: int, d: int = 192, layers: int = 3, heads: int = 4,
-                 count_features: bool = False):
+                 count_features: bool = False, cross_layers: int = 1, cand_self: int = 0):
         super().__init__()
         feats = torch.from_numpy(card_feature_matrix(card_table))
         self.register_buffer("card_feats", feats)
         self.register_buffer("text_emb", torch.from_numpy(text_emb.astype(np.float32)))
         n_cards = feats.shape[0]
         self.cfg = dict(kind="TokenPointerNet", n_names=n_names, glob_f=glob_f, slot_f=slot_f, max_tok=max_tok,
-                        max_cand=max_cand, d=d, layers=layers, heads=heads, count_features=count_features)
+                        max_cand=max_cand, d=d, layers=layers, heads=heads, count_features=count_features,
+                        cross_layers=cross_layers, cand_self=cand_self)
         self.max_tok, self.max_cand, self.glob_f, self.slot_f = max_tok, max_cand, glob_f, slot_f
         self.action_size = max_cand
         self.card_struct = nn.Linear(feats.shape[1], d)
@@ -158,6 +159,17 @@ class TokenPointerNet(nn.Module):
         self.extra = nn.Embedding(64, d)
         self.cand_in = nn.Linear(d, d)
         self.cross = CrossBlock(d, heads, 2 * d)
+        # Optional extra candidate layers (log #47's architecture test). Each starts as the identity
+        # (its residual outputs zeroed), so a model with them loads a checkpoint without them and
+        # plays exactly as it did before fine-tuning:
+        #   cross_layers - 1 more cross-attention blocks, candidates to the state tokens
+        #   cand_self blocks in which the candidates attend to each other (options compared)
+        self.cross_extra = nn.ModuleList([CrossBlock(d, heads, 2 * d) for _ in range(cross_layers - 1)])
+        self.cand_blocks = nn.ModuleList([Block(d, heads, 2 * d) for _ in range(cand_self)])
+        for blk in list(self.cross_extra) + list(self.cand_blocks):
+            for lin in (blk.proj, blk.ff[-1]):
+                nn.init.zeros_(lin.weight)
+                nn.init.zeros_(lin.bias)
         self.score = nn.Sequential(nn.LayerNorm(d), nn.Linear(d, d), nn.GELU(), nn.Linear(d, 1))
         self.value = nn.Sequential(nn.LayerNorm(d), nn.Linear(d, d), nn.GELU(), nn.Linear(d, 1))
         nn.init.zeros_(self.score[-1].weight)
@@ -204,8 +216,14 @@ class TokenPointerNet(nn.Module):
              + self.extra(extra.clamp(0, 63)))
         c = self.cand_in(c) + pooled[:, None, :]
         c = self.cross(c, x, mask)
-        logits = self.score(c).squeeze(-1)
         valid = torch.arange(self.max_cand, device=cand.device)[None, :] < n_cand.long().view(B, 1)
+        for i, blk in enumerate(self.cand_blocks):
+            if i < len(self.cross_extra):
+                c = self.cross_extra[i](c, x, mask)
+            c = blk(c, valid)
+        for blk in self.cross_extra[len(self.cand_blocks):]:
+            c = blk(c, x, mask)
+        logits = self.score(c).squeeze(-1)
         logits = logits.masked_fill(~valid, -1e9)
         value = torch.tanh(self.value(pooled)).squeeze(-1)
         return (logits, value, pooled) if return_pooled else (logits, value)

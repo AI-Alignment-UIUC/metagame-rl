@@ -193,7 +193,8 @@ def build_model(args, info):
         return build_token_model(str(ROOT / "notes/data/cards/pool.json"), str(ROOT / "notes/data/cards/text_emb.npy"),
                                  t["names"], t["globF"], t["slotF"], t["maxTok"], t["maxCand"],
                                  d=args.d, layers=args.tok_layers, heads=args.heads,
-                                 count_features=args.count_features)
+                                 count_features=args.count_features, cross_layers=args.cross_layers,
+                                 cand_self=args.cand_self)
     i = info["identity"] if "identity" in info else info
     return IdentityMLP(i["obsSize"], i["actionSize"], args.hidden, args.layers)
 
@@ -226,6 +227,8 @@ def main(argv=None):
     ap.add_argument("--d", type=int, default=192, help="token model width")
     ap.add_argument("--tok-layers", type=int, default=3)
     ap.add_argument("--heads", type=int, default=4)
+    ap.add_argument("--cross-layers", type=int, default=1, help="token model: candidate cross-attention blocks")
+    ap.add_argument("--cand-self", type=int, default=0, help="token model: blocks where candidates attend to each other")
     ap.add_argument("--count-features", action="store_true",
                     help="token model: ordered count features (rl/token_model.py count_features)")
     ap.add_argument("--lr", type=float, default=3e-4)
@@ -291,7 +294,13 @@ def main(argv=None):
     snapshots = []            # onnx: policy files; gpu: state-dict files
     ckpt = run / "checkpoint.pt"
     if args.init_from:
-        model.load_state_dict(torch.load(ROOT / args.init_from, map_location=device)["model"])
+        # Layers the checkpoint lacks (extra candidate blocks) keep their identity initialization.
+        missing, unexpected = model.load_state_dict(torch.load(ROOT / args.init_from, map_location=device)["model"],
+                                                    strict=False)
+        assert not unexpected, f"checkpoint has weights this model lacks: {unexpected[:5]}"
+        assert all(k.startswith(("cross_extra.", "cand_blocks.")) for k in missing), f"missing weights: {missing[:5]}"
+        if missing:
+            print(f"init-from: {len(missing)} new weights left at identity ({sorted({k.split('.')[0] for k in missing})})")
     if args.resume and ckpt.exists():
         state = torch.load(ckpt, map_location=device)
         model.load_state_dict(state["model"])

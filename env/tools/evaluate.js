@@ -26,6 +26,7 @@ const GAMES = Number(flag('games', 200));
 const WORKERS = Number(flag('workers', Math.max(1, os.cpus().length - 4)));
 const CONCURRENCY = Number(flag('concurrency', 16));
 const SEED = Number(flag('seed', 1));
+const AGENT_SEED = Number(flag('agent-seed', SEED));   // the agents' own sampling; --seed fixes the deals
 const JSON_OUT = flag('json', null);
 const DECKS_FILE = flag('decks-file', null);   // JSON [{ name, cards }] instead of the archived decks
 const MIRROR = argv.includes('--mirror');        // both sides play the same deck (piloting skill per deck)
@@ -75,7 +76,7 @@ async function worker(from, to) {
   // A token-model agent needs token observations (the other agents choose by option either way).
   const tok = [X, Y].some(sp => sp.startsWith('onnxtok:'));
   const enc = tok ? new (require('../tokens.js').TokenEncoder)() : identityEncoder();
-  const agents = { x: await makeAgent(X, enc, SEED * 7919 + from), y: await makeAgent(Y, enc, SEED * 104729 + from) };
+  const agents = { x: await makeAgent(X, enc, AGENT_SEED * 7919 + from), y: await makeAgent(Y, enc, AGENT_SEED * 104729 + from) };
   const d1 = pickDecks(decks, D1), d2 = pickDecks(decks, D2);
   let g = from;
   const meta = new Map();
@@ -98,7 +99,7 @@ async function worker(from, to) {
   return out.results.map(r => {
     const m = meta.get(r.seed);
     return { xWins: r.winner === m.xSeat ? 1 : (r.winner === 1 || r.winner === 2) ? 0 : 0.5, cut: r.winner !== 1 && r.winner !== 2,
-      xDeckIsD1: m.xDeckIsD1, xDeck: m.xDeck, xSeat: m.xSeat, steps: r.steps, error: r.error };
+      xDeckIsD1: m.xDeckIsD1, xDeck: m.xDeck, xSeat: m.xSeat, steps: r.steps, error: r.error, seed: r.seed };
   });
 }
 

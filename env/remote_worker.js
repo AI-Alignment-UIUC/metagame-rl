@@ -19,7 +19,7 @@ const { Encoder } = require('./encode.js');
 const { TokenEncoder } = require('./tokens.js');
 const { Runner, packRollout } = require('./runner.js');
 const { archivedDecks } = require('./decks.js');
-const { RandomAgent, FirstAgent, HeuristicAgent } = require('./agents.js');
+const { RandomAgent, FirstAgent, HeuristicAgent, SimpleBotAgent } = require('./agents.js');
 const { Rng } = require('./rng.js');
 const F = require('./framing.js');
 
@@ -85,6 +85,7 @@ async function collect(cmd) {
     else if (o.spec === 'random') agents[name] = new RandomAgent({ seed: cmd.seed + i });
     else if (o.spec === 'first') agents[name] = new FirstAgent();
     else if (o.spec === 'heuristic') agents[name] = new HeuristicAgent();
+    else if (o.spec === 'simplebot') agents[name] = new SimpleBotAgent();
     else throw new Error('unknown opponent ' + o.spec);
     opponents.push({ name, weight: o.weight });
   }

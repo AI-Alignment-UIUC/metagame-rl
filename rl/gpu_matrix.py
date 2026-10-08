@@ -31,7 +31,8 @@ def load_policy(path: str, device: str):
         m = build_token_model(str(ROOT / "notes/data/cards/pool.json"), str(ROOT / "notes/data/cards/text_emb.npy"),
                               cfg["n_names"], cfg["glob_f"], cfg["slot_f"], cfg["max_tok"], cfg["max_cand"],
                               d=cfg["d"], layers=cfg["layers"], heads=cfg["heads"],
-                              count_features=cfg.get("count_features", False))
+                              count_features=cfg.get("count_features", False),
+                              cross_layers=cfg.get("cross_layers", 1), cand_self=cfg.get("cand_self", 0))
         enc = "tokens"
     else:
         from rl.model import build
