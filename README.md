@@ -53,17 +53,18 @@ gives a biased or blind builder, so pilot strength is the bottleneck.
 ## Status
 
 <!-- status:start -->
-*Updated 2026-10-07.*
+*Updated 2026-10-09.*
 
 **Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup
 matrix. In A5, scoring candidate decks by the pilot's own value beat the other builder designs
 ([2000s result #1](results/2000s-result-1/)), and piloting every PSRO iteration made the first built
 metagame to beat the archived field (60.7%), but value-driven search keeps converging on Energy-heavy
-decks with few Trainers. Better search does not fix this: an edit head, less scoring noise and a
-novelty bonus each move the search harder or more widely, and only novelty helps, by 8 points on
-average and not in every seed, so the pilot's value is the bottleneck. Phase B (Worlds 2005) has
-started in parallel: two lists build and play, and the engine passes its spec suite and a random-deck
-fuzz over all 340 2005 cards it has.
+decks, and no change to the search (edit head in four modes, less noise, novelty) fixes it, so the
+pilot is the bottleneck. A larger human-free pilot plateaus near 83% against SimpleBot, and neither
+extra attention nor one-turn play-time search (psearch) makes it stronger against an outside
+opponent, though psearch beats its own greedy policy 65%. The scope is now a general self-discovery
+method for TCGs (no archived lists or hand-written bots in training), with a design for learned-model
+search and expert iteration; Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
 
 **Earlier work:**
 
@@ -109,30 +110,40 @@ fuzz over all 340 2005 cards it has.
   still at ~30 Energy and below Graham's list (68.1%). Jobs are capped at ~80% of the machine
   after three crashes.
 
-**Recent (log #41–46):** A pilot trained only on random decks is calibrated but barely tells decks
-apart, and searching with it converges on 32-36 Energy decks: an edit head on its encoder got there
-faster, removing the scorer's deal noise made decks worse, and a novelty bonus in the same embedding
-beat the plain search in 3 of 4 seeds by 8 points on average under that pilot (1.5 under result #1's),
-its one Trainer-rich deck (24 Trainers, 71.8% against the field) being mostly seed luck. Phase B
-started on the engine's `worlds-2005` branch: Birds and ZapTurnDos build and play, the 2005 legal pool
-is 959 cards of which the engine has 340, and a random-deck fuzz plays 1,500/1,500 games over all of
-them after fixing an engine hang and three card bugs; the env's "flip until tails" hang, which Geodude
-Fossil could also trigger in the 2000 full pool, is fixed with no change to any 2000 game.
+- **Log #41–48 (A4, A5, B1–B2).** A pilot trained only on random decks is calibrated but barely tells
+  decks apart, and every way of searching harder with the value (an edit head in four modes, common
+  deals) gave worse real decks, while novelty helps only on average (8 points, 3 of 4 seeds) and its
+  Trainer-rich deck was mostly seed luck; pilot-v2, twice the size with count features, plateaus at
+  ~83% against SimpleBot. Phase B started on the engine's `worlds-2005` branch: Birds and ZapTurnDos
+  play, the engine has 340 of the 959 legal 2005 cards and a random-deck fuzz plays 1,500/1,500 games
+  over them after an engine hang and three card bugs were fixed, and the env's "flip until tails" hang
+  (also reachable from Geodude Fossil in the 2000 pool) is capped with no change to any 2000 game.
+
+**Recent (log #49–51):** Sampling pilot-v2 shows a best-of-9 ceiling of 97.6% against 82.9% greedy
+(overstated by luck), but extra attention layers add nothing over the same fine-tuning, and psearch,
+which re-deals hidden cards and finishes the turn with the pilot, gains nothing against SimpleBot
+while beating its own greedy policy 65.4% ± 6.0, so its gains may not transfer. The project's scope
+was set as a general self-discovery method for TCGs, which rules out training on archived lists or
+against hand-written bots and marks the Pokémon-specific representation and the deck-out reward for
+replacement; a design for search in a learned action-sequence model with expert iteration is written
+([notes](notes/design-action-sequence-search.md)).
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. A better objective before more search: a stronger human-free pilot (batch league snapshots, a
-   larger token model, an ordinal count encoding since the count embedding never trained), judged by
-   how much deck choice moves its results.
-2. Search safeguards against the value's errors: pessimistic acceptance, a trust region around
-   real-tested decks; novelty on by default, the edit head and common deals off until the value improves.
-3. A regret-curated deck curriculum for the pilot (PLR / ACCEL), with novelty finding candidates.
-4. Phase B verification beyond self-written tests: rule invariants checked in the fuzz, tests written by
-   an independent author, and EX-era official rulings as ground truth.
-5. Phase B content: 2005 rules in the env, six audited card-text fixes, then ZRE, Blastoise ex and
-   Nidoqueen.
+1. Check whether psearch's gain transfers: against an independently trained pilot (log #42's) in both
+   directions, and with more re-deals.
+2. General measures of the pilot, alongside SimpleBot as a yardstick: Elo against past snapshots,
+   exploitability, and deck sensitivity (how much deck choice moves its results).
+3. Expert iteration from self-play with the plain game result as reward, with psearch as the search
+   if (1) shows a transferable gain; otherwise go to (4)-(5) first.
+4. A game-agnostic representation (cards as entities with zone and owner, actions as pointers to
+   entities, cards from rules text), retrained from scratch to pilot-v2's level.
+5. The learned action-sequence model and Gumbel MCTS ([design](notes/design-action-sequence-search.md)).
+6. Phase B, in parallel: verification beyond self-written tests (rule invariants in the fuzz,
+   independently written tests, EX-era rulings), then 2005 rules in the env, six audited card-text
+   fixes, ZRE, Blastoise ex and Nidoqueen.
 <!-- status:end -->
 
 ---

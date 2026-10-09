@@ -1,0 +1,967 @@
+{
+ "games_per_pair": 60,
+ "panel": 59,
+ "from_runs": 35,
+ "matrix": {
+  "games": 102660,
+  "seconds": 574.4,
+  "games_per_s": 178.7,
+  "errors": 0,
+  "cut": 335,
+  "endings": {
+   "no-pokemon": 13418,
+   "prizes": 81331,
+   "deck-out": 7576
+  },
+  "decisions_per_game": 150.7
+ },
+ "head_to_head": {
+  "hn-nov": {
+   "hn-nov-s4": 0.5167,
+   "hn-nov-s5": 0.7167,
+   "hm-screen-s3": 0.6542,
+   "hm-screen-s4": 0.8132,
+   "hm-screen-s5": 0.6452,
+   "hm-combine-s3": 0.6,
+   "hm-combine-s4": 0.7561,
+   "hm-combine-s5": 0.6,
+   "hm-agree-s3": 0.6428,
+   "hm-agree-s4": 0.6388,
+   "hm-agree-s5": 0.7009,
+   "archived": 0.7094
+  },
+  "hn-nov-s4": {
+   "hn-nov": 0.4833,
+   "hn-nov-s5": 0.6111,
+   "hm-screen-s3": 0.5979,
+   "hm-screen-s4": 0.5701,
+   "hm-screen-s5": 0.5631,
+   "hm-combine-s3": 0.5333,
+   "hm-combine-s4": 0.653,
+   "hm-combine-s5": 0.5667,
+   "hm-agree-s3": 0.4971,
+   "hm-agree-s4": 0.5848,
+   "hm-agree-s5": 0.6206,
+   "archived": 0.5924
+  },
+  "hn-nov-s5": {
+   "hn-nov": 0.2833,
+   "hn-nov-s4": 0.3889,
+   "hm-screen-s3": 0.5392,
+   "hm-screen-s4": 0.5715,
+   "hm-screen-s5": 0.4966,
+   "hm-combine-s3": 0.4778,
+   "hm-combine-s4": 0.6221,
+   "hm-combine-s5": 0.4889,
+   "hm-agree-s3": 0.4715,
+   "hm-agree-s4": 0.5229,
+   "hm-agree-s5": 0.4785,
+   "archived": 0.537
+  },
+  "hm-screen-s3": {
+   "hn-nov": 0.3458,
+   "hn-nov-s4": 0.4021,
+   "hn-nov-s5": 0.4608,
+   "hm-screen-s4": 0.4442,
+   "hm-screen-s5": 0.4571,
+   "hm-combine-s3": 0.4208,
+   "hm-combine-s4": 0.5536,
+   "hm-combine-s5": 0.3729,
+   "hm-agree-s3": 0.4561,
+   "hm-agree-s4": 0.4812,
+   "hm-agree-s5": 0.4593,
+   "archived": 0.5814
+  },
+  "hm-screen-s4": {
+   "hn-nov": 0.1868,
+   "hn-nov-s4": 0.4299,
+   "hn-nov-s5": 0.4285,
+   "hm-screen-s3": 0.5558,
+   "hm-screen-s5": 0.4645,
+   "hm-combine-s3": 0.3788,
+   "hm-combine-s4": 0.5915,
+   "hm-combine-s5": 0.4897,
+   "hm-agree-s3": 0.4561,
+   "hm-agree-s4": 0.5055,
+   "hm-agree-s5": 0.4768,
+   "archived": 0.4213
+  },
+  "hm-screen-s5": {
+   "hn-nov": 0.3548,
+   "hn-nov-s4": 0.4369,
+   "hn-nov-s5": 0.5034,
+   "hm-screen-s3": 0.5429,
+   "hm-screen-s4": 0.5355,
+   "hm-combine-s3": 0.4833,
+   "hm-combine-s4": 0.5494,
+   "hm-combine-s5": 0.4238,
+   "hm-agree-s3": 0.4549,
+   "hm-agree-s4": 0.5516,
+   "hm-agree-s5": 0.4409,
+   "archived": 0.5234
+  },
+  "hm-combine-s3": {
+   "hn-nov": 0.4,
+   "hn-nov-s4": 0.4667,
+   "hn-nov-s5": 0.5222,
+   "hm-screen-s3": 0.5792,
+   "hm-screen-s4": 0.6212,
+   "hm-screen-s5": 0.5167,
+   "hm-combine-s4": 0.6318,
+   "hm-combine-s5": 0.4,
+   "hm-agree-s3": 0.5353,
+   "hm-agree-s4": 0.5903,
+   "hm-agree-s5": 0.457,
+   "archived": 0.5441
+  },
+  "hm-combine-s4": {
+   "hn-nov": 0.2439,
+   "hn-nov-s4": 0.347,
+   "hn-nov-s5": 0.3779,
+   "hm-screen-s3": 0.4464,
+   "hm-screen-s4": 0.4085,
+   "hm-screen-s5": 0.4506,
+   "hm-combine-s3": 0.3682,
+   "hm-combine-s5": 0.3833,
+   "hm-agree-s3": 0.4039,
+   "hm-agree-s4": 0.4864,
+   "hm-agree-s5": 0.4311,
+   "archived": 0.4174
+  },
+  "hm-combine-s5": {
+   "hn-nov": 0.4,
+   "hn-nov-s4": 0.4333,
+   "hn-nov-s5": 0.5111,
+   "hm-screen-s3": 0.6271,
+   "hm-screen-s4": 0.5103,
+   "hm-screen-s5": 0.5762,
+   "hm-combine-s3": 0.6,
+   "hm-combine-s4": 0.6167,
+   "hm-agree-s3": 0.4663,
+   "hm-agree-s4": 0.5879,
+   "hm-agree-s5": 0.6754,
+   "archived": 0.5903
+  },
+  "hm-agree-s3": {
+   "hn-nov": 0.3572,
+   "hn-nov-s4": 0.5029,
+   "hn-nov-s5": 0.5285,
+   "hm-screen-s3": 0.5439,
+   "hm-screen-s4": 0.5439,
+   "hm-screen-s5": 0.5451,
+   "hm-combine-s3": 0.4647,
+   "hm-combine-s4": 0.5961,
+   "hm-combine-s5": 0.5337,
+   "hm-agree-s4": 0.5317,
+   "hm-agree-s5": 0.5073,
+   "archived": 0.5742
+  },
+  "hm-agree-s4": {
+   "hn-nov": 0.3612,
+   "hn-nov-s4": 0.4152,
+   "hn-nov-s5": 0.4771,
+   "hm-screen-s3": 0.5188,
+   "hm-screen-s4": 0.4945,
+   "hm-screen-s5": 0.4484,
+   "hm-combine-s3": 0.4097,
+   "hm-combine-s4": 0.5136,
+   "hm-combine-s5": 0.4121,
+   "hm-agree-s3": 0.4683,
+   "hm-agree-s5": 0.4593,
+   "archived": 0.5145
+  },
+  "hm-agree-s5": {
+   "hn-nov": 0.2991,
+   "hn-nov-s4": 0.3794,
+   "hn-nov-s5": 0.5215,
+   "hm-screen-s3": 0.5407,
+   "hm-screen-s4": 0.5232,
+   "hm-screen-s5": 0.5591,
+   "hm-combine-s3": 0.543,
+   "hm-combine-s4": 0.5689,
+   "hm-combine-s5": 0.3246,
+   "hm-agree-s3": 0.4927,
+   "hm-agree-s4": 0.5407,
+   "archived": 0.5025
+  },
+  "archived": {
+   "hn-nov": 0.2906,
+   "hn-nov-s4": 0.4076,
+   "hn-nov-s5": 0.463,
+   "hm-screen-s3": 0.4186,
+   "hm-screen-s4": 0.5787,
+   "hm-screen-s5": 0.4766,
+   "hm-combine-s3": 0.4559,
+   "hm-combine-s4": 0.5826,
+   "hm-combine-s5": 0.4097,
+   "hm-agree-s3": 0.4258,
+   "hm-agree-s4": 0.4855,
+   "hm-agree-s5": 0.4975
+  }
+ },
+ "panel_nash_share": {
+  "hn-nov": 0.3019,
+  "hn-nov-s4": 0.0,
+  "hn-nov-s5": 0.0,
+  "hm-screen-s3": 0.0,
+  "hm-screen-s4": 0.0,
+  "hm-screen-s5": 0.0,
+  "hm-combine-s3": 0.0,
+  "hm-combine-s4": 0.0,
+  "hm-combine-s5": 0.0,
+  "hm-agree-s3": 0.0,
+  "hm-agree-s4": 0.0,
+  "hm-agree-s5": 0.0,
+  "archived": 0.6981
+ },
+ "archived_staples_mean": {
+  "Computer Search": 2.71,
+  "Item Finder": 2.12,
+  "Double Colorless Energy": 3.29,
+  "Professor Oak": 3.38,
+  "Bill": 2.5,
+  "Gust of Wind": 2.54,
+  "PlusPower": 2.75,
+  "Energy Removal": 2.08,
+  "Super Energy Removal": 1.96,
+  "Scyther": 2.79
+ },
+ "runs": {
+  "hn-nov": {
+   "population": 48,
+   "support": [
+    {
+     "deck": "value0-0 (Wigglytuff-like)",
+     "weight": 1.0,
+     "nearest": [
+      "Wigglytuff",
+      0.467
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 0.0,
+    "Item Finder": 1.0,
+    "Double Colorless Energy": 0.0,
+    "Professor Oak": 2.0,
+    "Bill": 3.0,
+    "Gust of Wind": 0.0,
+    "PlusPower": 0.0,
+    "Energy Removal": 2.0,
+    "Super Energy Removal": 0.0,
+    "Scyther": 2.0
+   },
+   "proposals": 32,
+   "chosen_score_vs_real_mae": 0.0669,
+   "scorer_vs_real_mae": 0.6436,
+   "mean_real_vs_its_mixture": 0.3159,
+   "real_by_iteration": [
+    0.611,
+    0.214,
+    0.307,
+    0.297,
+    0.255,
+    0.273,
+    0.305,
+    0.266
+   ],
+   "candidates_scored": 709954,
+   "search_seconds": 884.9,
+   "vs_archived_field": 0.7094,
+   "exploitability": {
+    "best_response": "archived: 15+ #6 Darren Guiao (Hitmonchan / Magmar)",
+    "win": 0.5667
+   }
+  },
+  "hn-nov-s4": {
+   "population": 48,
+   "support": [
+    {
+     "deck": "value6-0 (Wigglytuff-like)",
+     "weight": 1.0,
+     "nearest": [
+      "Wigglytuff",
+      0.4
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 0.0,
+    "Item Finder": 0.0,
+    "Double Colorless Energy": 0.0,
+    "Professor Oak": 0.0,
+    "Bill": 0.0,
+    "Gust of Wind": 0.0,
+    "PlusPower": 0.0,
+    "Energy Removal": 1.0,
+    "Super Energy Removal": 0.0,
+    "Scyther": 2.0
+   },
+   "proposals": 32,
+   "chosen_score_vs_real_mae": 0.0701,
+   "scorer_vs_real_mae": 0.3308,
+   "mean_real_vs_its_mixture": 0.4769,
+   "real_by_iteration": [
+    0.469,
+    0.513,
+    0.448,
+    0.472,
+    0.461,
+    0.552,
+    0.518,
+    0.383
+   ],
+   "candidates_scored": 474804,
+   "search_seconds": 902.8,
+   "vs_archived_field": 0.5924,
+   "exploitability": {
+    "best_response": "hm-agree-s3: value6-0 (Wigglytuff-like)",
+    "win": 0.6167
+   }
+  },
+  "hn-nov-s5": {
+   "population": 48,
+   "support": [
+    {
+     "deck": "value7-1 (Wigglytuff-like)",
+     "weight": 0.5,
+     "nearest": [
+      "Wigglytuff",
+      0.517
+     ]
+    },
+    {
+     "deck": "value3-0 (Wigglytuff-like)",
+     "weight": 0.3333,
+     "nearest": [
+      "Wigglytuff",
+      0.483
+     ]
+    },
+    {
+     "deck": "value7-0 (Wigglytuff-like)",
+     "weight": 0.1667,
+     "nearest": [
+      "Wigglytuff",
+      0.517
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 0.0,
+    "Item Finder": 0.0,
+    "Double Colorless Energy": 0.0,
+    "Professor Oak": 1.5,
+    "Bill": 0.0,
+    "Gust of Wind": 0.0,
+    "PlusPower": 0.17,
+    "Energy Removal": 0.33,
+    "Super Energy Removal": 0.0,
+    "Scyther": 4.0
+   },
+   "proposals": 32,
+   "chosen_score_vs_real_mae": 0.058,
+   "scorer_vs_real_mae": 0.3099,
+   "mean_real_vs_its_mixture": 0.5126,
+   "real_by_iteration": [
+    0.627,
+    0.424,
+    0.535,
+    0.49,
+    0.535,
+    0.483,
+    0.485,
+    0.522
+   ],
+   "candidates_scored": 449886,
+   "search_seconds": 896.3,
+   "vs_archived_field": 0.537,
+   "exploitability": {
+    "best_response": "hn-nov: value0-0 (Wigglytuff-like)",
+    "win": 0.7167
+   }
+  },
+  "hm-screen-s3": {
+   "population": 48,
+   "support": [
+    {
+     "deck": "value5-0 (Wigglytuff-like)",
+     "weight": 0.5,
+     "nearest": [
+      "Wigglytuff",
+      0.45
+     ]
+    },
+    {
+     "deck": "value0-0 (Sponge-like)",
+     "weight": 0.25,
+     "nearest": [
+      "Sponge",
+      0.45
+     ]
+    },
+    {
+     "deck": "value3-0 (Sponge-like)",
+     "weight": 0.25,
+     "nearest": [
+      "Sponge",
+      0.483
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 0.0,
+    "Item Finder": 0.0,
+    "Double Colorless Energy": 0.25,
+    "Professor Oak": 1.0,
+    "Bill": 0.0,
+    "Gust of Wind": 0.0,
+    "PlusPower": 0.0,
+    "Energy Removal": 0.25,
+    "Super Energy Removal": 0.0,
+    "Scyther": 4.0
+   },
+   "proposals": 32,
+   "chosen_score_vs_real_mae": 0.0644,
+   "scorer_vs_real_mae": 0.2465,
+   "mean_real_vs_its_mixture": 0.4632,
+   "real_by_iteration": [
+    0.582,
+    0.443,
+    0.544,
+    0.473,
+    0.44,
+    0.516,
+    0.364,
+    0.344
+   ],
+   "candidates_scored": 258852,
+   "search_seconds": 891.6,
+   "vs_archived_field": 0.5814,
+   "exploitability": {
+    "best_response": "archived: 11-14 #7 John Pratt (Wigglytuff)",
+    "win": 0.6667
+   }
+  },
+  "hm-screen-s4": {
+   "population": 48,
+   "support": [
+    {
+     "deck": "value7-1 (Wigglytuff-like)",
+     "weight": 0.6239,
+     "nearest": [
+      "Wigglytuff",
+      0.4
+     ]
+    },
+    {
+     "deck": "value0-1 (Wigglytuff-like)",
+     "weight": 0.1783,
+     "nearest": [
+      "Wigglytuff",
+      0.35
+     ]
+    },
+    {
+     "deck": "value3-0 (Sponge-like)",
+     "weight": 0.1391,
+     "nearest": [
+      "Sponge",
+      0.4
+     ]
+    },
+    {
+     "deck": "value1-3 (Articuno / Hitmonchan / Scyther-like)",
+     "weight": 0.037,
+     "nearest": [
+      "Articuno / Hitmonchan / Scyther",
+      0.45
+     ]
+    },
+    {
+     "deck": "random-7",
+     "weight": 0.0217,
+     "nearest": [
+      "Hitmonchan / Magmar",
+      0.45
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 0.02,
+    "Item Finder": 0.02,
+    "Double Colorless Energy": 1.44,
+    "Professor Oak": 0.94,
+    "Bill": 0.2,
+    "Gust of Wind": 0.0,
+    "PlusPower": 0.0,
+    "Energy Removal": 0.18,
+    "Super Energy Removal": 0.0,
+    "Scyther": 3.91
+   },
+   "proposals": 32,
+   "chosen_score_vs_real_mae": 0.0784,
+   "scorer_vs_real_mae": 0.3894,
+   "mean_real_vs_its_mixture": 0.4591,
+   "real_by_iteration": [
+    0.438,
+    0.542,
+    0.443,
+    0.483,
+    0.389,
+    0.485,
+    0.437,
+    0.458
+   ],
+   "candidates_scored": 274764,
+   "search_seconds": 891.8,
+   "vs_archived_field": 0.4213,
+   "exploitability": {
+    "best_response": "archived: 10 and under #6 Chris Graham (Haymaker)",
+    "win": 0.818
+   }
+  },
+  "hm-screen-s5": {
+   "population": 48,
+   "support": [
+    {
+     "deck": "value6-2 (Sponge-like)",
+     "weight": 0.4286,
+     "nearest": [
+      "Sponge",
+      0.467
+     ]
+    },
+    {
+     "deck": "value7-0 (Wigglytuff-like)",
+     "weight": 0.2857,
+     "nearest": [
+      "Wigglytuff",
+      0.517
+     ]
+    },
+    {
+     "deck": "value6-0 (Clefable-like)",
+     "weight": 0.2857,
+     "nearest": [
+      "Clefable",
+      0.55
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 0.0,
+    "Item Finder": 0.0,
+    "Double Colorless Energy": 0.0,
+    "Professor Oak": 0.0,
+    "Bill": 0.0,
+    "Gust of Wind": 0.0,
+    "PlusPower": 0.0,
+    "Energy Removal": 0.0,
+    "Super Energy Removal": 0.0,
+    "Scyther": 4.0
+   },
+   "proposals": 32,
+   "chosen_score_vs_real_mae": 0.0641,
+   "scorer_vs_real_mae": 0.2836,
+   "mean_real_vs_its_mixture": 0.4885,
+   "real_by_iteration": [
+    0.657,
+    0.443,
+    0.504,
+    0.421,
+    0.473,
+    0.479,
+    0.513,
+    0.419
+   ],
+   "candidates_scored": 216420,
+   "search_seconds": 902.0,
+   "vs_archived_field": 0.5234,
+   "exploitability": {
+    "best_response": "archived: 11-14 #7 John Pratt (Wigglytuff)",
+    "win": 0.6702
+   }
+  },
+  "hm-combine-s3": {
+   "population": 48,
+   "support": [
+    {
+     "deck": "value7-1 (Wigglytuff-like)",
+     "weight": 1.0,
+     "nearest": [
+      "Wigglytuff",
+      0.467
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 0.0,
+    "Item Finder": 0.0,
+    "Double Colorless Energy": 2.0,
+    "Professor Oak": 2.0,
+    "Bill": 0.0,
+    "Gust of Wind": 0.0,
+    "PlusPower": 0.0,
+    "Energy Removal": 0.0,
+    "Super Energy Removal": 0.0,
+    "Scyther": 3.0
+   },
+   "proposals": 32,
+   "chosen_score_vs_real_mae": 0.0644,
+   "scorer_vs_real_mae": 0.2904,
+   "mean_real_vs_its_mixture": 0.5022,
+   "real_by_iteration": [
+    0.49,
+    0.5,
+    0.571,
+    0.546,
+    0.506,
+    0.407,
+    0.48,
+    0.517
+   ],
+   "candidates_scored": 237811,
+   "search_seconds": 898.2,
+   "vs_archived_field": 0.5441,
+   "exploitability": {
+    "best_response": "archived: 11-14 #7 John Pratt (Wigglytuff)",
+    "win": 0.7333
+   }
+  },
+  "hm-combine-s4": {
+   "population": 48,
+   "support": [
+    {
+     "deck": "value7-0 (Wigglytuff-like)",
+     "weight": 0.6364,
+     "nearest": [
+      "Wigglytuff",
+      0.467
+     ]
+    },
+    {
+     "deck": "value2-1 (Sponge-like)",
+     "weight": 0.3636,
+     "nearest": [
+      "Sponge",
+      0.45
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 0.64,
+    "Item Finder": 0.0,
+    "Double Colorless Energy": 0.0,
+    "Professor Oak": 0.0,
+    "Bill": 0.0,
+    "Gust of Wind": 0.0,
+    "PlusPower": 0.0,
+    "Energy Removal": 0.0,
+    "Super Energy Removal": 0.0,
+    "Scyther": 3.36
+   },
+   "proposals": 32,
+   "chosen_score_vs_real_mae": 0.104,
+   "scorer_vs_real_mae": 0.2796,
+   "mean_real_vs_its_mixture": 0.4372,
+   "real_by_iteration": [
+    0.615,
+    0.656,
+    0.523,
+    0.276,
+    0.242,
+    0.318,
+    0.433,
+    0.435
+   ],
+   "candidates_scored": 358639,
+   "search_seconds": 883.4,
+   "vs_archived_field": 0.4174,
+   "exploitability": {
+    "best_response": "archived: 11-14 #7 John Pratt (Wigglytuff)",
+    "win": 0.8318
+   }
+  },
+  "hm-combine-s5": {
+   "population": 48,
+   "support": [
+    {
+     "deck": "value4-1 (Wigglytuff-like)",
+     "weight": 1.0,
+     "nearest": [
+      "Wigglytuff",
+      0.45
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 0.0,
+    "Item Finder": 0.0,
+    "Double Colorless Energy": 0.0,
+    "Professor Oak": 0.0,
+    "Bill": 0.0,
+    "Gust of Wind": 0.0,
+    "PlusPower": 0.0,
+    "Energy Removal": 0.0,
+    "Super Energy Removal": 0.0,
+    "Scyther": 4.0
+   },
+   "proposals": 32,
+   "chosen_score_vs_real_mae": 0.076,
+   "scorer_vs_real_mae": 0.3459,
+   "mean_real_vs_its_mixture": 0.4416,
+   "real_by_iteration": [
+    0.715,
+    0.489,
+    0.501,
+    0.511,
+    0.539,
+    0.294,
+    0.232,
+    0.253
+   ],
+   "candidates_scored": 295286,
+   "search_seconds": 890.1,
+   "vs_archived_field": 0.5903,
+   "exploitability": {
+    "best_response": "archived: 11-14 #7 John Pratt (Wigglytuff)",
+    "win": 0.6917
+   }
+  },
+  "hm-agree-s3": {
+   "population": 48,
+   "support": [
+    {
+     "deck": "value6-0 (Wigglytuff-like)",
+     "weight": 0.4311,
+     "nearest": [
+      "Wigglytuff",
+      0.517
+     ]
+    },
+    {
+     "deck": "value7-1 (Wigglytuff-like)",
+     "weight": 0.1496,
+     "nearest": [
+      "Wigglytuff",
+      0.483
+     ]
+    },
+    {
+     "deck": "value5-1 (Wigglytuff-like)",
+     "weight": 0.1219,
+     "nearest": [
+      "Wigglytuff",
+      0.567
+     ]
+    },
+    {
+     "deck": "value5-0 (Wigglytuff-like)",
+     "weight": 0.114,
+     "nearest": [
+      "Wigglytuff",
+      0.567
+     ]
+    },
+    {
+     "deck": "random-15",
+     "weight": 0.1111,
+     "nearest": [
+      "Rain Dance",
+      0.633
+     ]
+    },
+    {
+     "deck": "value0-0 (Sponge-like)",
+     "weight": 0.0723,
+     "nearest": [
+      "Sponge",
+      0.5
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 0.37,
+    "Item Finder": 0.11,
+    "Double Colorless Energy": 0.23,
+    "Professor Oak": 0.22,
+    "Bill": 0.41,
+    "Gust of Wind": 0.11,
+    "PlusPower": 0.33,
+    "Energy Removal": 0.11,
+    "Super Energy Removal": 0.14,
+    "Scyther": 3.48
+   },
+   "proposals": 32,
+   "chosen_score_vs_real_mae": 0.054,
+   "scorer_vs_real_mae": 0.3249,
+   "mean_real_vs_its_mixture": 0.4693,
+   "real_by_iteration": [
+    0.658,
+    0.448,
+    0.389,
+    0.428,
+    0.531,
+    0.467,
+    0.406,
+    0.427
+   ],
+   "candidates_scored": 258312,
+   "search_seconds": 895.8,
+   "vs_archived_field": 0.5742,
+   "exploitability": {
+    "best_response": "archived: 11-14 #7 John Pratt (Wigglytuff)",
+    "win": 0.6802
+   }
+  },
+  "hm-agree-s4": {
+   "population": 48,
+   "support": [
+    {
+     "deck": "value4-0 (Haymaker-like)",
+     "weight": 0.3253,
+     "nearest": [
+      "Haymaker",
+      0.45
+     ]
+    },
+    {
+     "deck": "value3-0 (Sponge-like)",
+     "weight": 0.3092,
+     "nearest": [
+      "Sponge",
+      0.35
+     ]
+    },
+    {
+     "deck": "value2-1 (Hitmonchan / Magmar-like)",
+     "weight": 0.2064,
+     "nearest": [
+      "Hitmonchan / Magmar",
+      0.4
+     ]
+    },
+    {
+     "deck": "value5-1 (Hitmonchan / Magmar-like)",
+     "weight": 0.0788,
+     "nearest": [
+      "Hitmonchan / Magmar",
+      0.317
+     ]
+    },
+    {
+     "deck": "value7-0 (Electabuzz / Mr. Mime-like)",
+     "weight": 0.0528,
+     "nearest": [
+      "Electabuzz / Mr. Mime",
+      0.433
+     ]
+    },
+    {
+     "deck": "value3-2 (Wigglytuff-like)",
+     "weight": 0.0158,
+     "nearest": [
+      "Wigglytuff",
+      0.417
+     ]
+    },
+    {
+     "deck": "value4-2 (Sponge-like)",
+     "weight": 0.0118,
+     "nearest": [
+      "Sponge",
+      0.433
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 0.05,
+    "Item Finder": 0.0,
+    "Double Colorless Energy": 0.23,
+    "Professor Oak": 1.21,
+    "Bill": 0.33,
+    "Gust of Wind": 0.0,
+    "PlusPower": 0.0,
+    "Energy Removal": 0.0,
+    "Super Energy Removal": 0.0,
+    "Scyther": 3.95
+   },
+   "proposals": 32,
+   "chosen_score_vs_real_mae": 0.0554,
+   "scorer_vs_real_mae": 0.274,
+   "mean_real_vs_its_mixture": 0.4978,
+   "real_by_iteration": [
+    0.542,
+    0.588,
+    0.477,
+    0.52,
+    0.504,
+    0.48,
+    0.421,
+    0.452
+   ],
+   "candidates_scored": 250354,
+   "search_seconds": 898.4,
+   "vs_archived_field": 0.5145,
+   "exploitability": {
+    "best_response": "archived: 11-14 #7 John Pratt (Wigglytuff)",
+    "win": 0.7419
+   }
+  },
+  "hm-agree-s5": {
+   "population": 48,
+   "support": [
+    {
+     "deck": "value3-0 (Wigglytuff-like)",
+     "weight": 0.7895,
+     "nearest": [
+      "Wigglytuff",
+      0.367
+     ]
+    },
+    {
+     "deck": "value3-2 (Wigglytuff-like)",
+     "weight": 0.2105,
+     "nearest": [
+      "Wigglytuff",
+      0.533
+     ]
+    }
+   ],
+   "staples_weighted": {
+    "Computer Search": 1.0,
+    "Item Finder": 0.0,
+    "Double Colorless Energy": 0.0,
+    "Professor Oak": 0.0,
+    "Bill": 0.63,
+    "Gust of Wind": 0.0,
+    "PlusPower": 0.0,
+    "Energy Removal": 0.0,
+    "Super Energy Removal": 0.21,
+    "Scyther": 4.0
+   },
+   "proposals": 32,
+   "chosen_score_vs_real_mae": 0.0757,
+   "scorer_vs_real_mae": 0.3867,
+   "mean_real_vs_its_mixture": 0.4324,
+   "real_by_iteration": [
+    0.704,
+    0.375,
+    0.379,
+    0.519,
+    0.354,
+    0.378,
+    0.365,
+    0.385
+   ],
+   "candidates_scored": 310548,
+   "search_seconds": 889.1,
+   "vs_archived_field": 0.5025,
+   "exploitability": {
+    "best_response": "archived: 11-14 #7 John Pratt (Wigglytuff)",
+    "win": 0.7368
+   }
+  }
+ }
+}

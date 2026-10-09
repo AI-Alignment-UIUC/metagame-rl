@@ -981,3 +981,100 @@ Entry format:
 - **Next:** Improve the objective before the search: a stronger human-free pilot with an ordinal count
   encoding, and pessimistic / trust-region acceptance against real games. Keep novelty on as a cheap
   default; drop the edit head and common deals from the default until the value is better.
+
+### #47 · 2026-10-09 · A5 · Edit head combined with the value: no mode beats novelty alone (backfilled)
+- **Done:** `--head-mode screen | combine | agree` in `rl/search.py` / `rl/psro.py` (commit `c5fbc80`):
+  ways of using the edit head together with the start-of-game value. `runs/head_modes_run.sh`: each
+  mode at seeds 3, 4 and 5 with novelty 0.03 and #43's settings (pilot-scratch it249, cold:16, 8
+  iterations, 48 games per pair), against novelty alone (`runs/hn-nov`, `hn-nov-s4`, `hn-nov-s5`).
+  Panel of the twelve runs' supports plus the 24 archived lists, 60 games per pair, under the scratch
+  pilot: `notes/data/eval/hm_panel_scratch.json` (run 2026-10-07; logged here 2026-10-09).
+- **Evidence:** Against the archived field (s3 / s4 / s5, mean): novelty alone 70.9 / 59.2 / 53.7, 61.3;
+  screen 58.1 / 42.1 / 52.3, 50.8; combine 54.4 / 41.7 / 59.0, 51.7; agree 57.4 / 51.4 / 50.2, 53.0.
+  8 of the 9 head-mode runs are below novelty alone at the same seed (combine s5 is above). Staple
+  Trainers per final mixture (Computer Search, Item Finder, Oak, Bill, Gust, PlusPower, Energy Removal,
+  Super Energy Removal; the archived mean is 20.0): novelty s3 8.0, every other run 0-2. The panel's
+  Nash: archived 0.70, novelty s3 0.30, all head-mode runs 0.
+- **Found:** As in #43 and #46, optimizing the pilot's value harder makes real decks worse; no way of
+  combining the edit head with the value avoids that. Consistent with #46: the objective is the limit.
+- **Next:** Keep the edit head off (#46). Pilot improvements (#48).
+
+### #48 · 2026-10-09 · A4 · pilot-v2: a larger human-free pilot reaches 83% against SimpleBot (backfilled)
+- **Done:** Ordered count features for the token model (`--count-features`, commit `d42f4b8`); the env
+  runner asks all agents at once instead of one at a time (`notes/scripts/patch_runner_concurrent.py`,
+  applied in `6e065c7`). `runs/pilot_v2_run.sh`: pilot-v2, trained from scratch on #42's random decks
+  (no archived lists), with d 256, 4 layers, 8 heads, count features, a league, deck-out wins 0 and
+  3.24M parameters (#42: 1.6M). Evaluated against SimpleBot on the archived decks every 25 iterations
+  (evaluation only, 400 games).
+- **Evidence:** Against SimpleBot (± ~0.04): it24 49.5%, 49 58.8, 99 55.9, 149 77.0, 199 81.5, 249 79.7,
+  299 83.3, 324 83.1, 349 83.3. #42's pilot at it249: 78.7%; pilot-v2 at it249 is the same within
+  error, and gains about 4 points by it299. Collection time grew from 10 s to 30 s an iteration as
+  league snapshots were added. The run stopped at iteration 371 of 400 (log ends 2026-10-08 00:04;
+  the cause was not recorded). Its diagnostics (`pilot_diag.py`) and the count-features-only run
+  (`pilot-cf`) never ran, so the effect of the count features alone is not measured.
+- **Found:** Doubling the model and adding count features gave a few points at most, and it
+  plateaued near 83% from it299. Size is not the main limit.
+- **Next:** Find where it loses (#49); diagnostics for it349.
+
+### #49 · 2026-10-09 · A4 · Best-of-9 ceiling, and an attention-architecture test (backfilled)
+- **Done:** `runs/ceiling/`: pilot-v2 it349 against SimpleBot on 960 deals (24 archived decks × 40),
+  once greedy and 8 times sampled on the same deals (`evaluate.js --seed`), and
+  `notes/scripts/ceiling_by_deck.py` for the best of the 9 per deal. `runs/arch_test.sh`: on the 6
+  decks with the largest gap, four variants fine-tuned 30 iterations from it349 against SimpleBot in
+  mirrors: A same architecture, B +2 cross-attention blocks, C candidates attend to each other, D both
+  (`--cross-layers`, `--cand-self`, commit `6e065c7`; new blocks start as the identity). Diagnostic
+  only: it trains on archived lists, so no weights from it go back into the pipeline.
+- **Evidence:** Ceiling: greedy 82.9%, best-of-9 97.6%, 23 deals never won; largest gaps Froelich
+  Wigglytuff 0.275, Jay Yu Wigglytuff 0.250, Bartlett Sponge 0.250, Viray Rain Dance 0.250, Diamond
+  Articuno/Hitmonchan/Scyther 0.237, Pratt Wigglytuff 0.200. Against SimpleBot, 480 games each (target
+  decks mirrored, seed 77 / all 24, seed 78): it349 74.4 / 81.7; A 91.0 / 89.6; B 88.8 / 88.7; C 88.2 /
+  90.0; D 89.5 / 91.5 (± 0.025-0.039).
+- **Found:** (1) The ceiling overstates what better choices can gain: later shuffles and coin flips
+  follow the actions taken, so some best-of-9 wins are luck (the script says so). (2) All four
+  variants gain 14-17 points on the target decks and 7-10 on all 24 from 30 iterations on those decks,
+  and differ from each other within error. Extra attention is not what is missing; experience on the
+  decks is, and archived decks cannot be used for that. (3) In chat on 2026-10-09 these four results
+  were first described without saying they were fine-tunes on archived decks.
+- **Next:** Play-time search over the pilot (psearch, #50), which needs no training on any deck.
+
+### #50 · 2026-10-09 · A4 · psearch: beats its own greedy pilot, not SimpleBot
+- **Done:** `PolicySearchAgent` (`env/agents.js`, `psearch:<onnx>:k:dets`, commit `b7db8ea`; fix
+  `b83d6b0`, candidate moves matched by key in each re-dealt copy because re-dealing can change which
+  moves exist). At each decision with 2 or more moves (not prompts) it takes the pilot's top k moves,
+  plays each in `dets` copies with the hidden cards re-dealt, finishes the turn with the greedy pilot,
+  and picks the best mean end-of-turn value (±1 for a finished game). `runs/psearch_test.sh`:
+  psearch k 4, dets 4 over pilot-v2 it349, against SimpleBot on the seeds of #49's greedy evaluations
+  (same opening deals), and head to head against greedy it349. CPU only, 14 workers × 1 ONNX thread.
+- **Evidence:** Against SimpleBot, 480 games each, 0 errors: target decks 71.7% ± 4.0 (greedy, #49:
+  74.4 ± 3.9); all 24 decks 82.5% ± 3.4 (greedy 81.7 ± 3.5). Paired by opening deal: target 278 won
+  by both, 79 by greedy only, 66 by psearch only, 57 by neither; all 24: 343 / 49 / 53 / 35. Head to
+  head against greedy it349, all 24 decks: 65.4% ± 6.0 (n 240; by direction 69.2 / 61.7), mean 207
+  steps a game. Wall time 36 / 40 / 24 min, against ~2 min for a greedy evaluation of the same size.
+- **Found:** (1) psearch gains nothing against SimpleBot, on the decks with the largest ceiling gap or
+  overall, but beats its own greedy policy. The search scores lines with the same network it is
+  compared against: it finds what that policy misplays, which does not transfer to an outside
+  opponent. Expert iteration on this operator could therefore climb against itself without getting
+  generally stronger. (2) The one-turn horizon and the value head's errors (#36) are the likely limits;
+  not separated here. (3) Same opening deal is not a full pairing: later shuffles follow the actions
+  taken, so the per-deal counts are noisy.
+- **Next:** Before expert iteration on psearch: psearch against an independently trained pilot (log
+  #42's pilot-scratch) in both directions, and dets 8 to separate re-deal noise. Use opponents the
+  agent did not train against (past snapshots, other runs) as the general measure, since gains
+  against itself can be non-transitive.
+
+### #51 · 2026-10-09 · Design · Search in action-sequence space; generality of the method
+- **Done:** `notes/design-action-sequence-search.md`: a causal (prefix-LM) transformer over the root
+  state tokens plus action and outcome tokens, Gumbel MCTS in that space with chance nodes from an
+  outcome head, and expert iteration on the search's visit counts; a sequence logger for both
+  players' views without hidden information; steps with gates (k-step accuracy; equal-compute
+  comparison with psearch; expert iteration; engine-free search). A Generality section lists the
+  Pokémon-specific parts to replace for other TCGs: fixed slot tokens, Pokémon verbs and slot indices
+  in actions, hand-picked card fields, and the deck-out reward (`--deckout-win 0`, game-specific
+  shaping). Agreed scope (Evan, 2026-10-09): a general self-discovery method for TCGs, so no training
+  on archived lists and no hand-written bots as training opponents; both are evaluation only.
+- **Evidence:** Design only; nothing built or measured.
+- **Found:** The arch-A..D fine-tunes (#49) trained on archived lists against SimpleBot, which the
+  scope rules out except as one-off diagnostics. #50's result raises the bar for step 2's gate:
+  matching psearch is not enough, since psearch does not beat SimpleBot.
+- **Next:** #50's checks; then expert iteration with the plain game result as reward if the search
+  gain transfers; general metrics (Elo against past snapshots, exploitability, deck sensitivity).
