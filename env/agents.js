@@ -348,13 +348,19 @@ class PolicySearchAgent {
     const cands = e.order.slice(0, this.k);
     const startTurn = b.env.game.state.turn;
     const lines = [];
+    // Moves are matched by key, not position: re-dealing the hidden cards can change which moves
+    // exist (a search card with nothing left to find), so a copy may lack one or order them
+    // differently. A move missing from a copy gets no line there.
+    const keyOf = a => b.env.current.options[a].key;
     for (const a of cands) {
       for (let r = 0; r < this.dets; r++) {
         const env = new Env(this.enc, { showOpponentDecklist: b.env.showOpponentDecklist, u8: b.env.u8 });
         env.game = b.env.game.clone(new Rng(this.rng.u32()), me);
         env.decklists = b.env.decklists;
-        env.observe();
-        lines.push({ a, env, t: env.step(a), score: null });
+        const t0 = env.observe();
+        const j = env.current.options.findIndex(o => o.key === keyOf(a));
+        if (j === -1 || !t0.legal.includes(j)) continue;
+        lines.push({ a, env, t: env.step(j), score: null });
       }
     }
     for (let step = 0; step < this.maxSteps; step++) {
@@ -378,6 +384,7 @@ class PolicySearchAgent {
     let best = cands[0], bestMean = -Infinity;
     for (const a of cands) {
       const s = lines.filter(l => l.a === a).map(l => l.score);
+      if (!s.length) continue;
       const m = s.reduce((x, y) => x + y, 0) / s.length;
       if (m > bestMean) { bestMean = m; best = a; }
     }
