@@ -28,6 +28,8 @@ def concat(rollouts: list) -> dict:
     legal_base = 0
     keys = ("obs", "action", "logp", "value", "reward", "done", "legal_ids")
     extra = sorted({k for r in rollouts for k in r if k.startswith("obs.")})   # token fields
+    if rollouts and all("slot" in r for r in rollouts):
+        extra.append("slot")                       # model slot of each transition (league rollouts)
     parts = {k: [] for k in keys + ("traj", "legal_offsets") + tuple(extra)}
     for r in rollouts:
         for k in keys + tuple(extra):

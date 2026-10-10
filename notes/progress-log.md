@@ -1078,3 +1078,115 @@ Entry format:
   matching psearch is not enough, since psearch does not beat SimpleBot.
 - **Next:** #50's checks; then expert iteration with the plain game result as reward if the search
   gain transfers; general metrics (Elo against past snapshots, exploitability, deck sensitivity).
+
+### #52 · 2026-10-10 · A5 / A4 · Co-evolution: the pilot trains only on decks the system drafts, over the full pool
+- **Done:** `rl/coevolve.py`: one process holds the learner, its optimizer, its league and one set of
+  workers, used for both training and the matchup matrix (`GpuMatrix.attach`). Each round: (1) every pair
+  of the population is measured under the current pilot (24 greedy games per pair) and the meta game
+  solved; decks out of the support leave once the population passes 48 (`retired.jsonl`); (2) the value
+  search with novelty 0.03 proposes 4 decks, and of 64 fresh exploration decks the 2 the pilot rates best
+  join the population; (3) 10 PPO iterations, each on 256 matchups drawn anew: sigma vs sigma 0.4, this
+  round's new decks vs sigma 0.2, any population deck vs sigma 0.15, exploration decks vs sigma or each
+  other 0.25. `rl/deckgen.py`: random decks in two shapes, half each, `lines` (Pokémon lines with
+  typed Energy, as `pilot_decks.py`, plus Special Energy, which no earlier generator drew) and `flat`
+  (only the format's rules: a Dirichlet split of Pokémon / limited cards / basic Energy, at least one
+  Basic), every non-Energy card drawn with weight (1 + training games it was in) ^ -0.5, so the least
+  seen cards come up most; `Coverage` logs the share of the pool in the population, in the support and
+  in 200+ training games, and the entropy of card exposure. Reward is the plain game result
+  (`--deckout-win 1`, per #51); lr 1e-4 from pilot-v2 it349; full pool (277 cards); SimpleBot on the
+  archived decks every 5 rounds is evaluation only. `RemotePool.pace` rests 0.25 x each served batch's
+  GPU time: the first launch measured at 84-91% GPU (pilot-v2 is twice #31's model), and was stopped.
+  Engine (fork `8fe233c`, local): Rattata TR's Trickery can't be used with an empty deck (it swapped
+  `undefined` into the Prizes, crashing the next effect pass); Dark Gyarados TR's Final Beam no longer
+  throws when knocked out while Asleep/Confused/Paralyzed (it aborted the attacker's attack). Launch:
+  `runs/coevo_run.sh` (`runs/coevo-1`, 30 rounds, seed 1), running.
+- **Evidence:** Generator: 2,000 decks all legal, all 277 cards used, basic Energy 0-56 (median 20).
+  Random-policy games between full-pool decks (6 sets of 60 decks, 610 games each): before the fixes 16 of
+  360 decks were in a crashing game (Rattata TR in most), after them 3,660 games with 0 errors. New specs
+  fail on the old code (3/3) and pass on the new; sets suite 692/692; `test_env` 100 games PASS;
+  `verify_enumerator` 200 games PASS. Smoke run (6 decks, 2 rounds, 2 PPO iterations each): measure,
+  draft, PPO, SimpleBot evaluation and checkpoint all run; coverage after 2 rounds 55% of the pool in the
+  population, 25% of cards in 200+ games. Paced, the search phase sits at ~32% GPU.
+- **Found:** No earlier experiment played the full pool: the A5 "full pool" had never been run, and the
+  field pool hid both card bugs (neither card is in the 56). Every earlier random-deck generator left out
+  Special Energy, so Double Colorless Energy could only enter a deck by a swap. The starting pilot
+  (pilot-v2) learned on the field's 56 cards, a pool chosen from the archived lists; co-evolution moves it
+  off that pool, but its weights still carry it.
+- **Next:** Watch `runs/coevo-1`: card coverage, support Energy counts, SimpleBot every 5 rounds, the
+  ending mix under the plain reward; then the answer-key panel against the archived field and a second
+  seed.
+
+### #53 · 2026-10-10 · A5 · coevo-1: every card explored, but the meta collapsed to one deck type (stopped at round 23)
+- **Done:** `runs/coevo-1` (#52's settings) ran rounds 0-23, 240 PPO iterations, and was stopped there by the
+  user's choice once it had answered its question, to free the machine for the league (#54). Its log,
+  population, retired decks and a pilot per round are in `runs/coevo-1/`.
+- **Evidence:** Coverage: every allowed card in 200+ training games by round 4; least-seen card 2,300 games
+  by round 23 (median 5,374). The share of the pool in some population deck rose to 83% (round 5), then
+  fell to 55% (round 23) as random decks were retired. Equilibrium: 1 deck in rounds 0-4, 8 and 23, 2-5
+  otherwise; from round 7 every support deck held Hitmonchan, Scyther and Chansey (checked per round
+  from the population and `retired.jsonl`). The three support decks of round 15 differed by 10-16 cards
+  (10 is the search's minimum); of the population then, 30 of 33 search-built decks were within 22 cards
+  of a support deck and all 18 exploration decks 40-60 cards away, and an exploration deck held weight
+  only once (round 5, 0.18). Training endings: deck-out 2-8% and prizes 39-58% in rounds 0-4; deck-out
+  41% and prizes 23% at round 13; deck-out 35%, prizes 34%, 185 decisions a game in rounds 22-23 (106-125
+  in rounds 0-4). SimpleBot on the archived decks (evaluation only, 400 games): round 4 76.8% ± 4.1,
+  round 9 78.5 ± 4.0, round 14 82.8 ± 3.7, round 19 80.5 ± 3.9 (pilot-v2 at the start 83.3). Equilibrium
+  decks: round 13-14 `r11-s0`, 9 Pokémon / 20 Trainers / 31 basic Energy with 4 Energy Removal, 3 Super
+  Energy Removal, 3 Devolution Spray, 4 Bill, 4 Oak, 2 Computer Search; round 19 `r16-s0` with 4 Double
+  Colorless Energy and 4 Potion Energy, 28 basic Energy, 4 Energy Removal, 4 Oak, 2 Computer Search;
+  round 23 `r21-s0`, 11 Pokémon / 16 Trainers / 31 basic + 2 DCE, with 4 Energy Removal, 4 Oak, 3
+  Computer Search, 3 Pokémon Center, 2 Bill. GPU: the PPO update ran in bursts of 89-95% (mean ~65%),
+  above the 80% cap; the other phases stayed under it.
+- **Found:** (1) The cards were explored, the deck types were not: the value search proposes variants of
+  the leading deck (half its restarts start from a support deck, and confirmation games against the
+  support favor near variants), exploration decks compete raw and are retired, the one pilot plays the
+  leading deck best (40% of its games are support against support; #40 measured 11 points from this), and
+  retirement removes only decks without weight. (2) Under the plain game result, self-play found an
+  Energy-denial and stall deck (Energy Removal, Super Energy Removal, Chansey walls, wins by deck-out);
+  deck-outs rose to 41% of training games, then fell back to 25-35% without any change. The deck shares
+  its disruption package with the archived Sponge lists (Energy Removal, Super Energy Removal, Chansey,
+  Scyther, Oak, Computer Search), but plays 28-35 basic Energy against their 12-21. (3) Staples came back
+  without any human input: Computer Search (dropped by every earlier value search), Scyther, Oak, Energy
+  Removal, Super Energy Removal, and from round 16 Double Colorless Energy. (4) Neither the SimpleBot
+  dip nor its recovery is outside the error: training on its own drafted decks did not cost the pilot
+  strength against an outside opponent. (5) The "nearest archived list" labels are misleading at these
+  overlaps (0.3-0.4): decks labeled Wigglytuff-like or Clefable-like hold neither card.
+- **Next:** A population of deck-owning agents, so other deck types get developed and piloted before they
+  are judged (#54).
+
+### #54 · 2026-10-10 · A5 · A league of deck-owning agents: built, tested, launched
+- **Done:** `rl/league.py` (the user's proposal: several agents with their own value heads do the metagame,
+  so it is league training rather than one agent's self-play). One agent-conditioned network
+  (`rl/token_model.py` `n_agents`: an agent embedding added to every token and one value head per agent,
+  both starting as the loaded checkpoint, `init_agents_from_base`, `copy_agent`; NeuPL-style) holds 3 main
+  agents, 2 exploiters and a generalist. Each main and exploiter owns a deck lineage: every round it
+  climbs its own deck by its own value against its opponents (mains: the equilibrium; exploiters: the
+  mains' part of it), at most 12 (exploiters 24) cards a round and at least 20 cards from every other
+  agent's deck, and real games (its own agent piloting, each opponent its own) adopt the best finalist
+  only if it beats the current deck by 2 points. Exploiters that beat the mains' mix at 60% are frozen into
+  the league and restart from a fresh random deck with the generalist's embedding and value head; after
+  4 rounds without a better deck, or 8 rounds, they restart without being frozen. Every 3 rounds the
+  mains' strategies are frozen (deck, agent, snapshot of the network); the league keeps at most 12 frozen
+  strategies. The meta game is over (deck, pilot) strategies, each side piloted by its own agent;
+  frozen pairs are cached. PPO: each live agent gets the same number of matches per iteration and only
+  its own side is recorded, with its agent id. The generalist owns no deck, plays league and
+  exploration decks, and is what the SimpleBot check plays. Plumbing: `rl/remote.py` `AgentView` (views
+  of one network are served in one forward pass with an agent id per row); `env/remote_worker.js` a
+  `league` command and per-deck pilots in `games` and `values`; `env/runner.js` records each transition's
+  model slot; `rl/train.py` passes agent ids to the update, paces it per micro-batch, and takes
+  `gpu_load` (0.7 here, against coevo-1's bursts). `rl/league_tests.py`. Launch: `runs/league_run.sh`
+  (`runs/league-1`, 30 rounds, from pilot-v2 it349, full pool, plain game result), running.
+- **Evidence:** `rl.league_tests` PASS: a 6-agent network loaded from pilot-v2 gives pilot-v2's logits and
+  values for every agent (random states, within 1e-5); per-row agent ids equal `fixed_agent`; changing one
+  agent changes only its rows; `copy_agent` copies; the ONNX export of one agent matches PyTorch; merged
+  serving of two agents' requests equals separate forward passes. `rl.tests` PASS; `test_env` 100 games
+  PASS; `verify_enumerator` 200 games PASS; a coevolve smoke run still works. League smoke runs (2 mains,
+  1 exploiter, 4 rounds with a resume from round 2): measuring, caching, freezing, exploiter resets,
+  retirement, drafting with real-game adoption, PPO and the generalist's ONNX evaluation all run.
+- **Found:** Recording both sides of every match gave the leading deck's agent 20-23k of each iteration's
+  transitions against 2-5k for the others (it is everyone's most likely opponent), which would rebuild
+  coevo-1's co-adaptation inside the league; with only the focal side recorded the agents get 2.9-6.5k
+  each.
+- **Next:** Watch `runs/league-1`: deck types in the support (decks 20+ cards apart), exploiter successes,
+  coverage, the generalist against SimpleBot, endings; then compare with coevo-1 on the same measures and
+  the answer key.

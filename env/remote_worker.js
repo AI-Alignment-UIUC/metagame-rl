@@ -8,9 +8,15 @@
 //     "seed": 1, "concurrency": 64, "matchups": [[deckA, deckB], ...],
 //     "opponents": [{ "spec": "self" | "slot:<k>" | "random" | "first" | "heuristic", "weight": 1 }] }
 //   { "cmd": "games", "encoding": "tokens", "decks": [{ name, cards }], "greedy": true, "concurrency": 64,
-//     "jobs": [{ "i": 0, "j": 1, "iSeat": 1, "seed": 7 }] }   (slot 0 in both seats; matrix rows, A5)
-//   { "cmd": "values", "decks": [{ name, cards }], "jobs": [{ "a": 0, "b": 1, "seed": 7 }] }
-//     the pilot's value for deck a (seat 1) at its first decision of a fresh deal (A5 builder)
+//     "jobs": [{ "i": 0, "j": 1, "iSeat": 1, "seed": 7 }], "slots": [0, 3, ...] }
+//     matrix rows (A5): deck i is piloted by model slot slots[i] (slot 0 in both seats without "slots")
+//   { "cmd": "values", "decks": [{ name, cards }], "jobs": [{ "a": 0, "b": 1, "seed": 7, "slot": 0 }] }
+//     the value model slot `slot` (default 0) gives deck a (seat 1) at its first decision of a fresh deal
+//   { "cmd": "league", "transitions": 20000, "out": "<file>", "seed": 1, "concurrency": 64, "deckoutWin": 1,
+//     "matches": [{ "a": { "deck": { name, cards }, "slot": 0, "record": true }, "b": { ... } }] }
+//     league training games (rl/league.py): each game is a random match, seats at random, each side
+//     piloted by its own model slot; only the decisions of sides with "record" are kept, so an agent
+//     learns from its own matches, not from every game it is an opponent in (tokens encoding)
 //   { "cmd": "quit" }
 // The learner is model slot 0; "slot:k" is another model the learner holds (a league snapshot).
 'use strict';
@@ -109,19 +115,26 @@ async function collect(cmd) {
   return { ok: true, out: cmd.out, transitions: out.rec.action.length, games: out.stats.games, seconds: (Date.now() - t0) / 1000, results };
 }
 
-// Plays the listed games with the slot-0 policy in both seats and reports each one's result
-// (rl/gpu_matrix.py); nothing is recorded.
+// Plays the listed games and reports each one's result (rl/gpu_matrix.py); nothing is recorded.
+// Deck i is piloted by model slot cmd.slots[i], or by slot 0 in both seats.
 async function games(cmd) {
   const t0 = Date.now();
   const encoding = cmd.encoding || 'tokens';
   const enc = encoding === 'tokens' ? tokens : identity;
-  const agents = { p: new RemoteAgent(0, encoding, !!cmd.greedy) };
+  const agents = {};
+  const pilot = i => {
+    const slot = cmd.slots ? cmd.slots[i] : 0;
+    const name = 's' + slot;
+    if (!agents[name]) agents[name] = new RemoteAgent(slot, encoding, !!cmd.greedy);
+    return name;
+  };
   let k = 0;
   const nextJob = () => {
     if (k >= cmd.jobs.length) return null;
     const job = cmd.jobs[k++];
-    const [a, b] = job.iSeat === 1 ? [cmd.decks[job.i], cmd.decks[job.j]] : [cmd.decks[job.j], cmd.decks[job.i]];
-    return { deckA: a.cards, deckB: b.cards, deckName: a.name, deckBName: b.name, seed: job.seed, seats: { 1: 'p', 2: 'p' } };
+    const [ia, ib] = job.iSeat === 1 ? [job.i, job.j] : [job.j, job.i];
+    const [a, b] = [cmd.decks[ia], cmd.decks[ib]];
+    return { deckA: a.cards, deckB: b.cards, deckName: a.name, deckBName: b.name, seed: job.seed, seats: { 1: pilot(ia), 2: pilot(ib) } };
   };
   const out = await new Runner(enc, { concurrency: cmd.concurrency || 64, valueAtTurn: cmd.valueAtTurn || 0 }).run(nextJob, agents);
   const bySeed = new Map(cmd.jobs.map(j => [j.seed, j]));
@@ -135,7 +148,6 @@ async function games(cmd) {
 
 async function values(cmd) {
   const { Env } = require('./env.js');
-  const agent = new RemoteAgent(0, 'tokens', true);
   const obs = [];
   for (const job of cmd.jobs) {
     const env = new Env(tokens, { u8: true, showOpponentDecklist: true });
@@ -143,11 +155,54 @@ async function values(cmd) {
     while (!t.done && t.playerId !== 1) t = env.step(t.legal[0]);   // the opponent's setup, if it acts first
     obs.push(t.done ? null : { obs: t.obs, legal: t.legal });
   }
-  const live = obs.filter(Boolean);
-  const out = [];
-  for (let i = 0; i < live.length; i += 1024) out.push(...await agent.act(live.slice(i, i + 1024)));
-  let k = 0;
-  return { ok: true, values: obs.map(o => (o ? out[k++].value : 0)), live: obs.map(o => (o ? 1 : 0)) };
+  // Read by each job's model slot; one slot's jobs go in job order (rl/gpu_matrix.py matches captured
+  // states to the live jobs in that order, and allows states only with a single slot).
+  const vals = obs.map(() => 0);
+  const bySlot = new Map();
+  cmd.jobs.forEach((job, i) => {
+    if (!obs[i]) return;
+    const s = job.slot || 0;
+    if (!bySlot.has(s)) bySlot.set(s, []);
+    bySlot.get(s).push(i);
+  });
+  for (const [s, idx] of bySlot) {
+    const agent = new RemoteAgent(s, 'tokens', true);
+    for (let c = 0; c < idx.length; c += 1024) {
+      const part = idx.slice(c, c + 1024);
+      const out = await agent.act(part.map(i => obs[i]));
+      part.forEach((i, k) => { vals[i] = out[k].value; });
+    }
+  }
+  return { ok: true, values: vals, live: obs.map(o => (o ? 1 : 0)) };
+}
+
+// League training games (rl/league.py): every match names each side's deck and model slot.
+async function league(cmd) {
+  const t0 = Date.now();
+  const rng = new Rng(cmd.seed);
+  // A side that records plays as 'r<slot>', one that doesn't as 'o<slot>': the same model slot (one
+  // inference request stream per name), but only the 'r' names are recorded.
+  const agents = {};
+  const nameOf = side => (side.record ? 'r' : 'o') + side.slot;
+  for (const m of cmd.matches) {
+    for (const side of [m.a, m.b]) {
+      if (!agents[nameOf(side)]) agents[nameOf(side)] = new RemoteAgent(side.slot, 'tokens');
+    }
+  }
+  const record = new Set(Object.keys(agents).filter(k => k.startsWith('r')));
+  let n = 0;
+  const nextJob = recorded => {
+    if (recorded >= cmd.transitions) return null;
+    const m = cmd.matches[rng.int(cmd.matches.length)];
+    const [x, y] = rng.int(2) === 0 ? [m.a, m.b] : [m.b, m.a];
+    return { deckA: x.deck.cards, deckB: y.deck.cards, deckName: x.deck.name, deckBName: y.deck.name,
+             seed: cmd.seed * 100003 + n++, seats: { 1: nameOf(x), 2: nameOf(y) } };
+  };
+  const runner = new Runner(tokens, { concurrency: cmd.concurrency || 64, deckoutWin: cmd.deckoutWin ?? 1 });
+  const out = await runner.run(nextJob, agents, { record });
+  fs.writeFileSync(cmd.out, packRollout(out.rec, 0, { encoding: 'tokens', actionSize: tokens.MAX_CAND }));
+  const results = out.results.map(r => ({ winner: r.winner, ending: r.ending, seats: r.seats, decks: r.decks, steps: r.steps, error: r.error }));
+  return { ok: true, out: cmd.out, transitions: out.rec.action.length, games: out.stats.games, seconds: (Date.now() - t0) / 1000, results };
 }
 
 let queue = Promise.resolve();
@@ -172,6 +227,7 @@ F.readFrames(process.stdin, (type, payload) => {
       if (msg.cmd === 'collect') { F.writeJson(process.stdout, await collect(msg)); return; }
       if (msg.cmd === 'games') { F.writeJson(process.stdout, await games(msg)); return; }
       if (msg.cmd === 'values') { F.writeJson(process.stdout, await values(msg)); return; }
+      if (msg.cmd === 'league') { F.writeJson(process.stdout, await league(msg)); return; }
       throw new Error('unknown command ' + msg.cmd);
     } catch (e) {
       F.writeJson(process.stdout, { ok: false, error: String(e && e.stack || e) });

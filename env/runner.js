@@ -8,7 +8,8 @@
 // no more games should start. Decisions with one option are played without asking anyone.
 // For the agents named in `record`, every decision is kept for training: the observation
 // (bytes), the action id, its log-probability and value estimate, the legal ids, and at each
-// seat's last decision of a game the reward (+1 win, -1 loss, 0 draw or cut off).
+// seat's last decision of a game the reward (+1 win, -1 loss, 0 draw or cut off), and the model
+// slot of the agent that decided (-1 for agents without one; rl/league.py maps slots to agents).
 'use strict';
 const { Env } = require('./env.js');
 
@@ -27,7 +28,7 @@ class Runner {
 
   async run(nextJob, agents, { record = new Set() } = {}) {
     const enc = this.encoder;
-    const rec = { obs: [], action: [], logp: [], value: [], reward: [], done: [], traj: [], legal: [] };
+    const rec = { obs: [], action: [], logp: [], value: [], reward: [], done: [], traj: [], legal: [], slot: [] };
     const results = [];
     const slots = [];
     let jobCount = 0, forced = 0, engineMoves = 0, fallbacks = 0;
@@ -109,6 +110,7 @@ class Runner {
             rec.done.push(0);
             rec.traj.push(s.id * 2 + s.t.playerId - 1);
             rec.legal.push(s.t.legal);
+            rec.slot.push(agents[name].slot ?? -1);
             s.last[s.t.playerId] = k;
           }
           s.t = s.env.step(out[i].action);
@@ -152,6 +154,7 @@ function packRollout(rec, obsSize, meta = {}) {
     ['logp', 'float32', Float32Array.from(rec.logp)], ['value', 'float32', Float32Array.from(rec.value)],
     ['reward', 'float32', Float32Array.from(rec.reward)], ['done', 'uint8', Uint8Array.from(rec.done)],
     ['traj', 'int32', Int32Array.from(rec.traj)], ['legal_offsets', 'int32', offsets], ['legal_ids', 'int32', ids], ...obsArrays);
+  if (rec.slot && rec.slot.length === T) arrays.push(['slot', 'int32', Int32Array.from(rec.slot)]);
   const sections = [];
   let offset = 0;
   for (const [name, dtype, arr] of arrays) {

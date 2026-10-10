@@ -53,18 +53,18 @@ gives a biased or blind builder, so pilot strength is the bottleneck.
 ## Status
 
 <!-- status:start -->
-*Updated 2026-10-09.*
+*Updated 2026-10-10.*
 
 **Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup
 matrix. In A5, scoring candidate decks by the pilot's own value beat the other builder designs
 ([2000s result #1](results/2000s-result-1/)), and piloting every PSRO iteration made the first built
 metagame to beat the archived field (60.7%), but value-driven search keeps converging on Energy-heavy
-decks, and no change to the search (edit head in four modes, less noise, novelty) fixes it, so the
-pilot is the bottleneck. A larger human-free pilot plateaus near 83% against SimpleBot, and neither
-extra attention nor one-turn play-time search (psearch) makes it stronger against an outside
-opponent, though psearch beats its own greedy policy 65%. The scope is now a general self-discovery
-method for TCGs (no archived lists or hand-written bots in training), with a design for learned-model
-search and expert iteration; Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
+decks, and no change to the search fixed it. A human-free pilot plateaus near 83% against SimpleBot,
+and neither extra attention nor one-turn play-time search makes it stronger against an outside opponent.
+Under the general self-discovery scope (no archived lists or hand-written bots in training), co-evolving
+the decks and the pilot over the full pool played every card and rediscovered field staples, but its
+metagame collapsed to one deck type, so the metagame is now built by a league of deck-owning agents
+(running). Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
 
 **Earlier work:**
 
@@ -119,28 +119,32 @@ search and expert iteration; Phase B's engine plays two 2005 lists and passes a 
   over them after an engine hang and three card bugs were fixed, and the env's "flip until tails" hang
   (also reachable from Geodude Fossil in the 2000 pool) is capped with no change to any 2000 game.
 
-**Recent (log #49–51):** Sampling pilot-v2 shows a best-of-9 ceiling of 97.6% against 82.9% greedy
-(overstated by luck), but extra attention layers add nothing over the same fine-tuning, and psearch,
-which re-deals hidden cards and finishes the turn with the pilot, gains nothing against SimpleBot
-while beating its own greedy policy 65.4% ± 6.0, so its gains may not transfer. The project's scope
-was set as a general self-discovery method for TCGs, which rules out training on archived lists or
-against hand-written bots and marks the Pokémon-specific representation and the deck-out reward for
-replacement; a design for search in a learned action-sequence model with expert iteration is written
-([notes](notes/design-action-sequence-search.md)).
+**Recent (log #49–54):** Sampling pilot-v2 shows a best-of-9 ceiling of 97.6% against 82.9% greedy,
+extra attention adds nothing over the same fine-tuning, and psearch beats its own greedy policy 65.4% ±
+6.0 but gains nothing against SimpleBot; the scope was set as a general self-discovery method for TCGs
+([design for learned-model search](notes/design-action-sequence-search.md)). Co-evolution, where the pilot
+trains only on decks the system drafts over the full 277-card pool (two engine bugs fixed on the way),
+played every card in 200+ training games, held SimpleBot at 77–83%, and rediscovered Computer Search,
+Scyther, Oak, Energy Removal and Double Colorless Energy in an Energy-denial stall deck, but its metagame
+collapsed to one deck type: one pilot co-adapts to the leading deck, and new deck types are judged raw.
+A league of deck-owning agents in one agent-conditioned network (main agents, exploiters and a
+generalist, each specialist drafting and piloting its own deck lineage) is built, tested and running.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. Check whether psearch's gain transfers: against an independently trained pilot (log #42's) in both
+1. Watch `runs/league-1`: deck types in the support (decks 20+ cards apart), exploiter successes, card
+   coverage, the generalist against SimpleBot; compare with coevo-1 on the same measures and score both
+   with the answer key.
+2. If the league keeps several deck types: a second seed, then drafting as a learned policy trained on
+   real game results (a draft head per agent) in place of the value climb.
+3. Check whether psearch's gain transfers: against an independently trained pilot (log #42's) in both
    directions, and with more re-deals.
-2. General measures of the pilot, alongside SimpleBot as a yardstick: Elo against past snapshots,
-   exploitability, and deck sensitivity (how much deck choice moves its results).
-3. Expert iteration from self-play with the plain game result as reward, with psearch as the search
-   if (1) shows a transferable gain; otherwise go to (4)-(5) first.
-4. A game-agnostic representation (cards as entities with zone and owner, actions as pointers to
-   entities, cards from rules text), retrained from scratch to pilot-v2's level.
-5. The learned action-sequence model and Gumbel MCTS ([design](notes/design-action-sequence-search.md)).
+4. General measures of the pilot: Elo against past snapshots, exploitability, and deck sensitivity.
+5. A game-agnostic representation (cards as entities with zone and owner, actions as pointers, cards from
+   rules text), then the learned action-sequence model and Gumbel MCTS
+   ([design](notes/design-action-sequence-search.md)).
 6. Phase B, in parallel: verification beyond self-written tests (rule invariants in the fuzz,
    independently written tests, EX-era rulings), then 2005 rules in the env, six audited card-text
    fixes, ZRE, Blastoise ex and Nidoqueen.

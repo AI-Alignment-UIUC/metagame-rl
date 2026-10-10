@@ -116,12 +116,14 @@ def ppo_update(model, opt, batch, args, device):
     ret = torch.from_numpy(batch["ret"]).to(device)
     old_v = torch.from_numpy(batch["value"]).to(device)
     offsets = torch.from_numpy(batch["legal_offsets"].astype(np.int64)).to(device)
+    # agent-conditioned network (rl/league.py): each transition's agent id
+    agents = torch.from_numpy(batch["agent"].astype(np.int64)).to(device) if "agent" in batch else None
     ids = torch.from_numpy(batch["legal_ids"].astype(np.int64)).to(device)
     adv = (adv - adv.mean()) / (adv.std() + 1e-8)
     stats = {"pi_loss": 0.0, "v_loss": 0.0, "entropy": 0.0, "kl": 0.0, "clipfrac": 0.0}
     n = 0
     tok_len = None
-    pace = limits.Pace(device)
+    pace = limits.Pace(device, getattr(args, "gpu_load", limits.LOAD))
     if args.model == "tokens":                # tokens fill from the front; kind 0 is padding
         kind = inputs[1]
         tok_len = ((kind > 0).long() * torch.arange(1, kind.shape[1] + 1, device=device)).amax(1)
@@ -143,7 +145,7 @@ def ppo_update(model, opt, batch, args, device):
                     if tok_len is not None:
                         L = int(tok_len[j].max())
                         xs[:3] = [x[:, :L] for x in xs[:3]]
-                    logits, v = model(*xs)
+                    logits, v = model(*xs, **({"agent": agents[j]} if agents is not None else {}))
                 logits, v = logits.float(), v.float()
                 mask = legal_mask(j, offsets, ids, model.action_size)
                 logits = logits.masked_fill(~mask, -1e9)
@@ -158,6 +160,7 @@ def ppo_update(model, opt, batch, args, device):
                 v_loss = torch.max((v - ret[j]) ** 2, (v_clipped - ret[j]) ** 2).mean()
                 loss = pi_loss + args.vf * v_loss - args.ent * entropy
                 (loss * w).backward()
+                pace.tick()                   # per micro-batch: the same share of rest, in finer slices
                 with torch.no_grad():
                     mb_stats["pi_loss"] += w * pi_loss.item()
                     mb_stats["v_loss"] += w * v_loss.item()
@@ -166,7 +169,6 @@ def ppo_update(model, opt, batch, args, device):
                     mb_stats["clipfrac"] += w * ((ratio - 1).abs() > args.clip).float().mean().item()
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
             opt.step()
-            pace.tick()
             for k in stats:
                 stats[k] += mb_stats[k]
             n += 1
@@ -194,7 +196,7 @@ def build_model(args, info):
                                  t["names"], t["globF"], t["slotF"], t["maxTok"], t["maxCand"],
                                  d=args.d, layers=args.tok_layers, heads=args.heads,
                                  count_features=args.count_features, cross_layers=args.cross_layers,
-                                 cand_self=args.cand_self)
+                                 cand_self=args.cand_self, n_agents=getattr(args, "n_agents", 0))
     i = info["identity"] if "identity" in info else info
     return IdentityMLP(i["obsSize"], i["actionSize"], args.hidden, args.layers)
 

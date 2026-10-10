@@ -13,6 +13,12 @@ Inputs come from env/tokens.js: card tokens (card id, kind, aux), global and slo
   policy          = one logit per candidate (a pointer over the options on offer)
   value           = from the global token
 
+With n_agents > 0 the network is a population (rl/league.py, log #53; NeuPL-style): a learned agent
+embedding is added to every token, and each agent has its own value head. Both start as the base
+network's (embedding zero, heads copied by init_agents_from_base), so every agent first plays exactly
+as the checkpoint it was loaded from; forward(agent=ids) picks the agent per row, and without ids the
+network is agent `fixed_agent` (what an ONNX export bakes in).
+
 Written with plain matmul attention so it exports to ONNX for the Node rollout workers.
 """
 import json
@@ -128,7 +134,7 @@ def count_features(aux: torch.Tensor) -> torch.Tensor:
 class TokenPointerNet(nn.Module):
     def __init__(self, card_table: list, text_emb: np.ndarray, n_names: int, glob_f: int, slot_f: int,
                  max_tok: int, max_cand: int, d: int = 192, layers: int = 3, heads: int = 4,
-                 count_features: bool = False, cross_layers: int = 1, cand_self: int = 0):
+                 count_features: bool = False, cross_layers: int = 1, cand_self: int = 0, n_agents: int = 0):
         super().__init__()
         feats = torch.from_numpy(card_feature_matrix(card_table))
         self.register_buffer("card_feats", feats)
@@ -136,7 +142,7 @@ class TokenPointerNet(nn.Module):
         n_cards = feats.shape[0]
         self.cfg = dict(kind="TokenPointerNet", n_names=n_names, glob_f=glob_f, slot_f=slot_f, max_tok=max_tok,
                         max_cand=max_cand, d=d, layers=layers, heads=heads, count_features=count_features,
-                        cross_layers=cross_layers, cand_self=cand_self)
+                        cross_layers=cross_layers, cand_self=cand_self, n_agents=n_agents)
         self.max_tok, self.max_cand, self.glob_f, self.slot_f = max_tok, max_cand, glob_f, slot_f
         self.action_size = max_cand
         self.card_struct = nn.Linear(feats.shape[1], d)
@@ -176,11 +182,32 @@ class TokenPointerNet(nn.Module):
         nn.init.zeros_(self.score[-1].bias)
         nn.init.zeros_(self.value[-1].weight)
         nn.init.zeros_(self.value[-1].bias)
+        self.n_agents, self.fixed_agent = n_agents, 0
+        if n_agents:
+            self.agent_emb = nn.Embedding(n_agents, d)
+            nn.init.zeros_(self.agent_emb.weight)
+            self.value_heads = nn.ModuleList([nn.Sequential(nn.LayerNorm(d), nn.Linear(d, d), nn.GELU(), nn.Linear(d, 1))
+                                              for _ in range(n_agents)])
+            self.init_agents_from_base()
+
+    @torch.no_grad()
+    def init_agents_from_base(self, agents=None):
+        """Agents (all, or the listed ones) back to the base network: embedding zero, value head = the
+        base value head."""
+        for k in (range(self.n_agents) if agents is None else agents):
+            self.agent_emb.weight[k].zero_()
+            self.value_heads[k].load_state_dict(self.value.state_dict())
+
+    @torch.no_grad()
+    def copy_agent(self, src: int, dst: int):
+        """Agent dst becomes a copy of agent src (embedding and value head)."""
+        self.agent_emb.weight[dst].copy_(self.agent_emb.weight[src])
+        self.value_heads[dst].load_state_dict(self.value_heads[src].state_dict())
 
     def card_emb(self, ids):
         return self.card_struct(self.card_feats[ids]) + self.card_text(self.text_emb[ids]) + self.card_resid(ids)
 
-    def encode(self, tok_card, tok_kind, tok_aux, glob, slots):
+    def encode(self, tok_card, tok_kind, tok_aux, glob, slots, agent=None):
         """The state's encoded tokens [B, T, d] and their mask [B, T]; token 0 is the pooled state."""
         tok_card, tok_kind, tok_aux = tok_card.long(), tok_kind.long(), tok_aux.long()
         B, T = tok_card.shape
@@ -192,14 +219,20 @@ class TokenPointerNet(nn.Module):
         s = self.slot_num(slots.float().view(B, 12, self.slot_f) / 48.0)
         pad = torch.zeros(B, T - 13, x.shape[-1], dtype=x.dtype, device=x.device)
         x = x + torch.cat([g, s, pad], dim=1)
+        if self.n_agents:
+            if agent is None:
+                x = x + self.agent_emb.weight[self.fixed_agent][None, None, :]
+            else:
+                x = x + self.agent_emb(agent.long())[:, None, :]
         for b in self.blocks:
             x = b(x, mask)
         return self.ln_out(x), mask
 
-    def forward(self, tok_card, tok_kind, tok_aux, glob, slots, cand, n_cand, return_pooled: bool = False):
+    def forward(self, tok_card, tok_kind, tok_aux, glob, slots, cand, n_cand, return_pooled: bool = False,
+                agent=None):
         cand = cand.long()
         B = tok_card.shape[0]
-        x, mask = self.encode(tok_card, tok_kind, tok_aux, glob, slots)
+        x, mask = self.encode(tok_card, tok_kind, tok_aux, glob, slots, agent)
         pooled = x[:, 0]
 
         cand = cand.view(B, self.max_cand, 6)
@@ -225,7 +258,13 @@ class TokenPointerNet(nn.Module):
             c = blk(c, x, mask)
         logits = self.score(c).squeeze(-1)
         logits = logits.masked_fill(~valid, -1e9)
-        value = torch.tanh(self.value(pooled)).squeeze(-1)
+        if not self.n_agents:
+            value = torch.tanh(self.value(pooled)).squeeze(-1)
+        elif agent is None:
+            value = torch.tanh(self.value_heads[self.fixed_agent](pooled)).squeeze(-1)
+        else:
+            per = torch.cat([h(pooled) for h in self.value_heads], dim=-1)          # [B, n_agents]
+            value = torch.tanh(per.gather(1, agent.long().view(B, 1))).squeeze(-1)
         return (logits, value, pooled) if return_pooled else (logits, value)
 
     def config(self) -> dict:

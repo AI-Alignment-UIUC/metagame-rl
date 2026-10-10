@@ -32,7 +32,8 @@ def load_policy(path: str, device: str):
                               cfg["n_names"], cfg["glob_f"], cfg["slot_f"], cfg["max_tok"], cfg["max_cand"],
                               d=cfg["d"], layers=cfg["layers"], heads=cfg["heads"],
                               count_features=cfg.get("count_features", False),
-                              cross_layers=cfg.get("cross_layers", 1), cand_self=cfg.get("cand_self", 0))
+                              cross_layers=cfg.get("cross_layers", 1), cand_self=cfg.get("cand_self", 0),
+                              n_agents=cfg.get("n_agents", 0))
         enc = "tokens"
     else:
         from rl.model import build
@@ -65,16 +66,31 @@ class GpuMatrix:
         self.pool = RemotePool(workers)
         self.workers, self.concurrency, self.greedy = workers, concurrency, greedy
 
-    def play(self, decks: list, games: int, seed: int, new: int = 0, pairs: list = None, value_at_turn: int = 0):
+    @classmethod
+    def attach(cls, model, pool: RemotePool, workers: int, encoding: str = "tokens", concurrency: int = 64,
+               greedy: bool = True, device: str = None):
+        """A matrix over a model and workers someone else owns (rl/coevolve.py: the learner itself,
+        and the trainer's workers). Don't close() it; the owner closes the pool."""
+        self = cls.__new__(cls)
+        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+        self.model, self.encoding, self.pool = model, encoding, pool
+        self.workers, self.concurrency, self.greedy = workers, concurrency, greedy
+        return self
+
+    def play(self, decks: list, games: int, seed: int, new: int = 0, pairs: list = None, value_at_turn: int = 0,
+             slots: list = None, models: dict = None):
         """decks: [{name, cards}] -> (wins, games, steps) as [n, n] arrays; mirrors filled with 0.5.
-        `pairs` [(i, j)] plays only those pairs instead of all (or all involving the last `new`)."""
+        `pairs` [(i, j)] plays only those pairs instead of all (or all involving the last `new`).
+        slots / models (rl/league.py): deck i is piloted by model slot slots[i] of `models` instead of
+        slot 0 = self.model in both seats."""
         n = len(decks)
         jobs = jobs_for(n, games, seed, new, pairs)
         shards = [jobs[w::self.workers] for w in range(self.workers)]   # interleaved: every worker gets every pair
         msgs = [{"cmd": "games", "encoding": self.encoding, "decks": decks, "jobs": s, "greedy": self.greedy,
-                 "concurrency": self.concurrency, "valueAtTurn": value_at_turn} for s in shards]
+                 "concurrency": self.concurrency, "valueAtTurn": value_at_turn,
+                 **({"slots": [int(x) for x in slots]} if slots is not None else {})} for s in shards]
         t0 = time.time()
-        replies = self.pool.collect(msgs, {0: self.model}, self.device)   # fp32, as the ONNX pilot
+        replies = self.pool.collect(msgs, models or {0: self.model}, self.device)   # fp32, as the ONNX pilot
         self.results = [x for rep in replies for x in rep["results"]]   # per game, for analyses
         W, G, S = np.zeros((n, n)), np.zeros((n, n)), np.zeros((n, n))
         errors = cut = 0
@@ -98,7 +114,7 @@ class GpuMatrix:
         return W, G, S
 
     def values(self, decks: list, pairs: list, openings: int, seed: int, states: bool = False,
-               common_deals: bool = False):
+               common_deals: bool = False, slots: list = None, models: dict = None):
         """The pilot's start-of-game value v(a, b) for deck a against deck b, averaged over
         `openings` deals (forward passes only, no games). pairs: [(a, b)] -> array [len(pairs)].
         Sent in chunks of at most `chunk` deals: all of a chunk's states go through one forward pass.
@@ -109,9 +125,14 @@ class GpuMatrix:
 
         common_deals=True seeds each deal by (opponent b, opening) instead of by the pair's position,
         so every deck facing b gets the same deals (common random numbers): the same deck always
-        scores the same, and two decks' scores differ by the decks, not by the luck of the deal."""
+        scores the same, and two decks' scores differ by the decks, not by the luck of the deal.
+
+        slots / models (rl/league.py): pair k's value is read by model slot slots[k] of `models` (the
+        agent piloting deck a) instead of slot 0 = self.model."""
+        assert not (states and slots is not None and len(set(slots)) > 1), "states need a single reading slot"
         key = (lambda k, b: b) if common_deals else (lambda k, b: k)
-        jobs = [{"a": a, "b": b, "seed": seed * 1000003 + key(k, b) * openings + o, "pair": k, "job": k * openings + o}
+        jobs = [{"a": a, "b": b, "seed": seed * 1000003 + key(k, b) * openings + o, "pair": k, "job": k * openings + o,
+                 "slot": int(slots[k]) if slots is not None else 0}
                 for k, (a, b) in enumerate(pairs) for o in range(openings)]
         tot = np.zeros(len(pairs))
         out = None
@@ -122,7 +143,7 @@ class GpuMatrix:
             msgs = [{"cmd": "values", "decks": decks, "jobs": sh} for sh in shards]
             self.pool.capture = {} if states else None
             try:
-                replies = self.pool.collect(msgs, {0: self.model}, self.device)
+                replies = self.pool.collect(msgs, models or {0: self.model}, self.device)
                 cap, self.pool.capture = self.pool.capture, None
             finally:
                 self.pool.capture = None
