@@ -63,8 +63,8 @@ decks, and no change to the search fixed it. A human-free pilot plateaus near 83
 and neither extra attention nor one-turn play-time search makes it stronger against an outside opponent.
 Under the general self-discovery scope (no archived lists or hand-written bots in training), co-evolving
 the decks and the pilot over the full pool played every card and rediscovered field staples, but its
-metagame collapsed to one deck type, so the metagame is now built by a league of deck-owning agents
-(running). Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
+metagame collapsed to one deck type, so the metagame is now built by a league of deck-owning agents,
+each with its own network (running). Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
 
 **Earlier work:**
 
@@ -119,7 +119,7 @@ metagame collapsed to one deck type, so the metagame is now built by a league of
   over them after an engine hang and three card bugs were fixed, and the env's "flip until tails" hang
   (also reachable from Geodude Fossil in the 2000 pool) is capped with no change to any 2000 game.
 
-**Recent (log #49–54):** Sampling pilot-v2 shows a best-of-9 ceiling of 97.6% against 82.9% greedy,
+**Recent (log #49–55):** Sampling pilot-v2 shows a best-of-9 ceiling of 97.6% against 82.9% greedy,
 extra attention adds nothing over the same fine-tuning, and psearch beats its own greedy policy 65.4% ±
 6.0 but gains nothing against SimpleBot; the scope was set as a general self-discovery method for TCGs
 ([design for learned-model search](notes/design-action-sequence-search.md)). Co-evolution, where the pilot
@@ -127,8 +127,9 @@ trains only on decks the system drafts over the full 277-card pool (two engine b
 played every card in 200+ training games, held SimpleBot at 77–83%, and rediscovered Computer Search,
 Scyther, Oak, Energy Removal and Double Colorless Energy in an Energy-denial stall deck, but its metagame
 collapsed to one deck type: one pilot co-adapts to the leading deck, and new deck types are judged raw.
-A league of deck-owning agents in one agent-conditioned network (main agents, exploiters and a
-generalist, each specialist drafting and piloting its own deck lineage) is built, tested and running.
+A league of deck-owning agents (main agents, exploiters and a generalist, each specialist drafting and
+piloting its own deck lineage) is built and running, with a separate network per agent after a shared
+version turned out to differ between agents only in a small embedding and the value heads.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
