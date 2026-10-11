@@ -1208,3 +1208,19 @@ Entry format:
 - **Found:** In league-1's only round, all five specialists adopted drafted decks on real games; the two
   exploiters went from 0.00 and 0.06 to 0.94 and 0.81 against the leading main agent's deck.
 - **Next:** As #54, on `runs/league-2`.
+
+### #56 · 2026-10-10 · A5 · League drafting: a two-stage adoption check, against the winner's curse
+- **Done:** In `rl/league.py` the real-game check of a specialist's drafted deck now has two stages: the
+  finalists and the current deck play at least `--confirm-min` 96 games each, spread over the opponents
+  (more per opponent when there are few), the best finalist is picked, and only it is re-tested against
+  the current deck on fresh games; it replaces the deck only if it wins the re-test by `--adopt-margin`
+  (2 points). The log keeps both stages (`current_real`, `best_real`, `recheck_current`, `recheck_best`).
+  `runs/league-2` was stopped in round 1 and relaunched clean as `runs/league-3` (same settings).
+- **Evidence:** In league-2 every specialist adopted its best finalist in both rounds (10 of 10) on 16
+  games against a single opponent, about ±12 points of noise per estimate, and picking the best of 4
+  noisy finalists makes the winner beat the current deck by 2 points even when none is better. Smoke
+  run (2 mains, 1 exploiter, 24 games): stage-1 and re-test estimates of the same deck differed by up to
+  25 points (m0's current deck 0.29, then 0.54), and the re-test numbers fell toward the current deck's.
+- **Found:** The smoke run was first started while league-2 was still running, about 10 minutes over the
+  machine's load cap (20 node workers), until league-2 was stopped.
+- **Next:** As #54, on `runs/league-3`.

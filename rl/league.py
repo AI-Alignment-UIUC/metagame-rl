@@ -20,8 +20,9 @@ live network, and frozen strategies (a deck, an agent, a snapshot of the network
      --max-history frozen strategies (out of the support, oldest first, leave)
   2. draft: each specialist hill-climbs its own deck by its own value against its opponents (at most
      --edit-budget cards a round, at least --niche cards from every other specialist's deck, so
-     lineages stay distinct), then real games decide: the best finalist replaces the deck only if it
-     beats the current deck against those opponents by --adopt-margin
+     lineages stay distinct), then real games decide in two stages: the best finalist on --confirm-min
+     games is re-tested against the current deck on fresh games, and replaces it only if it wins that
+     re-test by --adopt-margin
   3. pilot: --ppo-iters PPO iterations; every iteration each live agent gets the same number of
      matches (mains vs sigma, exploiters vs the mains' part of sigma, the generalist on any decks), and
      only that agent's side of its own matches is recorded (with its agent id), so the leading deck's
@@ -262,7 +263,9 @@ def main(argv=None):
     ap.add_argument("--openings", type=int, default=8)
     ap.add_argument("--max-opponents", type=int, default=6)
     ap.add_argument("--finalists", type=int, default=4)
-    ap.add_argument("--confirm-games", type=int, default=16, help="games per opponent per finalist")
+    ap.add_argument("--confirm-games", type=int, default=16, help="games per opponent per finalist (at least)")
+    ap.add_argument("--confirm-min", type=int, default=96,
+                    help="games per finalist in all, spread over the opponents (more per opponent when there are few)")
     ap.add_argument("--adopt-margin", type=float, default=0.02)
     ap.add_argument("--exploit-win", type=float, default=0.6)
     ap.add_argument("--exploit-patience", type=int, default=4, help="rounds without a better deck before a reset")
@@ -483,15 +486,27 @@ def main(argv=None):
             decks = opp_json + [{"name": "cur", "cards": pool.names(cur)}] + \
                 [{"name": f"f{k}", "cards": pool.names(x)} for k, (x, _) in enumerate(chosen)]
             m = 1 + len(chosen)
-            pairs = [(n + k, j) for k in range(m) for j in range(n)]
-            slots = [s["slot"] for s in opps] + [a["id"]] * m
-            W, Gm, _ = gm.play(decks, args.confirm_games, (seed * 104729 + 17) % 1_000_003, pairs=pairs,
-                               slots=slots, models=models)
-            real = np.array([sum(w[j] * W[n + k, j] / max(Gm[n + k, j], 1) for j in range(n)) for k in range(m)])
+            per_opp = max(args.confirm_games, -(-args.confirm_min // n))
+            per_opp += per_opp % 2                       # even: both seats equally
+
+            def real_games(decks_, m_, seed_):
+                pairs_ = [(n + k, j) for k in range(m_) for j in range(n)]
+                slots_ = [s["slot"] for s in opps] + [a["id"]] * m_
+                W, Gm, _ = gm.play(decks_, per_opp, seed_ % 1_000_003, pairs=pairs_, slots=slots_, models=models)
+                return np.array([sum(w[j] * W[n + k, j] / max(Gm[n + k, j], 1) for j in range(n)) for k in range(m_)])
+
+            # Stage 1 picks the best finalist; stage 2 re-tests it against the current deck on fresh games, so
+            # the pick's own luck (the best of several noisy estimates) can't decide the adoption.
+            real = real_games(decks, m, seed * 104729 + 17)
             best = 1 + int(np.argmax(real[1:]))
-            out.update({"current_real": round(float(real[0]), 4), "best_real": round(float(real[best]), 4),
-                        "best_value": round(chosen[best - 1][1], 4), "changed": int(changed(chosen[best - 1][0], cur))})
-            if real[best] > real[0] + args.adopt_margin:
+            out.update({"games_per_opponent": per_opp, "current_real": round(float(real[0]), 4),
+                        "best_real": round(float(real[best]), 4), "best_value": round(chosen[best - 1][1], 4),
+                        "changed": int(changed(chosen[best - 1][0], cur))})
+            recheck = None
+            if real[best] > real[0]:
+                recheck = real_games(opp_json + [decks[n], decks[n + best]], 2, seed * 104729 + 7919)
+                out.update({"recheck_current": round(float(recheck[0]), 4), "recheck_best": round(float(recheck[1]), 4)})
+            if recheck is not None and recheck[1] > recheck[0] + args.adopt_margin:
                 a["deck"] = chosen[best - 1][0]
                 a["version"] += 1
                 a["stall"] = 0
@@ -594,9 +609,10 @@ def main(argv=None):
                 ww = wt[top] / wt[top].sum()
                 row["draft"].append(improve(a, [S[i] for i in top], ww, models, args.seed * 100 + rnd * 10 + a["id"]))
             row["seconds"]["draft"] = round(time.time() - t1, 1)
-            print("  draft: " + "; ".join(f"{d['lineage']} {'ADOPTED' if d['adopted'] else 'kept'} "
-                                          f"{d.get('current_real', '-')} -> {d.get('best_real', '-')}" for d in row["draft"]),
-                  flush=True)
+            print("  draft: " + "; ".join(
+                f"{d['lineage']} {'ADOPTED' if d['adopted'] else 'kept'} {d.get('current_real', '-')} -> {d.get('best_real', '-')}"
+                + (f" (re-test {d['recheck_current']} -> {d['recheck_best']})" if "recheck_best" in d else "")
+                for d in row["draft"]), flush=True)
 
             # 3. pilot: PPO on league matches
             t2 = time.time()
