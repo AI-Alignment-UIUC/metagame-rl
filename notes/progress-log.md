@@ -1224,3 +1224,30 @@ Entry format:
 - **Found:** The smoke run was first started while league-2 was still running, about 10 minutes over the
   machine's load cap (20 node workers), until league-2 was stopped.
 - **Next:** As #54, on `runs/league-3`.
+
+### #57 · 2026-10-10 · A5 · league-3 rounds 0-7: three deck types in the equilibrium; restarting exploiters now stay in the league
+- **Done:** `runs/league-3` (#56's settings) ran rounds 0-7. In round 8 exploiter `e0` reached its 8-round
+  limit and restarted while its deck held 0.33 of the equilibrium, and the league dropped that deck. The
+  run was stopped, `rl/league.py` changed so that an exploiter restarting without success is frozen first
+  whenever its deck has equilibrium weight, and resumed from the round-7 checkpoint (`--resume`; the
+  round-8 measurement came out identical, and `e0.0.v4@r8` was frozen before the restart).
+- **Evidence:** Adoptions by round (two-stage check): 5/5, 4/5, 3/5, 3/5, then fewer; in round 1 the leading
+  main kept its deck (best finalist 0.33 against its current 0.55 in real games). Training endings: deck-out
+  43% / prizes 43% in round 0, then prizes 75-84% and deck-out 3-8% from round 2 (82% / 4% in round 4).
+  Equilibrium: one deck in rounds 0-6, the lead alternating between the `m0` and `m1` lineages
+  (m0, m1, m0, m1, m1, m0); round 7: `m0.v4` 0.43, `e0.0.v4` 0.43, `m2.v6` 0.14, three deck types (26-59
+  cards apart); round 8: `m1.v4` 0.56, `e0.0.v4` 0.33, `m0.v4` 0.11. Decks (basic Energy / Pokémon /
+  Trainers): leaders 14/15/31 (round 1), 25/22/13 (round 2), 20/20/20 (round 3); by round 6 `m0.v4` 29/24/7
+  (Arcanine, Growlithe, Magmar, Jigglypuff, Chansey), `m1.v4` 34/24/2, `m2.v6` 32/28/0 (Charmander,
+  Magmar, Ponyta, Exeggutor), `e0.0.v4` 36/23/1 (Hitmonchan, Machoke, Mr. Mime, Snorlax). Generalist
+  against SimpleBot on the archived decks after round 4: 76.0% ± 4.2 (coevo-1's pilot at round 4: 76.8%).
+  Exploiter `e1.0` restarted at round 7 (0.22 against the mains). Rounds take about 13 minutes; GPU in the
+  update about 63% mean, 78% at most.
+- **Found:** (1) Unlike coevo-1, the league keeps several deck types in its equilibrium and plays prize
+  races, not a stall game. (2) But the lineages shed Trainers round after round, ending as Pokémon and
+  Energy piles (0-7 Trainers, 29-36 basic Energy) that win real games against each other under these
+  pilots; the archived lists play 26-30 Trainers, and coevo-1 had kept Computer Search, Oak and Energy
+  Removal. A specialist's pilot learns from a sixth of the games; whether it uses Trainers worse than
+  coevo-1's one pilot is not measured.
+- **Next:** Watch league-3 to round 30; then measure how much each specialist gains from Trainers (card
+  ablations on its own deck), the generalist on the specialists' decks, and both runs against the answer key.

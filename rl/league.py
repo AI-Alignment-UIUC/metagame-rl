@@ -8,7 +8,8 @@ checkpoint and share nothing after that), or with --shared one agent-conditioned
   main agents       own a deck lineage each; improve it against the league's equilibrium mixture
   exploiters        own a lineage each; improve it against the main agents' strategies only. One that
                     beats them (>= --exploit-win) is frozen into the league and restarts from a fresh
-                    random deck; one that stalls restarts without being frozen (AlphaStar's exploiters)
+                    random deck; one that stalls restarts too, frozen first if the equilibrium still plays
+                    its deck (AlphaStar's exploiters)
   generalist        owns no deck: plays any deck (league and exploration decks) in both seats, for the
                     "play any deck" goal and as a common pilot; it is what the SimpleBot check plays
 
@@ -555,8 +556,12 @@ def main(argv=None):
                     reset(a, rnd)
                     events.append({**ev, "event": "success: frozen and reset"})
                 elif a["stall"] >= args.exploit_patience or rnd - a["born"] >= args.exploit_max_rounds:
+                    kept = sigma[i] > 1e-4       # a deck the equilibrium plays stays in the league (log #57)
+                    if kept:
+                        freeze(S[i], rnd, f"exploiter {a['lineage']} reset while holding weight {sigma[i]:.3f}")
                     reset(a, rnd)
-                    events.append({**ev, "event": "stalled: reset"})
+                    events.append({**ev, "event": "stalled: " + ("frozen and reset" if kept else "reset"),
+                                   "weight": round(float(sigma[i]), 4)})
             if rnd > 0 and rnd % args.freeze_every == 0:
                 for k, s in enumerate(S):
                     if s["live"] and s["role"] == "main":
