@@ -63,7 +63,7 @@ search makes the pilot stronger against an outside opponent. Under the general s
 pool rediscovered field staples but collapsed to one deck type, so the metagame is now built by a league
 of deck-owning agents, each with its own network. The league (league-3, running) keeps three deck types
 in its equilibrium and plays prize races, but its decks shed Trainers toward Pokémon and Energy piles,
-unlike the human lists. Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
+unlike the human lists, and its generalist weakens against SimpleBot (71.5% at round 9). Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
 
 **Earlier work:**
 
@@ -80,13 +80,14 @@ unlike the human lists. Phase B's engine plays two 2005 lists and passes a fuzz 
   Oak, Energy Removal and Double Colorless Energy but collapsed to one deck type, so the metagame moved
   to a league of deck-owning agents with separate networks and a two-stage real-game adoption check.
 
-**Recent (log #57):** In league-3's first eight rounds, unlike coevo-1, the training games became prize
-races (75–84% end by prizes) and from round 7 the equilibrium held three deck types at once (two Fire
-decks and a Fighting/Psychic exploiter deck), while the generalist plays SimpleBot at 76.0% after round
-4, as coevo-1's pilot did. But the lineages shed Trainers round after round, ending as Pokémon and
-Energy piles with 0–7 Trainers and 29–36 basic Energy, where the archived lists play 26–30 Trainers. An
-exploiter that restarted while its deck held a third of the equilibrium was being dropped from the
-league; it is now frozen first, and the run resumed from round 8.
+**Recent (log #57–58):** In league-3's first thirteen rounds, unlike coevo-1, the training games became
+prize races and the equilibrium often held three deck types at once (Fire decks, a Fighting/Psychic
+exploiter deck, and frozen past versions), but the lineages shed Trainers toward Pokémon and Energy piles
+(0–7 Trainers, 29–36 basic Energy) and the generalist fell from 83% to 71.5% against SimpleBot. A losing
+exploiter found a free cycle the environment missed (use Tentacool's Cowardice, answer its confirm "no",
+repeat to the step cap for a draw instead of a loss), now removed by testing single-step prompt answers
+for no-ops, and the run resumed from round 13 with that exploiter restarted; an exploiter that restarts
+while its deck holds equilibrium weight is now frozen into the league first.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
@@ -94,8 +95,9 @@ The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 1. Watch `runs/league-3` to round 30: deck types in the support, exploiter successes, the generalist
    against SimpleBot; compare with coevo-1 on the same measures and score both with the answer key.
-2. Why the league sheds Trainers: card ablations on each specialist's own deck (what its pilot gains
-   from Trainers), and the generalist piloting the specialists' decks.
+2. Why the league sheds Trainers and its generalist weakens: card ablations on each specialist's own
+   deck (what its pilot gains from Trainers), the generalist on the specialists' decks, and a larger game
+   share and entropy bonus for the generalist.
 3. If the league keeps several deck types: a second seed, then drafting as a learned policy trained on
    real game results (a draft head per agent) in place of the value climb.
 4. Whether psearch's gain transfers (against an independently trained pilot, both directions, more
@@ -104,7 +106,8 @@ The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 5. A game-agnostic representation (cards as entities with zone and owner, actions as pointers, cards from
    rules text), then the learned action-sequence model and Gumbel MCTS
    ([design](notes/design-action-sequence-search.md)).
-6. Phase B, in parallel: verification beyond self-written tests (rule invariants in the fuzz,
+6. Phase B, in parallel: verification beyond self-written tests (rule invariants in the fuzz, such as no
+   state repeated within a turn,
    independently written tests, EX-era rulings), then 2005 rules in the env, six audited card-text
    fixes, ZRE, Blastoise ex and Nidoqueen.
 <!-- status:end -->
