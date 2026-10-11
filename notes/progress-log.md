@@ -1278,3 +1278,35 @@ Entry format:
   the next one. The pilot's training games stayed fine for 12 rounds and the policy found the cycle once
   its deck held Tentacool and it was losing.
 - **Next:** Watch league-3 to round 30; add a repeated-state invariant to the fuzz.
+
+### #59 · 2026-10-11 · A5 · Back to basics: a repeating tournament of 3, 6 and 9 deck-owning agents
+- **Done:** By the user's direction, a simpler setup than the league, `rl/tournament.py`. N agents, each with
+  a network and an optimizer of its own (`SeparatePilots`; pilot-v2 it349's architecture and weights)
+  and its own deck, starting from different random rules-only decks (`--p-flat 1`; same seed, so the
+  N=6 run's first three decks are the N=3 run's, and so on). Every round: a round-robin tournament (32
+  games a pair, each agent piloting its own deck; standings, equilibrium, cyclic triads); every agent
+  redrafts its own deck at once against the field of the round's decks, up to 45 cards (75%) a round,
+  with exploration in card picks (half the added cards drawn toward the least-played cards, weight
+  floored at 0.25; half the climbs from a random kick; steps drawn from softmax(value / 0.03); one
+  finalist drawn at random; a finalist within 3 points of the current deck on the fresh-game re-test is
+  adopted with probability 0.25) and 60 value calls per agent, 16 deals per candidate spread over the
+  opponents; then 8 PPO iterations, each agent playing its own deck against the others and learning
+  from its own side, exactly 8,000 transitions an agent per iteration, with exploration in actions (each
+  agent's entropy coefficient rises from 0.01 up to 0.05 while its policy's entropy is below 0.75).
+  Before launch, a review workflow (4 lens-specific reviewers, an independent skeptic per finding:
+  33 findings, 21 confirmed) found a crash (numpy integers in the logged cycle counts), unequal training
+  budgets across N (games in flight overshoot the collection quota: about 1.5x the data per agent at N=3
+  as at N=9), anti-imitation card weights (a card another agent plays was about 60x less likely to be
+  proposed than a card nobody plays), an entropy controller that first cut exploration 10x, draft effort
+  that fell with N (fixed seconds), the Pokémon-specific starting generator, and missing measures; all
+  fixed. A second workflow is re-checking the fixes. `league-3` was stopped in round 15 (checkpoint at
+  round 14). Launch: `runs/tournament_runs.sh`, `runs/tourn-3`, `tourn-6`, `tourn-9` (seed 1), then
+  `tourn-3-s2` (seed 2, for run-to-run variance), 20 rounds each, one after another.
+- **Evidence:** Smoke runs (3 agents, 2 rounds): drafts changed 9-45 cards a round; every agent trained on
+  exactly its budget (from 749-1,834 collected); an exploratory adoption fired; logged rows serialize;
+  the networks and an atomic checkpoint were saved. Cycle counts: a clear 3-cycle counts 1 (1
+  significant), all ties 0, a 0.55 cycle 1 (0 significant).
+- **Found:** pilot-v2's weights were trained on random decks restricted to the archived field's cards, so
+  the starting networks carry that prior; each deck's share of field cards is logged to watch for it.
+- **Next:** Compare N=3, 6, 9 on deck types, equilibrium support, cycles, drafted share, Trainers and
+  Energy, staples, each agent's play against SimpleBot on its own deck, and the seed-2 N=3 run's spread.
