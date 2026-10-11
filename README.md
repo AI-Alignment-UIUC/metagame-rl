@@ -80,21 +80,23 @@ unlike the human lists, and its generalist weakens against SimpleBot (71.5% at r
   Oak, Energy Removal and Double Colorless Energy but collapsed to one deck type, so the metagame moved
   to a league of deck-owning agents with separate networks and a two-stage real-game adoption check.
 
-**Recent (log #57–58):** In league-3's first thirteen rounds, unlike coevo-1, the training games became
-prize races and the equilibrium often held three deck types at once (Fire decks, a Fighting/Psychic
-exploiter deck, and frozen past versions), but the lineages shed Trainers toward Pokémon and Energy piles
-(0–7 Trainers, 29–36 basic Energy) and the generalist fell from 83% to 71.5% against SimpleBot. A losing
-exploiter found a free cycle the environment missed (use Tentacool's Cowardice, answer its confirm "no",
-repeat to the step cap for a draw instead of a loss), now removed by testing single-step prompt answers
-for no-ops, and the run resumed from round 13 with that exploiter restarted; an exploiter that restarts
-while its deck holds equilibrium weight is now frozen into the league first.
+**Recent (log #57–59):** In league-3, unlike coevo-1, training games became prize races and the
+equilibrium often held three deck types (frozen past versions included), but the lineages shed Trainers
+toward Pokémon and Energy piles and the generalist fell from 83% to 70% against SimpleBot; a free cycle
+the environment missed (a "no" to Tentacool's Cowardice confirm, repeated to the step cap for a draw) was
+removed by testing single-step prompt answers for no-ops. Back to basics, a repeating tournament of 3, 6
+and 9 agents (each with its own network and its own deck from a different random start, redrafting up to
+75% of the deck a round with exploration in card picks, and an entropy floor for exploration in play) is
+running after a review workflow found and fixed a crash, unequal budgets across N, anti-imitation card
+weights and an over-aggressive entropy controller.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. Watch `runs/league-3` to round 30: deck types in the support, exploiter successes, the generalist
-   against SimpleBot; compare with coevo-1 on the same measures and score both with the answer key.
+1. The tournaments (`runs/tourn-3`, `tourn-6`, `tourn-9`, `tourn-3-s2`): what changes with the number of
+   agents (deck types, equilibrium support, cycles, Trainers and Energy, staples, play against SimpleBot
+   on the agent's own deck), against the seed-to-seed spread; league-3 can resume from round 14.
 2. Why the league sheds Trainers and its generalist weakens: card ablations on each specialist's own
    deck (what its pilot gains from Trainers), the generalist on the specialists' decks, and a larger game
    share and entropy bonus for the generalist.
