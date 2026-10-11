@@ -143,6 +143,28 @@ def main(argv=None):
     if not np.allclose(np.concatenate([got_v[0], got_v[1], got_v[2]]), want, atol=1e-5):
         failures.append("merged AgentView serving differs from per-agent forward passes")
 
+    # Per-agent batches for separate networks (rl/league.py subset): every kept row keeps its own legal
+    # ids, observation fields and scalars.
+    from rl.league import subset
+    T = 300
+    counts = rng.integers(1, 9, size=T)
+    off = np.concatenate([[0], np.cumsum(counts)]).astype(np.int64)
+    batch = {"action": rng.integers(0, 8, size=T).astype(np.int32), "adv": rng.normal(size=T).astype(np.float32),
+             "slot": rng.integers(0, 4, size=T).astype(np.int32), "legal_offsets": off,
+             "legal_ids": rng.integers(0, 48, size=int(off[-1])).astype(np.int32),
+             "obs.tokCard": rng.integers(0, 300, size=T * 5).astype(np.int16), "obs.nCand": counts.astype(np.int32),
+             "obs": np.zeros((T, 0), np.uint8)}
+    idx = np.nonzero(batch["slot"] == 2)[0]
+    sub = subset(batch, idx)
+    ok = len(sub["action"]) == len(idx) and sub["obs"].shape == (len(idx), 0)
+    for r, i in enumerate(idx):
+        ok &= np.array_equal(sub["legal_ids"][sub["legal_offsets"][r]:sub["legal_offsets"][r + 1]],
+                             batch["legal_ids"][off[i]:off[i + 1]])
+        ok &= np.array_equal(sub["obs.tokCard"].reshape(len(idx), 5)[r], batch["obs.tokCard"].reshape(T, 5)[i])
+        ok &= sub["adv"][r] == batch["adv"][i] and sub["obs.nCand"][r] == batch["obs.nCand"][i]
+    if not ok:
+        failures.append("subset() does not keep the rows' own legal ids / fields")
+
     if failures:
         print("FAIL\n  " + "\n  ".join(failures))
         sys.exit(1)

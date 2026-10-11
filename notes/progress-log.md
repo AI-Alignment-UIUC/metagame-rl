@@ -1190,3 +1190,21 @@ Entry format:
 - **Next:** Watch `runs/league-1`: deck types in the support (decks 20+ cards apart), exploiter successes,
   coverage, the generalist against SimpleBot, endings; then compare with coevo-1 on the same measures and
   the answer key.
+
+### #55 · 2026-10-10 · A5 · The league with a separate network per agent
+- **Done:** By the user's choice after counting #54's parameters, `rl/league.py` now gives every agent a
+  network and an optimizer of its own (`SeparatePilots`, the default; AlphaStar-style): each starts as a
+  copy of pilot-v2 it349 and trains only on its own matches, the batch split per agent by `subset` (legal
+  ids re-indexed). A frozen strategy is a snapshot of its one agent's network; an exploiter restarts as a
+  copy of the generalist's network with a fresh optimizer. `--shared` keeps #54's design (`SharedPilots`).
+  `runs/league-1` (shared) was stopped in round 0. Launched `runs/league-2` (separate networks, 30 rounds,
+  seed 1, otherwise #54's settings) with `runs/league_run.sh`.
+- **Evidence:** #54's network had 3.64M parameters: card embedding 197k (5.4%), token inputs 101k (2.8%),
+  state encoder 2.11M (58%) and policy 762k (21%), all shared; each agent owned a 256-number embedding and
+  a 67k value head (1.8%), so the agents' policies differed only through the embedding. `rl.league_tests`
+  PASS, now including `subset` (each kept row keeps its own legal ids, token fields and scalars). Smoke run
+  with separate networks, 4 rounds with a resume from round 2: per-agent PPO statistics, per-agent
+  snapshots (`r001-a0.pt` ...), the generalist's ONNX evaluation; the shared mode still runs (1 round).
+- **Found:** In league-1's only round, all five specialists adopted drafted decks on real games; the two
+  exploiters went from 0.00 and 0.06 to 0.94 and 0.81 against the leading main agent's deck.
+- **Next:** As #54, on `runs/league-2`.

@@ -2,8 +2,9 @@
 and pilot their own deck, instead of one pilot for every deck (rl/coevolve.py, log #52, collapsed to
 one deck type: one pilot co-adapts to the leading deck, and new deck types are judged raw).
 
-One agent-conditioned network (rl/token_model.py n_agents; each agent has an embedding and its own
-value head, all starting as the --init-from checkpoint) holds every live agent:
+Every agent has a network and an optimizer of its own (AlphaStar-style; all start as the --init-from
+checkpoint and share nothing after that), or with --shared one agent-conditioned network holds them all
+(rl/token_model.py n_agents: an embedding and a value head per agent, the rest shared; log #54). Agents:
   main agents       own a deck lineage each; improve it against the league's equilibrium mixture
   exploiters        own a lineage each; improve it against the main agents' strategies only. One that
                     beats them (>= --exploit-win) is frozen into the league and restarts from a fresh
@@ -53,6 +54,178 @@ ROOT = Path(__file__).resolve().parent.parent
 FROZEN_SLOT = 1000            # frozen strategy i is model slot FROZEN_SLOT + i; live agent k is slot k
 
 
+def subset(batch: dict, idx) -> dict:
+    """The transitions `idx` of a rollout batch (rl/rollouts.concat plus adv / ret), legal ids re-indexed."""
+    idx = np.asarray(idx, dtype=np.int64)
+    T = len(batch["action"])
+    out = {}
+    for k, v in batch.items():
+        if k in ("legal_offsets", "legal_ids", "inputs", "header") or not isinstance(v, np.ndarray):
+            continue
+        if v.ndim == 1 and v.size == T:
+            out[k] = v[idx]
+        elif v.ndim > 1 and v.shape[0] == T:
+            out[k] = v[idx]
+        elif v.size % T == 0:                      # token fields: flat, T rows of equal width
+            out[k] = v.reshape(T, -1)[idx].reshape(-1)
+    off = batch["legal_offsets"].astype(np.int64)
+    counts = off[idx + 1] - off[idx]
+    new_off = np.concatenate([[0], np.cumsum(counts)]).astype(np.int64)
+    pos = np.arange(int(counts.sum()), dtype=np.int64) - np.repeat(new_off[:-1], counts)
+    out["legal_ids"] = batch["legal_ids"][np.repeat(off[idx], counts) + pos]
+    out["legal_offsets"] = new_off
+    return out
+
+
+def load_base(net, state: dict):
+    """A plain or league checkpoint's weights into net; agent parts it lacks start as the base network."""
+    missing, unexpected = net.load_state_dict(state, strict=False)
+    assert not unexpected, f"checkpoint has weights this network lacks: {unexpected[:4]}"
+    assert all(k.startswith(("agent_emb.", "value_heads.")) for k in missing), f"missing weights: {missing[:4]}"
+    if missing and net.n_agents:
+        net.init_agents_from_base()
+
+
+def mean_stats(per: dict, sizes: dict) -> dict:
+    """PPO statistics averaged over agents, weighted by their transitions."""
+    if not per:
+        return {}
+    tot = sum(sizes[k] for k in per) or 1
+    return {q: sum(per[k][q] * sizes[k] for k in per) / tot for q in next(iter(per.values()))}
+
+
+class SeparatePilots:
+    """A network and an optimizer of its own for every agent; each learns only from its own matches."""
+    kind = "separate"
+
+    def __init__(self, build, n_agents: int, init_state: dict, lr: float, device: str):
+        self.build, self.n, self.lr, self.device = build, n_agents, lr, device
+        self.nets = []
+        for _ in range(n_agents):
+            net = build(0).to(device)
+            load_base(net, init_state)
+            self.nets.append(net.eval())
+        self.opts = [torch.optim.Adam(net.parameters(), lr=lr, eps=1e-5) for net in self.nets]
+
+    def model(self, k):
+        return self.nets[k]
+
+    def frozen(self, net, agent):
+        return net
+
+    def snapshot_key(self, rnd, agent):
+        return f"r{rnd:03d}-a{agent}"
+
+    def snapshot(self, agent):
+        net = self.build(0).to(self.device)
+        net.load_state_dict(self.nets[agent].state_dict())
+        return net.eval()
+
+    def blank(self):
+        return self.build(0)
+
+    def reset(self, src, dst):
+        """Agent dst restarts as a copy of agent src, with a fresh optimizer."""
+        self.nets[dst].load_state_dict(self.nets[src].state_dict())
+        self.opts[dst] = torch.optim.Adam(self.nets[dst].parameters(), lr=self.lr, eps=1e-5)
+
+    def update(self, batch, targs):
+        per, sizes = {}, {}
+        for k in range(self.n):
+            idx = np.nonzero(batch["slot"] == k)[0]
+            if len(idx) == 0:
+                continue
+            sub = subset(batch, idx)
+            sub["inputs"] = model_inputs(sub, "tokens")
+            self.nets[k].train()
+            per[k] = ppo_update(self.nets[k], self.opts[k], sub, targs, self.device)
+            self.nets[k].eval()
+            sizes[k] = len(idx)
+        return mean_stats(per, sizes), per
+
+    def export(self, k, path):
+        spec = export_policy(self.nets[k], path, "tokens")
+        self.nets[k].to(self.device)
+        return spec
+
+    def eval(self):
+        for net in self.nets:
+            net.eval()
+
+    def state(self):
+        return {"nets": [net.state_dict() for net in self.nets], "opts": [o.state_dict() for o in self.opts]}
+
+    def load(self, st):
+        for net, sd in zip(self.nets, st["nets"]):
+            net.load_state_dict(sd)
+        for o, sd in zip(self.opts, st["opts"]):
+            o.load_state_dict(sd)
+
+    def config(self):
+        return self.nets[0].config()
+
+
+class SharedPilots:
+    """Every agent in one agent-conditioned network (an embedding and a value head each, the rest shared;
+    NeuPL-style, log #54); all agents' requests are served in one forward pass."""
+    kind = "shared"
+
+    def __init__(self, build, n_agents: int, init_state: dict, lr: float, device: str):
+        self.build, self.n, self.lr, self.device = build, n_agents, lr, device
+        self.net = build(n_agents).to(device)
+        load_base(self.net, init_state)
+        self.net.eval()
+        self.opt = torch.optim.Adam(self.net.parameters(), lr=lr, eps=1e-5)
+
+    def model(self, k):
+        return AgentView(self.net, k)
+
+    def frozen(self, net, agent):
+        return AgentView(net, agent)
+
+    def snapshot_key(self, rnd, agent):
+        return f"r{rnd:03d}"
+
+    def snapshot(self, agent):
+        net = self.build(self.n).to(self.device)
+        net.load_state_dict(self.net.state_dict())
+        return net.eval()
+
+    def blank(self):
+        return self.build(self.n)
+
+    def reset(self, src, dst):
+        self.net.copy_agent(src, dst)
+
+    def update(self, batch, targs):
+        batch["agent"] = batch["slot"]
+        batch["inputs"] = model_inputs(batch, "tokens")
+        self.net.train()
+        stats = ppo_update(self.net, self.opt, batch, targs, self.device)
+        self.net.eval()
+        return stats, {"all": stats}
+
+    def export(self, k, path):
+        self.net.fixed_agent = k
+        spec = export_policy(self.net, path, "tokens")
+        self.net.fixed_agent = 0
+        self.net.to(self.device)
+        return spec
+
+    def eval(self):
+        self.net.eval()
+
+    def state(self):
+        return {"model": self.net.state_dict(), "opt": self.opt.state_dict()}
+
+    def load(self, st):
+        self.net.load_state_dict(st["model"])
+        self.opt.load_state_dict(st["opt"])
+
+    def config(self):
+        return self.net.config()
+
+
 def deck_shape(pool, v):
     return {"pokemon": int(v[[c["id"] for c in pool.cards if c["superType"] == 1]].sum()),
             "trainer": int(v[[c["id"] for c in pool.cards if c["superType"] == 2]].sum()),
@@ -75,6 +248,8 @@ def main(argv=None):
     ap.add_argument("--init-from", required=True, help="checkpoint every agent starts from (plain or league)")
     ap.add_argument("--pool", choices=["field", "full"], default="full")
     ap.add_argument("--rounds", type=int, default=30)
+    ap.add_argument("--shared", action="store_true",
+                    help="one agent-conditioned network for every agent (log #54) instead of a network each")
     ap.add_argument("--mains", type=int, default=3)
     ap.add_argument("--exploiters", type=int, default=2)
     ap.add_argument("--games", type=int, default=24, help="games per pair when measuring the league")
@@ -144,18 +319,14 @@ def main(argv=None):
     c0 = init["config"]
     n_agents = args.mains + args.exploiters + 1
     G = n_agents - 1                                    # the generalist's agent id
-    margs = SimpleNamespace(model="tokens", d=c0["d"], tok_layers=c0["layers"], heads=c0["heads"],
-                            count_features=c0.get("count_features", False), cross_layers=c0.get("cross_layers", 1),
-                            cand_self=c0.get("cand_self", 0), n_agents=n_agents)
-    live = build_model(margs, info).to(device)
-    missing, unexpected = live.load_state_dict(init["model"], strict=False)
-    assert not unexpected, f"checkpoint has weights this network lacks: {unexpected[:4]}"
-    assert all(k.startswith(("agent_emb.", "value_heads.")) for k in missing), f"missing weights: {missing[:4]}"
-    if missing:
-        live.init_agents_from_base()                   # a plain checkpoint: every agent starts as it
-    opt = torch.optim.Adam(live.parameters(), lr=args.lr, eps=1e-5)
+    def build(k):
+        return build_model(SimpleNamespace(model="tokens", d=c0["d"], tok_layers=c0["layers"], heads=c0["heads"],
+                                           count_features=c0.get("count_features", False),
+                                           cross_layers=c0.get("cross_layers", 1), cand_self=c0.get("cand_self", 0),
+                                           n_agents=k), info)
+    pilots = (SharedPilots if args.shared else SeparatePilots)(build, n_agents, init["model"], args.lr, device)
     targs = SimpleNamespace(**vars(args), model="tokens", amp=True)
-    gm = GpuMatrix.attach(live, rp, args.workers, device=device)
+    gm = GpuMatrix.attach(pilots.net if args.shared else pilots.nets[0], rp, args.workers, device=device)
 
     agents = [{"id": k, "role": "main", "lineage": f"m{k}", "version": 0, "born": 0, "stall": 0, "resets": 0}
               for k in range(args.mains)]
@@ -165,14 +336,15 @@ def main(argv=None):
     start, it_total = 0, 0
     ckpt = run / "checkpoint.pt"
 
-    def snapshot_net(key):
+    def snapshot_net(key, agent=None):
+        """The frozen network `key`: loaded from its file, or (agent given) a new snapshot of that agent."""
         if key not in snap_nets:
             path = run / "snapshots" / f"{key}.pt"
-            net = build_model(margs, info).to(device)
             if path.exists():
+                net = pilots.blank().to(device)
                 net.load_state_dict(torch.load(path, map_location=device, weights_only=False)["model"])
             else:
-                net.load_state_dict(live.state_dict())
+                net = pilots.snapshot(agent)
                 torch.save({"model": net.state_dict(), "config": net.config()}, path)
             snap_nets[key] = net.eval()
         return snap_nets[key]
@@ -188,8 +360,7 @@ def main(argv=None):
 
     if args.resume and ckpt.exists():
         st = torch.load(ckpt, map_location=device, weights_only=False)
-        live.load_state_dict(st["model"])
-        opt.load_state_dict(st["opt"])
+        pilots.load(st)
         start, it_total = st["round"] + 1, st["ppo_iter"]
         agents = st["agents"]
         for a in agents:
@@ -203,8 +374,8 @@ def main(argv=None):
     else:
         for a in agents:
             a["deck"] = fresh_deck([b["deck"] for b in agents if "deck" in b])
-    (run / "config.json").write_text(json.dumps({**vars(args), "n_agents": n_agents, "model_config": live.config(),
-                                                 "device": device}, indent=1))
+    (run / "config.json").write_text(json.dumps({**vars(args), "n_agents": n_agents, "pilots": pilots.kind,
+                                                 "model_config": pilots.config(), "device": device}, indent=1))
     log = open(run / "log.jsonl", "a")
 
     def nearest(v):
@@ -223,17 +394,17 @@ def main(argv=None):
         return out
 
     def model_table():
-        models = {k: AgentView(live, k) for k in range(n_agents)}
+        models = {k: pilots.model(k) for k in range(n_agents)}
         for i, h in enumerate(history):
-            models[FROZEN_SLOT + i] = AgentView(snapshot_net(h["net"]), h["agent"])
+            models[FROZEN_SLOT + i] = pilots.frozen(snapshot_net(h["net"]), h["agent"])
         return models
 
     def as_json(s):
         return {"name": s["name"], "cards": pool.names(s["deck"])}
 
     def freeze(s, rnd, why):
-        key = f"r{rnd:03d}"
-        snapshot_net(key)
+        key = pilots.snapshot_key(rnd, s["agent"])
+        snapshot_net(key, s["agent"])
         history.append({"name": s["name"], "deck": s["deck"].copy(), "agent": s["agent"], "role": s["role"],
                         "net": key, "origin": why, "born": rnd})
 
@@ -242,7 +413,7 @@ def main(argv=None):
         a["lineage"] = f"e{a['id'] - args.mains}.{a['resets']}"
         a["version"], a["born"], a["stall"] = 0, rnd, 0
         a["deck"] = fresh_deck([b["deck"] for b in agents if b is not a])
-        live.copy_agent(G, a["id"])                    # a fresh pilot: the generalist's
+        pilots.reset(G, a["id"])                       # a fresh pilot: the generalist's
 
     def improve(a, opps, w, models, seed):
         """One round of drafting for specialist a: climb its deck by its own value against opponents
@@ -333,8 +504,8 @@ def main(argv=None):
     try:
         for rnd in range(start, args.rounds + 1):
             t0 = time.time()
-            live.eval()
-            row = {"round": rnd, "ppo_iter": it_total}
+            pilots.eval()
+            row = {"round": rnd, "ppo_iter": it_total, "pilots": pilots.kind}
             # 1. measure, solve, freeze, reset, trim
             S = strategies(rnd)
             models = model_table()
@@ -467,15 +638,11 @@ def main(argv=None):
                         for w in range(args.workers)]
                 replies = rp.collect(msgs, models, device)
                 tc = time.time() - ti
-                live.train()
                 batch = concat([read_rollout(r["out"]) for r in replies])
                 assert "slot" in batch and int(batch["slot"].max()) < n_agents and int(batch["slot"].min()) >= 0
-                batch["agent"] = batch["slot"]
                 adv, ret = advantages(batch, args.gamma, args.lam)
                 batch["adv"], batch["ret"] = adv, ret
-                batch["inputs"] = model_inputs(batch, "tokens")
-                stats = ppo_update(live, opt, batch, targs, device)
-                live.eval()
+                stats, per_agent = pilots.update(batch, targs)
                 games = [g for r in replies for g in r["results"]]
                 cards_of = {d["name"]: d["cards"] for mt in ms for d in (mt["a"]["deck"], mt["b"]["deck"])}
                 cov.add_games([cards_of[x] for g in games for x in (g.get("decks") or []) if x in cards_of])
@@ -490,7 +657,8 @@ def main(argv=None):
                       "errors": sum(1 for g in games if g.get("error")),
                       "endings": {e: sum(1 for g in games if (g.get("ending") or "none") == e)
                                   for e in {g.get("ending") or "none" for g in games}},
-                      "agent_transitions": {int(k): int((batch["agent"] == k).sum()) for k in range(n_agents)},
+                      "agent_transitions": {int(k): int((batch["slot"] == k).sum()) for k in range(n_agents)},
+                      "agent_stats": {str(k): {q: round(v, 5) for q, v in st_.items()} for k, st_ in per_agent.items()},
                       "win_by_slot": {k: [len(v), round(float(np.mean(v)), 3)] for k, v in sorted(per.items())},
                       "collect_s": round(tc, 1), **{k: round(v, 5) for k, v in stats.items()}}
                 train_rows.append(tr)
@@ -503,10 +671,7 @@ def main(argv=None):
 
             if args.eval_every and (rnd + 1) % args.eval_every == 0:     # evaluation only: archived decks, SimpleBot
                 path = run / f"eval_r{rnd:03d}.onnx"
-                live.fixed_agent = G
-                spec = export_policy(live, path, "tokens")
-                live.fixed_agent = 0
-                live.to(device)
+                spec = pilots.export(G, path)
                 row["eval_simplebot_generalist"] = evaluate(spec, "simplebot", "all", "all", args.eval_games,
                                                             args.eval_workers, args.seed * 7 + rnd, run.name)
                 path.unlink(missing_ok=True)
@@ -514,12 +679,14 @@ def main(argv=None):
 
             log.write(json.dumps(row) + "\n")
             log.flush()
-            torch.save({"model": live.state_dict(), "config": live.config()}, run / f"model_r{rnd:03d}.pt")
-            torch.save({"model": live.state_dict(), "opt": opt.state_dict(), "round": rnd, "ppo_iter": it_total,
+            if args.eval_every and (rnd + 1) % args.eval_every == 0:     # every agent's network, now and then
+                keep = {k: v for k, v in pilots.state().items() if k in ("model", "nets")}
+                torch.save({**keep, "config": pilots.config()}, run / f"pilots_r{rnd:03d}.pt")
+            torch.save({**pilots.state(), "round": rnd, "ppo_iter": it_total,
                         "agents": [{**a, "deck": pool.names(a["deck"])} for a in agents],
                         "history": [{**h, "deck": pool.names(h["deck"])} for h in history],
                         "cache": [[list(k), list(v)] for k, v in cache.items()], "exposure": cov.exposure,
-                        "rng": rng.bit_generator.state, "config": live.config()}, ckpt)
+                        "rng": rng.bit_generator.state, "config": pilots.config()}, ckpt)
             for f in run.glob("rollout_w*.bin"):
                 f.unlink(missing_ok=True)
     finally:
