@@ -1369,3 +1369,37 @@ Entry format:
   time. Greedy play finds such cycles more readily than sampled play (25% of greedy games against 0.5% of
   training games here). The per-turn cap ends a turn rather than the game, so a cycling agent gains no draw.
 - **Next:** As #59.
+
+### #63 · 2026-10-11 · A5 · Tournaments of 3, 6 and 9 agents: results (2000s result #2); Venomoth fixed
+- **Done:** `runs/tournament_runs3.sh` ran tourn-3, tourn-6, tourn-9 (seed 1) and tourn-3-s2 (seed 2), 20
+  rounds each, 02:49-13:43, with no failure. `notes/scripts/tournament_report.py` (per-run summary from
+  the logs) and `notes/scripts/tournament_crossplay.py` (the 21 final agents in one round-robin, each deck
+  piloted by its own agent and by pilot-v2). The 21 final decks were played against the 24 archived lists
+  under pilot-v2. An analysis workflow (4 analysts by question, one skeptic per claim recomputing it from
+  the logs: 40 claims, 34 held, most corrected or downgraded) checked the conclusions. Written up as
+  `results/2000s-result-2/`. Fork `c1cca1d`: Venomoth JU's Shift now sets its once-per-turn marker and
+  changes Venomoth's own type (it changed the Active Pokémon's), with a spec; found by the analysis.
+- **Evidence:** Deck types = N in all 84 run-rounds, closest pair at least 34 cards. Equilibrium support,
+  mean 1.38 / 1.00 / 2.10 / 1.76 (N=3 s1, s2, 6, 9); rounds without a pure equilibrium 4 / 0 / 12 / 6;
+  cyclic share of triads 0.19 / 0.00 / 0.10 / 0.05; genuine intransitivity only at N=6, rounds 0-10.
+  Adoptions 0.42-0.45 per agent-round in every run. Own deck against SimpleBot at round 19: 0.88 / 0.81 /
+  0.77 / 0.72 (slope p about 0.11), uncorrelated with cross-play strength (r = -0.06). Cross-play against
+  other runs, own / common pilot: 0.461 / 0.573, 0.591 / 0.591, 0.431 / 0.428, 0.532 / 0.478; deck about
+  70% of the strength variance, pilot about 30%. Answer key: 0 of 8 archetypes at 50% overlap (best any
+  deck ever 0.43), final equilibria play 0-2 of the 7 field staples (random starts 0-2); against the
+  archived lists under pilot-v2, 20% (best deck 41.5%). Field Basic Pokémon rose from 0.04-0.11 to
+  0.27-0.39 of the agents' Pokémon (base rate 0.09). Final decks: 29.0 Pokémon / 5.3 Trainers / 24.1 basic
+  + 1.5 special Energy (archived lists 13.9 / 27.5 / 14.6 / 4.0); 31.6% of Pokémon copies are evolutions
+  without their pre-evolution in the deck. Every agent-iteration trained on exactly 8,000 transitions;
+  0 errors; 0.16-0.26% of training games capped. Engine specs 694/694; `test_env`, `verify_enumerator`
+  PASS; `trace_hash` unchanged.
+- **Found:** (1) Owning a deck keeps agents apart at every N, but that is also what this drafting operator
+  does by default. (2) The equilibrium stays at 1-2 decks, so its share of the field falls with N; no N
+  effect on the meta's structure survives the N=3 seed spread, and N is confounded with data per opponent
+  (fixed per-agent budget). (3) The swap operator draws added cards over card ids, 225 of 277 of them
+  Pokémon, which by itself pushes decks toward Pokémon piles, and it adds evolutions without their
+  lines; with pilots that get little from Trainers, the real-game test accepts these moves. (4) Own-deck
+  play against SimpleBot is a reliable number that says nothing about strength in the tournament.
+- **Next:** A drafting operator that proposes by card class and whole evolution lines and measures dead
+  cards from the agent's own games, or a learned draft policy; the pilot's use of Trainers; more seeds at
+  N=6 and 9 with a budget scaled by N-1.

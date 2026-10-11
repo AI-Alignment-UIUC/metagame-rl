@@ -61,9 +61,9 @@ by the pilot's own value keeps flooding decks with Energy, and neither extra att
 search makes the pilot stronger against an outside opponent. Under the general self-discovery scope
 (no archived lists or hand-written bots in training), co-evolving the decks and one pilot over the full
 pool rediscovered field staples but collapsed to one deck type, so the metagame is now built by a league
-of deck-owning agents, each with its own network. The league (league-3, running) keeps three deck types
-in its equilibrium and plays prize races, but its decks shed Trainers toward Pokémon and Energy piles,
-unlike the human lists, and its generalist weakens against SimpleBot (71.5% at round 9). Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
+of deck-owning agents, each with its own network. Tournaments of 3, 6 and 9 agents that each own a network and
+a deck keep every deck type distinct, but recover none of the human meta: their decks become Pokémon piles,
+because of how the drafting proposes cards and how little the pilots get from Trainers. Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
 
 **Earlier work:**
 
@@ -80,26 +80,26 @@ unlike the human lists, and its generalist weakens against SimpleBot (71.5% at r
   Oak, Energy Removal and Double Colorless Energy but collapsed to one deck type, so the metagame moved
   to a league of deck-owning agents with separate networks and a two-stage real-game adoption check.
 
-**Recent (log #57–59):** In league-3, unlike coevo-1, training games became prize races and the
-equilibrium often held three deck types (frozen past versions included), but the lineages shed Trainers
-toward Pokémon and Energy piles and the generalist fell from 83% to 70% against SimpleBot; a free cycle
-the environment missed (a "no" to Tentacool's Cowardice confirm, repeated to the step cap for a draw) was
-removed by testing single-step prompt answers for no-ops. Back to basics, a repeating tournament of 3, 6
-and 9 agents (each with its own network and its own deck from a different random start, redrafting up to
-75% of the deck a round with exploration in card picks, and an entropy floor for exploration in play) is
-running after a review workflow found and fixed a crash, unequal budgets across N, anti-imitation card
-weights and an over-aggressive entropy controller.
+**Recent (log #57–63):** In league-3 training games became prize races and the equilibrium often held
+three deck types, but the lineages shed Trainers and the generalist fell to 70% against SimpleBot; three
+free cycles the environment missed (Tentacool's Cowardice, Dark Dragonair's Evolutionary Light, then
+Venomoth's Shift) were fixed, and a per-turn decision cap now ends a turn caught in any such cycle. Back to
+basics, tournaments of 3, 6 and 9 agents that each own a network and draft their own deck
+([2000s result #2](results/2000s-result-2/)) keep every agent's deck type distinct at every N, with an
+equilibrium of 1–2 decks and a mostly transitive meta, but recover none of the human metagame (0/8
+archetypes, staples no better than random starts, 20% against the archived lists). The decks drift into
+Pokémon piles full of unplayable evolutions, in part because the drafting proposes cards by id (225 of
+277 are Pokémon), and in part because the pilots get little from Trainers.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. The tournaments (`runs/tourn-3`, `tourn-6`, `tourn-9`, `tourn-3-s2`): what changes with the number of
-   agents (deck types, equilibrium support, cycles, Trainers and Energy, staples, play against SimpleBot
-   on the agent's own deck), against the seed-to-seed spread; league-3 can resume from round 14.
-2. Why the league sheds Trainers and its generalist weakens: card ablations on each specialist's own
-   deck (what its pilot gains from Trainers), the generalist on the specialists' decks, and a larger game
-   share and entropy bonus for the generalist.
+1. A drafting operator that proposes cards by class and adds or removes whole evolution lines, with dead
+   cards measured from the agent's own games, or a draft policy trained on real results; then the
+   tournament again, scored on the answer key.
+2. The pilot's use of Trainers, still the limit on any human-like deck: card ablations on the agents' own
+   decks; more seeds at N=6 and 9 with a training budget scaled by N-1.
 3. If the league keeps several deck types: a second seed, then drafting as a learned policy trained on
    real game results (a draft head per agent) in place of the value climb.
 4. Whether psearch's gain transfers (against an independently trained pilot, both directions, more
