@@ -299,6 +299,8 @@ def main(argv=None):
     ap.add_argument("--eval-workers", type=int, default=6)
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--resume", action="store_true")
+    ap.add_argument("--reset", type=int, nargs="*", default=[],
+                    help="exploiter ids to restart (fresh deck, the generalist's network) when the run starts or resumes")
     args = ap.parse_args(argv)
 
     run = ROOT / args.run
@@ -517,6 +519,11 @@ def main(argv=None):
         out["seconds"] = round(time.time() - t0, 1)
         return out
 
+    for a in agents:
+        if a["id"] in args.reset:
+            assert a["role"] == "exploiter", "--reset takes exploiters only"
+            reset(a, start)
+            print(f"reset by request: agent {a['id']} now {a['lineage']}", flush=True)
     try:
         for rnd in range(start, args.rounds + 1):
             t0 = time.time()

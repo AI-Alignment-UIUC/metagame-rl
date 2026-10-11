@@ -94,8 +94,14 @@ class Game {
       // An answer that only undoes the action that opened this prompt (cancel, or done with
       // nothing picked) is a no-op: once an action is started it is finished, or a policy can
       // cycle start -> undo forever.
+      // A single-step answer can undo just as well: a "no" to the confirm of Tentacool's Cowardice
+      // left the state as it was, and a losing policy cycled Power -> no to the step cap for a draw
+      // (log #58). So when a prompt has few single-step answers ('res|...'), each is tested too.
       if (this.picks.length === 0) {
-        const noop = options.filter(o => (o.key === 'cancel' || (o.key === 'done' && emptyRaw(o.raw))) && this.answerIsNoop(prompt, o.raw));
+        const single = options.filter(o => o.key.startsWith('res|'));
+        const tested = o => o.key === 'cancel' || (o.key === 'done' && emptyRaw(o.raw)) ||
+          (single.length <= MAX_SINGLE_TESTED && o.key.startsWith('res|'));
+        const noop = options.filter(o => tested(o) && this.answerIsNoop(prompt, o.raw));
         if (noop.length > 0) {
           if (noop.length < options.length) options = options.filter(o => !noop.includes(o));
           // Only no-op answers are left (the replay check removed every other answer): the
@@ -225,6 +231,10 @@ Game.prototype.clone = function (rng, viewer) {
 // Power that can't be used), so decode + validate can't see it. Checked by replaying the chain
 // of actions since the attack or Power that opened the prompt, on a copy of the state before it.
 const REPLAY_CHECKED = new Set(['Choose attack']);
+
+// Prompts with at most this many single-step answers have each one tested for being a no-op (the
+// test replays the chain once per answer, cached per prompt and answer).
+const MAX_SINGLE_TESTED = 4;
 
 // True if answering `prompt` with `raw` leaves the state exactly as it was before the action
 // that started this chain. Cached per prompt and answer.
