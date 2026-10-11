@@ -21,8 +21,9 @@ random decks (rl/deckgen.py). Every round:
      (exploration: a slightly worse deck is sometimes kept, to move between basins)
   3. train: --ppo-iters PPO iterations; each agent plays its own deck against the others (opponent drawn
      uniformly), and learns from its own side only; --agent-transitions per agent per iteration, so the
-     budget per agent is the same at any N (collection aims at --collect-margin times the total, then each
-     agent's transitions are subsampled to exactly the budget; an agent that still falls short is logged). Each agent's entropy coefficient rises (never below
+     budget per agent is the same at any N (each worker keeps starting an agent's matches until that agent
+     has --quota-margin times its share, env/league_jobs.js; then each agent's transitions are subsampled
+     to exactly the budget; an agent that still falls short is logged). Each agent's entropy coefficient rises (never below
      --ent) when its policy's entropy falls below --ent-target: play keeps exploring, slightly
      suboptimally, instead of collapsing
 Nothing human enters training; archived lists and SimpleBot are labels and evaluation only (each
@@ -112,8 +113,9 @@ def main(argv=None):
     ap.add_argument("--coverage-floor", type=float, default=0.25, help="lowest card weight in exploratory swaps")
     ap.add_argument("--ppo-iters", type=int, default=8)
     ap.add_argument("--agent-transitions", type=int, default=8000, help="per agent per PPO iteration")
-    ap.add_argument("--collect-margin", type=float, default=1.4,
-                    help="collect this times the total budget, so agents with short games still reach theirs")
+    ap.add_argument("--quota-margin", type=float, default=1.15,
+                    help="each worker collects this times its share of every agent's budget (per-agent quotas)")
+    ap.add_argument("--collect-cap", type=float, default=3.0, help="hard cap on a worker's total, x its expected total")
     ap.add_argument("--matches-per-agent", type=int, default=64)
     ap.add_argument("--workers", type=int, default=14)
     ap.add_argument("--concurrency", type=int, default=48)
@@ -413,7 +415,8 @@ def main(argv=None):
             # 3. train: each agent on its own deck against the others
             t2 = time.time()
             ajson = {a["id"]: as_json(a) for a in agents}
-            per_worker = math.ceil(args.collect_margin * N * args.agent_transitions / args.workers)
+            quota = math.ceil(args.quota_margin * args.agent_transitions / args.workers)   # per agent per worker
+            per_worker = N * quota
             conc = max(8, min(args.concurrency, per_worker // 140))   # games in flight overshoot the quota
             train_rows = []
             for _ in range(args.ppo_iters):
@@ -424,7 +427,8 @@ def main(argv=None):
                         ms.append({"a": {"deck": ajson[a["id"]], "slot": a["id"], "record": True},
                                    "b": {"deck": ajson[j], "slot": j, "record": False}})
                 ti = time.time()
-                msgs = [{"cmd": "league", "transitions": per_worker, "concurrency": conc,
+                msgs = [{"cmd": "league", "transitions": math.ceil(args.collect_cap * per_worker), "concurrency": conc,
+                         "slotQuota": {str(k): quota for k in range(N)},
                          "deckoutWin": args.deckout_win, "seed": (args.seed * 1_000_003 + it_total * 1009 + w) % 2_000_000_000,
                          "matches": ms, "out": str(run / f"rollout_w{w}.bin")} for w in range(args.workers)]
                 replies = rp.collect(msgs, models, device)

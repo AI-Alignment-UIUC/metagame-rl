@@ -4,7 +4,7 @@
 //   const runner = new Runner(encoder, { concurrency: 32 });
 //   const out = await runner.run(nextJob, agents, { record: new Set(['learner']) });
 //
-// nextJob() returns { deckA, deckB, seed, seats: { 1: agentName, 2: agentName } } or null when
+// nextJob(recorded, rec) returns { deckA, deckB, seed, seats: { 1: agentName, 2: agentName } } or null when
 // no more games should start. Decisions with one option are played without asking anyone.
 // For the agents named in `record`, every decision is kept for training: the observation
 // (bytes), the action id, its log-probability and value estimate, the legal ids, and at each
@@ -41,7 +41,7 @@ class Runner {
     };
     const fill = () => {
       while (slots.length < this.concurrency) {
-        const job = nextJob(rec.action.length);
+        const job = nextJob(rec.action.length, rec);
         if (!job) break;
         slots.push(start(job));
       }

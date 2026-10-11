@@ -13,7 +13,8 @@
 //   { "cmd": "values", "decks": [{ name, cards }], "jobs": [{ "a": 0, "b": 1, "seed": 7, "slot": 0 }] }
 //     the value model slot `slot` (default 0) gives deck a (seat 1) at its first decision of a fresh deal
 //   { "cmd": "league", "transitions": 20000, "out": "<file>", "seed": 1, "concurrency": 64, "deckoutWin": 1,
-//     "matches": [{ "a": { "deck": { name, cards }, "slot": 0, "record": true }, "b": { ... } }] }
+//     "matches": [{ "a": { "deck": { name, cards }, "slot": 0, "record": true }, "b": { ... } }],
+//     "slotQuota": { "<slot>": transitions } }   (optional: env/league_jobs.js)
 //     league training games (rl/league.py): each game is a random match, seats at random, each side
 //     piloted by its own model slot; only the decisions of sides with "record" are kept, so an agent
 //     learns from its own matches, not from every game it is an opponent in (tokens encoding)
@@ -27,6 +28,7 @@ const { Runner, packRollout } = require('./runner.js');
 const { archivedDecks } = require('./decks.js');
 const { RandomAgent, FirstAgent, HeuristicAgent, SimpleBotAgent } = require('./agents.js');
 const { Rng } = require('./rng.js');
+const { makeLeagueNextJob } = require('./league_jobs.js');
 const F = require('./framing.js');
 
 const decks = archivedDecks();
@@ -190,14 +192,7 @@ async function league(cmd) {
     }
   }
   const record = new Set(Object.keys(agents).filter(k => k.startsWith('r')));
-  let n = 0;
-  const nextJob = recorded => {
-    if (recorded >= cmd.transitions) return null;
-    const m = cmd.matches[rng.int(cmd.matches.length)];
-    const [x, y] = rng.int(2) === 0 ? [m.a, m.b] : [m.b, m.a];
-    return { deckA: x.deck.cards, deckB: y.deck.cards, deckName: x.deck.name, deckBName: y.deck.name,
-             seed: cmd.seed * 100003 + n++, seats: { 1: nameOf(x), 2: nameOf(y) } };
-  };
+  const nextJob = makeLeagueNextJob(cmd, rng, nameOf);   // per-slot quotas with cmd.slotQuota (env/league_jobs.js)
   const runner = new Runner(tokens, { concurrency: cmd.concurrency || 64, deckoutWin: cmd.deckoutWin ?? 1 });
   const out = await runner.run(nextJob, agents, { record });
   fs.writeFileSync(cmd.out, packRollout(out.rec, 0, { encoding: 'tokens', actionSize: tokens.MAX_CAND }));

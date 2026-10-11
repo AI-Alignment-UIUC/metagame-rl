@@ -1329,3 +1329,20 @@ Entry format:
   and slots aligned; no disallowed card drawn; the entropy coefficient carried and checkpointed per
   agent; logged rows JSON-safe.
 - **Next:** As #59.
+
+### #61 · 2026-10-11 · A5 · Per-agent collection quotas for the tournament
+- **Done:** The 1.4x collection margin of #60 did not stop agent 2 of `runs/tourn-3` falling short: its deck's
+  games record far fewer decisions, and workers stop on their shared total. `env/league_jobs.js` (used by
+  the worker's `league` command): with `slotQuota`, a worker only draws matches whose recorded side's agent
+  is below its quota and stops once every agent's quota is met (the total stays a hard cap); without it,
+  unchanged. `env/runner.js` passes the recording to `nextJob`. `rl/tournament.py` sends quotas of 1.15x
+  each agent's share per worker (`--quota-margin`) with a 3x hard cap (`--collect-cap`). tourn-3 keeps
+  running on the old code (its workers loaded it); the rest of the chain moved to
+  `runs/tournament_runs2.sh`, which waits for tourn-3, smoke-tests the quotas end to end (stops the chain
+  if any agent is short), then runs tourn-6, tourn-9 and tourn-3-s2.
+- **Evidence:** tourn-3 shortfalls under the margin: agent 2 at 7,635, 7,184 and 7,999 of 8,000 in three
+  iterations (logged as `short_of_budget`). Simulation of the job picker (agent 2's games 7x shorter, 6
+  games in flight): old rule 910 / 700 / 110 recorded against a 500 share; quotas 840 / 630 / 550.
+- **Found:** tourn-3's per-agent budget is not exactly equal: the logged shortfalls are what to correct
+  for when it is compared with the other runs.
+- **Next:** As #59.
