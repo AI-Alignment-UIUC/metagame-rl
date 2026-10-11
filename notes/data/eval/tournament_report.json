@@ -1,0 +1,352 @@
+[
+ {
+  "run": "tourn-3",
+  "agents": 3,
+  "rounds": 20,
+  "support_size_mean": 1.381,
+  "support_frac_mean": 0.46,
+  "support_size_last10": 1.6,
+  "effective_support_frac_mean": 0.447,
+  "mixed_rounds": 4,
+  "cyclic_frac_mean": 0.1905,
+  "clear_cycles_total": 0,
+  "rounds_with_clear_cycle": 0,
+  "deck_types_final": 3,
+  "deck_types_min": 3,
+  "deck_distance_final": {
+   "min": 50,
+   "mean": 52.7
+  },
+  "standings_spread_final": 0.281,
+  "adoptions_per_agent_round": 0.417,
+  "exploratory_adoptions": 1,
+  "cards_changed_when_adopted_mean": 11.3,
+  "drafted_share_final": [
+   0.567,
+   0.583,
+   0.683
+  ],
+  "deck_shape_final_mean": {
+   "basic_energy": 20.7,
+   "pokemon": 28.3,
+   "trainer": 8.0,
+   "special_energy": 3.0
+  },
+  "deck_shape_last10_mean": {
+   "basic_energy": 20.1,
+   "pokemon": 30.1,
+   "trainer": 7.4
+  },
+  "field_share_final_mean": 0.438,
+  "nearest_archived_overlap_max": 0.3,
+  "staples_in_final_decks": {
+   "Double Colorless Energy": 1,
+   "Super Energy Removal": 1
+  },
+  "decks_with_any_staple": 1,
+  "own_deck_vs_simplebot_mean_by_check": [
+   0.866,
+   0.833,
+   0.845,
+   0.88
+  ],
+  "own_deck_vs_simplebot_range_by_check": [
+   [
+    0.8,
+    0.97
+   ],
+   [
+    0.75,
+    0.985
+   ],
+   [
+    0.815,
+    0.885
+   ],
+   [
+    0.82,
+    0.93
+   ]
+  ],
+  "entropy_coef_final": [
+   0.02676,
+   0.02425,
+   0.02131
+  ],
+  "policy_entropy_last_iter": 0.691,
+  "cut_off_games": 168,
+  "training_games": 100182,
+  "iterations_short_of_budget": 0,
+  "seconds_per_round": 252.3
+ },
+ {
+  "run": "tourn-3-s2",
+  "agents": 3,
+  "rounds": 20,
+  "support_size_mean": 1.0,
+  "support_frac_mean": 0.333,
+  "support_size_last10": 1.0,
+  "effective_support_frac_mean": 0.333,
+  "mixed_rounds": 0,
+  "cyclic_frac_mean": 0.0,
+  "clear_cycles_total": 0,
+  "rounds_with_clear_cycle": 0,
+  "deck_types_final": 3,
+  "deck_types_min": 3,
+  "deck_distance_final": {
+   "min": 36,
+   "mean": 51.0
+  },
+  "standings_spread_final": 0.594,
+  "adoptions_per_agent_round": 0.417,
+  "exploratory_adoptions": 1,
+  "cards_changed_when_adopted_mean": 10.9,
+  "drafted_share_final": [
+   0.5,
+   0.65,
+   0.55
+  ],
+  "deck_shape_final_mean": {
+   "basic_energy": 27.3,
+   "pokemon": 29.7,
+   "trainer": 2.3,
+   "special_energy": 0.7
+  },
+  "deck_shape_last10_mean": {
+   "basic_energy": 27.2,
+   "pokemon": 29.3,
+   "trainer": 2.3
+  },
+  "field_share_final_mean": 0.419,
+  "nearest_archived_overlap_max": 0.433,
+  "staples_in_final_decks": {
+   "Super Energy Removal": 1,
+   "Double Colorless Energy": 1,
+   "Scyther": 1
+  },
+  "decks_with_any_staple": 2,
+  "own_deck_vs_simplebot_mean_by_check": [
+   0.683,
+   0.698,
+   0.758,
+   0.806
+  ],
+  "own_deck_vs_simplebot_range_by_check": [
+   [
+    0.52,
+    0.78
+   ],
+   [
+    0.63,
+    0.775
+   ],
+   [
+    0.685,
+    0.87
+   ],
+   [
+    0.775,
+    0.863
+   ]
+  ],
+  "entropy_coef_final": [
+   0.01783,
+   0.03695,
+   0.02378
+  ],
+  "policy_entropy_last_iter": 0.722,
+  "cut_off_games": 322,
+  "training_games": 126293,
+  "iterations_short_of_budget": 0,
+  "seconds_per_round": 221.8
+ },
+ {
+  "run": "tourn-6",
+  "agents": 6,
+  "rounds": 20,
+  "support_size_mean": 2.095,
+  "support_frac_mean": 0.349,
+  "support_size_last10": 1.8,
+  "effective_support_frac_mean": 0.297,
+  "mixed_rounds": 12,
+  "cyclic_frac_mean": 0.0952,
+  "clear_cycles_total": 2,
+  "rounds_with_clear_cycle": 2,
+  "deck_types_final": 6,
+  "deck_types_min": 6,
+  "deck_distance_final": {
+   "min": 38,
+   "mean": 53.0
+  },
+  "standings_spread_final": 0.466,
+  "adoptions_per_agent_round": 0.45,
+  "exploratory_adoptions": 10,
+  "cards_changed_when_adopted_mean": 10.5,
+  "drafted_share_final": [
+   0.667,
+   0.567,
+   0.733,
+   0.583,
+   0.55,
+   0.683
+  ],
+  "deck_shape_final_mean": {
+   "basic_energy": 25.2,
+   "pokemon": 28.5,
+   "trainer": 5.5,
+   "special_energy": 0.8
+  },
+  "deck_shape_last10_mean": {
+   "basic_energy": 23.6,
+   "pokemon": 29.4,
+   "trainer": 6.4
+  },
+  "field_share_final_mean": 0.361,
+  "nearest_archived_overlap_max": 0.383,
+  "staples_in_final_decks": {
+   "Item Finder": 1,
+   "Energy Removal": 2,
+   "Professor Oak": 3,
+   "Scyther": 1,
+   "Double Colorless Energy": 1,
+   "PlusPower": 1,
+   "Bill": 1
+  },
+  "decks_with_any_staple": 5,
+  "own_deck_vs_simplebot_mean_by_check": [
+   0.73,
+   0.715,
+   0.728,
+   0.765
+  ],
+  "own_deck_vs_simplebot_range_by_check": [
+   [
+    0.55,
+    0.915
+   ],
+   [
+    0.49,
+    0.96
+   ],
+   [
+    0.545,
+    0.94
+   ],
+   [
+    0.635,
+    0.93
+   ]
+  ],
+  "entropy_coef_final": [
+   0.01,
+   0.02289,
+   0.04228,
+   0.02577,
+   0.01208,
+   0.02058
+  ],
+  "policy_entropy_last_iter": 0.776,
+  "cut_off_games": 525,
+  "training_games": 248411,
+  "iterations_short_of_budget": 0,
+  "seconds_per_round": 535.1
+ },
+ {
+  "run": "tourn-9",
+  "agents": 9,
+  "rounds": 20,
+  "support_size_mean": 1.762,
+  "support_frac_mean": 0.196,
+  "support_size_last10": 1.4,
+  "effective_support_frac_mean": 0.171,
+  "mixed_rounds": 9,
+  "cyclic_frac_mean": 0.0521,
+  "clear_cycles_total": 1,
+  "rounds_with_clear_cycle": 1,
+  "deck_types_final": 9,
+  "deck_types_min": 9,
+  "deck_distance_final": {
+   "min": 36,
+   "mean": 53.0
+  },
+  "standings_spread_final": 0.588,
+  "adoptions_per_agent_round": 0.439,
+  "exploratory_adoptions": 4,
+  "cards_changed_when_adopted_mean": 12.4,
+  "drafted_share_final": [
+   0.7,
+   0.5,
+   0.65,
+   0.783,
+   0.6,
+   0.65,
+   0.567,
+   0.467,
+   0.9
+  ],
+  "deck_shape_final_mean": {
+   "basic_energy": 23.6,
+   "pokemon": 29.4,
+   "trainer": 5.2,
+   "special_energy": 1.8
+  },
+  "deck_shape_last10_mean": {
+   "basic_energy": 22.3,
+   "pokemon": 29.6,
+   "trainer": 6.1
+  },
+  "field_share_final_mean": 0.365,
+  "nearest_archived_overlap_max": 0.383,
+  "staples_in_final_decks": {
+   "Gust of Wind": 1,
+   "Scyther": 4,
+   "Bill": 2,
+   "PlusPower": 1,
+   "Energy Removal": 2,
+   "Professor Oak": 2,
+   "Computer Search": 1,
+   "Double Colorless Energy": 1
+  },
+  "decks_with_any_staple": 5,
+  "own_deck_vs_simplebot_mean_by_check": [
+   0.696,
+   0.689,
+   0.711,
+   0.719
+  ],
+  "own_deck_vs_simplebot_range_by_check": [
+   [
+    0.52,
+    0.89
+   ],
+   [
+    0.585,
+    0.875
+   ],
+   [
+    0.555,
+    0.91
+   ],
+   [
+    0.6,
+    0.83
+   ]
+  ],
+  "entropy_coef_final": [
+   0.01199,
+   0.02361,
+   0.01307,
+   0.01006,
+   0.01297,
+   0.03035,
+   0.01324,
+   0.01804,
+   0.01002
+  ],
+  "policy_entropy_last_iter": 0.762,
+  "cut_off_games": 574,
+  "training_games": 349945,
+  "iterations_short_of_budget": 0,
+  "seconds_per_round": 855.2
+ }
+]
