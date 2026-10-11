@@ -1251,3 +1251,30 @@ Entry format:
   coevo-1's one pilot is not measured.
 - **Next:** Watch league-3 to round 30; then measure how much each specialist gains from Trainers (card
   ablations on its own deck), the generalist on the specialists' decks, and both runs against the answer key.
+
+### #58 · 2026-10-10 · A1 / A5 · A free cycle through a confirm prompt: fixed in the env, league-3 resumed
+- **Done:** From round 13, league-3's training games grew from ~220 to ~500 decisions and games cut off at
+  the 5,000-step cap from ~0.5% to 5-6% a PPO iteration, while the mean policy entropy fell from 0.40 to
+  0.16; the run was stopped in round 14. `notes/scripts/league_loops.py` (rebuilds a league checkpoint,
+  plays one batch of training-style games, counts cut-off games by agent and deck pair, exports the
+  agents as ONNX) and `notes/scripts/trace_loop.js` (prints a long game's repeated decisions) found the
+  cycle: exploiter `e1.1` (agent 4) used Tentacool FO's Cowardice and answered its confirm "no", which
+  leaves the state as it was, 2,400 times in a game. A game cut off at the cap is a draw (0), better than
+  a loss (-1). `env/game.js`: a prompt's single-step answers (`res|...`), when it has at most 4, are now
+  tested for no-ops like cancel and an empty done (#14, #20): an answer that replays to the state before
+  the opening action is dropped, and if only such answers are left the action is a dead end. League-3
+  was resumed from its round-13 checkpoint with agent 4 restarted (`--reset 4`, fresh deck, the
+  generalist's network), since its network had learned the cycle.
+- **Evidence:** Before the fix, 889 games of the round-13 league: 50 cut off (5.6%), 33 of them in agent
+  4's 130 games (agents 0-3 and 5: 0-6 each). After it, the traced pairing (agent 4 against agent 0) that
+  had run to 5,000 decisions ends in 201, and 12 of 12 games end normally. `test_env` 100 games PASS,
+  `verify_enumerator` 200 games PASS, `bench_env` 65.1 random-policy games/s/core, 1,200 random games
+  between full-pool decks with 0 errors and 0 cut off. The engine already enforces the card's "not the
+  turn it was played" rule; the cycle was the env's.
+- **Found:** The env's cycle rules covered answers that pick nothing (cancel, empty done), not a "no" to a
+  confirm; any boolean or single-choice answer can undo an action in the same way. The verifier compares
+  enumerated answers before this filter, so the filter itself is checked only by replay (by construction)
+  and by games ending; a dedicated invariant (no state repeated within a turn) in the fuzz would catch
+  the next one. The pilot's training games stayed fine for 12 rounds and the policy found the cycle once
+  its deck held Tentacool and it was losing.
+- **Next:** Watch league-3 to round 30; add a repeated-state invariant to the fuzz.
