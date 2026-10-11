@@ -131,7 +131,8 @@ class SeparatePilots:
         self.nets[dst].load_state_dict(self.nets[src].state_dict())
         self.opts[dst] = torch.optim.Adam(self.nets[dst].parameters(), lr=self.lr, eps=1e-5)
 
-    def update(self, batch, targs):
+    def update(self, batch, targs, ent: dict = None):
+        """PPO on each agent's own transitions; ent (optional) gives an agent its own entropy coefficient."""
         per, sizes = {}, {}
         for k in range(self.n):
             idx = np.nonzero(batch["slot"] == k)[0]
@@ -140,7 +141,8 @@ class SeparatePilots:
             sub = subset(batch, idx)
             sub["inputs"] = model_inputs(sub, "tokens")
             self.nets[k].train()
-            per[k] = ppo_update(self.nets[k], self.opts[k], sub, targs, self.device)
+            a_args = targs if ent is None else SimpleNamespace(**{**vars(targs), "ent": ent[k]})
+            per[k] = ppo_update(self.nets[k], self.opts[k], sub, a_args, self.device)
             self.nets[k].eval()
             sizes[k] = len(idx)
         return mean_stats(per, sizes), per
