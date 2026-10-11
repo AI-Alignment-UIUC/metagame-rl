@@ -1310,3 +1310,22 @@ Entry format:
   the starting networks carry that prior; each deck's share of field cards is logged to watch for it.
 - **Next:** Compare N=3, 6, 9 on deck types, equilibrium support, cycles, drafted share, Trainers and
   Energy, staples, each agent's play against SimpleBot on its own deck, and the seed-2 N=3 run's spread.
+
+### #60 · 2026-10-11 · A5 · Tournament fixes from a verification workflow; chain relaunched
+- **Done:** A second workflow (3 checkers by fix, a skeptic per problem; 7 reported, 4 confirmed, as two
+  problems) re-checked #59's fixes against the running N=3 run. `rl/tournament.py`: each climb now takes
+  at most `--climb-steps` 15 value calls and an agent has `--draft-calls` 90 a round (was 60 calls with a
+  40-step climb cap), and collection aims at 1.4x the total budget (`--collect-margin`) with a logged
+  warning for any agent still short. The N=3 run (3 rounds done) was stopped, kept as
+  `runs/tourn-3-prefix`, and the chain relaunched from the start.
+- **Evidence:** In the first launch every agent-round drafted 2 climbs and 2 finalists (scored 720 = 60 x
+  12): climb steps are drawn noisily, so a climb almost never stalled and ran to the 40-step cap, the
+  60-call budget fit two, the random finalist never fired, and only 1 of the 2 climbs could start from a
+  kick. Per-agent collection is not a floor: agent 1 trained on 7,820 of 8,000 transitions in PPO iteration
+  12 (a deck with short games collects less of the shared quota). Smoke run after the fixes: 6 climbs and
+  3 finalists per agent, the random finalist once the best; every agent collected 780-1,914 against a
+  500 budget. The checkers confirmed the rest: cycle counts against Kendall's formula on 600 random
+  tournaments; identical seeds for shared pairs at N=3/6/9; exact subsampling with legal ids, advantages
+  and slots aligned; no disallowed card drawn; the entropy coefficient carried and checkpointed per
+  agent; logged rows JSON-safe.
+- **Next:** As #59.

@@ -11,7 +11,8 @@ random decks (rl/deckgen.py). Every round:
      toward the cards played least (max((1 + training games it was in) ^ -0.5, --coverage-floor), so a card
      the others play is still proposed, at most 1/floor times less often); half the climbs start from a
      random kick of the current deck; each step is drawn from softmax(value / --draft-temp) instead of
-     the best; one finalist is drawn at random. Search effort is --draft-calls value calls an agent, each
+     the best; one finalist is drawn at random. Search effort is --draft-calls value calls an agent, in
+     climbs of at most --climb-steps calls (so several climbs, kicks and finalists fit in a round), each
      candidate read on --draft-deals deals spread over the opponents, the same at any N. A round may change
      up to --draft-budget cards (default 45,
      75% of the deck). Real games decide in two stages (as rl/league.py): the best finalist on
@@ -20,8 +21,8 @@ random decks (rl/deckgen.py). Every round:
      (exploration: a slightly worse deck is sometimes kept, to move between basins)
   3. train: --ppo-iters PPO iterations; each agent plays its own deck against the others (opponent drawn
      uniformly), and learns from its own side only; --agent-transitions per agent per iteration, so the
-     budget per agent is the same at any N (each agent's transitions are subsampled to exactly that many;
-     games in flight overshoot the collection quota). Each agent's entropy coefficient rises (never below
+     budget per agent is the same at any N (collection aims at --collect-margin times the total, then each
+     agent's transitions are subsampled to exactly the budget; an agent that still falls short is logged). Each agent's entropy coefficient rises (never below
      --ent) when its policy's entropy falls below --ent-target: play keeps exploring, slightly
      suboptimally, instead of collapsing
 Nothing human enters training; archived lists and SimpleBot are labels and evaluation only (each
@@ -90,7 +91,8 @@ def main(argv=None):
     ap.add_argument("--niche", type=int, default=0, help="if > 0, cards a drafted deck must differ from the others'")
     ap.add_argument("--type-dist", type=int, default=20, help="decks closer than this count as one deck type (logs)")
     ap.add_argument("--draft-budget", type=int, default=45, help="cards a deck may change in one round (45 = 75%%)")
-    ap.add_argument("--draft-calls", type=int, default=60, help="value calls per agent per round (search effort)")
+    ap.add_argument("--draft-calls", type=int, default=90, help="value calls per agent per round (search effort)")
+    ap.add_argument("--climb-steps", type=int, default=15, help="value calls (steps) one climb may take")
     ap.add_argument("--draft-deals", type=int, default=16, help="deals per candidate, spread over the opponents")
     ap.add_argument("--draft-seconds", type=float, default=180, help="safety cap on one agent's drafting")
     ap.add_argument("--draft-candidates", type=int, default=12)
@@ -110,6 +112,8 @@ def main(argv=None):
     ap.add_argument("--coverage-floor", type=float, default=0.25, help="lowest card weight in exploratory swaps")
     ap.add_argument("--ppo-iters", type=int, default=8)
     ap.add_argument("--agent-transitions", type=int, default=8000, help="per agent per PPO iteration")
+    ap.add_argument("--collect-margin", type=float, default=1.4,
+                    help="collect this times the total budget, so agents with short games still reach theirs")
     ap.add_argument("--matches-per-agent", type=int, default=64)
     ap.add_argument("--workers", type=int, default=14)
     ap.add_argument("--concurrency", type=int, default=48)
@@ -282,7 +286,7 @@ def main(argv=None):
                     if ok(y):
                         x = y
             best, stall, steps = None, 0, 0
-            while stall < args.patience and steps < 40 and more():
+            while stall < args.patience and steps < args.climb_steps and more():
                 cands = []
                 for _ in range(args.draft_candidates * 8):
                     c = mutate(x)
@@ -409,7 +413,7 @@ def main(argv=None):
             # 3. train: each agent on its own deck against the others
             t2 = time.time()
             ajson = {a["id"]: as_json(a) for a in agents}
-            per_worker = math.ceil(N * args.agent_transitions / args.workers)
+            per_worker = math.ceil(args.collect_margin * N * args.agent_transitions / args.workers)
             conc = max(8, min(args.concurrency, per_worker // 140))   # games in flight overshoot the quota
             train_rows = []
             for _ in range(args.ppo_iters):
@@ -458,6 +462,10 @@ def main(argv=None):
                       "agent_stats": {str(k): {q: round(v, 5) for q, v in s_.items()} for k, s_ in per_agent.items()},
                       "ent_coef": {str(a["id"]): round(a["ent"], 5) for a in agents},
                       "collect_s": round(tc, 1), **{k: round(v, 5) for k, v in stats.items()}}
+                short = {k: v for k, v in collected.items() if v < args.agent_transitions}
+                if short:
+                    tr["short_of_budget"] = short
+                    print(f"  WARNING: agents short of the {args.agent_transitions}-transition budget: {short}", flush=True)
                 train_rows.append(tr)
                 print(f"  ppo {it_total}: games {tr['games']} len {tr['steps_per_game']} cut {cut} ent {stats['entropy']:.3f} "
                       f"kl {stats['kl']:.4f} endings {tr['endings']}", flush=True)
