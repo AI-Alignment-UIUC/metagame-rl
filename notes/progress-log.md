@@ -1346,3 +1346,26 @@ Entry format:
 - **Found:** tourn-3's per-agent budget is not exactly equal: the logged shortfalls are what to correct
   for when it is compared with the other runs.
 - **Next:** As #59.
+
+### #62 · 2026-10-11 · A1 / A5 · A second free cycle (Dark Dragonair) fixed in the engine; a per-turn cap; chain restarted
+- **Done:** `runs/tourn-3` slowed several-fold from round 10 (tournament 4 s to 41 s, drafting 35 s to ~340 s,
+  collection 15 s to ~55 s an iteration). From round 11, 23-28 of the 96 greedy tournament games ran to the
+  5,000-step cap (1,250-1,470 decisions a game on average); training (sampled) had 0-10 capped games an
+  iteration from round 8. `notes/scripts/trace_loop.js` (now with `--greedy`) on the agents exported for the
+  round-14 evaluation showed agent 0 cycling Dark Dragonair TR's Evolutionary Light with no pick, about
+  2,470 times. The engine checked the Power's once-per-turn marker but never set it, and with no card chosen
+  the Power still shuffles the deck, so the state never repeats and the env's no-op test (#14, #20, #58)
+  cannot see it. Fork `3ee2238`: the marker is set on use, with a spec. An audit of every "Once during your
+  turn" Power in the 2000 sets found no other one without it. `env/game.js`: a safety net for cycles the
+  no-op tests miss, `MAX_TURN_STEPS` 250: once a player-turn has had that many decisions, its main-phase
+  decisions offer only `pass`. The N=3 run (15 rounds) is kept as `runs/tourn-3-loopbug`; the chain was
+  restarted clean (`runs/tournament_runs3.sh`: the per-agent quota smoke test, then tourn-3, 6, 9, 3-s2).
+- **Evidence:** After the fix, 32 of 32 greedy games between the same agents end normally (at most 223
+  decisions). Sets specs 693/693 (the new one fails on the old code); `test_env` 100 games PASS;
+  `verify_enumerator` 200 games PASS; `bench_env` 66.7 games/s/core; 1,200 random games between full-pool
+  decks with 0 errors, 0 step-capped games and the per-turn cap never reached; `trace_hash` over 300 seeded
+  2000-field games unchanged (e332007...), so neither change alters an ordinary game.
+- **Found:** A free cycle can hide behind randomness: an action that only shuffles changes the state every
+  time. Greedy play finds such cycles more readily than sampled play (25% of greedy games against 0.5% of
+  training games here). The per-turn cap ends a turn rather than the game, so a cycling agent gains no draw.
+- **Next:** As #59.

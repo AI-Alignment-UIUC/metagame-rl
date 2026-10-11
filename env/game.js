@@ -17,6 +17,10 @@ const { turnOptions, promptSpace, AUTO_PROMPTS } = require('./legal.js');
 const { sameState } = require('./fingerprint.js');
 
 const MAX_STEPS = 5000;
+// A player-turn with this many decisions offers only 'pass' at its main-phase decisions from then on: a
+// safety net for free cycles the no-op tests miss (Dark Dragonair's Evolutionary Light, used with no
+// pick, shuffled the deck, so its cycle never repeated a state; log #62). Normal turns are far shorter.
+const MAX_TURN_STEPS = 250;
 
 class Game {
   constructor(deckA, deckB, seed, { backup = false } = {}) {
@@ -31,6 +35,8 @@ class Game {
     this.error = null;       // set if the engine threw on an offered option
     this.chain = null;       // { base, log, key }: replay record since the last attack or Power
     this.deadEnds = [];      // [{ base, key }]: main-phase options found to lead only to a no-op cancel
+    this.turnMark = { turn: -1, start: 0 };   // the step the current turn started at (MAX_TURN_STEPS)
+    this.turnCapped = 0;     // main-phase decisions cut to 'pass' by MAX_TURN_STEPS
     this.dispatch(new C.AddPlayerAction(1, 'A', deckA));
     this.dispatch(new C.AddPlayerAction(2, 'B', deckB));
   }
@@ -116,6 +122,11 @@ class Game {
         this.deadEnds = this.deadEnds.filter(e => sameState(this.state, e.base));
         const dead = new Set(this.deadEnds.map(e => e.key));
         options = options.filter(o => !dead.has(o.key));
+      }
+      if (this.state.turn !== this.turnMark.turn) this.turnMark = { turn: this.state.turn, start: this.steps };
+      if (this.steps - this.turnMark.start >= MAX_TURN_STEPS && options.some(o => o.key === 'pass')) {
+        options = options.filter(o => o.key === 'pass');
+        this.turnCapped++;
       }
       d = { playerId: this.state.players[this.state.activePlayer].id, prompt: null, options };
     }
@@ -215,6 +226,7 @@ Game.prototype.clone = function (rng, viewer) {
   g.store.cardRanks = this.store.cardRanks;
   g.steps = this.steps;
   g.picks = []; g.pickedKeys = []; g.space = null; g.spaceFor = -1; g.cached = null; g.error = null; g.chain = null; g.deadEnds = [];
+  g.turnMark = { ...this.turnMark }; g.turnCapped = this.turnCapped;
   if (viewer !== undefined) {
     for (const p of g.state.players) {
       const zones = p.id === viewer ? [p.deck, ...p.prizes] : [p.hand, p.deck, ...p.prizes];
@@ -296,4 +308,4 @@ Game.prototype.replayAccepts = function (prompt, raw) {
   }
 };
 
-module.exports = { Game, MAX_STEPS };
+module.exports = { Game, MAX_STEPS, MAX_TURN_STEPS };

@@ -22,8 +22,9 @@ const GAMES = Number(flag('games', 40)), LONG = Number(flag('long', 1500)), TAIL
   const strategies = JSON.parse(fs.readFileSync(path.join(dir, 'strategies.json'), 'utf8'));
   const deckOf = slot => strategies.find(s => s.slot === slot).cards;
   const enc = new TokenEncoder();
-  const agents = { 1: await OnnxTokenAgent.load(path.join(dir, `agent${A}.onnx`), enc, { seed: 1 }),
-                   2: await OnnxTokenAgent.load(path.join(dir, `agent${B}.onnx`), enc, { seed: 2 }) };
+  const GREEDY = argv.includes('--greedy');
+  const agents = { 1: await OnnxTokenAgent.load(path.join(dir, `agent${A}.onnx`), enc, { seed: 1, greedy: GREEDY }),
+                   2: await OnnxTokenAgent.load(path.join(dir, `agent${B}.onnx`), enc, { seed: 2, greedy: GREEDY }) };
   for (let g = 0; g < GAMES; g++) {
     const env = new Env(enc, { u8: true, showOpponentDecklist: true });
     let t = env.reset(deckOf(A), deckOf(B), 1000 + g);
