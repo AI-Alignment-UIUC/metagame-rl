@@ -56,94 +56,51 @@ gives a biased or blind builder, so pilot strength is the bottleneck.
 *Updated 2026-10-10.*
 
 **Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup
-matrix. In A5, scoring candidate decks by the pilot's own value beat the other builder designs
-([2000s result #1](results/2000s-result-1/)), and piloting every PSRO iteration made the first built
-metagame to beat the archived field (60.7%), but value-driven search keeps converging on Energy-heavy
-decks, and no change to the search fixed it. A human-free pilot plateaus near 83% against SimpleBot,
-and neither extra attention nor one-turn play-time search makes it stronger against an outside opponent.
-Under the general self-discovery scope (no archived lists or hand-written bots in training), co-evolving
-the decks and the pilot over the full pool played every card and rediscovered field staples, but its
-metagame collapsed to one deck type, so the metagame is now built by a league of deck-owning agents,
-each with its own network (running). Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
+matrix. Trained pilots beat SimpleBot (a human-free pilot plateaus near 83%), but deck search driven
+by the pilot's own value keeps flooding decks with Energy, and neither extra attention nor play-time
+search makes the pilot stronger against an outside opponent. Under the general self-discovery scope
+(no archived lists or hand-written bots in training), co-evolving the decks and one pilot over the full
+pool rediscovered field staples but collapsed to one deck type, so the metagame is now built by a league
+of deck-owning agents, each with its own network. The league (league-3, running) keeps three deck types
+in its equilibrium and plays prize races, but its decks shed Trainers toward Pokémon and Energy piles,
+unlike the human lists. Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
 
 **Earlier work:**
 
-- **Log #1 (A0, engine covers the field).** All 24 archived STS lists build and play on the
-  fork, with 541 engine specs, 68/68 interaction tests and 22/23 rulings passing (T18 open,
-  outside this field). The engine runs ~9 games/s per core with no detectable first-player bias.
-- **Log #2–9 (A1.1–A1.6, plus the promos).** The environment was built and verified: the
-  enumerator against an oracle on 10,000 games (0 mismatches over 1.65M checked decisions), the
-  engine's speedups against the original store, all 2000 rulings (T18 fixed) and CI. Building it
-  turned up engine faults — a Ditto Transform crash (fixed), prompt answers the engine never
-  validates, and actions it accepts on the opponent's side — that the environment now guards
-  against. All Base-era promos are in for the A5 full pool.
-- **Log #10–16 (A1.6–A3).** The environment reached 68.7 random-policy games/s/core after a
-  clone fix, and the A2 ladder is transitive (random < first-option < heuristic < SimpleBot);
-  the first A3 run drifted into free start-then-cancel cycles, now removed from the action
-  space. Two independent A3 reruns beat SimpleBot 97.9% ± 1.0 and 97.2% ± 1.6 in both deck
-  directions, and the stronger (run c) beats the other 57.8%. The token model, central GPU
-  inference and the A5 pieces (matchup model, edit builder, PSRO loop) are built and tested.
+- **Log #1–56 (A0–A5, B1–B2; rolled up from eight block summaries).** The engine and environment cover
+  the 2000 field and were verified against an oracle (0 mismatches over 1.65M checked decisions), with
+  engine faults and free action cycles fixed on the way, and Phase B moved to Worlds 2005, whose engine
+  branch plays Birds and ZapTurnDos and passes a 1,500-game fuzz over 340 cards. Trained pilots beat
+  SimpleBot (the token model 93% when trained on the archived decks, human-free pilot-v2 near 83%), but
+  deck search driven by the pilot's value keeps flooding decks with Energy and no change to the search
+  fixed it, neither extra attention nor play-time search transferred to an outside opponent, and the
+  first built metagame to beat the archived field (60.7%, [2000s result #1](results/2000s-result-1/)
+  and log #40) came from piloting every PSRO iteration. Under the general self-discovery scope set at
+  #51, co-evolving the decks and one pilot over the full pool rediscovered Computer Search, Scyther,
+  Oak, Energy Removal and Double Colorless Energy but collapsed to one deck type, so the metagame moved
+  to a league of deck-owning agents with separate networks and a two-stage real-game adoption check.
 
-- **Log #17–24 (A2–A4.2, B1, A5 tooling).** A4.1, one MLP policy for all 24 decks, met its
-  per-deck exit (re-scored: mirror 89.6%, field 88.5% vs SimpleBot) once two environment loops
-  were fixed (Metronome copying Metronome; start-then-undo cycles), the loops behind every game
-  its exit had cut off and the stall that the token-model run, now trainable at scale, exposed.
-  Phase B moved to Worlds 2005 (San Diego) after a by-printing measurement showed 2011's card gap
-  without 2011's missing mechanics. A three-tier answer key (staples, archetypes, counters) now
-  scores any population against the archive, and on the SimpleBot matrix the equilibrium support
-  is exactly the three decks hardest to counter.
-- **Log #25–32 (A4.2, A5).** The token model, at a third of the MLP's parameters, beats
-  SimpleBot 93.2-93.3% and A4.1 itself 66-68%, and a supervised check confirms it but shows it
-  short of capacity; PSRO's matrix games moved to the GPU, 14x faster with identical results, and
-  the builder is planned as PSRO with a value-aware matchup model. The first full cold start
-  (a5-cold2) dropped Computer Search and Item Finder and never added Double Colorless Energy;
-  card ablations show the pilot is better off with a basic Energy than with PlusPower, Bill,
-  Computer Search, Item Finder or Gust, since 45% of its games end by deck-out (SimpleBot: 14%),
-  which biases every A5 measurement made with it. After three machine crashes, every job is
-  capped at 80% of GPU memory and 16 of 20 threads, with a GPU watchdog.
-
-- **Log #33–40 (A5, A6).** With a pilot paid nothing for deck-out wins, the value-scored search
-  beat real-game and matchup-model scoring ([2000s result #1](results/2000s-result-1/)) but flooded
-  its deck with Energy, which the start-of-game value overrates, while a deck-strength model built
-  on game statistics ranks decks well but searches too slowly to use alone. Closing the loop,
-  piloting every PSRO iteration, gave the first built mixture to beat the archived field (60.7%),
-  still at ~30 Energy and below Graham's list (68.1%). Jobs are capped at ~80% of the machine
-  after three crashes.
-
-- **Log #41–48 (A4, A5, B1–B2).** A pilot trained only on random decks is calibrated but barely tells
-  decks apart, and every way of searching harder with the value (an edit head in four modes, common
-  deals) gave worse real decks, while novelty helps only on average (8 points, 3 of 4 seeds) and its
-  Trainer-rich deck was mostly seed luck; pilot-v2, twice the size with count features, plateaus at
-  ~83% against SimpleBot. Phase B started on the engine's `worlds-2005` branch: Birds and ZapTurnDos
-  play, the engine has 340 of the 959 legal 2005 cards and a random-deck fuzz plays 1,500/1,500 games
-  over them after an engine hang and three card bugs were fixed, and the env's "flip until tails" hang
-  (also reachable from Geodude Fossil in the 2000 pool) is capped with no change to any 2000 game.
-
-**Recent (log #49–56):** Sampling pilot-v2 shows a best-of-9 ceiling of 97.6% against 82.9% greedy,
-extra attention adds nothing over the same fine-tuning, and psearch beats its own greedy policy 65.4% ±
-6.0 but gains nothing against SimpleBot; the scope was set as a general self-discovery method for TCGs
-([design for learned-model search](notes/design-action-sequence-search.md)). Co-evolution, where the pilot
-trains only on decks the system drafts over the full 277-card pool (two engine bugs fixed on the way),
-played every card in 200+ training games, held SimpleBot at 77–83%, and rediscovered Computer Search,
-Scyther, Oak, Energy Removal and Double Colorless Energy in an Energy-denial stall deck, but its metagame
-collapsed to one deck type: one pilot co-adapts to the leading deck, and new deck types are judged raw.
-A league of deck-owning agents (main agents, exploiters and a generalist, each specialist drafting and
-piloting its own deck lineage, adopting a drafted deck only if it wins a re-test on fresh games) is built
-and running, with a separate network per agent after a shared version turned out to differ between
-agents only in a small embedding and the value heads.
+**Recent (log #57):** In league-3's first eight rounds, unlike coevo-1, the training games became prize
+races (75–84% end by prizes) and from round 7 the equilibrium held three deck types at once (two Fire
+decks and a Fighting/Psychic exploiter deck), while the generalist plays SimpleBot at 76.0% after round
+4, as coevo-1's pilot did. But the lineages shed Trainers round after round, ending as Pokémon and
+Energy piles with 0–7 Trainers and 29–36 basic Energy, where the archived lists play 26–30 Trainers. An
+exploiter that restarted while its deck held a third of the equilibrium was being dropped from the
+league; it is now frozen first, and the run resumed from round 8.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. Watch `runs/league-1`: deck types in the support (decks 20+ cards apart), exploiter successes, card
-   coverage, the generalist against SimpleBot; compare with coevo-1 on the same measures and score both
-   with the answer key.
-2. If the league keeps several deck types: a second seed, then drafting as a learned policy trained on
+1. Watch `runs/league-3` to round 30: deck types in the support, exploiter successes, the generalist
+   against SimpleBot; compare with coevo-1 on the same measures and score both with the answer key.
+2. Why the league sheds Trainers: card ablations on each specialist's own deck (what its pilot gains
+   from Trainers), and the generalist piloting the specialists' decks.
+3. If the league keeps several deck types: a second seed, then drafting as a learned policy trained on
    real game results (a draft head per agent) in place of the value climb.
-3. Check whether psearch's gain transfers: against an independently trained pilot (log #42's) in both
-   directions, and with more re-deals.
-4. General measures of the pilot: Elo against past snapshots, exploitability, and deck sensitivity.
+4. Whether psearch's gain transfers (against an independently trained pilot, both directions, more
+   re-deals), and general measures of the pilot (Elo against past snapshots, exploitability, deck
+   sensitivity).
 5. A game-agnostic representation (cards as entities with zone and owner, actions as pointers, cards from
    rules text), then the learned action-sequence model and Gumbel MCTS
    ([design](notes/design-action-sequence-search.md)).
