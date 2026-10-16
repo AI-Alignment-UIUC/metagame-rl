@@ -59,13 +59,12 @@ gives a biased or blind builder, so pilot strength is the bottleneck.
 matrix. Trained pilots beat SimpleBot (a human-free pilot plateaus near 83%), but every hand-built deck
 search ends in decks unlike the human field, and tournaments of deck-owning agents recovered none of the human
 meta; the meta level is now one learned procedure whose best decks break even with the human field under
-pilot-v2, a measure that favours their Trainer-light style. Work has turned to the pilot: at 40 iterations no
-architecture change beat the noise between seeds and between reruns of the evaluation, and hiding the decklists
-did not hurt. A ground-truth probe of the training signal found that credit does reach early decisions, through
-lambda = 0.95's long return rather than the value head, whose one-step change carries only 14–36% of a move's
-effect and is limited by the number of games rather than by its readout; since every pilot comparison stopped
-before the iterations where pilot-v2 gained most of its strength, one long run is proposed in place of more
-short screens. Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
+pilot-v2, a measure that favours their Trainer-light style. Work on the pilot found that no architecture change beat the noise of short
+screens and that the value head's one-step change carries a small share of a move's effect, limited by the number
+of games rather than by its readout. A probe of Trainer decisions on the human lists found that training does see a
+Trainer's delayed effect, and that drawing pays only when the rest of the turn is played well: under the sampled play
+training learns from, draw Trainers are worth nothing extra, while with greedy follow-through better timing of every
+Trainer is worth about one to two points a decision, so the pilot's own sampling noise hides their value from it. Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
 
 **Earlier work:**
 
@@ -104,33 +103,34 @@ short screens. Phase B's engine plays two 2005 lists and passes a fuzz over 340 
   screen stopped when the PC was shut down overnight, so it was restarted with 40 iterations per arm, scored
   at the same iteration against the base pilot's two seeds; no result yet.
 
-**Recent (log #73–78):** About a dozen pilot changes have now been tried, and none separated from the base pilot
-beyond the evaluation's rerun and seed noise (about ±15 Elo): slot binding, a deck-free board encoder with
-cross-attention to the deck, options attending to each other, each attack's own rules text, hidden decklists (which
-did not hurt) and three value refits, while GAE lambda = 1 was far worse and every 40-iteration variant wins only
-27–38% against SimpleBot on the archived lists (pilot-v2: 82%). A probe that plays each option of sampled decisions to
-the end (`notes/scripts/credit_diag.py`, whose overall numbers reproduce on new games while single turn bins move by up
-to 0.23) found that the expected training signal at lambda 0.95 carries 56–75% of an option's true effect and ranks
-options nearly right, but the value head's one-step change carries only 14–36%, so one game's signal is mostly luck;
-fitting the value alone on 5,200 games does not fix it (the MLP on the frozen trunk gains 0.006 explained variance, a
-cross-attention readout over every token and the whole network both overfit), so the value is limited by the number
-of games. Since pilot-v2 gained most of its strength between iterations 99 and 199 (56% to 82% against SimpleBot) and
-every comparison stopped at 39–79, the queued 15 hours of 40–80-iteration arms (value readout, then a memory screen of
-action history, a GRU and an attention memory) are likely to end the same way, and one long run is proposed instead.
+**Recent (log #73–80):** About a dozen pilot changes (slot binding, a deck-free board encoder, options attending
+to each other, each attack's own text, hidden decklists, three value refits) separated from base by no more than the
+evaluation's own noise, and every 40-iteration variant won only 27–38% against SimpleBot on the archived lists
+(pilot-v2: 82%). A probe that plays options to the end found that the training signal at lambda 0.95 carries 56–75% of
+a move's effect but the value head's one-step change only 14–36%, which more value fitting does not fix (the refits
+overfit their 5,200 games), and since pilot-v2 had already shown that longer training plateaus near 83%, the queued
+short screens and a proposed long run were dropped. Pointed at Trainer decisions on the 24 human lists
+(`notes/scripts/credit_diag.py --focus trainer`), the probe found that the one-step signal carries a Trainer's average
+effect (0.41–0.54 of it, twice an average decision's share) but tells the situations that favour it apart poorly, that
+under sampled play draw Trainers are worth nothing extra while better timing of Energy Removal, Gust and PlusPower is
+worth 0.6–1.3 points a decision, and that with greedy follow-through every Trainer becomes worth timing better, most
+for the current recipe (all Trainers +1.3 against +0.35 sampled; Oak +1.4, Bill +0.7), so the pilot's own sampling
+after a Trainer erases most of its value, and a lower entropy weight, never tried, is the next arm.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. Stop the queued chain (value readout, then the memory screen; running) and run base from it79 to about it300,
-   with SimpleBot on the archived lists and the held-out decks every 25 iterations: reaching pilot-v2's ~80% ends
-   the pilot screening; a plateau well below points to a problem in the training recipe.
-2. Off the GPU meanwhile: an evaluation that does not share the pilot's style (#69), so the archived lists are not
-   judged by a pilot that leaves their draw Trainers unplayed.
-3. If the recipe holds: the headline run from scratch, scored on the answer key and that evaluation.
-4. If it plateaus: lambda and value-target arms from the probe's signal-to-noise, decklist overfitting (decklist
-   dropout if so), and the value readout and memory arms only where the long run shows the problem they address.
-5. Phase B, in parallel: verification beyond self-written tests, then 2005 rules in the env, six audited
+1. A training arm with less sampling noise in the play it learns from (a lower or annealed entropy weight, or
+   collection at a temperature below 1 with the behaviour log-probabilities recorded), against base and base-s2,
+   judged against SimpleBot on the archived lists and by whether the Trainer probe's sampled-line timing gains move
+   toward the greedy ones.
+2. For telling situations apart: the KataGo-style auxiliary value heads recommended in
+   `notes/analysis-2026-10-06.md` (prize difference at the end, turns remaining, the opponent's next action), never
+   built.
+3. An evaluation that does not share the pilot's style (#69), then the headline run from scratch, scored on the
+   answer key.
+4. Phase B, in parallel: verification beyond self-written tests, then 2005 rules in the env, six audited
    card-text fixes, ZRE, Blastoise ex and Nidoqueen.
 <!-- status:end -->
 

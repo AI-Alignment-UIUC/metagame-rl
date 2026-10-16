@@ -14,7 +14,7 @@
 //     "slots"); with "out", every decision of both seats of the jobs with "rec" is recorded there
 //     (rl/metagame.py training games)
 //   { "cmd": "qprobe", "decks", "jobs", "out", "probeP": 0.1, "maxProbes": 4, "maxOptions": 8, "rollouts": 8,
-//     "seed", "concurrency", "deckoutWin", "redeal": false, "history": 0 }
+//     "seed", "concurrency", "deckoutWin", "redeal": false, "history": 0, "focus": null, "greedyLines": false }
 //     the jobs' games recorded (both seats), plus Monte Carlo values of the options at sampled decisions (qprobe below)
 //   { "cmd": "quit" }
 // The learner is model slot 0; "slot:k" is another model the learner holds (a league snapshot).
@@ -191,7 +191,8 @@ async function qprobe(cmd) {
   const rng = new Rng(cmd.seed);
   const deckoutWin = cmd.deckoutWin ?? 1;
   const R = cmd.rollouts || 8, maxOptions = cmd.maxOptions || 8, maxProbes = cmd.maxProbes || 4, probeP = cmd.probeP ?? 0.1;
-  const agents = { r0: new RemoteAgent(0, 'tokens', false), o0: new RemoteAgent(0, 'tokens', false) };
+  // greedyLines: the probe's lines are played greedily (the recorded games still sample): Q under the pilot's best play
+  const agents = { r0: new RemoteAgent(0, 'tokens', false), o0: new RemoteAgent(0, 'tokens', !!cmd.greedyLines) };
   let k = 0;
   const nextGame = () => {
     if (k >= cmd.jobs.length) return null;
@@ -204,7 +205,10 @@ async function qprobe(cmd) {
   const onDecision = (s, ans, idx) => {
     if (idx < 0 || s.t.legal.length < 2) return;
     const d = s.env.game.decision();
-    if (d.prompt || (perGame.get(s.id) || 0) >= maxProbes || rng.float() >= probeP) return;
+    if (d.prompt || (perGame.get(s.id) || 0) >= maxProbes) return;
+    // focus (a verb, e.g. 'trainer'; log #79): probe only decisions that offer an option with that verb
+    if (cmd.focus && !d.options.some(o => o.key.split('|')[0] === cmd.focus)) return;
+    if (rng.float() >= probeP) return;
     let copy;
     try { copy = s.env.game.clone(new Rng(1)); } catch (e) { return; }
     perGame.set(s.id, (perGame.get(s.id) || 0) + 1);
@@ -218,7 +222,14 @@ async function qprobe(cmd) {
   const lines = [];
   probes.forEach((p, pi) => {
     let opts = p.keys.map((_, i) => i);
-    if (opts.length > maxOptions) {
+    if (opts.length > maxOptions && cmd.focus) {
+      // focus: the option played, then every attack and pass (the ways to end the turn instead), then the focus
+      // verb's options, then the rest; random order within each group
+      const verb = i => p.keys[i].split('|')[0];
+      const rank = i => i === p.chosen ? 0 : verb(i) === 'attack' || verb(i) === 'pass' ? 1 : verb(i) === cmd.focus ? 2 : 3;
+      const order = rng.permutation(opts.length);
+      opts = order.map(j => opts[j]).sort((x, y) => rank(x) - rank(y)).slice(0, maxOptions).sort((x, y) => x - y);
+    } else if (opts.length > maxOptions) {
       const others = opts.filter(i => i !== p.chosen);
       const order = rng.permutation(others.length);
       opts = [p.chosen, ...order.slice(0, maxOptions - 1).map(i => others[i])].sort((x, y) => x - y);
@@ -267,7 +278,7 @@ async function qprobe(cmd) {
            seconds: (Date.now() - t0) / 1000, results,
            probes: probes.map(p => ({ k: p.k, player: p.player, turn: p.turn, steps: p.steps, nOptions: p.keys.length, chosen: p.chosen,
                                       probed: p.probed, keys: p.probed.map(i => p.keys[i]), q: p.q, after: p.after, gameSeed: p.gameSeed,
-                                      v: p.v, sig: p.sig, lams: LAMS })) };
+                                      v: p.v, sig: p.sig, lams: LAMS, ...(cmd.focus ? { allKeys: p.keys } : {}) })) };
 }
 
 let queue = Promise.resolve();

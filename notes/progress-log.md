@@ -1925,3 +1925,83 @@ Entry format:
   sound and the pilot screening ends; the headline run follows. If it plateaus well below, the recipe has a
   problem to find, in a run long enough to show it. Needs the chain stopped (from Evan's shell). Off the GPU
   meanwhile: the evaluation that does not share the pilot's style (#69).
+
+### #79 · 2026-10-16 · A4 · The Trainer probe: draw Trainers pay only under good follow-through; training sees Trainer effects
+- **Done:** (1) The chain of #77 was stopped at Evan's request at 00:22 on 2026-10-16, during base79-headx's
+  credit probe (which measured base's own value, #78); base-cont, the value readout arms and the memory screen
+  never started and are parked. The long run proposed in #78 is withdrawn: pilot-v2 (#48) already trained this
+  long and plateaued near 83% against SimpleBot, so it would mostly re-measure that. A search of the log, notes
+  and commits for earlier attempts found play-time search and expert iteration tried or designed before (#13
+  flat Monte Carlo, #50 psearch, #51 design) and KataGo-style auxiliary value heads recommended in
+  `notes/analysis-2026-10-06.md` but never built. (2) The Trainer probe (evaluation only), answering #68's open
+  question (the representation of Trainer effects, or the credit for a draw that pays off later):
+  `env/remote_worker.js` qprobe `focus` (a verb) probes only decisions that offer an option with that verb, and
+  probes the option played, then every attack and pass, then the focus options, then the rest; `greedyLines`
+  plays the probe's lines greedily. `notes/scripts/credit_diag.py`: `--panel archived` (the 24 lists),
+  `--focus`, `--greedy-lines`, and a per-card table: the pilot's probability of playing the card when offered;
+  dscore, its expected score minus the alternative's ((Q + 1) / 2, points) against the pilot's likeliest attack,
+  against pass, and against the pilot's mix of its other probed options; seen, the expected training signal's
+  difference over Q's; track, the same across probes by split halves; gain, playing the card where it looks better
+  than the pilot's mix on one half of the lines, valued on the other (better timing's worth, free of selection
+  noise). `runs/trainer_probe_run.sh` and `runs/trainer_probe_greedy.sh`: 1,000 games on random pairs of the
+  archived lists, hidden cards re-dealt in every line, probe-p 0.05 (at most 8 a game), up to 6 options, 16 lines
+  an option; pilot-v2 it349 with sampled lines, base it79 with sampled lines, pilot-v2 it349 with greedy lines.
+- **Evidence:** pilot-v2 sampled: 4,249 probes, 348,832 lines, 1 line error, 34 min; base it79: 4,528 probes,
+  372,272 lines, 9 line errors, 37 min; pilot-v2 greedy: 4,366 probes, 358,560 lines, 5 line errors, 35 min; 0
+  game errors. Per card, pilot-v2 sampled / base sampled / pilot-v2 greedy: probability of playing when offered,
+  Bill 0.14 / 0.11 / 0.15, Professor Oak 0.11 / 0.03 / 0.12, Computer Search 0.10 / 0.04 / 0.10, Energy Removal
+  0.23 / 0.18 / 0.27, Gust of Wind 0.11 / 0.13 / 0.12; against the likeliest attack (points), Oak −10.2 / −11.7 /
+  −10.6, Scoop Up −11.2 / −8.8 / −11.2, Bill −2.8 / −1.5 / −1.1, Computer Search −2.9 / −3.9 / −2.5. Gain from
+  better timing (points per decision where offered, 95% interval): all Trainers +0.52 [0.25, 0.79] / +0.35 [0.14,
+  0.59] / +0.97 [0.70, 1.25]; Bill +0.32 [−0.19, 0.79] / +0.12 [−0.40, 0.61] / +1.16 [0.50, 1.82]; Oak −0.27
+  [−0.66, 0.14] / −0.06 [−0.34, 0.18] / +0.52 [0.06, 1.00]; Computer Search −0.37 / −0.70 [−1.04, −0.40] / +0.27
+  [−0.28, 0.81]; Energy Removal +1.24 [0.39, 1.99] / +1.13 [0.31, 2.06] / +0.65 [−0.33, 1.50]; Gust +1.14 [0.58,
+  1.68] / +0.29 [−0.29, 0.91] / +1.55 [0.95, 2.21]; PlusPower +0.62 [0.08, 1.21] / +0.67 [0.13, 1.17] / +1.08
+  [0.48, 1.72]; Energy Retrieval +0.28 / +0.11 / +1.53 [0.40, 2.61]. Credit at these decisions (sampled runs), all
+  options: share at lambda 0 0.41 [0.38, 0.45] (pilot-v2), 0.54 [0.51, 0.56] (base; #75, all decisions on its
+  training decks: 0.26); at 0.95 0.76 / 0.78; alignment at 0 0.50 / 0.64, at 0.95 0.92 / 0.92. Against pass, seen
+  at lambda 0.95 is 0.4–2.0 across cards (about 1 for Energy Removal, Gust and PlusPower); track at lambda 0
+  against the pilot's mix −0.06 to 0.66. Value explained variance over all decisions on the archived lists 0.39
+  (pilot-v2, trained with deck-out wins 0 and scored here on the full result) and 0.46 (base).
+- **Found:** (1) Under sampled play, the play training learns from, playing draw Trainers more is worth nothing
+  measurable for either pilot (Bill, Oak, Computer Search between −0.70 and +0.32), and the low rate at which they
+  play them (#68–69) is mostly right on average: Oak and Scoop Up cost about 10 points against attacking. The
+  value they leave is in Trainers that act on the opponent's board or the attack (Energy Removal, Super Energy
+  Removal, Gust, PlusPower, Lass: +0.6 to +1.3). (2) When the rest of the game is played greedily, draw Trainers
+  are worth timing better too (Bill +1.16, Oak +0.52, Energy Retrieval +1.53; all Trainers +0.97 against +0.52
+  sampled). A draw only pays through the moves that follow it, and a sampled follow-through over the longer turn
+  it creates spends that value, so on-policy training with this much entropy sees little reason to draw. (3) The
+  training signal carries the average effect of Trainer plays, at one step about twice the share of an average
+  decision (0.41–0.54 against 0.26), so the delay to a Trainer's payoff is not what blocks learning; what is weak is
+  telling the situations apart (track up to 0.66, often near 0), and the sampled follow-through of (2). (4) The
+  gains are per decision where the card is offered, at many decisions a game, so they are not additive into a win
+  rate; not measured as a game-level effect.
+- **Next:** Whether the sampled follow-through limits Trainer play in training: the greedy-lines probe on base
+  it79, then a training arm that collects with less sampling noise (a lower temperature or entropy weight), judged
+  on the archived lists and by this probe's timing gains. For telling situations apart, the auxiliary value heads
+  of `notes/analysis-2026-10-06.md`. Then the evaluation that does not share the pilot's style (#69).
+
+### #80 · 2026-10-16 · A4 · Greedy-lines Trainer probe on base it79: under good follow-through every Trainer is worth timing better
+- **Done:** `runs/trainer_probe_greedy.sh` extended to base it79 (a pilot whose summary exists is skipped), the
+  settings of #79: 1,000 games on the archived lists, hidden cards re-dealt, probe-p 0.05, up to 6 options, 16
+  greedy lines an option. A check of the log and run scripts for earlier entropy or temperature changes to the
+  pilot: every pilot run kept `--ent 0.01`; the only change was the tournament's rising entropy weight (#59–60).
+- **Evidence:** 4,450 probes, 364,512 lines, 7 line errors, 0 game errors, 31 min; value explained variance over
+  all decisions 0.48. Gain from better timing (points per decision where offered, 95% interval), greedy lines /
+  #79's sampled lines: all Trainers +1.32 [0.99, 1.66] / +0.35; Professor Oak +1.36 [0.94, 1.78] / −0.06; Bill
+  +0.74 [0.26, 1.25] / +0.12; Computer Search +0.60 [0.17, 1.05] / −0.70; Item Finder +0.84 [0.31, 1.45] / −0.03;
+  Scoop Up +1.11 [0.49, 1.77] / −0.20; Energy Removal +1.30 [0.45, 2.23] / +1.13; Super Energy Removal +1.72 [0.81,
+  2.77] / +0.94; Gust of Wind +2.12 [1.33, 2.98] / +0.29; PlusPower +0.88 [0.15, 1.63] / +0.67; Energy Retrieval
+  +2.48 [1.00, 4.26] / +0.11; Lass +1.86 [0.25, 3.60] / +0.97. Against the likeliest attack: Oak −10.0, Scoop Up
+  −9.0, Bill −2.3. The probabilities of playing each card are base's own (Oak 0.037, Bill 0.116, Gust 0.131).
+- **Found:** (1) For the current recipe, every Trainer above is worth timing better once the rest of the game is
+  played greedily, the draw and search cards included, while under base's sampled play only the disruption cards
+  are: base's own sampling after a Trainer erases most of what it is worth, so PPO, which scores a decision by the
+  sampled play after it, gets little signal for when to play one. (2) The gap is larger for base than for
+  pilot-v2 (+1.32 greedy against +0.35 sampled; pilot-v2 +0.97 against +0.52, #79): the weaker pilot times
+  Trainers worse and wastes more of them in its follow-through, in line with its 30–34% against SimpleBot on these
+  lists (#74). (3) A lower entropy weight or sampling temperature for the pilot has never been tried.
+- **Next:** A training arm with less sampling noise in the play it learns from, against base and base-s2 from
+  the same start: a lower entropy weight (or one annealed to 0), and collection at a temperature below 1 with the
+  behaviour log-probabilities recorded; judged against SimpleBot on the archived lists and by whether the probe's
+  sampled-line timing gains move toward the greedy ones. Then the auxiliary value heads.
