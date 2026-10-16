@@ -22,10 +22,11 @@ from rl.remote import RemotePool
 ROOT = Path(__file__).resolve().parent.parent
 
 
-def load_policy(path: str, device: str):
-    """A checkpoint (.pt) as a model on `device`, and the encoding its workers must use."""
-    state = torch.load(ROOT / path, map_location="cpu")
-    cfg = state["config"]
+def load_policy(path: str, device: str, overrides: dict = None):
+    """A checkpoint (.pt) as a model on `device`, and the encoding its workers must use. overrides: config keys to
+    change (e.g. a new value readout, log #77); weights the checkpoint lacks then keep their initialisation."""
+    state = torch.load(ROOT / path, map_location="cpu", weights_only=False)
+    cfg = {**state["config"], **(overrides or {})}
     if cfg.get("kind") == "TokenPointerNet":
         from rl.token_model import build_token_model
         m = build_token_model(str(ROOT / "notes/data/cards/pool.json"), str(ROOT / "notes/data/cards/text_emb.npy"),
@@ -33,26 +34,59 @@ def load_policy(path: str, device: str):
                               d=cfg["d"], layers=cfg["layers"], heads=cfg["heads"],
                               count_features=cfg.get("count_features", False),
                               cross_layers=cfg.get("cross_layers", 1), cand_self=cfg.get("cand_self", 0),
-                              n_agents=cfg.get("n_agents", 0))
+                              n_agents=cfg.get("n_agents", 0), card_inputs=cfg.get("card_inputs", "all"),
+                              deck_tokens=cfg.get("deck_tokens", True), slot_bind=cfg.get("slot_bind", False),
+                              ability_text=cfg.get("ability_text", False), deck_mode=cfg.get("deck_mode", "joint"),
+                              deck_layers=cfg.get("deck_layers", 1), history=cfg.get("history", 0),
+                              memory=cfg.get("memory", "none"), value_tower=cfg.get("value_tower", 0),
+                              value_query=cfg.get("value_query", 0))
         enc = "tokens"
     else:
         from rl.model import build
         m = build(cfg)
         enc = "identity"
-    m.load_state_dict(state["model"])
+    missing, unexpected = m.load_state_dict(state["model"] if "model" in state else state["net"],   # rl.train or rl.metagame
+                                            strict=not overrides)
+    assert not unexpected and all(k.startswith(("vquery", "vcross.", "vblocks.", "ln_v.")) for k in missing), (missing, unexpected)
     return m.to(device).eval(), enc
 
 
-def jobs_for(n: int, games: int, seed: int, new: int = 0, pairs: list = None) -> list:
+def history_of(models: dict) -> int:
+    """The action-history window the workers must encode (env/tokens.js): the longest any of the models reads."""
+    return max([int(getattr(m, "cfg", {}).get("history", 0) or 0) for m in models.values()] + [0])
+
+
+def jobs_for(n: int, games: int, seed: int, new: int = 0, pairs: list = None, pair_keys: list = None) -> list:
+    """Game g of pair p gets seed SEED * 1000003 + p * games + g, or pair_keys[p] in place of p: pairs with
+    equal keys (the same deck pair under other pilots) then get the same deals."""
     if pairs is None:
         pairs = [(i, j) for i in range(n) for j in range(i + 1, n) if not new or j >= n - new]
-    assert 0 <= seed * 1000003 + len(pairs) * games < 2 ** 53, "job seeds must stay exact in JavaScript"
-    jobs, k = [], 0
-    for i, j in pairs:
+    keys = list(range(len(pairs))) if pair_keys is None else [int(k) for k in pair_keys]
+    assert len(keys) == len(pairs) and min(keys, default=0) >= 0
+    assert 0 <= seed * 1000003 + (max(keys, default=-1) + 1) * games < 2 ** 53, "job seeds must stay exact in JavaScript"
+    jobs = []
+    for (i, j), key in zip(pairs, keys):
         for g in range(games):
-            jobs.append({"i": i, "j": j, "iSeat": 1 if g % 2 == 0 else 2, "seed": seed * 1000003 + k})
-            k += 1
+            jobs.append({"i": i, "j": j, "iSeat": 1 if g % 2 == 0 else 2, "seed": seed * 1000003 + key * games + g})
     return jobs
+
+
+def shards_for(jobs: list, workers: int, keyed: bool = False) -> list:
+    """Rounds of one job list per worker, interleaved so every worker gets every pair. env/remote_worker.js
+    matches results to jobs by seed, so with keyed (repeated) seeds no worker may hold a seed twice: the jobs
+    go sorted by seed (ties shuffled) and dealt round robin, each seed at most `workers` times a round."""
+    if not keyed:
+        return [[jobs[w::workers] for w in range(workers)]]
+    seen, rounds = {}, {}
+    for k in np.random.default_rng(0).permutation(len(jobs)):
+        s = jobs[k]["seed"]
+        rounds.setdefault(seen.get(s, 0) // workers, []).append(jobs[k])
+        seen[s] = seen.get(s, 0) + 1
+    out = []
+    for r in sorted(rounds):
+        js = sorted(rounds[r], key=lambda j: j["seed"])
+        out.append([js[w::workers] for w in range(workers)])
+    return out
 
 
 class GpuMatrix:
@@ -78,20 +112,21 @@ class GpuMatrix:
         return self
 
     def play(self, decks: list, games: int, seed: int, new: int = 0, pairs: list = None, value_at_turn: int = 0,
-             slots: list = None, models: dict = None):
+             slots: list = None, models: dict = None, pair_keys: list = None):
         """decks: [{name, cards}] -> (wins, games, steps) as [n, n] arrays; mirrors filled with 0.5.
         `pairs` [(i, j)] plays only those pairs instead of all (or all involving the last `new`).
         slots / models (rl/league.py): deck i is piloted by model slot slots[i] of `models` instead of
-        slot 0 = self.model in both seats."""
+        slot 0 = self.model in both seats. pair_keys (one int per pair): deal seeds by key (jobs_for)."""
         n = len(decks)
-        jobs = jobs_for(n, games, seed, new, pairs)
-        shards = [jobs[w::self.workers] for w in range(self.workers)]   # interleaved: every worker gets every pair
-        msgs = [{"cmd": "games", "encoding": self.encoding, "decks": decks, "jobs": s, "greedy": self.greedy,
-                 "concurrency": self.concurrency, "valueAtTurn": value_at_turn,
-                 **({"slots": [int(x) for x in slots]} if slots is not None else {})} for s in shards]
+        jobs = jobs_for(n, games, seed, new, pairs, pair_keys)
         t0 = time.time()
-        replies = self.pool.collect(msgs, models or {0: self.model}, self.device)   # fp32, as the ONNX pilot
-        self.results = [x for rep in replies for x in rep["results"]]   # per game, for analyses
+        replies = []
+        for shards in shards_for(jobs, self.workers, pair_keys is not None):
+            msgs = [{"cmd": "games", "encoding": self.encoding, "decks": decks, "jobs": s, "greedy": self.greedy,
+                     "concurrency": self.concurrency, "valueAtTurn": value_at_turn, "history": history_of(models or {0: self.model}),
+                     **({"slots": [int(x) for x in slots]} if slots is not None else {})} for s in shards]
+            replies += self.pool.collect(msgs, models or {0: self.model}, self.device)   # fp32, as the ONNX pilot
+        self.results = [x for rep in replies for x in rep["results"]]   # per game (with its job's seed), for analyses
         W, G, S = np.zeros((n, n)), np.zeros((n, n)), np.zeros((n, n))
         errors = cut = 0
         endings = {}
@@ -112,62 +147,6 @@ class GpuMatrix:
         self.last = {"games": total, "seconds": round(secs, 1), "games_per_s": round(total / max(secs, 1e-9), 1),
                      "errors": errors, "cut": int(cut), "endings": endings, "decisions_per_game": round(float(np.triu(S, 1).sum()) / max(total, 1), 1)}
         return W, G, S
-
-    def values(self, decks: list, pairs: list, openings: int, seed: int, states: bool = False,
-               common_deals: bool = False, slots: list = None, models: dict = None):
-        """The pilot's start-of-game value v(a, b) for deck a against deck b, averaged over
-        `openings` deals (forward passes only, no games). pairs: [(a, b)] -> array [len(pairs)].
-        Sent in chunks of at most `chunk` deals: all of a chunk's states go through one forward pass.
-
-        states=True also returns the states the values were read at, one per deal in the order
-        (pair, opening): {"live": [J] (0 if the game ended in setup), "pooled": [J, d] (the encoder's
-        token 0), and the five token inputs}, for deck embeddings and the edit head (rl/deck_head.py).
-
-        common_deals=True seeds each deal by (opponent b, opening) instead of by the pair's position,
-        so every deck facing b gets the same deals (common random numbers): the same deck always
-        scores the same, and two decks' scores differ by the decks, not by the luck of the deal.
-
-        slots / models (rl/league.py): pair k's value is read by model slot slots[k] of `models` (the
-        agent piloting deck a) instead of slot 0 = self.model."""
-        assert not (states and slots is not None and len(set(slots)) > 1), "states need a single reading slot"
-        key = (lambda k, b: b) if common_deals else (lambda k, b: k)
-        jobs = [{"a": a, "b": b, "seed": seed * 1000003 + key(k, b) * openings + o, "pair": k, "job": k * openings + o,
-                 "slot": int(slots[k]) if slots is not None else 0}
-                for k, (a, b) in enumerate(pairs) for o in range(openings)]
-        tot = np.zeros(len(pairs))
-        out = None
-        chunk = 4096
-        for c in range(0, len(jobs), chunk):
-            part = jobs[c:c + chunk]
-            shards = [part[w::self.workers] for w in range(self.workers)]
-            msgs = [{"cmd": "values", "decks": decks, "jobs": sh} for sh in shards]
-            self.pool.capture = {} if states else None
-            try:
-                replies = self.pool.collect(msgs, models or {0: self.model}, self.device)
-                cap, self.pool.capture = self.pool.capture, None
-            finally:
-                self.pool.capture = None
-            for w, (sh, rep) in enumerate(zip(shards, replies)):
-                for j, v in zip(sh, rep["values"]):
-                    tot[j["pair"]] += v
-                if not states or not sh:
-                    continue
-                got = cap.get(w, [])
-                arrs = {k: np.concatenate([g[0][k] for g in got]) for k in got[0][0]} if got else {}
-                pooled = np.concatenate([g[1] for g in got]) if got else None
-                live = [j for j, l in zip(sh, rep["live"]) if l]
-                assert len(live) == (len(pooled) if got else 0), "captured states do not match the live deals"
-                if out is None and got:
-                    out = {"live": np.zeros(len(jobs), np.uint8),
-                           "pooled": np.zeros((len(jobs), pooled.shape[1]), np.float32),
-                           **{k: np.zeros((len(jobs),) + a.shape[1:], a.dtype) for k, a in arrs.items()}}
-                idx = np.array([j["job"] for j in live], dtype=np.int64)
-                if len(idx):
-                    out["live"][idx] = 1
-                    out["pooled"][idx] = pooled
-                    for k, a in arrs.items():
-                        out[k][idx] = a
-        return (tot / openings, out) if states else tot / openings
 
     def close(self):
         self.pool.close()

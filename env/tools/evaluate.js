@@ -10,7 +10,8 @@
 // Decks:  any substring of an archived deck name ("division #place player (label)"), or "all"
 //         to cycle every archived deck on both sides.
 //
-//      --mirror: both sides play the same deck; --per-deck: a line per deck of X
+//      --mirror: both sides play the same deck; --per-deck: a line per deck of X; --tokens: token observations
+//      (needed for decks with cards outside the archived field when no token model plays)
 // Run: node env/tools/evaluate.js --x simplebot --y random --d1 "Wigglytuff" --d2 "Haymaker"
 //        [--games 200] [--workers 16] [--concurrency 16] [--seed 1] [--json out.json]
 'use strict';
@@ -82,9 +83,11 @@ async function worker(from, to) {
   const { Runner } = require('../runner.js');
   const { archivedDecks } = require('../decks.js');
   const decks = DECKS_FILE ? require('../decks.js').decksFromFile(DECKS_FILE) : archivedDecks();
-  // A token-model agent needs token observations (the other agents choose by option either way).
-  const tok = [X, Y].some(sp => sp.startsWith('onnxtok:') || sp.startsWith('psearch:'));
+  // A token-model agent needs token observations (the other agents choose by option either way); so do
+  // decks with cards outside the field's, which the identity encoder's action space lacks (--tokens).
+  const tok = argv.includes('--tokens') || [X, Y].some(sp => sp.startsWith('onnxtok:') || sp.startsWith('psearch:'));
   const enc = tok ? new (require('../tokens.js').TokenEncoder)() : identityEncoder();
+  if (tok) enc.history = Number(flag('history', 0));   // --history N: action-history tokens for a pilot that reads them (log #76)
   const agents = { x: await makeAgent(X, enc, AGENT_SEED * 7919 + from), y: await makeAgent(Y, enc, AGENT_SEED * 104729 + from) };
   const d1 = pickDecks(decks, D1), d2 = pickDecks(decks, D2);
   let g = from;

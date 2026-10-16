@@ -1,0 +1,50 @@
+{
+ "checkpoint": "runs/meta-99/checkpoint.pt",
+ "iter": 149,
+ "decks": [
+  47,
+  215,
+  275,
+  17,
+  183,
+  176,
+  252,
+  206,
+  124,
+  28,
+  216,
+  158
+ ],
+ "bill": {
+  "win_rate": 0.5132,
+  "ci95": 0.0204,
+  "games": 2304,
+  "mirror_win_rate": 0.5417,
+  "seconds": 24.5,
+  "games_per_s": 94.1,
+  "errors": 0,
+  "cut": 33,
+  "endings": {
+   "no-pokemon": 206,
+   "prizes": 1912,
+   "deck-out": 153
+  },
+  "decisions_per_game": 173.2
+ },
+ "draw": {
+  "win_rate": 0.4178,
+  "ci95": 0.0201,
+  "games": 2304,
+  "mirror_win_rate": 0.4375,
+  "seconds": 21.8,
+  "games_per_s": 105.7,
+  "errors": 0,
+  "cut": 29,
+  "endings": {
+   "no-pokemon": 207,
+   "prizes": 1599,
+   "deck-out": 469
+  },
+  "decisions_per_game": 165.2
+ }
+}

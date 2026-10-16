@@ -2,8 +2,8 @@
 
   1. against SimpleBot on 24 held-out random decks (runs/pilot-scratch/heldout_decks.json; no human shape)
   2. head to head against a reference pilot on the archived decks (rl.crossplay; evaluation only)
-  3. how much deck choice moves its results: notes/scripts/trainer_restore_test.py, the four log #36
-     variants scored by the start-of-game value and by real games against the archived field
+(The third check, deck variants scored by the start-of-game value, went with the value reader at log #65;
+it is at the `pre-simplify` tag.)
 
 Run: PYTHONPATH=. .venv/Scripts/python notes/scripts/pilot_diag.py --policy runs/pilot-v2/model_it00399.pt \
         --ref runs/pilot-scratch/model_it00249.pt --out runs/pilot-v2/diag

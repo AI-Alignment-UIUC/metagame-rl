@@ -4,6 +4,8 @@
 log [#33](../../notes/progress-log.md) (the pilot) and [#34](../../notes/progress-log.md) (this run),
 corrected in #35 · commits `2e5a6c1`, `d34e9fa`*
 
+> **Code.** The scripts this result ran (`rl/psro.py`, `rl/search.py`, `rl/matchup.py`, …) were removed at log #65; they reproduce from the git tag `pre-simplify`.
+
 **Question.** Log #27 left three ways to judge a candidate deck inside the PSRO deck builder:
 play real games with it, ask a learned matchup model, or read the play network's own value at the
 start of the game. Which builds the best metagame from random decks, given the same time?

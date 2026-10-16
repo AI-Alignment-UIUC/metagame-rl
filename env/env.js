@@ -37,15 +37,19 @@ class Env {
       return { done: true, winner: g.winner, steps: g.steps, error: g.error };
     }
     const decks = this.visibleDecks(d.playerId);
-    // Token encoders (env/tokens.js) score the options themselves: actions are option indices.
+    // Token encoders (env/tokens.js) score the options themselves: actions are option indices. Every
+    // legal option is offered; a decision with more options than the encoder has slots, or a state with
+    // more tokens, ends the game as an engine error instead of hiding part of it (log #68).
     const tokens = typeof this.encoder.actionId !== 'function';
-    // Past MAX_CAND options the token encoder has no slot to score them, so they are not offered
-    // (built decks can reach ~50+ options; the archived ones at most 29).
-    const legal = tokens ? d.options.slice(0, this.encoder.MAX_CAND).map((_, i) => i)
-      : d.options.map(o => this.encoder.actionId(o.key));
-    if (tokens && d.options.length > this.encoder.MAX_CAND) this.truncated = (this.truncated || 0) + 1;
+    const legal = tokens ? d.options.map((_, i) => i) : d.options.map(o => this.encoder.actionId(o.key));
     const obs = tokens ? this.encoder.encode(g, d.playerId, decks, d.options)
       : this.u8 ? this.encoder.encodeU8(g, d.playerId, decks) : this.encoder.encode(g, d.playerId, decks);
+    if (tokens && (d.options.length > this.encoder.MAX_CAND || obs.overflow)) {
+      g.error = new Error(`state too large for the token encoder: ${d.options.length} options (max ${this.encoder.MAX_CAND}), `
+        + `tokens ${obs.overflow ? 'over' : 'within'} ${this.encoder.MAX_TOK}`);
+      this.current = null;
+      return { done: true, winner: g.winner, steps: g.steps, error: g.error };
+    }
     this.current = { playerId: d.playerId, legal, options: d.options };
     return { done: false, playerId: d.playerId, obs, legal };
   }

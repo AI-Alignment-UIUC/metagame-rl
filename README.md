@@ -53,17 +53,19 @@ gives a biased or blind builder, so pilot strength is the bottleneck.
 ## Status
 
 <!-- status:start -->
-*Updated 2026-10-10.*
+*Updated 2026-10-16.*
 
 **Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup
-matrix. Trained pilots beat SimpleBot (a human-free pilot plateaus near 83%), but deck search driven
-by the pilot's own value keeps flooding decks with Energy, and neither extra attention nor play-time
-search makes the pilot stronger against an outside opponent. Under the general self-discovery scope
-(no archived lists or hand-written bots in training), co-evolving the decks and one pilot over the full
-pool rediscovered field staples but collapsed to one deck type, so the metagame is now built by a league
-of deck-owning agents, each with its own network. Tournaments of 3, 6 and 9 agents that each own a network and
-a deck keep every deck type distinct, but recover none of the human meta: their decks become Pokémon piles,
-because of how the drafting proposes cards and how little the pilots get from Trainers. Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
+matrix. Trained pilots beat SimpleBot (a human-free pilot plateaus near 83%), but every hand-built deck
+search ends in decks unlike the human field, and tournaments of deck-owning agents recovered none of the human
+meta; the meta level is now one learned procedure whose best decks break even with the human field under
+pilot-v2, a measure that favours their Trainer-light style. Work has turned to the pilot: at 40 iterations no
+architecture change beat the noise between seeds and between reruns of the evaluation, and hiding the decklists
+did not hurt. A ground-truth probe of the training signal found that credit does reach early decisions, through
+lambda = 0.95's long return rather than the value head, whose one-step change carries only 14–36% of a move's
+effect and is limited by the number of games rather than by its readout; since every pilot comparison stopped
+before the iterations where pilot-v2 gained most of its strength, one long run is proposed in place of more
+short screens. Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
 
 **Earlier work:**
 
@@ -79,39 +81,57 @@ because of how the drafting proposes cards and how little the pilots get from Tr
   #51, co-evolving the decks and one pilot over the full pool rediscovered Computer Search, Scyther,
   Oak, Energy Removal and Double Colorless Energy but collapsed to one deck type, so the metagame moved
   to a league of deck-owning agents with separate networks and a two-stage real-game adoption check.
+- **Log #57–64 (A5).** Tournaments of 3, 6 and 9 agents that each own a network and draft their own deck
+  ([2000s result #2](results/2000s-result-2/)) kept every deck type distinct with a 1–2 deck equilibrium,
+  after three free action cycles the environment missed were fixed and a per-turn decision cap added, but
+  recovered none of the human metagame (0/8 archetypes, 20% against the archived lists): the decks drifted
+  into Pokémon piles, partly because the drafting proposed cards by id (225 of 277 are Pokémon) and partly
+  because the pilots get little from Trainers. So the meta level is being rewritten as one learned
+  procedure (a draft head per agent trained on game results, PPO pilots with a fading prize signal), with
+  the old code kept at the `pre-simplify` tag, which now pins the engine the tournaments ran on.
+- **Log #65–72 (A5, A4).** The meta level became one loop, `rl/metagame.py` (the old tournament, league,
+  PSRO and value-search code kept only at the `pre-simplify` tag): per-agent draft heads froze, so 99 decks
+  share one pilot and one draft head that replaces cards in every draw, the worst decks are turned over, and
+  the pilot now sees every legal option; from random decks on the full pool it found a Wigglytuff /
+  Lickitung core with Double Colorless Energy, Energy Removal and Bill whose best decks broke even with the
+  24 archived lists under pilot-v2 (0.52, best 0.64, against result #2's 0.20), a measure that favours them
+  because pilot-v2 also leaves draw Trainers unplayed, a habit that forcing draws first shows is largely
+  right in the slow meta it built. Pilot work then moved from ablations to architecture changes, each trained
+  from scratch on that population's decks against two seeds of the base pilot: board cards tied to their
+  Pokémon (fixing attached-Energy counts the model misread), options compared with each other, each
+  attack's own rules text, and, at Evan's direction, a board encoder that never sees the deck and then
+  cross-attends to a separate deck encoder, so the game state has a deck-free representation. The first
+  screen stopped when the PC was shut down overnight, so it was restarted with 40 iterations per arm, scored
+  at the same iteration against the base pilot's two seeds; no result yet.
 
-**Recent (log #57–63):** In league-3 training games became prize races and the equilibrium often held
-three deck types, but the lineages shed Trainers and the generalist fell to 70% against SimpleBot; three
-free cycles the environment missed (Tentacool's Cowardice, Dark Dragonair's Evolutionary Light, then
-Venomoth's Shift) were fixed, and a per-turn decision cap now ends a turn caught in any such cycle. Back to
-basics, tournaments of 3, 6 and 9 agents that each own a network and draft their own deck
-([2000s result #2](results/2000s-result-2/)) keep every agent's deck type distinct at every N, with an
-equilibrium of 1–2 decks and a mostly transitive meta, but recover none of the human metagame (0/8
-archetypes, staples no better than random starts, 20% against the archived lists). The decks drift into
-Pokémon piles full of unplayable evolutions, in part because the drafting proposes cards by id (225 of
-277 are Pokémon), and in part because the pilots get little from Trainers.
+**Recent (log #73–78):** About a dozen pilot changes have now been tried, and none separated from the base pilot
+beyond the evaluation's rerun and seed noise (about ±15 Elo): slot binding, a deck-free board encoder with
+cross-attention to the deck, options attending to each other, each attack's own rules text, hidden decklists (which
+did not hurt) and three value refits, while GAE lambda = 1 was far worse and every 40-iteration variant wins only
+27–38% against SimpleBot on the archived lists (pilot-v2: 82%). A probe that plays each option of sampled decisions to
+the end (`notes/scripts/credit_diag.py`, whose overall numbers reproduce on new games while single turn bins move by up
+to 0.23) found that the expected training signal at lambda 0.95 carries 56–75% of an option's true effect and ranks
+options nearly right, but the value head's one-step change carries only 14–36%, so one game's signal is mostly luck;
+fitting the value alone on 5,200 games does not fix it (the MLP on the frozen trunk gains 0.006 explained variance, a
+cross-attention readout over every token and the whole network both overfit), so the value is limited by the number
+of games. Since pilot-v2 gained most of its strength between iterations 99 and 199 (56% to 82% against SimpleBot) and
+every comparison stopped at 39–79, the queued 15 hours of 40–80-iteration arms (value readout, then a memory screen of
+action history, a GRU and an attention memory) are likely to end the same way, and one long run is proposed instead.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. A drafting operator that proposes cards by class and adds or removes whole evolution lines, with dead
-   cards measured from the agent's own games, or a draft policy trained on real results; then the
-   tournament again, scored on the answer key.
-2. The pilot's use of Trainers, still the limit on any human-like deck: card ablations on the agents' own
-   decks; more seeds at N=6 and 9 with a training budget scaled by N-1.
-3. If the league keeps several deck types: a second seed, then drafting as a learned policy trained on
-   real game results (a draft head per agent) in place of the value climb.
-4. Whether psearch's gain transfers (against an independently trained pilot, both directions, more
-   re-deals), and general measures of the pilot (Elo against past snapshots, exploitability, deck
-   sensitivity).
-5. A game-agnostic representation (cards as entities with zone and owner, actions as pointers, cards from
-   rules text), then the learned action-sequence model and Gumbel MCTS
-   ([design](notes/design-action-sequence-search.md)).
-6. Phase B, in parallel: verification beyond self-written tests (rule invariants in the fuzz, such as no
-   state repeated within a turn,
-   independently written tests, EX-era rulings), then 2005 rules in the env, six audited card-text
-   fixes, ZRE, Blastoise ex and Nidoqueen.
+1. Stop the queued chain (value readout, then the memory screen; running) and run base from it79 to about it300,
+   with SimpleBot on the archived lists and the held-out decks every 25 iterations: reaching pilot-v2's ~80% ends
+   the pilot screening; a plateau well below points to a problem in the training recipe.
+2. Off the GPU meanwhile: an evaluation that does not share the pilot's style (#69), so the archived lists are not
+   judged by a pilot that leaves their draw Trainers unplayed.
+3. If the recipe holds: the headline run from scratch, scored on the answer key and that evaluation.
+4. If it plateaus: lambda and value-target arms from the probe's signal-to-noise, decklist overfitting (decklist
+   dropout if so), and the value readout and memory arms only where the long run shows the problem they address.
+5. Phase B, in parallel: verification beyond self-written tests, then 2005 rules in the env, six audited
+   card-text fixes, ZRE, Blastoise ex and Nidoqueen.
 <!-- status:end -->
 
 ---
@@ -265,7 +285,7 @@ reruns; and its matchup directions agree with era write-ups wherever those exist
 
 ![The A5 PSRO loop: population and real-game matrix, Nash, matchup model, swap search, confirmation with real games, piloting; each step marked built, partly built or planned](notes/schematics/metagame-builder.svg)
 
-*The loop as of log #28 ([full page](notes/schematics/metagame-builder.html)). Since log #34, step 4 in the code is the restart search of `rl/search.py` (`rl/psro.py --builder games|model|value`); the PPO edit policy remains as `--builder edit`.*
+*The loop as of log #28 ([full page](notes/schematics/metagame-builder.html)). Since log #34, step 4 in the code is the restart search of `rl/search.py` (`rl/psro.py --builder games|model|value`); the PPO edit policy remains as `--builder edit`. Since log #65 the code is one loop instead (`rl/metagame.py`: per-agent draft heads trained on game results, `rl/draft.py`); the PSRO builder is at the `pre-simplify` tag.*
 
 1. **Fixed population.** Nash over the trained-policy matrix of the 24 archived lists. Do
    Wigglytuff and Haymaker sit in the support? Compare against the SimpleBot equilibrium from A2.

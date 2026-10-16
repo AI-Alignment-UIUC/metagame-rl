@@ -42,3 +42,26 @@ def concat(rollouts: list) -> dict:
         out[k] = np.concatenate(v) if v else np.zeros(0)
     out["legal_offsets"] = np.concatenate([out["legal_offsets"], [legal_base]]).astype(np.int64)
     return out
+
+
+def subset(batch: dict, idx) -> dict:
+    """The transitions `idx` of a rollout batch (concat plus adv / ret), legal ids re-indexed."""
+    idx = np.asarray(idx, dtype=np.int64)
+    T = len(batch["action"])
+    out = {}
+    for k, v in batch.items():
+        if k in ("legal_offsets", "legal_ids", "inputs", "header") or not isinstance(v, np.ndarray):
+            continue
+        if v.ndim == 1 and v.size == T:
+            out[k] = v[idx]
+        elif v.ndim > 1 and v.shape[0] == T:
+            out[k] = v[idx]
+        elif v.size % T == 0:                      # token fields: flat, T rows of equal width
+            out[k] = v.reshape(T, -1)[idx].reshape(-1)
+    off = batch["legal_offsets"].astype(np.int64)
+    counts = off[idx + 1] - off[idx]
+    new_off = np.concatenate([[0], np.cumsum(counts)]).astype(np.int64)
+    pos = np.arange(int(counts.sum()), dtype=np.int64) - np.repeat(new_off[:-1], counts)
+    out["legal_ids"] = batch["legal_ids"][np.repeat(off[idx], counts) + pos]
+    out["legal_offsets"] = new_off
+    return out

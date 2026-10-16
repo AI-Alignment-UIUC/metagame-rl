@@ -13,7 +13,7 @@
 'use strict';
 const { C, newStore, newState } = require('./engine.js');
 const { Rng } = require('./rng.js');
-const { turnOptions, promptSpace, AUTO_PROMPTS } = require('./legal.js');
+const { turnOptions, promptSpace, AUTO_PROMPTS, allSlots } = require('./legal.js');
 const { sameState } = require('./fingerprint.js');
 
 const MAX_STEPS = 5000;
@@ -21,6 +21,59 @@ const MAX_STEPS = 5000;
 // safety net for free cycles the no-op tests miss (Dark Dragonair's Evolutionary Light, used with no
 // pick, shuffled the deck, so its cycle never repeated a state; log #62). Normal turns are far shorter.
 const MAX_TURN_STEPS = 250;
+
+// The action history (log #76): one entry per step, { p: the player who acted, t: the game turn, pr: true if it
+// answered a prompt, v: a verb of env/tokens.js VERB, c: the card it names (full name) or null }. env/tokens.js turns
+// the recent entries into tokens (the opponent's prompt answers without their card, which may be hidden).
+function historyEntry(state, d, key) {
+  const me = state.players.find(p => p.id === d.playerId);
+  const [verb, a, b] = key.split('|');
+  const name = card => (card ? card.fullName : null);
+  const active = me ? name(me.active.getPokemonCard()) : null;
+  const e = { p: d.playerId, t: state.turn, pr: !!d.prompt, v: verb, c: null };
+  switch (verb) {
+    case 'attach': case 'basic': case 'evolve': case 'trainer': e.c = a; break;
+    case 'attack': case 'retreat': e.c = active; break;
+    case 'power':
+      if (b.startsWith('H') || b.startsWith('D')) e.c = b.slice(1);
+      else if (me) { const s = allSlots(state, me).find(x => x.code === b); e.c = s ? name(s.slot.getPokemonCard()) : null; }
+      break;
+    case 'stadium': e.c = name(C.StateUtils.getStadiumCard(state)); break;
+    case 'tip': e.c = a; break;
+    case 'res': e.v = a === 'yes' || a === 'no' || a === 'ok' ? 'res_' + a : b !== undefined ? 'res_attack' : 'res_select'; break;
+    case 'pick': {
+      const item = key.slice(5);
+      if (/^(o?[AB]\d?|E):(.+)>(o?[AB]\d?)$/.test(item)) e.v = 'pick_move_energy';
+      else if (/^(.+)>(o?[AB]\d?)$/.test(item)) e.v = /^o?[AB]\d?>/.test(item) ? 'pick_move_damage' : 'pick_attach';
+      else if (/^o?[AB]\d?$|^E$/.test(item)) e.v = 'pick_slot';
+      else { e.v = 'pick_card'; e.c = item === '?' ? null : item; }
+      break;
+    }
+    default: break;
+  }
+  return e;
+}
+
+// The same for an engine action played outside the option list (SimpleBot's seat).
+function engineHistoryEntry(state, action) {
+  const id = action.clientId !== undefined ? action.clientId : action.id;
+  const me = state.players.find(p => p.id === id) || state.players[state.activePlayer];
+  const prompt = state.prompts.find(p => p.result === undefined);
+  const e = { p: me ? me.id : 0, t: state.turn, pr: false, v: 'pass', c: null };
+  const active = me && me.active.getPokemonCard();
+  if (action instanceof C.ResolvePromptAction) { e.pr = true; e.v = 'res_ok'; if (prompt) e.p = prompt.playerId; }
+  else if (action instanceof C.PlayCardAction) {
+    const card = me && me.hand.cards[action.handIndex];
+    e.c = card ? card.fullName : null;
+    e.v = !card ? 'trainer' : card.superType === C.SuperType.ENERGY ? 'attach' : card.superType === C.SuperType.TRAINER ? 'trainer'
+      : card.evolvesFrom ? 'evolve' : 'basic';
+  } else if (action instanceof C.AttackAction) { e.v = 'attack'; e.c = active ? active.fullName : null; }
+  else if (action instanceof C.RetreatAction) { e.v = 'retreat'; e.c = active ? active.fullName : null; }
+  else if (action instanceof C.UseAbilityAction) e.v = 'power';
+  else if (action instanceof C.UseStadiumAction) e.v = 'stadium';
+  else if (action instanceof C.UseTrainerInPlayAction) { e.v = 'tip'; e.c = action.cardName || null; }
+  return e;
+}
 
 class Game {
   constructor(deckA, deckB, seed, { backup = false } = {}) {
@@ -37,6 +90,7 @@ class Game {
     this.deadEnds = [];      // [{ base, key }]: main-phase options found to lead only to a no-op cancel
     this.turnMark = { turn: -1, start: 0 };   // the step the current turn started at (MAX_TURN_STEPS)
     this.turnCapped = 0;     // main-phase decisions cut to 'pass' by MAX_TURN_STEPS
+    this.history = [];       // historyEntry per step
     this.dispatch(new C.AddPlayerAction(1, 'A', deckA));
     this.dispatch(new C.AddPlayerAction(2, 'B', deckB));
   }
@@ -146,6 +200,7 @@ class Game {
     this.cached = null;
     this.steps++;
     this.lastKey = (d.prompt ? d.prompt.type + ': ' : '') + opt.key;
+    this.history.push(historyEntry(this.state, d, opt.key));
     if (opt.pick !== undefined) {
       this.picks = this.picks.concat(opt.pick);
       this.pickedKeys = this.pickedKeys.concat(opt.key);
@@ -168,6 +223,7 @@ class Game {
   // Play an engine action chosen outside the option list (SimpleBot plays this way). Any
   // half-built prompt answer is dropped.
   applyEngineAction(action) {
+    this.history.push(engineHistoryEntry(this.state, action));
     this.cached = null;
     this.steps++;
     this.picks = [];
@@ -227,6 +283,7 @@ Game.prototype.clone = function (rng, viewer) {
   g.steps = this.steps;
   g.picks = []; g.pickedKeys = []; g.space = null; g.spaceFor = -1; g.cached = null; g.error = null; g.chain = null; g.deadEnds = [];
   g.turnMark = { ...this.turnMark }; g.turnCapped = this.turnCapped;
+  g.history = this.history.slice();
   if (viewer !== undefined) {
     for (const p of g.state.players) {
       const zones = p.id === viewer ? [p.deck, ...p.prizes] : [p.hand, p.deck, ...p.prizes];

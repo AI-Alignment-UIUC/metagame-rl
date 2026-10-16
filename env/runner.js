@@ -26,7 +26,12 @@ class Runner {
     this.showOpponentDecklist = showOpponentDecklist;
   }
 
-  async run(nextJob, agents, { record = new Set() } = {}) {
+  // onDecision(slot, answer, k), if given, sees every asked decision before it is played (the state is still the
+  // one decided in): answer is the agent's { action, logp, value }, k its index in rec (-1 if not recorded).
+  // A job with fromGame (a function returning a Game, e.g. a clone) starts from that game instead of a new deal,
+  // with decklists { 1, 2 }; with first (an option key) that option is played before any agent is asked
+  // (env/remote_worker.js qprobe). A job's tag is copied to its result.
+  async run(nextJob, agents, { record = new Set(), onDecision = null } = {}) {
     const enc = this.encoder;
     const rec = { obs: [], action: [], logp: [], value: [], reward: [], done: [], traj: [], legal: [], slot: [] };
     const results = [];
@@ -35,8 +40,20 @@ class Runner {
 
     const start = job => {
       const env = new Env(enc, { u8: true, showOpponentDecklist: this.showOpponentDecklist });
-      const usesEngine = [1, 2].some(s => agents[job.seats[s]].engine);
-      const t = env.reset(job.deckA, job.deckB, job.seed, { backup: usesEngine });
+      let t;
+      if (job.fromGame) {
+        env.game = job.fromGame();
+        env.decklists = job.decklists;
+        t = env.observe();
+        if (job.first !== undefined && !t.done) {
+          const j = env.current.options.findIndex(o => o.key === job.first);
+          if (j === -1) { env.game.error = new Error('option ' + job.first + ' not on offer in the copy'); t = env.observe(); }
+          else t = env.step(env.current.legal[j]);
+        }
+      } else {
+        const usesEngine = [1, 2].some(s => agents[job.seats[s]].engine);
+        t = env.reset(job.deckA, job.deckB, job.seed, { backup: usesEngine });
+      }
       return { job, env, t, id: jobCount++, last: { 1: -1, 2: -1 }, valueAt: { 1: null, 2: null } };
     };
     const fill = () => {
@@ -56,8 +73,13 @@ class Runner {
         rec.reward[i] = w === seat ? win : (w === 1 || w === 2) ? -1 : 0;
       }
       for (const a of Object.values(agents)) if (a.forget) a.forget(slot.env.game);
+      const left = seat => {             // prizes a seat still has to take at the end (rl/metagame.py margin)
+        const p = slot.env.game.state.players.find(q => q.id === seat);
+        return p ? p.prizes.reduce((a, z) => a + z.cards.length, 0) : 0;
+      };
       results.push({ seats: slot.job.seats, decks: [slot.job.deckName, slot.job.deckBName], seed: slot.job.seed,
-        winner: w, ending: slot.env.game.ending, turns: slot.env.game.state.turn,
+        winner: w, ending: slot.env.game.ending, turns: slot.env.game.state.turn, prizesLeft: { 1: left(1), 2: left(2) },
+        ...(slot.job.tag !== undefined ? { tag: slot.job.tag } : {}),
         ...(this.valueAtTurn ? { valueAt: slot.valueAt } : {}), steps: slot.t.steps, error: slot.t.error ? String(slot.t.error.message || slot.t.error) : undefined });
     };
 
@@ -100,6 +122,7 @@ class Runner {
           if (this.valueAtTurn && s.valueAt[s.t.playerId] === null && s.env.game.state.turn >= this.valueAtTurn) {
             s.valueAt[s.t.playerId] = out[i].value;
           }
+          if (onDecision) onDecision(s, out[i], keep ? rec.action.length : -1);
           if (keep) {
             const k = rec.action.length;
             rec.obs.push(s.t.obs);

@@ -47,21 +47,12 @@ def unpack_arrays(buf: bytes):
     return header, out
 
 
-class AgentView:
-    """One agent of an agent-conditioned network (rl/token_model.py n_agents, rl/league.py). Model slots
-    that are views of the same network are served together: one forward pass, each row with its own
-    agent id."""
-
-    def __init__(self, net, agent: int):
-        self.net, self.agent = net, int(agent)
-
-
 class RemotePool:
     def __init__(self, n: int):
         self.procs = [subprocess.Popen(["node", str(ROOT / "env" / "remote_worker.js")], cwd=ROOT,
                                        stdin=subprocess.PIPE, stdout=subprocess.PIPE, bufsize=0) for _ in range(n)]
         self.q = queue.Queue()
-        self.capture = None     # {worker: [(inputs, pooled)]} while set: slot 0's token inputs and pooled states
+        self.mem = {}           # (worker, key) -> memory state of a pilot with memory (token_model memory_step)
         self.pace = 0.0         # > 0: after each served batch, rest pace x its GPU time (0.25 holds the GPU to ~80%)
         for i, p in enumerate(self.procs):
             threading.Thread(target=self._reader, args=(i, p), daemon=True).start()
@@ -104,6 +95,7 @@ class RemotePool:
 
     def collect(self, msgs: list, models: dict, device: str) -> list:
         """One round of commands, serving inference for `models` ({slot: nn.Module}) meanwhile."""
+        self.mem = {}                                     # the models may have changed; no game spans rounds
         for i, m in enumerate(msgs):
             self.send_json(i, m)
         replies = [None] * len(msgs)
@@ -136,23 +128,17 @@ class RemotePool:
 
     @torch.no_grad()
     def _serve_batches(self, requests, models, device):
+        for i, _, a in requests:                          # finished games: drop their memory states
+            for uid in a.get("drop", ()):
+                self.mem.pop((i, 2 * int(uid)), None)
+                self.mem.pop((i, 2 * int(uid) + 1), None)
         by_slot = {}
         for r in requests:
-            m = models[r[1]["slot"]]
-            key = ("net", id(m.net)) if isinstance(m, AgentView) else ("slot", r[1]["slot"])
-            by_slot.setdefault((key, bool(r[1].get("greedy"))), []).append(r)
-        for (key, greedy), group in by_slot.items():
-            first = models[group[0][1]["slot"]]
+            by_slot.setdefault((r[1]["slot"], bool(r[1].get("greedy"))), []).append(r)
+        for (slot, greedy), group in by_slot.items():
+            model = models[slot]
             ns = [h["n"] for _, h, _ in group]
             B = sum(ns)
-            kw = {}
-            if isinstance(first, AgentView):
-                model = first.net
-                kw["agent"] = torch.from_numpy(np.concatenate(
-                    [np.full(h["n"], models[h["slot"]].agent, dtype=np.int64) for _, h, _ in group])).to(device)
-            else:
-                model = first
-            slot = group[0][1]["slot"]
 
             def cat(k):
                 return torch.from_numpy(np.concatenate([a[k] for _, _, a in group])).to(device)
@@ -160,15 +146,20 @@ class RemotePool:
             if group[0][1]["encoding"] == "tokens":
                 inputs = [cat(k) for k in TOKEN_INPUTS]
                 inputs = [x.view(B, -1) if k != "n_cand" else x for k, x in zip(TOKEN_INPUTS, inputs)]
-                if self.capture is not None and slot == 0:
-                    logits, value, pooled = model(*inputs, return_pooled=True, **kw)
-                    pooled, start = pooled.float().cpu().numpy(), 0
-                    for (i, h, a), n in zip(group, ns):
-                        self.capture.setdefault(i, []).append(
-                            ({k: a[k].reshape(n, -1) for k in TOKEN_INPUTS[:5]}, pooled[start:start + n]))
-                        start += n
+                # Tokens fill from the front and options are counted, so the batch is cut to its longest
+                # state and option list: the encoder's bounds (env/tokens.js) cost no compute here.
+                live = (inputs[1] > 0).long() * torch.arange(1, inputs[1].shape[1] + 1, device=device)
+                L = max(13, int(live.amax()))
+                M = max(1, int(inputs[6].max()))
+                inputs[:3] = [x[:, :L] for x in inputs[:3]]
+                inputs[5] = inputs[5][:, :M * 6]
+                if getattr(model, "memory", "none") != "none":
+                    keys = [(i, int(k)) for i, _, a in group for k in a["keys"]]
+                    logits, value, states = model(*inputs, mem_states=[self.mem.get(k) for k in keys])
+                    for k, st in zip(keys, states):
+                        self.mem[k] = st
                 else:
-                    logits, value = model(*inputs, **kw)
+                    logits, value = model(*inputs)
             else:
                 logits, value = model(cat("obs").view(B, -1))
             rows, cols, row = [], [], 0

@@ -1,0 +1,263 @@
+{
+ "checkpoint": "runs/meta-99/checkpoint.pt",
+ "iter": 87,
+ "decks": [
+  {
+   "id": 47,
+   "score": 0.7619,
+   "pokemon": 20,
+   "trainer": 15,
+   "basic_energy": 15,
+   "special_energy": 10
+  },
+  {
+   "id": 35,
+   "score": 0.6852,
+   "pokemon": 21,
+   "trainer": 16,
+   "basic_energy": 13,
+   "special_energy": 10
+  },
+  {
+   "id": 54,
+   "score": 0.6443,
+   "pokemon": 20,
+   "trainer": 15,
+   "basic_energy": 18,
+   "special_energy": 7
+  },
+  {
+   "id": 31,
+   "score": 0.6412,
+   "pokemon": 18,
+   "trainer": 17,
+   "basic_energy": 20,
+   "special_energy": 5
+  },
+  {
+   "id": 179,
+   "score": 0.6411,
+   "pokemon": 20,
+   "trainer": 15,
+   "basic_energy": 17,
+   "special_energy": 8
+  },
+  {
+   "id": 41,
+   "score": 0.6358,
+   "pokemon": 23,
+   "trainer": 15,
+   "basic_energy": 19,
+   "special_energy": 3
+  },
+  {
+   "id": 40,
+   "score": 0.6284,
+   "pokemon": 17,
+   "trainer": 15,
+   "basic_energy": 23,
+   "special_energy": 5
+  },
+  {
+   "id": 122,
+   "score": 0.6276,
+   "pokemon": 23,
+   "trainer": 11,
+   "basic_energy": 23,
+   "special_energy": 3
+  },
+  {
+   "id": 116,
+   "score": 0.6268,
+   "pokemon": 17,
+   "trainer": 15,
+   "basic_energy": 18,
+   "special_energy": 10
+  },
+  {
+   "id": 174,
+   "score": 0.625,
+   "pokemon": 20,
+   "trainer": 20,
+   "basic_energy": 17,
+   "special_energy": 3
+  },
+  {
+   "id": 176,
+   "score": 0.622,
+   "pokemon": 21,
+   "trainer": 17,
+   "basic_energy": 14,
+   "special_energy": 8
+  },
+  {
+   "id": 17,
+   "score": 0.6207,
+   "pokemon": 21,
+   "trainer": 12,
+   "basic_energy": 21,
+   "special_energy": 6
+  }
+ ],
+ "usage": {
+  "games": 600,
+  "decisions": 89602,
+  "with_trainer_playable": 59843,
+  "main_phase_with_trainer": 59843,
+  "trainer_chosen_share": 0.1455,
+  "mean_prob_on_trainers": 0.1662,
+  "chosen_instead": {
+   "attack": 18991,
+   "attach": 16768,
+   "basic": 6991,
+   "pass": 5222,
+   "evolve": 2088,
+   "retreat": 1077
+  },
+  "turn_ends": 29723,
+  "turn_ends_holding_playable_draw_trainer": 20389,
+  "per_card": [
+   {
+    "card": "Bill BS",
+    "playable": 29357,
+    "played": 1570,
+    "rate": 0.053,
+    "turn_ended_while_playable": 12317
+   },
+   {
+    "card": "Professor Oak BS",
+    "playable": 26303,
+    "played": 845,
+    "rate": 0.032,
+    "turn_ended_while_playable": 11141
+   },
+   {
+    "card": "Computer Search BS",
+    "playable": 17751,
+    "played": 480,
+    "rate": 0.027,
+    "turn_ended_while_playable": 7567
+   },
+   {
+    "card": "Energy Search FO",
+    "playable": 14203,
+    "played": 842,
+    "rate": 0.059,
+    "turn_ended_while_playable": 5745
+   },
+   {
+    "card": "Energy Retrieval BS",
+    "playable": 11843,
+    "played": 1343,
+    "rate": 0.113,
+    "turn_ended_while_playable": 4518
+   },
+   {
+    "card": "Energy Removal BS",
+    "playable": 10445,
+    "played": 2767,
+    "rate": 0.265,
+    "turn_ended_while_playable": 3319
+   },
+   {
+    "card": "Gambler FO",
+    "playable": 6874,
+    "played": 549,
+    "rate": 0.08,
+    "turn_ended_while_playable": 2685
+   },
+   {
+    "card": "Recycle FO",
+    "playable": 1973,
+    "played": 88,
+    "rate": 0.045,
+    "turn_ended_while_playable": 797
+   },
+   {
+    "card": "Impostor Professor Oak BS",
+    "playable": 1748,
+    "played": 20,
+    "rate": 0.011,
+    "turn_ended_while_playable": 770
+   },
+   {
+    "card": "Scoop Up BS",
+    "playable": 1388,
+    "played": 95,
+    "rate": 0.068,
+    "turn_ended_while_playable": 536
+   },
+   {
+    "card": "Challenge! TR",
+    "playable": 696,
+    "played": 33,
+    "rate": 0.047,
+    "turn_ended_while_playable": 298
+   },
+   {
+    "card": "The Boss's Way TR",
+    "playable": 576,
+    "played": 17,
+    "rate": 0.03,
+    "turn_ended_while_playable": 261
+   },
+   {
+    "card": "Nightly Garbage Run TR",
+    "playable": 290,
+    "played": 57,
+    "rate": 0.197,
+    "turn_ended_while_playable": 93
+   }
+  ]
+ },
+ "swap_added": [
+  4,
+  4,
+  6,
+  2,
+  5,
+  5
+ ],
+ "swap": {
+  "pilot": {
+   "original": [
+    0.5656,
+    0.5047,
+    0.5594,
+    0.45,
+    0.4633,
+    0.457
+   ],
+   "variant": [
+    0.5625,
+    0.4047,
+    0.4547,
+    0.4359,
+    0.4344,
+    0.2656
+   ],
+   "delta_mean": -0.0737,
+   "games_per_pair": 64
+  },
+  "simplebot": {
+   "original": [
+    0.575,
+    0.4425,
+    0.4875,
+    0.385,
+    0.5375,
+    0.42
+   ],
+   "variant": [
+    0.44,
+    0.35,
+    0.385,
+    0.355,
+    0.46,
+    0.32
+   ],
+   "delta_mean": -0.0896,
+   "games_per_deck": 200
+  }
+ }
+}

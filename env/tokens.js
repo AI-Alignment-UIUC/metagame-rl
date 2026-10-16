@@ -13,6 +13,9 @@
 //            HAND, MY_DISCARD, OPP_DISCARD, MY_UNSEEN (decklist minus visible), OPP_DECKLIST,
 //            STADIUM, PROMPT (cards listed by the open prompt), PICKED (picked so far):
 //            one token per distinct card, aux = number of copies
+//   then     with history = W > 0 (log #76): the action history of the last W turns, newest first, at most
+//            HIST_MAX: HIST_ME / HIST_OPP, card = the card the action names (0 for none, and for the opponent's
+//            prompt answers, which may pick hidden cards), aux = verb * 8 + turns ago (capped at 7)
 // Candidates (at most MAX_CAND), one per option, as [verb, card, slot1, slot2, name, extra]:
 //   slots 1..12 as above, 13 = an empty Bench slot, 14 = from hand, 15 = from discard; names are
 //   attack and Power names of the pool.
@@ -22,10 +25,17 @@ const path = require('path');
 const { C } = require('./engine.js');
 const { allSlots } = require('./legal.js');
 
-const MAX_TOK = 128;     // measured: mean 74, max 115 over 36k decisions
-const MAX_CAND = 48;    // measured: max 29 options
+// Upper bounds, not budgets: the player sees the whole state and every legal option (log #68). A state or
+// an option list past them ends the game as an engine error (env/env.js), never a silent cut. Measured:
+// tokens mean 74, max 115 on the archived decks, over 128 in 0.03% of decisions on built decks; options max
+// 29 on the archived decks, 39 on built ones, and a card search offers one option per distinct card name in
+// the zone (up to 60 + done + cancel). The GPU server trims each batch to its longest state and option list
+// (rl/remote.py), so the bounds cost padding only in the ONNX path.
+const MAX_TOK = 256;
+const MAX_CAND = 128;
 const KIND = { PAD: 0, GLOBAL: 1, SLOT: 2, UNDER: 3, ENERGY: 4, TOOL: 5, HAND: 6, MY_DISCARD: 7, OPP_DISCARD: 8,
-  MY_UNSEEN: 9, OPP_DECKLIST: 10, STADIUM: 11, PROMPT: 12, PICKED: 13 };
+  MY_UNSEEN: 9, OPP_DECKLIST: 10, STADIUM: 11, PROMPT: 12, PICKED: 13, HIST_ME: 14, HIST_OPP: 15 };
+const HIST_MAX = 32;
 const VERB = { pass: 1, attach: 2, basic: 3, evolve: 4, trainer: 5, retreat: 6, attack: 7, power: 8, stadium: 9, tip: 10,
   pick_card: 11, pick_slot: 12, pick_attach: 13, pick_move_energy: 14, pick_move_damage: 15, done: 16, cancel: 17,
   res_attack: 18, res_select: 19, res_yes: 20, res_no: 21, res_ok: 22 };
@@ -38,7 +48,10 @@ const PROMPT_TYPES = ['Choose cards', 'Choose pokemon', 'Choose energy', 'Attach
   'Move damage', 'Put damage', 'Order cards', 'Choose attack', 'Select', 'Confirm', 'Show cards', 'Alert'];
 const HASH = 8, MSG_HASH = 32;
 const SLOT_F = 1 + 1 + 1 + 1 + CONDITIONS.length + 1 + 1 + HASH + 1;   // 20
-const GLOB_F = 3 + 2 * (4 + 4 + HASH) + (PROMPT_TYPES.length + 1) + MSG_HASH + 1;   // 99
+const GLOB_F = 3 + 2 * (4 + 4 + HASH) + (PROMPT_TYPES.length + 1) + MSG_HASH + 1;   // 82
+// The glob bytes holding the deciding player's and the opponent's prizes left (8 per prize): the
+// potential of the prize shaping in rl/train.py shape_rewards, the env's one game-specific reward input.
+const PRIZE_GLOB = [3 + 3, 3 + (4 + 4 + HASH) + 3];
 
 function hash(s, n) {
   let h = 2166136261;
@@ -59,6 +72,7 @@ class TokenEncoder {
     this.nameId = new Map(this.names.map((n, i) => [n, i + 1]));
     this.numCards = table.length;
     this.MAX_TOK = MAX_TOK; this.MAX_CAND = MAX_CAND; this.SLOT_F = SLOT_F; this.GLOB_F = GLOB_F;
+    this.history = 0;        // turns of action history encoded (0 = none, as before log #76)
     this.sizes = { tokCard: MAX_TOK, tokKind: MAX_TOK, tokAux: MAX_TOK, glob: GLOB_F, slots: 12 * SLOT_F, cand: MAX_CAND * 6 };
   }
 
@@ -158,6 +172,18 @@ class TokenEncoder {
       for (const k of picked) m.set(k, (m.get(k) || 0) + 1);
       for (const [k, v] of m) push(k, KIND.PICKED, v);
     }
+    if (this.history > 0 && game.history) {
+      let h = 0;
+      for (let i = game.history.length - 1; i >= 0 && h < HIST_MAX; i--) {
+        const e = game.history[i];
+        const ago = turn - e.t;
+        if (ago >= this.history) break;
+        const mine = e.p === playerId;
+        const card = mine || !e.pr ? (e.c ? this.cardId.get(e.c) || 0 : 0) : 0;
+        push(card, mine ? KIND.HIST_ME : KIND.HIST_OPP, (VERB[e.v] || 0) * 8 + Math.min(Math.max(ago, 0), 7));
+        h++;
+      }
+    }
     out.nTok = n;
 
     // Candidates.
@@ -215,4 +241,4 @@ class TokenEncoder {
   }
 }
 
-module.exports = { TokenEncoder, KIND, VERB, MAX_TOK, MAX_CAND, SLOT_F, GLOB_F };
+module.exports = { TokenEncoder, KIND, VERB, MAX_TOK, MAX_CAND, SLOT_F, GLOB_F, PRIZE_GLOB, HIST_MAX };

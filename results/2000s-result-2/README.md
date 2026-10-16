@@ -1,5 +1,7 @@
 # 2000s result #2: tournaments of 3, 6 and 9 deck-owning agents
 
+> **Code.** The scripts this result ran (`rl/tournament.py`, `rl/league.py`, `rl/search.py`, …) were removed at log #65; they reproduce from the git tag `pre-simplify` (engine `3ee2238` for the runs, `c1cca1d` at the tag).
+
 **Question.** If agents each own a network and a deck, start from different random decks, redraft
 freely (up to 75% of the deck a round, with exploration) and play the decks they draft in a repeating
 tournament, what changes with the number of agents? And does anything like the human metagame of the

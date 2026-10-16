@@ -92,3 +92,53 @@ def archived_decks(pool: Pool) -> list:
 def overlap(a: np.ndarray, b: np.ndarray) -> float:
     """Card overlap of two decks: shared copies / 60 (1 = identical lists)."""
     return float(np.minimum(a, b).sum()) / DECK_SIZE
+
+
+def changed(a: np.ndarray, b: np.ndarray) -> int:
+    """Cards of a that are not in b (copies count), so 0 for the same list and 60 for disjoint ones."""
+    return DECK_SIZE - int(np.minimum(a, b).sum())
+
+
+def deck_shape(pool: Pool, v: np.ndarray) -> dict:
+    return {"pokemon": int(v[[c["id"] for c in pool.cards if c["superType"] == 1]].sum()),
+            "trainer": int(v[[c["id"] for c in pool.cards if c["superType"] == 2]].sum()),
+            "basic_energy": int(v[pool.basic_energy].sum()),
+            "special_energy": int(v[[c["id"] for c in pool.cards if c["superType"] == 3 and c["energyType"] != 0]].sum())}
+
+
+def random_deck(pool: Pool, rng) -> np.ndarray:
+    """A random legal deck from the format's rules alone (the 'flat' decks of log #52): a Dirichlet split
+    of 60 into Pokémon / limited cards (Trainers, Special Energy) / basic Energy, one Basic Pokémon, the
+    rest drawn uniformly from the allowed cards, so an evolution may come without its Basic. Nothing
+    coherent is built in."""
+    ok = [c for c in pool.cards if pool.allowed[c["id"]]]
+    basics = [c["id"] for c in ok if c["superType"] == 1 and c["stage"] == 2]
+    pokemon = [c["id"] for c in ok if c["superType"] == 1]
+    limited = [c["id"] for c in ok if c["superType"] == 2 or (c["superType"] == 3 and c["energyType"] != 0)]
+    energy = [c["id"] for c in ok if c["superType"] == 3 and c["energyType"] == 0]
+
+    def room(v, cid):
+        if pool.basic_energy[cid]:
+            return DECK_SIZE
+        return MAX_COPIES - int(pool.name_counts(np.where(pool.basic_energy, 0, v))[pool.name_of[cid]])
+
+    def fill(v, ids, n):
+        for _ in range(2000):
+            if n <= 0:
+                break
+            cid = ids[rng.integers(len(ids))]
+            k = min(int(rng.integers(1, 5)), room(v, cid), n)
+            v[cid] += k
+            n -= k
+
+    while True:
+        v = np.zeros(pool.n, dtype=np.int32)
+        share = rng.dirichlet([1.0, 1.0, 1.0])
+        v[basics[rng.integers(len(basics))]] += 1
+        fill(v, pokemon, max(1, int(round(share[0] * DECK_SIZE))) - 1)
+        fill(v, limited, min(int(round(share[1] * DECK_SIZE)), DECK_SIZE - int(v.sum())))
+        kinds = rng.choice(energy, size=int(rng.integers(1, 4)), replace=False)
+        for _ in range(DECK_SIZE - int(v.sum())):
+            v[kinds[rng.integers(len(kinds))]] += 1
+        if pool.legal(v):
+            return v
