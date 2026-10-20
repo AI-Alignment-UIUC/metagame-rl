@@ -2822,3 +2822,30 @@ Entry format:
   where the choice is drawn.
 - **Next:** Restart the lab with the new `rl/lab.py` before 360 (the running process cannot read `trainer_swing`). The
   320 milestone, lr2's decision at 320, and the floor cards from 320.
+
+### #110 · 2026-10-20 · A4 / A5 · Milestone 320: the lowest answer key of the lab, the best decks far from the human shape; the lab restarted for the new rule
+- **Done:** The 320 milestone ran on the deck-free main line (its first since the adoption at 290). At 03:10 the lab was
+  restarted with `rl.lab start`, so that the `trainer_swing` rule of #109 is in the running code before the floor cards'
+  decision at 360. The restart came after the milestone was saved, during the branches' segments to 320.
+- **Evidence:** Milestones (answer key under pilot-v2: mean / best; under SimpleBot; staples a deck; best overlap; the
+  main pilot on its own decks against SimpleBot; competence):
+
+  | at | pilot-v2 mean / best | SimpleBot | staples | overlap | own vs SimpleBot | competence |
+  |---|---|---|---|---|---|---|
+  | 160 | 0.480 / 0.659 | 0.532 | 4.83 | 0.533 | 0.902 | 0.434 (A/A, #96) |
+  | 200 | 0.681 / 0.731 | 0.588 | 4.17 | 0.517 | 0.954 | – |
+  | 240 | 0.478 / 0.520 | 0.617 | 3.08 | 0.450 | 0.922 | – |
+  | 280 | 0.464 / 0.621 | 0.616 | 3.25 | 0.483 | 0.926 | 0.480 |
+  | 320 | 0.340 / 0.408 | 0.532 | 2.42 | 0.367 | 0.947 | 0.472 |
+
+  At 320 the best decks' mean shape was 24.9 / 9.2 / 25.8 (distance 38.0 from the human medians; 17.8 at 280), with no
+  archetype at overlap 0.5. Competence parts at 320: search 0.451, disrupt 0.479, tempo 0.374, attack-won puzzles 0.893,
+  Trainer-first 0.557, PlusPower 0.500 (at 310: Trainer-first 0.680, s1 0.496, #108).
+- **Found:** (1) The deck rows are the worst the lab has measured: the lowest answer key (0.34 under pilot-v2, 0.53
+  under SimpleBot), the fewest staples (2.4) and the furthest shape (38). This follows the collapse into Colorless
+  Pokémon (#109). The pilot plays its own decks better than ever against SimpleBot (0.947), so the main line is
+  getting stronger on its own meta while moving away from the human one. (2) The Trainer-first puzzles at 310 (0.680)
+  did not hold (0.557 at 320). #108's reading was within the noise, as it said, and the competence score has not moved
+  since 160 (0.434 → 0.472, about one A/A bar). (3) By the plan's loop, the largest gap is now the drafting (Stage 2),
+  and its instability is now the main obstacle. The floor cards are the test of that.
+- **Next:** lr2 at 320; deep6 and deep8 first checks at 320; the floor cards from 320 to 360.

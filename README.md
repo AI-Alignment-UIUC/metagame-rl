@@ -153,11 +153,13 @@ its steadiest move toward the human shape (median Trainers 7 → 22 from 240 to 
 PlusPower puzzles); the lab's bookkeeping fragility recurred (it died with the session that started it, and two races
 silently dropped hand edits, lowering the competence bar from 0.06 to 0.03 with no decision affected), and all of it is fixed.
 
-**Recent (log #105–109):** At 290 the lab adopted Evan's deck-free board encoder, its first adopted architecture
+**Recent (log #105–110):** At 290 the lab adopted Evan's deck-free board encoder, its first adopted architecture
 change (+37, +21, +35 Elo on its three readings, even on the human lists), and with it a population near the human Trainer
 count, which then collapsed into Colorless Pokémon within 13 iterations (median Trainers 29 at 300, 8 at 313; Bill, Oak and
 the search Trainers out) because the draft head adds its one favourite card to every deck (incoming entropy 0.1–0.3 nats);
-the main line's median Trainers have swung by 7–22 in every 40-iteration window since 150. Every Stage 1 training-signal
+the main line's median Trainers have swung by 7–22 in every 40-iteration window since 150, and the 320 milestone has the
+lab's lowest answer key (0.34 under pilot-v2, 0.53 under SimpleBot) and best decks furthest from the human shape (38
+cards), while its pilot beats SimpleBot on its own decks more than ever (0.947). Every Stage 1 training-signal
 card failed: expert iteration in all three forms (its targets disagree with the pilot on 60–70% of probes and make the
 policy more random; exact won-the-game targets come up once in 1,194 probes), λ = 1 inside a turn, lasting prize shaping,
 entropy 0.02 (decided by its own rule after a rebase had dropped it, a bookkeeping bug now fixed), and slot binding grown
@@ -169,8 +171,8 @@ The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. Restart the lab with the new `rl/lab.py` before 360 (the running process cannot read the `trainer_swing` rule).
-2. The 320 milestone's scorecard; learning rate 2e-4 (`032-pilot-lr2`) decided at 320.
+1. Learning rate 2e-4 (`032-pilot-lr2`) decided at 320; the deeper pilots' first checks at 320.
+2. If the floor cards pass: a from-scratch check of the recipe (plan: every 3 adoptions), and drafting with a stronger pilot.
 3. A deeper pilot (`012-pilot-deep6`, `012-pilot-deep8`), decided at 340 on the competence score.
 4. The incoming-entropy floor (`013-meta-hin2`, `013-meta-hin3`), from 320, decided at 360 on Trainer stability.
 5. Evan's call on `008b-meta-practice10`; Phase B in parallel (verification, 2005 rules, card-text fixes).
