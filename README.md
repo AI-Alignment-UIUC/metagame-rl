@@ -56,17 +56,17 @@ gives a biased or blind builder, so pilot strength is the bottleneck.
 *Updated 2026-10-20.*
 
 **Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup matrix. Trained pilots
-beat SimpleBot (a human-free pilot plateaus near 83%), but every deck search, tournament and learned drafting loop through
-log #96 ended in decks unlike the human field, and with the human lists as ground truth (Evan) the cause found was the
-pilot: it does not set up before attacking, so every Trainer but Oak and Bill was worth less than an Energy to it, and the
-drafting followed it. In the lab (`rl/lab.py`), working the approved three-stage plan (`notes/plan-rediscovery.md`) with
-Evan's ideas first, the main line adopted his deck-free board encoder and a larger learning rate (both for strength), but
-none of 16 pilot changes has moved the pilot's Trainer competence (0.43–0.48 since 160), so the plan's stall rule has
-fired and a larger change waits on Evan. The decks came closest to the human field at 360 (one Trainer-heavy deck type
-with five staples, 11.5 cards from the human shape, 67% against the human lists under SimpleBot), after swinging between
-Trainer- and Pokémon-heavy shapes, then by 400 traded 7 Trainers for healing special Energy (10.5 Energy above the human
-median, 70% against the human lists) in a meta where most training games end by deck-out, and an entropy floor that
-steadies the decks costs the pilot 33 Elo. Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
+beat SimpleBot (a human-free pilot plateaus near 83%), but every deck search, tournament and learned drafting loop has
+ended in decks unlike the human field, and with the human lists as ground truth (Evan) the cause found was the pilot: it
+does not set up before attacking, so every Trainer but Oak and Bill is worth less than an Energy to it, and the drafting
+follows it. In the lab (`rl/lab.py`), working the approved three-stage plan (`notes/plan-rediscovery.md`) with Evan's
+ideas first, the main line adopted his deck-free board encoder and a larger learning rate (both for strength), but none
+of 16 pilot changes moved the pilot's Trainer competence (0.43–0.48 since 160), so the plan's stall rule fired and Evan
+chose a league: three draft heads sharing one pilot, under test as two cards decided at 480. The drafted population has
+held one deck type since 160, by a count that tells the human archetypes apart, and came closest to the human field at
+360 (11.5 cards from the human shape, 67% against the human lists under SimpleBot) before trading 7 Trainers for healing
+special Energy by 400 (10.5 Energy above the human median) in a meta where most training games end by deck-out. Phase B's
+engine plays two 2005 lists and passes a fuzz over 340 cards.
 
 **Earlier work:**
 
@@ -82,115 +82,35 @@ steadies the decks costs the pilot 33 Elo. Phase B's engine plays two 2005 lists
   #51, co-evolving the decks and one pilot over the full pool rediscovered Computer Search, Scyther,
   Oak, Energy Removal and Double Colorless Energy but collapsed to one deck type, so the metagame moved
   to a league of deck-owning agents with separate networks and a two-stage real-game adoption check.
-- **Log #57–64 (A5).** Tournaments of 3, 6 and 9 agents that each own a network and draft their own deck
-  ([2000s result #2](results/2000s-result-2/)) kept every deck type distinct with a 1–2 deck equilibrium,
-  after three free action cycles the environment missed were fixed and a per-turn decision cap added, but
-  recovered none of the human metagame (0/8 archetypes, 20% against the archived lists): the decks drifted
-  into Pokémon piles, partly because the drafting proposed cards by id (225 of 277 are Pokémon) and partly
-  because the pilots get little from Trainers. So the meta level is being rewritten as one learned
-  procedure (a draft head per agent trained on game results, PPO pilots with a fading prize signal), with
-  the old code kept at the `pre-simplify` tag, which now pins the engine the tournaments ran on.
-- **Log #65–72 (A5, A4).** The meta level became one loop, `rl/metagame.py` (the old tournament, league,
-  PSRO and value-search code kept only at the `pre-simplify` tag): per-agent draft heads froze, so 99 decks
-  share one pilot and one draft head that replaces cards in every draw, the worst decks are turned over, and
-  the pilot now sees every legal option; from random decks on the full pool it found a Wigglytuff /
-  Lickitung core with Double Colorless Energy, Energy Removal and Bill whose best decks broke even with the
-  24 archived lists under pilot-v2 (0.52, best 0.64, against result #2's 0.20), a measure that favours them
-  because pilot-v2 also leaves draw Trainers unplayed, a habit that forcing draws first shows is largely
-  right in the slow meta it built. Pilot work then moved from ablations to architecture changes, each trained
-  from scratch on that population's decks against two seeds of the base pilot: board cards tied to their
-  Pokémon (fixing attached-Energy counts the model misread), options compared with each other, each
-  attack's own rules text, and, at Evan's direction, a board encoder that never sees the deck and then
-  cross-attends to a separate deck encoder, so the game state has a deck-free representation. The first
-  screen stopped when the PC was shut down overnight, so it was restarted with 40 iterations per arm, scored
-  at the same iteration against the base pilot's two seeds; no result yet.
-- **Log #73–80 (A4).** About a dozen pilot changes (slot binding, a deck-free board encoder, options attending
-to each other, each attack's own text, hidden decklists, three value refits) separated from base by no more than the
-evaluation's own noise, and every 40-iteration variant won only 27–38% against SimpleBot on the archived lists
-(pilot-v2: 82%). A probe that plays options to the end found that the training signal at lambda 0.95 carries 56–75% of
-a move's effect but the value head's one-step change only 14–36%, which more value fitting does not fix (the refits
-overfit their 5,200 games), and since pilot-v2 had already shown that longer training plateaus near 83%, the queued
-short screens and a proposed long run were dropped. Pointed at Trainer decisions on the 24 human lists
-(`notes/scripts/credit_diag.py --focus trainer`), the probe found that the one-step signal carries a Trainer's average
-effect (0.41–0.54 of it, twice an average decision's share) but tells the situations that favour it apart poorly, that
-under sampled play draw Trainers are worth nothing extra while better timing of Energy Removal, Gust and PlusPower is
-worth 0.6–1.3 points a decision, and that with greedy follow-through every Trainer becomes worth timing better, most
-for the current recipe (all Trainers +1.3 against +0.35 sampled; Oak +1.4, Bill +0.7), so the pilot's own sampling
-after a Trainer erases most of its value, and a lower entropy weight, never tried, is the next arm.
-- **Log #81–88 (A4, A5).** Mostly greedy collection lost to plain continued training by 116 Elo while continued
-training cut the room for better Trainer timing from 1.3 to 0.4 points a decision, so the short screens had stopped too
-early, and the lab (`rl/lab.py`, `notes/plan-lab.md`) replaced them: the metagame loop itself trains as a main line from
-meta-99 at a third of the GPU, each change runs as a fork decided against it by a sequential test on drafted decks or by
-the answer key, and SimpleBot on both sides joined pilot-v2 as a panel of the drafted decks against the human lists (0.47,
-0.62 and 0.58 at meta-99's iterations 49, 99 and 149, 0.53 at the lab's 160). Its A/A cards showed that a fork with no
-change can end a segment 13 Elo weaker (a training spread of about 9 Elo), so a pilot change must show 20 Elo and a meta
-change 0.03 on the answer key, and a card's reading can swing by 40 Elo between its segments; the first adopted change is
-2 PPO epochs instead of 3 (not worse on drafted decks, +40 Elo on the human lists, 19% faster), auxiliary heads with
-game-general targets failed (−23 Elo), and value cross-attention, restarted after the adoption, passed its first check.
-Each new lab state exposed a bookkeeping bug (a branch never decided after a restart, a card forked before an adoption
-losing its control, a retest dropping its test), the first two fixed with a loop test, while the population's median deck kept
-swinging between Pokémon-, Trainer- and Energy-heavy shapes over tens of iterations.
-- **Log #89–96 (A4, A5, plan).** The lab adopted 6 swaps a draw and passed the result-only draft reward (whose first fork
-trained a pilot 30 Elo stronger), value cross-attention failed, and the main line's answer key swung with the pilot doing
-the judging (under pilot-v2 0.68 at 200 and 0.48 at 240, under SimpleBot 0.59 and 0.62) as its decks drifted from the
-human shape (best decks 20 / 11 / 29 Pokémon / Trainers / Energy against the human lists' 13.5 / 28 / 18). Taking the
-human lists as ground truth (Evan), every pilot built so far misplays every Trainer but Oak and Bill (basic Energy beats
-search, disruption and tempo Trainers even for pilots trained on the human lists) because it does not set up before
-attacking (PlusPower-then-attack lethals at random's 31%), with its inputs and the cards checked, and the drafting
-follows it with a collapsed incoming choice; play-time search over the same pilot to the end of the turn lifts
-Trainer-first lethals from 60% to 85–88%. Evan's ideas now go first and are tracked in `notes/evan-requests.md`:
-practice before a draw counts (seasons), memory and the deck-free encoder as held lab cards, and the approved
-`notes/plan-rediscovery.md`, three stages of three steps decided on a competence score (A/A bar 0.06), with expert
-iteration toward the turn search, turn-level credit and lasting prize shaping built and queued behind his cards.
-- **Log #97–104 (A4, A5).** Evan's ideas ran first in the lab: practice before a draw counts failed in seasons of 5,
-and in seasons of 10 it passed its answer-key rule while drafting further from the human shape (10 Trainers / 30 Energy
-against the main line's 19 / 25), so it is held for Evan and meta cards are now gated on deck shape. All three memory forms
-failed, the result-only draft reward was adopted, and the deck-free board encoder, warm-started with `rl/warmstart.py` after
-its deck-blind start was stopped, led by 21–37 Elo over two segments while its population reached the human median of 28
-Trainers (a lead over the main line about one A/A shape drift wide). Expert iteration toward the one-turn search at full
-weight taught Trainers-first play unconditionally (+10 points on those puzzles) and lost 79 Elo, because a search scored by
-the pilot's weak value at the end of the turn favours immediate plays over benching Pokémon, while the main line itself made
-its steadiest move toward the human shape (median Trainers 7 → 22 from 240 to 289, competence 0.437 → 0.480, mostly in the 16
-PlusPower puzzles); the lab's bookkeeping fragility recurred (it died with the session that started it, and two races
-silently dropped hand edits, lowering the competence bar from 0.06 to 0.03 with no decision affected), and all of it is fixed.
-- **Log #105–112 (A4, A5).** The lab adopted Evan's deck-free board encoder (warm-started, +37 / +21 / +35 Elo on its
-three readings, even on the human lists) and learning rate 2e-4 (+14 Elo), while every Stage 1 change to the training signal
-failed on the pilot's competence or strength: expert iteration toward a turn search in all three forms (its targets
-disagree with the pilot on 60–70% of probes and make the policy more random, and exact won-the-game targets come up once in
-1,194 probes), λ = 1 inside a turn, lasting prize shaping and entropy 0.02, so capacity (6 and 8 encoder layers grown as
-the identity, +14 Elo for 6 after one segment) is under test. The drafted population reached the human Trainer count
-only in passing: from one state at 300, the main line collapsed to 8 Trainers within 13 iterations (Oak and Bill out,
-Colorless Pokémon in; the 320 milestone measured it: answer key 0.34, best decks 38 cards from the human shape) while the
-learning-rate fork kept 23–29 and, adopted, went on at 8 / 32 / 19, which traces to a draft head whose incoming choice is
-collapsed (0.1–0.3 nats), so a floor on that choice's entropy, held by a sampling temperature after an entropy weight failed
-its test, is under test on a 40-iteration stability rule. Three more bookkeeping faults surfaced and were fixed (the lab
-died with its session, two races dropped hand edits, a rebase dropped a card's decision rule), each of which had silently
-changed or risked changing a decision rather than failing loudly.
+- **Log #57–120 (A4, A5, plan; rolled up from eight block summaries).** Tournaments of deck-owning agents
+  ([2000s result #2](results/2000s-result-2/)) kept their deck types distinct but drifted into Pokémon piles (0/8
+  archetypes), so the meta level became one learned loop, `rl/metagame.py` (99 decks sharing one pilot and one draft head
+  trained on game results, with turnover; the older code at the `pre-simplify` tag), whose first best decks broke even
+  with the human lists under pilot-v2. Pilot architecture screens stayed within their noise, and taking the human lists as
+  ground truth (Evan) traced the decks' distance from them to the pilot, which does not set up before attacking and so
+  values every Trainer but Oak and Bill below an Energy; the lab (`rl/lab.py`) then trained the loop as a main line whose
+  forks are decided against it on bars set by A/A cards, Evan's ideas first and then the approved three-stage plan. It
+  adopted 2 PPO epochs, 6 swaps a draw, the result-only draft reward, Evan's deck-free board encoder, learning rate 2e-4
+  and a slower draft head, but no pilot change (memory in three forms, expert iteration toward a turn search, in-turn
+  credit, entropy, depth, slot binding) moved Trainer competence from 0.43–0.48, practice before a draw counts failed on
+  deck shape, and the population held one deck type from 160 on while its shape swung (closest to the human lists at 360,
+  10.5 Energy above them at 400 in a deck-out meta), so when the plan's stall rule fired Evan chose a league of three
+  draft heads sharing one pilot; lab bookkeeping faults that silently changed or risked decisions recurred throughout and
+  were each fixed as found.
 
-**Recent (log #113–119):** The two milestones on the line adopted at 320 drafted one deck type, two Colorless walls (4
-Chansey / 4 Snorlax with Oak, Bill, Computer Search, Energy Removal and Double Colorless), which beats the human lists 67%
-at 360 and 70% at 400 under SimpleBot on both sides, the panel's best, but 28–29% under pilot-v2, which misplays its
-Trainers; by 400 it had swapped 7 search Trainers for healing special Energy (Potion and Full Heal Energy, played by 0 and 3
-of the 24 human lists), 10.5 Energy above the human median, a ground-truth warning that fits a meta where most training
-games end by deck-out because the pilots rarely take six prizes. A 3-nat floor on the draft head's incoming entropy held the
-decks' median Trainers within 3 over 40 iterations (main line 8) but cost the pilot 33 Elo, the 2-nat floor steadied
-nothing, and the deeper pilots and a warm-started slot binding failed, so none of the 16 pilot cards since the plan began
-has moved Trainer competence (0.43–0.48 since 160, 0.460 at 400), and the plan's stall rule has fired: small cards stop, and
-the choice of a larger change goes to Evan. A slower draft head (learning rate 3e-4), queued before the stall, was adopted at
-380 on weak evidence (the main line was itself calm in that window, the first ever within 5 Trainers, then moved 8 over
-360–399), and the plan's from-scratch check
-of the adopted recipe, restarted at a smaller micro-batch after running out of memory on random decks, runs as a lab slot.
+**Recent:** none yet (log #121 on).
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. Evan's choice of the larger change the stall rule calls for (log #116): a bigger pilot through distillation, a league,
-   or a different draft procedure; my recommendation is in the session report.
-2. The from-scratch check (`016-scratch-recipe-m`, from 380): measured every 40 of its iterations, done in about a day
-   (at its iteration 9, still in the random start where almost every game ends by deck-out).
-3. The 440 milestone: whether the healing special Energy stays, and the Energy count against the human median of 18.
-4. Evan's call on `008b-meta-practice10`; Phase B in parallel (verification, 2005 rules, card-text fixes).
+1. The league cards `017-meta-league3` (the main head plus two fresh ones) and `017-meta-league3-copy` (three copies),
+   from 400 and decided at 480, about 12 hours: deck types among the 12 best decks against the main line's 1, with each
+   head's shape and results along the way.
+2. The from-scratch check (`016-scratch-recipe-m`, from 380): at its iteration 18, measured every 40 of its iterations.
+3. The 440 milestone: whether the healing special Energy stays (Energy against the human median of 18), and the deck types.
+4. If neither league card passes: the other larger changes named by the stall rule (a bigger pilot through distillation,
+   a different draft procedure), with Evan. Phase B in parallel (verification, 2005 rules, card-text fixes).
 <!-- status:end -->
 
 ---

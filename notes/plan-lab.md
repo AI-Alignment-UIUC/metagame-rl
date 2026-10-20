@@ -62,7 +62,8 @@ held-out games: Worlds 2005 (Phase B), whose answer key no card may read, and Ma
 
 If the main line gains less than the A/A noise over three milestones in a row and the last five cards failed, the lab
 stops queueing small changes and moves to a larger one (a bigger pilot through distillation, a league, or a different
-draft procedure), and I report it.
+draft procedure), and I report it. It fired at 360 (log #116); Evan chose the league, three draft heads sharing one
+pilot, tested as `017-meta-league3` and `017-meta-league3-copy` on the deck types among the best decks (log #120).
 
 ## First cards
 

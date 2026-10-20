@@ -94,6 +94,15 @@ def overlap(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.minimum(a, b).sum()) / DECK_SIZE
 
 
+def pokemon_overlap(pool: Pool, a: np.ndarray, b: np.ndarray) -> float:
+    """Overlap of two decks' Pokémon: shared copies / the larger Pokémon count. Whole-list overlap does not tell the
+    human archetypes apart (their shared staples put Haymaker against Wigglytuff at a median 0.54, Wigglytuff against
+    itself at 0.57); on the Pokémon alone it is 0.35 against 0.56 (log #120)."""
+    m = np.zeros(len(a), dtype=bool)
+    m[[c["id"] for c in pool.cards if c["superType"] == 1]] = True
+    return float(np.minimum(a[m], b[m]).sum()) / max(a[m].sum(), b[m].sum(), 1)
+
+
 def changed(a: np.ndarray, b: np.ndarray) -> int:
     """Cards of a that are not in b (copies count), so 0 for the same list and 60 for disjoint ones."""
     return DECK_SIZE - int(np.minimum(a, b).sum())

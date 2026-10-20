@@ -35,7 +35,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from rl.decks import Pool, archived_decks, changed, random_deck
+from rl.decks import Pool, archived_decks, changed, pokemon_overlap, random_deck
 from rl.draft import LEAD, MY_UNSEEN, OPPONENT_LIST, SLOT, Drafter, deck_tokens, floor_temperature, random_changes, rloo
 from rl.model import IdentityMLP
 from rl.rollouts import concat, read_rollout, subset
@@ -606,6 +606,34 @@ def check_lab(failures, table, text, rng):
                                                   for i, x in ((9, 30), (10, 12), (11, 20), (12, 15), (13, 2))))
         if lab.trainer_swing(Path(tmp), 10, 13) != 8.0:
             failures.append(f"lab.trainer_swing {lab.trainer_swing(Path(tmp), 10, 13)}, want 8")
+        # deck types among the 12 best (log #120): 6 near a Haymaker list, 4 near a Wigglytuff list, 2 random singletons;
+        # 3 more near Rain Dance rank below the 12 and do not count. The 24 human lists in placing order make 3 types.
+        pool = Pool()
+        arch = archived_decks(pool)
+        near = lambda v, n: [random_changes(pool, v, 5, rng) for _ in range(n)]
+        decks = near(arch[0][1], 6) + near(arch[1][1], 4) + [random_deck(pool, rng) for _ in range(2)] + near(arch[16][1], 3)
+        pop = [{"deck": pool.names(v), "sum": 0.0, "n": 0, "last": 1.0 - i / 100} for i, v in enumerate(decks)]
+        torch.save({"population": pop}, Path(tmp, "pop.pt"))
+        ty = lab.deck_types(Path(tmp, "pop.pt"))
+        torch.save({"population": [{"deck": pool.names(v), "n": 0, "last": 1.0 - i / 100} for i, (_, v) in enumerate(arch)]},
+                   Path(tmp, "human.pt"))
+        ty_h = lab.deck_types(Path(tmp, "human.pt"), top=24)
+        po = [pokemon_overlap(pool, arch[a][1], arch[b][1]) for a, b in ((0, 1), (0, 16), (1, 16))]
+        if ty != 2 or ty_h != 3 or max(po) >= 0.5:
+            failures.append(f"lab.deck_types {ty} (want 2), human lists {ty_h} (want 3); Pokémon overlaps {po}")
+    # draft heads (log #120): dealt round-robin unless the source had as many; a head out of range or missing is redealt
+    from rl.metagame import assign_heads
+    p1 = [{} for _ in range(7)]
+    assign_heads(p1, 3, keep=False)
+    p2 = [{"head": h} for h in (2, 2, 0, 1)]
+    assign_heads(p2, 3, keep=True)
+    p3 = [{"head": 0}, {"head": 3}, {}]
+    assign_heads(p3, 3, keep=True)
+    p4 = [{"head": 0} for _ in range(4)]
+    assign_heads(p4, 2, keep=False)
+    if ([a["head"] for a in p1] != [0, 1, 2, 0, 1, 2, 0] or [a["head"] for a in p2] != [2, 2, 0, 1]
+            or [a["head"] for a in p3] != [0, 1, 2] or [a["head"] for a in p4] != [0, 1, 0, 1]):
+        failures.append(f"assign_heads {p1} {p2} {p3} {p4}")
     if lab.cli({"--a": 1, "--b": True, "--c": False, "--d": {"k": 2}}) != ["--a", "1", "--b", "--d", '{"k": 2}']:
         failures.append(f"lab.cli {lab.cli({'--a': 1, '--b': True, '--c': False, '--d': {'k': 2}})}")
     # growing a pilot: the policy is unchanged, additive new inputs start at 0, Adam's moments follow the names
@@ -686,7 +714,7 @@ def check_lab(failures, table, text, rng):
     with tempfile.TemporaryDirectory() as tmp:
         export_token_onnx(ax, str(Path(tmp) / "ax.onnx"))
     print(f"lab: llr = direct ({direct:.3f}), grows under H1 {up[0]:.1f} -> {up[1]:.1f}, H0 {down[0]:.1f} -> {down[1]:.1f}; "
-          f"pair scores, cli; grown pilot ({len(missing)} new weights, policy unchanged; 2 more blocks, joint and cross: unchanged), remap_adam, shares ok")
+          f"pair scores, cli, deck types, draft heads dealt; grown pilot ({len(missing)} new weights, policy unchanged; 2 more blocks, joint and cross: unchanged), remap_adam, shares ok")
 
 
 def check_lam_turn(failures):

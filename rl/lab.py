@@ -23,7 +23,9 @@ Cards (runs/lab/cards/*.json, taken in name order), written before their run, ne
          "test": "noninferior" (a change that saves time) tests H0 Elo <= -elo1 against H1 Elo >= 0 instead.
   meta   the answer key of both populations (rl/evaluate_agents.py: their best decks against the archived lists
          under the main line's pilot, the field staples they play, archetype overlap); the card's "rule"
-         ({"metric": "archived_mean", "min_gain": x}) decides; the pilot test is a gate (not clearly worse)
+         ({"metric": "archived_mean", "min_gain": x}; or "trainer_swing", the decks' stability; or "deck_types", the
+         deck types among the best decks; any of them with an "archived_floor" on the answer key) decides; the pilot
+         test is a gate (not clearly worse)
   aa     no change (or only --reseed): every test at full length and no decision; the noise a branch sees, from
          which elo1 and the meta rules' thresholds are set
   scratch the adopted recipe (main_args plus the card's args) from random decks and a fresh pilot, the plan's
@@ -304,6 +306,28 @@ def trainer_swing(run: Path, a: int, b: int) -> float:
     return float(max(med) - min(med)) if med else math.nan
 
 
+def deck_types(ckpt: Path, top: int = 12, link: float = 0.5) -> int:
+    """Deck types among a population's `top` best decks by recent results, picked as rl/evaluate_agents.py picks them:
+    best first, each deck joins the first type whose founding deck shares at least `link` of its Pokémon with it
+    (rl/decks.py pokemon_overlap), else it founds one; types of two decks or more are counted (log #120). The 24 human
+    lists, read the same way in placing order, make 3 types: 7 Haymaker-like, 9 Wigglytuff and 4 mixed."""
+    import torch
+    from rl.decks import Pool, pokemon_overlap
+    pool, st = Pool(), torch.load(ckpt, map_location="cpu", weights_only=False)
+    score = [a["sum"] / a["n"] if a.get("n") else a.get("last", 0.0) for a in st["population"]]
+    best = sorted(range(len(score)), key=lambda i: -score[i])[:top]
+    founders, size = [], []
+    for i in best:
+        v = pool.vector(st["population"][i]["deck"])
+        k = next((t for t, f in enumerate(founders) if pokemon_overlap(pool, f, v) >= link), None)
+        if k is None:
+            founders.append(v)
+            size.append(1)
+        else:
+            size[k] += 1
+    return sum(1 for n in size if n >= 2)
+
+
 PUZZLES = ROOT / "notes/data/puzzles/lethal.json"
 
 
@@ -466,6 +490,7 @@ def decide(c: dict, m: int, s: dict) -> dict:
         if final or k % s["milestone_every"] == 0:
             rung["meta"] = run_meta_eval(br, ref, LAB / "tmp" / f"meta_{c['id']}_{k:04d}.json", s, simplebot=True)
             rung["s1"] = run_s1(br, f"{c['id']}_{k:04d}", s)
+            rung["types"] = deck_types(br)
         if final:
             rung["status"] = "measured"
         return rung
@@ -508,11 +533,15 @@ def decide(c: dict, m: int, s: dict) -> dict:
         if rule["metric"] == "trainer_swing":                    # stability (log #109): the branch's swing against the
             rung["swing"] = sw = [trainer_swing(BRANCHES / c["id"], c["base"], m), trainer_swing(MAIN, c["base"], m)]
             gain = sw[1] - sw[0]                                 # main line's over the same iterations, smaller is better
-            ok = (sw[0] <= rule.get("max", math.inf) and gain >= rule["min_gain"]
-                  and (mb["archived_mean"] or 0) - (mm["archived_mean"] or 0) >= rule.get("archived_floor", -math.inf))
+            ok = sw[0] <= rule.get("max", math.inf) and gain >= rule["min_gain"]
+        elif rule["metric"] == "deck_types":                     # a league's aim (log #120): more deck types among the
+            rung["types"] = ty = [deck_types(br), deck_types(ref)]   # best decks than the main line has
+            gain = ty[0] - ty[1]
+            ok = gain >= rule["min_gain"]
         else:
             gain = (mb[rule["metric"]] or 0) - (mm[rule["metric"]] or 0)
             ok = gain >= rule["min_gain"]
+        ok = ok and (mb["archived_mean"] or 0) - (mm["archived_mean"] or 0) >= rule.get("archived_floor", -math.inf)
         rung["gain"] = round(gain, 4)
         # the plan reads drafting cards on deck shape too: the best decks may not move clearly away from the human shape
         rung["shape_loss"] = sl = round((mb.get("shape_dist") or 0) - (mm.get("shape_dist") or 0), 2)
@@ -549,7 +578,7 @@ def milestone(k: int, s: dict):
     if mm.get("error"):
         failed.write_text(str(tries + 1))
     s1 = run_s1(seg_path(k), f"main_{k:04d}", s)                 # the plan's pilot-competence row
-    event("milestone", at=k, **mm, s1=s1)
+    event("milestone", at=k, **mm, s1=s1, types=deck_types(seg_path(k)))
 
 
 def prune(m: int, s: dict):

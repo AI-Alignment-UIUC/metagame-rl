@@ -20,6 +20,11 @@ Every iteration:
 by PPO, but only the season's last iteration feeds the draft head (step 4), whose leave-one-out baseline then compares
 a deck's candidates after the same practice; at its end every deck moves to one of its candidates, chosen at random
 (step 5). A deck that turnover brings in mid-season draws its candidates at once. --season 1 is the loop above.
+--draft-heads K > 1 (log #120): a league of K draft heads sharing the one pilot. Every deck belongs to one head, which
+reads it, draws for it and learns from its games (steps 1, 2, 4, 5); all decks still play one another at random, and
+turnover replaces each head's worst decks within its own share, with mutants from its own best quarter (step 6). A
+source with fewer heads keeps its own as the first ones; the others start uniform (--draft-heads-init fresh) or as
+copies of its first head (copy), and the decks are dealt to the heads round-robin.
 Nothing human enters training: the archived lists and SimpleBot are for evaluation only
 (rl/evaluate_agents.py).
 
@@ -55,6 +60,13 @@ PPO = {"model": "tokens", "amp": True, "epochs": 3, "minibatch": 4096, "micro_ba
 MUTANT_SHARE, MUTANT_CHANGES = 0.25, 10
 
 
+def assign_heads(pop: list, K: int, keep: bool):
+    """Each deck's draft head: kept when the source had K heads (keep), else dealt round-robin by position."""
+    if not keep or any(a.get("head", K) >= K for a in pop):
+        for d, a in enumerate(pop):
+            a["head"] = d % K
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True)
@@ -72,6 +84,10 @@ def main(argv=None):
     ap.add_argument("--draft-h-in-floor", type=float, default=0.0,
                     help="a floor in nats on the entropy the incoming card is drawn with: a choice below it is drawn at "
                          "the temperature that reaches it (log #109)")
+    ap.add_argument("--draft-heads", type=int, default=1,
+                    help="draft heads, each drafting its share of the population with the one pilot (a league, log #120)")
+    ap.add_argument("--draft-heads-init", choices=["fresh", "copy"], default="fresh",
+                    help="heads a source does not have: uniform at the start (fresh) or copies of its first head (copy)")
     ap.add_argument("--draft-margin", type=float, default=0.5,
                     help="weight of the end-of-game prize margin in the draft head's reward (0 = result only)")
     ap.add_argument("--shaping", type=float, default=0.0, help="prize-shaping weight at iteration 0")
@@ -112,8 +128,8 @@ def main(argv=None):
                          "the played option if it is one of them), log #106")
     ap.add_argument("--stop-file", default="", help="end cleanly after the iteration in which this file appears")
     args = ap.parse_args(argv)
-    D = args.decks
-    assert D >= 2
+    D, K = args.decks, args.draft_heads
+    assert D >= 2 and K >= 1
 
     run = ROOT / args.run
     run.mkdir(parents=True, exist_ok=True)
@@ -141,7 +157,8 @@ def main(argv=None):
         load_grown(net, init["model"])
     net.eval()
     opt = torch.optim.Adam(net.parameters(), lr=args.lr, eps=1e-5)
-    drafter = Drafter(pool, c0["d"], c0["heads"], args.swaps, args.draft_lr, device, h_in_floor=args.draft_h_in_floor)
+    drafters = [Drafter(pool, c0["d"], c0["heads"], args.swaps, args.draft_lr, device, h_in_floor=args.draft_h_in_floor)
+                for _ in range(K)]
     targs = SimpleNamespace(**{**PPO, "ent": args.ent, "epochs": args.epochs, "micro_batch": args.micro_batch,
                                "aux": args.aux, "distill": args.distill})
 
@@ -158,8 +175,15 @@ def main(argv=None):
             opt.load_state_dict(fork["opt"])
         for g in opt.param_groups:                       # --lr wins over the saved one (a lab card may change it)
             g["lr"] = args.lr
-        drafter.load(src["drafter"])
+        src_heads = src.get("drafters") or [src["drafter"]]
+        assert len(src_heads) <= K, f"the source has {len(src_heads)} draft heads, more than --draft-heads {K}"
+        for h, dr in enumerate(drafters):
+            if h < len(src_heads):
+                dr.load(src_heads[h])
+            elif args.draft_heads_init == "copy":
+                dr.load(src_heads[0])
         pop = [{**a, "deck": pool.vector(a["deck"])} for a in src["population"]]
+        assign_heads(pop, K, keep=len(src_heads) == K)
         next_id, start = src["next_id"], src["iter"] + 1
         rng.bit_generator.state = src["rng"]
         deal_seed = src.get("deal_seed", args.seed)
@@ -173,8 +197,10 @@ def main(argv=None):
     if not (st or fork):
         pop = [{"id": i, "deck": random_deck(pool, rng), "born": 0, "parent": None, "kind": "initial", "sum": 0.0, "n": 0}
                for i in range(D)]
+        assign_heads(pop, K, keep=False)
         next_id = D
     D = len(pop)                                         # a fork or resume keeps its own population size
+    assert D >= K, f"{D} decks for {K} draft heads"
     log = open(run / "log.jsonl", "a")
 
     try:
@@ -190,13 +216,13 @@ def main(argv=None):
             for d in range(D):
                 others = [e for e in range(D) if e != d]
                 field = [pop[e]["deck"] for e in rng.choice(others, min(args.field_sample, len(others)), replace=False)]
-                views.append(drafter.view(net, pop[d]["deck"], field))
+                views.append(drafters[pop[d]["head"]].view(net, pop[d]["deck"], field))
             t1 = time.time()
             # 2. games: random pairs, a fresh draw for each side (in a season: one of the side's candidates)
             if season:
                 for d in range(D):
                     if pop[d]["id"] not in cands:
-                        cands[pop[d]["id"]] = [drafter.sample(views[d], rng) for _ in range(args.candidates)]
+                        cands[pop[d]["id"]] = [drafters[pop[d]["head"]].sample(views[d], rng) for _ in range(args.candidates)]
             shards = [{"decks": [], "jobs": []} for _ in range(args.workers)]
             games_meta, draws = {}, {}
             rec_share = 0.0 if args.freeze_pilot else min(1.0, args.record / max(args.games, 1))
@@ -209,7 +235,7 @@ def main(argv=None):
                         held = cands[pop[a]["id"]]
                         draws[g, a] = held[int(rng.integers(len(held)))]
                     else:
-                        draws[g, a] = drafter.sample(views[a], rng)
+                        draws[g, a] = drafters[pop[a]["head"]].sample(views[a], rng)
                     sh["decks"].append({"name": f"g{g}d{a}", "cards": pool.names(draws[g, a]["deck"])})
                 i = len(sh["decks"]) - 2
                 sh["jobs"].append({"i": i, "j": i + 1, "iSeat": k_seat, "seed": seed, "rec": bool(rng.random() < rec_share)})
@@ -287,23 +313,25 @@ def main(argv=None):
                     per[a]["samples"].append(draws[g, a])
                     per[a]["z"].append(z)
                     per[a]["margin"].append(m)
-            batch_d, z_iter = [], np.full(D, np.nan)
+            batch_d, z_iter = [[] for _ in range(K)], np.full(D, np.nan)      # each head learns from its own decks
             for d in range(D):
                 if not per[d]["z"]:
                     continue
                 z, m = np.array(per[d]["z"]), np.array(per[d]["margin"])
                 if counted:
-                    batch_d.append((views[d], per[d]["samples"], rloo(z + args.draft_margin * m, np.zeros(len(z)))))
+                    batch_d[pop[d]["head"]].append((views[d], per[d]["samples"], rloo(z + args.draft_margin * m, np.zeros(len(z)))))
                 z_iter[d] = z.mean()
                 pop[d]["sum"] += float(z.sum())
                 pop[d]["n"] += len(z)
-            draft = drafter.update(batch_d, args.draft_ent) if counted else {}
+            parts = [dr.update(b, args.draft_ent) for dr, b in zip(drafters, batch_d)] if counted else []
+            draft = (parts[0] if K == 1 else {**{q: round(float(np.mean([p[q] for p in parts])), 4) for q in parts[0]},
+                                              "heads": parts}) if parts else {}
             t5 = time.time()
 
             # 5. every population deck moves to one more draw (in a season, at its end: to one of its practised candidates)
             if not season:
                 for d in range(D):
-                    pop[d]["deck"] = drafter.sample(views[d], rng)["deck"]
+                    pop[d]["deck"] = drafters[pop[d]["head"]].sample(views[d], rng)["deck"]
             elif counted:
                 for d in range(D):
                     held = cands[pop[d]["id"]]
@@ -314,18 +342,21 @@ def main(argv=None):
             turnover = []
             if args.turnover_every and (it + 1) % args.turnover_every == 0:
                 score = np.array([a["sum"] / a["n"] if a["n"] else 0.5 for a in pop])
-                order = np.argsort(score)
-                top = order[-max(1, D // 4):]
-                for d in order[:int(round(args.turnover * D))]:
-                    if rng.random() < MUTANT_SHARE:
-                        p = int(rng.choice(top))
-                        new = {"deck": random_changes(pool, pop[p]["deck"], MUTANT_CHANGES, rng), "parent": pop[p]["id"],
-                               "kind": "mutant"}
-                    else:
-                        new = {"deck": random_deck(pool, rng), "parent": None, "kind": "random"}
-                    turnover.append({"out": pop[d]["id"], "score": round(float(score[d]), 4), "in": next_id, "kind": new["kind"]})
-                    pop[d] = {"id": next_id, "born": it + 1, "sum": 0.0, "n": 0, **new}
-                    next_id += 1
+                for h in range(K):                               # each head's share, so a head is never crowded out
+                    mine = np.array([d for d in range(D) if pop[d]["head"] == h])
+                    order = mine[np.argsort(score[mine])]
+                    top = order[-max(1, len(mine) // 4):]
+                    for d in order[:int(round(args.turnover * len(mine)))]:
+                        if rng.random() < MUTANT_SHARE:
+                            p = int(rng.choice(top))
+                            new = {"deck": random_changes(pool, pop[p]["deck"], MUTANT_CHANGES, rng), "parent": pop[p]["id"],
+                                   "kind": "mutant"}
+                        else:
+                            new = {"deck": random_deck(pool, rng), "parent": None, "kind": "random"}
+                        turnover.append({"out": pop[d]["id"], "score": round(float(score[d]), 4), "in": next_id,
+                                         "kind": new["kind"], **({"head": h} if K > 1 else {})})
+                        pop[d] = {"id": next_id, "born": it + 1, "sum": 0.0, "n": 0, "head": h, **new}
+                        next_id += 1
                 for a, sc in zip(pop, score):                    # a fresh window for everyone
                     if a["born"] <= it:
                         a["last"] = round(float(sc), 4)          # the window's result, for rl/evaluate_agents.py
@@ -346,7 +377,12 @@ def main(argv=None):
                    "z": [None if np.isnan(x) else round(float(x), 3) for x in z_iter],
                    "ids": [a["id"] for a in pop], "shapes": shapes.tolist(),
                    "best": [{"id": pop[d]["id"], "z": round(float(z_iter[d]), 3), "kind": pop[d]["kind"], "born": pop[d]["born"],
-                             **deck_shape(pool, pop[d]["deck"]), **drafter.summary(views[d])} for d in best],
+                             **({"head": pop[d]["head"]} if K > 1 else {}),
+                             **deck_shape(pool, pop[d]["deck"]), **drafters[pop[d]["head"]].summary(views[d])} for d in best],
+                   **({"heads": [{"decks": len(mine), "z": round(float(np.nanmean(z_iter[mine])), 3) if mine else None,
+                                  "median": np.median(shapes[mine], 0).tolist() if mine else None}
+                                 for mine in ([d for d in range(D) if pop[d]["head"] == h] for h in range(K))]}
+                      if K > 1 else {}),
                    "turnover": turnover,
                    "seconds": {"read": round(t1 - t0, 1), "draw": round(t2 - t1, 1), "play": round(t3 - t2, 1),
                                "ppo": round(t4 - t3, 1), "draft": round(t5 - t4, 1), "total": round(time.time() - t0, 1)}}
@@ -359,7 +395,8 @@ def main(argv=None):
                                       for b in row["best"])
                   + (f"; turnover {len(turnover)}" if turnover else ""), flush=True)
 
-            state = {"net": net.state_dict(), "opt": opt.state_dict(), "drafter": drafter.state(), "config": net.config(),
+            state = {"net": net.state_dict(), "opt": opt.state_dict(), "drafter": drafters[0].state(),
+                     **({"drafters": [dr.state() for dr in drafters]} if K > 1 else {}), "config": net.config(),
                      "population": [{**a, "deck": pool.names(a["deck"])} for a in pop], "next_id": next_id,
                      "iter": it, "round": it, "rng": rng.bit_generator.state, "deal_seed": deal_seed,
                      "season": {"cands": cands} if season else None,
@@ -368,7 +405,8 @@ def main(argv=None):
             torch.save(state, tmp)
             os.replace(tmp, ckpt)
             if args.save_every and (it + 1) % args.save_every == 0:
-                torch.save({k: state[k] for k in ("net", "drafter", "config", "population", "agents", "iter", "round")},
+                torch.save({k: state[k] for k in ("net", "drafter", "drafters", "config", "population", "agents", "iter", "round")
+                            if k in state},
                            run / f"population_it{it:04d}.pt")
             for f in run.glob("rollout_w*.bin"):
                 f.unlink(missing_ok=True)

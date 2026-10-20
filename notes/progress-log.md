@@ -3067,3 +3067,45 @@ Entry format:
   160, so the stall rule stays fired and no small cards are queued.
 - **Next:** Evan's choice of the larger change (#116). The scratch check (at its iteration 9: median 42 / 9 / 8, 97% of
   games by deck-out, as at #71's random start, where deck-outs fell from 92% to 7% by iteration 24). The 440 milestone: whether the healing Energy stays.
+
+### #120 · 2026-10-20 · A5 · Evan chose the league: 3 draft heads sharing one pilot, as two cards; `008b` closed; a deck-type count
+- **Done:** Evan approved both recommendations of #119's report ("Sure do that"). (1) Closed `008b-meta-practice10` as
+  failed on deck shape (`closed_note` in its card). (2) `rl/metagame.py --draft-heads K`: a league of K draft heads
+  sharing the one pilot. Every deck belongs to one head, which reads it, draws for it and learns only from its games.
+  All decks still play one another at random. Turnover replaces each head's worst decks within its own share, with
+  mutants from its own best quarter, so no head is crowded out. A source with fewer heads keeps its own as the first
+  ones. The rest start uniform (`--draft-heads-init fresh`) or as copies of its first head (`copy`), and the decks are
+  dealt to the heads round-robin (`assign_heads`). Log rows gain `heads` (each head's decks, mean result, median shape)
+  and per-head draft statistics. Checkpoints gain `drafters`. With K = 1 the loop and its random draws are as before, and
+  its decks carry head 0. (3) `rl/decks.py pokemon_overlap` and `rl/lab.py deck_types`: deck types among the 12 best decks, picked as
+  `rl/evaluate_agents.py` picks them. Best first, each deck joins the first type whose founding deck shares at least
+  half of its Pokémon, and types of two decks or more count. Milestones and scratch rungs record it, and a meta rule
+  can decide on it (`"metric": "deck_types"`). `archived_floor` now applies to any meta rule. (4) Paused the lab with
+  its STOP file at 15:01 so that no segment would start on half-written code (it stopped at 15:02, with the scratch run
+  after its iteration 17), then restarted it at 15:07. (5) Queued `017-meta-league3` (head 0 the main line's, heads 1
+  and 2 fresh) and `017-meta-league3-copy` (all three copies), 8 segments each. Rule: at least 1 more deck type than
+  the main line, the answer key under the main line's pilot no more than 0.03 worse, and the shape and pilot gates.
+- **Evidence:** `rl.tests` PASS, with the new checks: 2 deck types on a made-up population (6 near a Haymaker list,
+  4 near a Wigglytuff list, 2 random, 3 near Rain Dance ranked 13th to 15th), 3 on the 24 human lists, and
+  `assign_heads`. Overlap of the human lists, whole list against Pokémon only: Haymaker against Wigglytuff median 0.54
+  (max 0.73) against 0.35 (max 0.56); within Haymaker 0.65 against 0.54; within Wigglytuff 0.57 against 0.56. At a
+  0.5 link, the whole-list reading puts 20 of the 24 lists in one type. The Pokémon reading makes 3 types: 7
+  Haymaker-like (one Sponge), 9 Wigglytuff and 4 mixed, plus 4 singletons. `deck_types` on the lab's checkpoints: the
+  main line at 160–400, 14 states, 1 each except 2 at 290 (before deckcross-w, mid-switch); the 12 meta and A/A branch
+  states, 1 each. The draft head at 400: incoming bias at most 0.13 (s.d. 0.02), context weight norm 5.10. Smoke test
+  (a fork of the main line at 400 with 3 fresh heads; 200 games an iteration, turnover every iteration, 2 iterations
+  and a resume for a third):
+  - **Heads:** 33 / 33 / 33 decks. Incoming entropy: head 0 0.07 → 0.16 nats, heads 1 and 2 5.59–5.60 (uniform).
+    Context weight norms 5.11 / 0.12 / 0.12. Each head turned over 5 decks at every turnover.
+  - **After one iteration:** the fresh heads' median decks were 13 / 21 / 26 and 12 / 22 / 25, against head 0's
+    8 / 23 / 28; results 0.38 and 0.46, against 0.68.
+  - **Resume and K = 1:** the resume kept all 84 surviving decks on their heads. A one-head fork wrote no `drafters`,
+    no `heads` rows and no head in its turnover records.
+- **Found:** (1) The main line has held one deck type for 240 iterations by a reading that tells the human archetypes
+  apart. That is the gap the league is aimed at: the plan's target is at least 3. (2) Whole-list overlap cannot
+  measure it, because the human archetypes share their staples. The answer key's `archetypes_at_half` uses whole-list
+  overlap and so reads any staple-heavy deck as near Haymaker. (3) The main head's collapse is in its context weights,
+  not its bias, so copies of it start out drafting alike. So the fresh variant is the main test, and the copy variant
+  is the control: it shows whether splitting alone is enough.
+- **Next:** The two league cards, decided at 480 (about 12 hours: four runs a cycle). The scratch check. The 440
+  milestone.
