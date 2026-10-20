@@ -64,7 +64,9 @@ Evan's ideas first, the main line adopted his deck-free board encoder and a larg
 none of 16 pilot changes has moved the pilot's Trainer competence (0.43–0.48 since 160), so the plan's stall rule has
 fired and a larger change waits on Evan. The decks came closest to the human field at 360 (one Trainer-heavy deck type
 with five staples, 11.5 cards from the human shape, 67% against the human lists under SimpleBot), after swinging between
-Trainer- and Pokémon-heavy shapes, and an entropy floor that steadies them costs the pilot 33 Elo. Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
+Trainer- and Pokémon-heavy shapes, then by 400 traded 7 Trainers for healing special Energy (10.5 Energy above the human
+median, 70% against the human lists) in a meta where most training games end by deck-out, and an entropy floor that
+steadies the decks costs the pilot 33 Elo. Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
 
 **Earlier work:**
 
@@ -165,15 +167,18 @@ its test, is under test on a 40-iteration stability rule. Three more bookkeeping
 died with its session, two races dropped hand edits, a rebase dropped a card's decision rule), each of which had silently
 changed or risked changing a decision rather than failing loudly.
 
-**Recent (log #113–118):** The 360 milestone, the first on the line adopted at 320, is the most human-like meta yet by
-shape and staples (12 best decks of one Trainer-heavy type, 4 Chansey / 4 Snorlax with Oak, Bill, Computer Search, Energy
-Removal and Double Colorless; 11.5 cards from the human shape) and beats the human lists 67% under SimpleBot on both sides,
-but 28% under pilot-v2, which misplays those Trainers. A 3-nat floor on the draft head's incoming entropy held the
+**Recent (log #113–119):** The two milestones on the line adopted at 320 drafted one deck type, two Colorless walls (4
+Chansey / 4 Snorlax with Oak, Bill, Computer Search, Energy Removal and Double Colorless), which beats the human lists 67%
+at 360 and 70% at 400 under SimpleBot on both sides, the panel's best, but 28–29% under pilot-v2, which misplays its
+Trainers; by 400 it had swapped 7 search Trainers for healing special Energy (Potion and Full Heal Energy, played by 0 and 3
+of the 24 human lists), 10.5 Energy above the human median, a ground-truth warning that fits a meta where most training
+games end by deck-out because the pilots rarely take six prizes. A 3-nat floor on the draft head's incoming entropy held the
 decks' median Trainers within 3 over 40 iterations (main line 8) but cost the pilot 33 Elo, the 2-nat floor steadied
 nothing, and the deeper pilots and a warm-started slot binding failed, so none of the 16 pilot cards since the plan began
-has moved Trainer competence (0.43–0.48 since 160), and the plan's stall rule has fired: small cards stop, and the choice of
-a larger change goes to Evan. A slower draft head (learning rate 3e-4), queued before the stall, was adopted at 380 on weak
-evidence (the main line was itself calm in that window, the first ever within 5 Trainers), and the plan's from-scratch check
+has moved Trainer competence (0.43–0.48 since 160, 0.460 at 400), and the plan's stall rule has fired: small cards stop, and
+the choice of a larger change goes to Evan. A slower draft head (learning rate 3e-4), queued before the stall, was adopted at
+380 on weak evidence (the main line was itself calm in that window, the first ever within 5 Trainers, then moved 8 over
+360–399), and the plan's from-scratch check
 of the adopted recipe, restarted at a smaller micro-batch after running out of memory on random decks, runs as a lab slot.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
@@ -182,8 +187,9 @@ The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 1. Evan's choice of the larger change the stall rule calls for (log #116): a bigger pilot through distillation, a league,
    or a different draft procedure; my recommendation is in the session report.
-2. The from-scratch check (`016-scratch-recipe-m`, from 380): measured every 40 of its iterations, done in about a day.
-3. The 400 milestone: whether the main line's decks stay calm (within 5 Trainers over 40 iterations).
+2. The from-scratch check (`016-scratch-recipe-m`, from 380): measured every 40 of its iterations, done in about a day
+   (at its iteration 9, still in the random start where almost every game ends by deck-out).
+3. The 440 milestone: whether the healing special Energy stays, and the Energy count against the human median of 18.
 4. Evan's call on `008b-meta-practice10`; Phase B in parallel (verification, 2005 rules, card-text fixes).
 <!-- status:end -->
 

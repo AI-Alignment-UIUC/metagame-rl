@@ -3034,3 +3034,36 @@ Entry format:
   margin is within the drift. It is adopted as a small, general change that its rule accepted. (2) The main line's calm
   since 340 follows the line adopted at 320. Whether the drafting has settled or only paused, the next windows will show.
 - **Next:** The scratch check from 380 (160 of its iterations). The 400 milestone. Evan's choice of the larger change.
+
+### #119 · 2026-10-20 · A5 · Milestone 400: the same deck type swaps 7 Trainers for healing special Energy; 10.5 Energy above the human median
+- **Done:** The lab's 400 milestone on the main line (the recipe adopted through `015-meta-draftlr3`). Read the 12 best decks
+  from `runs/lab/main/seg_0400.pt`, the median deck shape of every training iteration from 250 to 399, and the 24 archived
+  lists' use of the cards that came in.
+- **Evidence:** Milestone 400 against 360 (#114):
+
+  | at | pilot-v2 mean / best | SimpleBot both sides | staples | overlap | shape (P / T / E), distance | own vs SimpleBot | competence |
+  |---|---|---|---|---|---|---|---|
+  | 360 | 0.280 / 0.305 | 0.668 | 5.0 | 0.433 | 8.0 / 29.0 / 23.0, 11.5 | 0.971 | 0.447 |
+  | 400 | 0.286 / 0.335 | **0.704** | 5.0 | 0.467 | 7.9 / 23.6 / **28.5**, 20.5 | 0.978 | 0.460 |
+
+  Mean of the 12 best decks at 400: 17.0 Psychic Energy, 4 Double Colorless Energy, 3.9 Potion Energy, 3.5 Full Heal Energy;
+  4 Snorlax, 3.9 Chansey; 4 each of Computer Search, Energy Removal and Professor Oak, 3.9 Gambler, 3.8 Bill, 2.0 Energy
+  Retrieval, 1.8 Nightly Garbage Run. Against 360's best deck: Energy Search 4 → 0, Energy Retrieval 4 → 2, Nightly
+  Garbage Run 3 → 2, Potion Energy 0 → 4, Full Heal Energy 0 → 4; Psychic Energy 17 → 16–19. Each of the 12 decks scores
+  0.65–0.75 against the human lists under SimpleBot on both sides. Archived lists: Potion Energy in 0 of 24, Full Heal Energy
+  in 3, Energy Search in 0, Double Colorless Energy in 23. Range of the population's median Trainers: 360–399 8,
+  380–399 4 (340–379 5). Median shape by training iteration: 359 8 / 29 / 22, 379 8 / 26 / 26, 389 8 / 23 / 29, 399
+  8 / 24 / 28. Training games ending by deck-out: 40–61% at every fifth iteration since 334, 61% at 399 (prizes 30%).
+  Competence parts: search 0.429, disrupt 0.471, tempo 0.352, attack-won 0.924, Trainer-first 0.608, PlusPower 0.438.
+- **Found:** (1) The main line did not stay within 5 Trainers over 40 iterations (8), but the deck type held. The drop in
+  Trainers is a swap of card function, not a new deck. Two healing special Energy replaced the Energy search and recovery
+  Trainers: Potion Energy removes a damage counter when attached, and Full Heal Energy cures a Special Condition. Basic
+  Energy stayed at 17, so the 10.5 Energy above the human median of 18 is special Energy. The shape distance counts
+  it as Energy. (2) By the ground-truth rule this is still a sign the drafting or the playing is off. No human list plays
+  Potion Energy. Most training games end by deck-out, not prizes, so healing on two Colorless walls pays here because the
+  pilots rarely take six prizes against them. The pilot's competence at finishing games is still the bottleneck (#116).
+  (3) Under SimpleBot on both sides these decks beat the human lists 70% of the time, the best the panel has recorded.
+  Under pilot-v2 they win 29%, little changed from 360. Competence is 0.460, inside the 0.43–0.48 band it has held since
+  160, so the stall rule stays fired and no small cards are queued.
+- **Next:** Evan's choice of the larger change (#116). The scratch check (at its iteration 9: median 42 / 9 / 8, 97% of
+  games by deck-out, as at #71's random start, where deck-outs fell from 92% to 7% by iteration 24). The 440 milestone: whether the healing Energy stays.
