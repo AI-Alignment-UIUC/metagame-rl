@@ -3109,3 +3109,28 @@ Entry format:
   is the control: it shows whether splitting alone is enough.
 - **Next:** The two league cards, decided at 480 (about 12 hours: four runs a cycle). The scratch check. The 440
   milestone.
+
+### #121 · 2026-10-20 · A5 · The league's first segment: the fresh heads draft Pokémon piles and lose; that card out of memory, restarted from 400
+- **Done:** Read the first segment (400–410) of both league cards. `017-meta-league3` (fresh heads) stopped at its
+  iteration 405 with a CUDA out-of-memory error in the PPO backward pass, under the lab's per-process cap (5.30 GB allowed,
+  4.58 GB allocated by PyTorch and 0.74 GB reserved but unused) at micro-batch 512. This is the third time (#111, #118),
+  each time on decks with more Pokémon than the main line's, which make longer states. Wrote `017-meta-league3-m` with
+  `--micro-batch 256` (the same gradient in smaller chunks, as for deep8 and the scratch check) and set it running at
+  base 400 by hand, not queued, so that at the 420 boundary it forks from `seg_0400` as its partner did and is decided
+  at 480 beside it. A queued card would have started from 420. Deleted the failed run's rollout files and kept its log.
+- **Evidence:** Per-head rows (`heads`: decks, mean result z, median Pokémon / Trainers / Energy; `draft.heads`: incoming
+  entropy h_in), iterations 400 → 405:
+  - **Fresh card, head 0** (the main head): z 0.64 → 0.80, 8 / 24 / 28 → 8 / 23 / 29, h_in 0.07–0.16 nats.
+  - **Fresh card, heads 1 and 2:** z 0.43 / 0.44 → 0.36 / 0.32, medians 12 / 22 / 26 and 13 / 22 / 25 → 23 / 19 / 18 and
+    24 / 19 / 16, h_in 5.59 → 5.31 and 5.55 nats (uniform is 5.6).
+  - **Copy card, all three heads, 400 → 409:** z 0.49–0.52, medians 8 / 23–24 / 28–29, h_in 0.02–0.17 nats.
+
+  The copy card's segment took 18.8 minutes, the main line's 18.7. The fresh card ran 14.7 minutes, to its error.
+- **Found:** (1) Still near uniform, the fresh heads draw from the whole pool, which is mostly Pokémon, so their decks first
+  drift toward Pokémon piles, as the smoke test showed. They lose to the main type (z 0.32–0.36 against 0.80), and in
+  five iterations their incoming choice has barely begun to learn. Whether they find a type of their own by 480 is the
+  card's question. (2) The three copies draft alike, as expected from a collapse in the context weights (#120): one type
+  so far. (3) Out-of-memory recurs whenever the decks move away from the main line's 8 Pokémon. The fix so far has been a
+  hand restart at micro-batch 256. A run that falls back to smaller chunks on its own would stop the restarts.
+- **Next:** The restarted card's first segment (400–420) at the 420 boundary. Both league cards decided at 480. The
+  scratch check, and the 440 milestone.
