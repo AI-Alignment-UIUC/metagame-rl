@@ -174,8 +174,10 @@ The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 1. The deeper pilots (`012-pilot-deep6-b`, `012-pilot-deep8-m`, from 320): first checks at 330, decided at 350 on the
    competence score.
-2. If the floor cards pass: a from-scratch check of the recipe (plan: every 3 adoptions), and drafting with a stronger pilot.
-3. The incoming-entropy floor (`013-meta-hin2`, `013-meta-hin3`), from 320, decided at 360 on Trainer stability.
+2. The incoming-entropy floor (`013-meta-hin2`, `013-meta-hin3`), from 320, decided at 360 on Trainer stability.
+3. The plan's from-scratch check, due after 3 adoptions (result-only reward, deck-free encoder, learning rate 2e-4):
+   deferred until the floor cards decide, since the recipe's drafting is known to collapse and they may change it; then
+   run as a lab slot from random decks and a fresh pilot.
 4. Evan's call on `008b-meta-practice10`; Phase B in parallel (verification, 2005 rules, card-text fixes).
 <!-- status:end -->
 
