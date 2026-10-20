@@ -140,7 +140,8 @@ def cards(status=None) -> list:
 
 def requeue(c: dict, suffix: str, **why):
     """A fresh copy of card c, queued right after it in name order (a retest, or a restart from a new main line)."""
-    re = {k: c[k] for k in ("kind", "hypothesis", "generality", "args", "segments", "rule", "test") if k in c}
+    re = {k: c[k] for k in ("kind", "hypothesis", "generality", "args", "segments", "rule", "test", "decide", "warm", "hold")
+          if k in c}                                    # everything that says how it runs and is decided (#88, #107)
     save_card({**re, "id": c["id"] + suffix, "status": "queued", **why})
 
 

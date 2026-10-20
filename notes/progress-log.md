@@ -2746,3 +2746,25 @@ Entry format:
   training-signal change. The untested lever is capacity, which #25 flagged as the token model's limit.
 - **Next:** ent02-b and lr2 at 310, deep6 and deep8 from 310 (first checks at 320, decisions at 340). The 320
   milestone's scorecard on the deck-free line.
+
+### #107 · 2026-10-20 · A4 · A rebased card lost its decision rule; entropy 0.02 to be decided again at 320
+- **Done:** At 310 the lab failed `010-pilot-ent02-b` (entropy 0.02) by the plain superiority Elo test (H0 Elo ≤ 0
+  against H1 Elo ≥ 20), not by the competence score its card was written for. When the card was rebased at 290 (#105),
+  `rl/lab.py requeue` copied a fixed list of fields that lacked `decide`, `warm` and `hold`, so the rebased card had no
+  `"decide": "s1"`. This is the same bug as #88's retest that dropped its `test`. Fixed: `requeue` now copies those
+  too. `check_lab_loop`'s adoption scenario now gives the rebased card its own `decide` and `test` and checks the
+  requeued copy keeps them. Only ent02-b was affected; the other requeued cards (`003-pilot-vq4-b`,
+  `008-meta-turnover30-b`, `006-meta-margin0-n`) had no field outside the list. I set the card back to running and
+  restored its rule. Its 310 rung is kept under `superseded_rungs` with the reason, and there is an event
+  `redecide`. The lab runs it one more segment and decides it at 320, on the competence score, against the main line at
+  320 (so three segments in all). I restarted the lab with `rl.lab start` at 02:19, partway through the main line's
+  segment to 320, before an adoption at 320 could rebase the deeper-pilot cards through the old `requeue`.
+  At 310 `032-pilot-lr2` (learning rate 2e-4, two segments, decided on Elo as written before the plan) ran on, and
+  `012-pilot-deep6` and `012-pilot-deep8` started.
+- **Evidence:** ent02-b at 310: −6.9 Elo [−26.4, 12.5] after 800 games, H0 of the superiority test, so not
+  clearly worse by the noninferiority bounds its s1 gate uses. lr2 at 310: +8.7 [−7.8, 25.2] after 1,200 games, H1 of
+  "not clearly worse". `rl.tests` PASS.
+- **Found:** Every field that says how a card runs or is decided has to survive a requeue. This is the third bookkeeping
+  bug at a lab state change (#86, #88, #107). Each one so far silently changed a decision rather than failing loudly.
+- **Next:** The 320 milestone, then the decisions at 320: ent02-b (competence), lr2 (Elo), and the first checks of deep6
+  and deep8.

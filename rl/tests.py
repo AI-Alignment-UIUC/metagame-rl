@@ -730,7 +730,8 @@ def check_lab_loop(failures):
             (lab.MAIN / "checkpoint.pt").write_text("150")
             for cid, kind, segs in specs:
                 lab.save_card({"id": cid, "kind": kind, "segments": segs, "args": {}, **({"hold": True} if "hold" in cid else {}),
-                               **({"warm": {"pilot-opts": {}}} if "warm" in cid else {})})
+                               **({"warm": {"pilot-opts": {}}} if "warm" in cid else {}),
+                               **({"decide": "s1", "test": "noninferior"} if "long" in cid else {})})
             runs = []
             with contextlib.redirect_stdout(io.StringIO()):
                 for stop in stops:
@@ -740,20 +741,23 @@ def check_lab_loop(failures):
                     lab.lab_main()
                     runs.append(list(decided))
             status = {c["id"]: (c.get("status"), c.get("base")) for c in lab.cards()}
-            return runs, status, [a["card"] for a in lab.settings()["adopted"]]
+            return (runs, status, [a["card"] for a in lab.settings()["adopted"]],
+                    {c["id"]: (c.get("decide"), c.get("test")) for c in lab.cards()})
 
     try:
-        runs, status, _ = scenario((("001-aa", "aa", 1), ("002-aa", "aa", 1), ("003-pilot", "pilot", 2)), "002", (10 ** 9, 190))
+        runs, status, _, _ = scenario((("001-aa", "aa", 1), ("002-aa", "aa", 1), ("003-pilot", "pilot", 2)), "002", (10 ** 9, 190))
         want = [("001-aa", 160), ("002-aa", 160), ("003-pilot", 170), ("003-pilot", 180)]
         if runs != [[], want] or status != {"001-aa": ("measured", 150), "002-aa": ("measured", 150),
                                             "003-pilot": ("inconclusive", 160)}:
             failures.append(f"lab loop, restart: decided {runs}, want [[], {want}]; status {status}")
-        runs2, status2, adopted = scenario((("001-long", "pilot", 2), ("002-pass", "pilot", 1)), None, (190,))
+        runs2, status2, adopted, rules2 = scenario((("001-long", "pilot", 2), ("002-pass", "pilot", 1)), None, (190,))
         want2 = [("001-long", 160), ("002-pass", 160), ("001-long-b", 170), ("001-long-b", 180)]
         if runs2 != [want2] or adopted != ["002-pass"] or status2 != {
                 "001-long": ("rebased", 150), "001-long-b": ("inconclusive", 160), "002-pass": ("adopted", 150)}:
             failures.append(f"lab loop, adoption: decided {runs2}, want [{want2}]; status {status2}, adopted {adopted}")
-        runs3, status3, adopted3 = scenario((("001-long", "pilot", 2), ("002-pass-hold", "pilot", 1)), None, (190,))
+        if rules2.get("001-long-b") != ("s1", "noninferior"):
+            failures.append(f"lab loop, rebase: the requeued card is decided by {rules2.get('001-long-b')}, want its own rule")
+        runs3, status3, adopted3, _ = scenario((("001-long", "pilot", 2), ("002-pass-hold", "pilot", 1)), None, (190,))
         if adopted3 or status3 != {"001-long": ("inconclusive", 150), "002-pass-hold": ("passed-held", 150)}:
             failures.append(f"lab loop, held card: status {status3}, adopted {adopted3}")
         forks.clear()
@@ -764,7 +768,7 @@ def check_lab_loop(failures):
         for k, v in saved.items():
             setattr(lab, k, v)
     print(f"lab loop: a STOP mid-branch and a restart decide each card once ({runs[-1]}); a card running at an adoption "
-          f"is rebased ({runs2[-1]}); a held pass is not adopted; a warm card forks from its warm start")
+          f"is rebased with its decision rule ({runs2[-1]}); a held pass is not adopted; a warm card forks from its warm start")
 
 
 def main():
