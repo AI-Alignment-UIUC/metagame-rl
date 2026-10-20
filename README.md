@@ -152,23 +152,21 @@ the pilot's weak value at the end of the turn favours immediate plays over bench
 its steadiest move toward the human shape (median Trainers 7 → 22 from 240 to 289, competence 0.437 → 0.480, mostly in the 16
 PlusPower puzzles); the lab's bookkeeping fragility recurred (it died with the session that started it, and two races
 silently dropped hand edits, lowering the competence bar from 0.06 to 0.03 with no decision affected), and all of it is fixed.
+- **Log #105–112 (A4, A5).** The lab adopted Evan's deck-free board encoder (warm-started, +37 / +21 / +35 Elo on its
+three readings, even on the human lists) and learning rate 2e-4 (+14 Elo), while every Stage 1 change to the training signal
+failed on the pilot's competence or strength: expert iteration toward a turn search in all three forms (its targets
+disagree with the pilot on 60–70% of probes and make the policy more random, and exact won-the-game targets come up once in
+1,194 probes), λ = 1 inside a turn, lasting prize shaping and entropy 0.02, so capacity (6 and 8 encoder layers grown as
+the identity, +14 Elo for 6 after one segment) is under test. The drafted population reached the human Trainer count
+only in passing: from one state at 300, the main line collapsed to 8 Trainers within 13 iterations (Oak and Bill out,
+Colorless Pokémon in; the 320 milestone measured it: answer key 0.34, best decks 38 cards from the human shape) while the
+learning-rate fork kept 23–29 and, adopted, went on at 8 / 32 / 19, which traces to a draft head whose incoming choice is
+collapsed (0.1–0.3 nats), so a floor on that choice's entropy, held by a sampling temperature after an entropy weight failed
+its test, is under test on a 40-iteration stability rule. Three more bookkeeping faults surfaced and were fixed (the lab
+died with its session, two races dropped hand edits, a rebase dropped a card's decision rule), each of which had silently
+changed or risked changing a decision rather than failing loudly.
 
-**Recent (log #105–112):** At 290 the lab adopted Evan's deck-free board encoder, its first adopted architecture
-change (+37, +21, +35 Elo on its three readings, even on the human lists), and with it a population near the human Trainer
-count, which then collapsed into Colorless Pokémon within 13 iterations (median Trainers 29 at 300, 8 at 313; Bill, Oak and
-the search Trainers out) because the draft head adds its one favourite card to every deck (incoming entropy 0.1–0.3 nats);
-the main line's median Trainers have swung by 7–22 in every 40-iteration window since 150, and the 320 milestone has the
-lab's lowest answer key (0.34 under pilot-v2, 0.53 under SimpleBot) and best decks furthest from the human shape (38
-cards), while its pilot beats SimpleBot on its own decks more than ever (0.947). Every Stage 1 training-signal
-card failed: expert iteration in all three forms (its targets disagree with the pilot on 60–70% of probes and make the
-policy more random; exact won-the-game targets come up once in 1,194 probes), λ = 1 inside a turn, lasting prize shaping,
-entropy 0.02 (decided by its own rule after a rebase had dropped it, a bookkeeping bug now fixed), and slot binding grown
-without a warm start. Learning rate 2e-4 was adopted at 320 (+14 Elo), and with it its branch's population, which had kept 23–29 Trainers
-while the old main line, forked from the same state, collapsed to 8 (the main line since: 8 / 32 / 19), so the 320
-milestone measured a line replaced the same iteration and a single fork's deck shape is a weak signal. Now under test: a pilot with 6 and 8 encoder layers grown as the
-identity (capacity; 6 layers +14 Elo after one segment), and a floor on
-the draft head's incoming entropy at 2 and 3 nats, held by a sampling temperature after an entropy-weight version failed its
-test, decided on whether the median Trainers stay within 5 over 40 iterations.
+**Recent:** no open log entries since #112.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
