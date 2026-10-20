@@ -2891,3 +2891,28 @@ Entry format:
   continues. The next milestone, at 360, is the first on the adopted line. (3) The adopted line now overshoots on
   Trainers (32) and undershoots on Pokémon (8 against 13.5), which is a different miss from the human shape.
 - **Next:** The checks at 330; the floor cards at 360 against this main line; the 360 milestone.
+
+### #113 · 2026-10-20 · A4 / A5 · At 330: both deeper pilots stopped; a warm-started slot binding and a slower draft head queued
+- **Done:** At 330 the lab stopped `012-pilot-deep6-b` and `012-pilot-deep8-m` after their first segment, both found
+  clearly worse. The floor cards `013-meta-hin2` and `013-meta-hin3` run on; meta cards are not stopped early. Queued,
+  to start at 340: `015-meta-draftlr3` (`--draft-lr 3e-4` instead of 1e-3, four segments, the same `trainer_swing` rule
+  as 013) and `031-pilot-slotbind-w` (slot binding warm-started like the deck-free encoder, 2,000 games and 3 epochs;
+  two segments, decided on competence). First, a 60-game, one-epoch warm start of slot binding from `seg_0330.pt` ran
+  to check it works with the deck-free pilot. I left the program's remaining larger change, a wider pilot through
+  distillation, unqueued: `rl/warmstart.py` grows the student from the teacher's weights, so a different width needs a
+  student trained from scratch, and the depth result does not yet justify that.
+- **Evidence:** deep6-b at 330: −25.2 Elo [−41.6, −9.0] after 1,200 games. deep8-m: −19.4 [−35.0, −4.0] after 1,200 games.
+  The first deep6, forked at 310 under lr 1e-4, read +14.3 [−3.7, 32.4] at 320. PPO means (KL / clip fraction / entropy):
+  main line 300–319 (lr 1e-4) 0.0119 / 0.100 / 0.631; deep6 310–319 0.0108 / 0.093 / 0.625; lr2 300–319 0.0236 / 0.160 /
+  0.643; main line 320–329 (lr 2e-4) 0.0210 / 0.157 / 0.662; deep6-b 0.0228 / 0.164 / 0.676; deep8-m 0.0232 / 0.168 /
+  0.692. Slot-binding warm start, 60 games (10,824 states), 1 epoch, 18.5 s: held-out KL 0.768 → 0.328, top-1 agreement
+  0.523 → 0.742, value MSE 0.335 → 0.129; grown weights `same_bias`, `owner.weight`. hin2's median deck 320–329: 12 / 29 /
+  20 → 9 / 23 / 28; the head's own incoming entropy 0.41 → 0.06 (the floor acts at sampling); the main line's 8 / 32 / 19.
+- **Found:** (1) Depth is inconclusive. The same 6-layer change read +14 Elo from one fork and −25 from the next. The
+  deeper pilots' PPO statistics match the main line's at the same learning rate, so this is not an instability of the
+  deeper nets. It is consistent with the 40-Elo swings between a card's segments seen since #86. (2) No pilot change has
+  moved competence since the plan began. The lab's pilot gains (deck-free +35, learning rate +14) are in strength on
+  drafted decks. (3) The floor does not stop the head itself from collapsing (0.06 nats), so whether it steadies the
+  population is for its 40-iteration rule to show.
+- **Next:** 340: slotbind-w (warm) and draftlr3 start. 360: the floor cards' decisions and the 360 milestone, the
+  first on the adopted line.

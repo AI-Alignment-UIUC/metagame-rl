@@ -166,19 +166,23 @@ its test, is under test on a 40-iteration stability rule. Three more bookkeeping
 died with its session, two races dropped hand edits, a rebase dropped a card's decision rule), each of which had silently
 changed or risked changing a decision rather than failing loudly.
 
-**Recent:** no open log entries since #112.
+**Recent (log #113):** Both deeper pilots were stopped at 330 (−25 and −19 Elo after the first one had read +14 from an
+earlier fork, with PPO statistics matching the main line's), so capacity by depth is inconclusive and no pilot change has
+yet moved competence; the lab's pilot gains are in strength on drafted decks. Queued for 340: slot binding warm-started
+(its cold start had lost 201 Elo) and a slower draft head (draft learning rate 3e-4) beside the entropy floors, both on the
+same 40-iteration stability rule for drafting.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. The deeper pilots (`012-pilot-deep6-b`, `012-pilot-deep8-m`, from 320): first checks at 330, decided at 350 on the
-   competence score.
-2. The incoming-entropy floor (`013-meta-hin2`, `013-meta-hin3`), from 320, decided at 360 on Trainer stability.
-3. The plan's from-scratch check, due after 3 adoptions (result-only reward, deck-free encoder, learning rate 2e-4):
-   deferred until the floor cards decide, since the recipe's drafting is known to collapse and they may change it; then
-   run as a lab slot from random decks and a fresh pilot.
-4. Evan's call on `008b-meta-practice10`; Phase B in parallel (verification, 2005 rules, card-text fixes).
+1. 360: the entropy floors (`013-meta-hin2`, `013-meta-hin3`) decided on Trainer stability; the 360 milestone, the first
+   on the adopted line.
+2. From 340: slot binding warm-started (`031-pilot-slotbind-w`, competence) and a slower draft head (`015-meta-draftlr3`,
+   stability).
+3. The plan's from-scratch check, due after 3 adoptions: after the floor cards decide.
+4. If drafting stability is not reached by these cards: a different draft procedure (the stall rule's other larger change).
+5. Evan's call on `008b-meta-practice10`; Phase B in parallel (verification, 2005 rules, card-text fixes).
 <!-- status:end -->
 
 ---
