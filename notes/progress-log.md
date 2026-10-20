@@ -2849,3 +2849,22 @@ Entry format:
   since 160 (0.434 → 0.472, about one A/A bar). (3) By the plan's loop, the largest gap is now the drafting (Stage 2),
   and its instability is now the main obstacle. The floor cards are the test of that.
 - **Next:** lr2 at 320; deep6 and deep8 first checks at 320; the floor cards from 320 to 360.
+
+### #111 · 2026-10-20 · A4 · At 320: learning rate 2e-4 adopted; the 6-layer pilot ahead after one segment; the 8-layer one out of memory, requeued
+- **Done:** `012-pilot-deep8` stopped in its first PPO update with a CUDA out-of-memory error. That happened under the
+  lab's per-process cap (5.30 GB allowed, 4.72 GB allocated) at micro-batch 512. Requeued as `012-pilot-deep8-m` with
+  `--micro-batch 256`, the same gradient in smaller chunks, and deleted the failed branch's rollout files. At 320 the
+  lab adopted `032-pilot-lr2`, so `main_args` now has `--lr 0.0002`. That card was written before the plan and decided
+  on the Elo test, as it says; it was not decided on competence. The lab also passed the 6-layer pilot's first check and
+  rebased it as `012-pilot-deep6-b`. Started at 320: `012-pilot-deep6-b`, `012-pilot-deep8-m`, `013-meta-hin2` and
+  `013-meta-hin3`.
+- **Evidence:** lr2 at 320: +13.8 Elo [4.3, 23.3] after 2,400 games, H1 of H0 Elo ≤ 0 against H1 Elo ≥ 20; archived
+  gate +5.0 [−13.0, 23.1] after 1,104 games. Its earlier reading was +8.7 at 310. deep6 at 320: +14.3 [−3.7, 32.4] after
+  800 games, H1 of "not clearly worse". The rebased card has `"decide": "s1"`, `"segments": 3` and `"rebase_of"`.
+  `lab.json` after the adoption: `s1_min_gain` 0.06 and `aa_s1` kept, adopted
+  `[004-pilot-epochs2, 007-meta-swaps6, 006-meta-margin0-n, 009-pilot-deckcross-w, 032-pilot-lr2]`.
+- **Found:** (1) The two fixes of #104 and #107 worked at their first adoption since: hand-set settings survived, and the
+  rebased card kept its rule. (2) A larger learning rate gives a stronger pilot on drafted decks, +14 Elo in two
+  segments. Its effect on competence was not measured. (3) Capacity looks promising after one segment (+14 Elo at 6
+  layers), though its competence decision is at 350, after the rebase.
+- **Next:** deep6-b and deep8-m: first checks at 330, decisions at 350. hin2 and hin3 at 360.
