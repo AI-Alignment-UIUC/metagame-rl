@@ -285,6 +285,16 @@ def meta_metrics(ev: dict) -> dict:
             "shape_dist": None if shape is None else round(float(np.abs(shape - HUMAN_SHAPE).sum()), 2)}
 
 
+def trainer_swing(run: Path, a: int, b: int) -> float:
+    """The range (max - min) of the population's median Trainers over iterations a .. b - 1 of a run (log #109)."""
+    med = []
+    for line in (run / "log.jsonl").read_text(encoding="utf-8").splitlines():
+        x = json.loads(line) if line.strip() else {}
+        if a <= x.get("iter", -1) < b and "shape_quartiles" in x:
+            med.append(x["shape_quartiles"]["trainer"][1])
+    return float(max(med) - min(med)) if med else math.nan
+
+
 PUZZLES = ROOT / "notes/data/puzzles/lethal.json"
 
 
@@ -478,12 +488,18 @@ def decide(c: dict, m: int, s: dict) -> dict:
         if mm.get("error") or mb.get("error") or p.get("error"):
             rung["status"] = "error"
             return rung
-        gain = (mb[rule["metric"]] or 0) - (mm[rule["metric"]] or 0)
+        if rule["metric"] == "trainer_swing":                    # stability (log #109): the branch's swing against the
+            rung["swing"] = sw = [trainer_swing(BRANCHES / c["id"], c["base"], m), trainer_swing(MAIN, c["base"], m)]
+            gain = sw[1] - sw[0]                                 # main line's over the same iterations, smaller is better
+            ok = (sw[0] <= rule.get("max", math.inf) and gain >= rule["min_gain"]
+                  and (mb["archived_mean"] or 0) - (mm["archived_mean"] or 0) >= rule.get("archived_floor", -math.inf))
+        else:
+            gain = (mb[rule["metric"]] or 0) - (mm[rule["metric"]] or 0)
+            ok = gain >= rule["min_gain"]
         rung["gain"] = round(gain, 4)
         # the plan reads drafting cards on deck shape too: the best decks may not move clearly away from the human shape
         rung["shape_loss"] = sl = round((mb.get("shape_dist") or 0) - (mm.get("shape_dist") or 0), 2)
-        rung["status"] = ("passed" if gain >= rule["min_gain"] and p["verdict"] != "H0" and sl <= s["shape_max_loss"]
-                          else "failed")
+        rung["status"] = "passed" if ok and p["verdict"] != "H0" and sl <= s["shape_max_loss"] else "failed"
         return rung
     rung["status"] = "error"
     rung["error"] = f"unknown kind {c['kind']}"

@@ -36,7 +36,7 @@ import torch
 import torch.nn.functional as F
 
 from rl.decks import Pool, archived_decks, changed, random_deck
-from rl.draft import LEAD, MY_UNSEEN, OPPONENT_LIST, SLOT, Drafter, deck_tokens, random_changes, rloo
+from rl.draft import LEAD, MY_UNSEEN, OPPONENT_LIST, SLOT, Drafter, deck_tokens, floor_temperature, random_changes, rloo
 from rl.model import IdentityMLP
 from rl.rollouts import concat, read_rollout, subset
 from rl.token_model import TokenPointerNet, export_token_onnx
@@ -386,11 +386,36 @@ def check_draft(failures, table, text, archived, rng):
     for _ in range(200):
         samples = [dr.sample(vw, rng) for _ in range(64)]
         z = np.array([np.mean([c in target for c in s["ev_c"]]) for s in samples])
-        dr.update([(vw, samples, rloo(z, np.zeros(len(z))))], beta=0.0)
+        st = dr.update([(vw, samples, rloo(z, np.zeros(len(z))))], beta=0.0)
     m1 = mass()
     if not (m0 < 0.06 and m1 > 0.30):
         failures.append(f"draft bandit: target mass {m0:.3f} -> {m1:.3f}, not ~0.03 -> over 0.30")
-    print(f"draft bandit: incoming mass on 8 target cards {m0:.3f} -> {m1:.3f} in 200 steps")
+    # the same bandit with a floor of 2 nats on the incoming choice (log #109): every choice is drawn with entropy >= 2,
+    # a draw's log-prob is the one the update uses, and the head still learns the targets
+    fl = Drafter(pool, 64, 4, swaps=3, lr=3e-3, device="cpu", h_in_floor=2.0)
+    vf = fl.view(pilot, v, field)
+    zs, gap = [], 0.0
+    for i in range(200):
+        samples = [fl.sample(vf, rng) for _ in range(64)]
+        if i in (0, 199):
+            with torch.no_grad():
+                gap = max(gap, float(np.abs(fl.log_prob(vf, samples)[0].numpy() - [s["logp"] for s in samples]).max()))
+        z = np.array([np.mean([c in target for c in s["ev_c"]]) for s in samples])
+        zs.append(z.mean())
+        sf = fl.update([(vf, samples, rloo(z, np.zeros(len(z))))], beta=0.0)
+    hs = []
+    for j in range(len(vf.ids)):
+        x = np.where(vf.base[j].numpy(), vf.logits[j], -np.inf)
+        y = (x - x.max()) / floor_temperature(x, 2.0)
+        q = np.exp(y[np.isfinite(y)])
+        q /= q.sum()
+        hs.append(float(-(q * np.log(np.maximum(q, 1e-300))).sum()))
+    if not (min(hs) >= 2.0 - 1e-3 and gap < 1e-3 and np.mean(zs[-20:]) > 0.3):
+        failures.append(f"draft floor: drawn entropy min {min(hs):.3f} (floor 2), log-prob gap {gap:.1e}, "
+                        f"target share {np.mean(zs[-20:]):.2f} at the end")
+    print(f"draft bandit: incoming mass on 8 target cards {m0:.3f} -> {m1:.3f} in 200 steps, incoming entropy "
+          f"{st['h_in']:.2f}; with a 2-nat floor: drawn entropy >= {min(hs):.2f}, head's own {sf['h_in']:.2f}, "
+          f"targets {np.mean(zs[-20:]):.2f} of the draws, log-prob gap {gap:.1e}")
 
 
 def check_train(failures, rng):
@@ -576,6 +601,11 @@ def check_lab(failures, table, text, rng):
     W[0, 4], W[3, 1] = 2.0, 1.0
     if lab.pair_scores(W, G, [(0, 1)], n) != [0.75]:
         failures.append(f"lab.pair_scores {lab.pair_scores(W, G, [(0, 1)], n)}, want [0.75]")
+    with tempfile.TemporaryDirectory() as tmp:                     # the swing of the median Trainers over a range
+        Path(tmp, "log.jsonl").write_text("".join(json.dumps({"iter": i, "shape_quartiles": {"trainer": [0, x, 0]}}) + "\n"
+                                                  for i, x in ((9, 30), (10, 12), (11, 20), (12, 15), (13, 2))))
+        if lab.trainer_swing(Path(tmp), 10, 13) != 8.0:
+            failures.append(f"lab.trainer_swing {lab.trainer_swing(Path(tmp), 10, 13)}, want 8")
     if lab.cli({"--a": 1, "--b": True, "--c": False, "--d": {"k": 2}}) != ["--a", "1", "--b", "--d", '{"k": 2}']:
         failures.append(f"lab.cli {lab.cli({'--a': 1, '--b': True, '--c': False, '--d': {'k': 2}})}")
     # growing a pilot: the policy is unchanged, additive new inputs start at 0, Adam's moments follow the names

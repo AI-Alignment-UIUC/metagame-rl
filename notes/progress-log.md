@@ -2784,3 +2784,41 @@ Entry format:
   entropy all failed. (2) The deck-free main line solves 10 points more Trainer-first puzzles than the line before it
   (6 of the 97 more). That is within about twice the competence A/A spread, and it comes from a single reading.
 - **Next:** The 320 milestone; lr2 at 320; deep6 / deep8 first checks at 320.
+
+### #109 · 2026-10-20 · A5 · The deck-free line's human-shaped population collapses into Pokémon in 13 iterations; a floor on the draft head's incoming entropy
+- **Done:** Found that the main line's population left the human shape right after the adoption of #105. Its median
+  deck went from 10 / 29 / 20 Pokémon / Trainers / Energy at 300 to 33 / 8 / 20 at 313, and it was 29 / 9 / 22 at 319.
+  `032-pilot-lr2`, forked at 300, followed more slowly (17 / 23 / 19 at 309). Plan Stage 2 step 3 (keep the draft head
+  exploring) was built, after a first form failed its test:
+  - First form, failed: an extra weight on the incoming entropy, raised while it sat below a floor (dual ascent). On
+    the bandit of `check_draft`, the weight rose to 36 while the entropy stayed at 0. The gradient of a collapsed
+    softmax's entropy is about 0, so no weight reopens it. At faster rates (a scratch trial, not kept: floors 2–4, rates
+    0.05–2) the entropy flipped between 5.6 and 0 as the weight overshot both ways.
+  - Kept: `rl/draft.py floor_temperature` and `Drafter(h_in_floor)`. An incoming choice with entropy below the floor is
+    drawn at the smallest temperature ≥ 1 that brings it to the floor, found by bisection. The draw records its temperatures
+    (`ev_T`), and `log_prob` uses them, so REINFORCE is on the distribution actually drawn from. The head keeps its
+    order, and the floor only flattens it. `rl/metagame.py --draft-h-in-floor`.
+  - `rl/lab.py`: a meta rule `{"metric": "trainer_swing", "max", "min_gain", "archived_floor"}`, read from both runs'
+    `log.jsonl` over the card's iterations. It passes if the branch's range of the population's median Trainers is at most
+    `max` and no larger (by `min_gain`) than the main line's over the same iterations, and its answer key is no more
+    than `archived_floor` below the main line's. The shape and pilot gates apply as before.
+  - Queued `013-meta-hin2` and `013-meta-hin3` (floors 2 and 3 nats; four segments; rule max 5, min_gain 0,
+    archived_floor −0.03, written before either ran).
+- **Evidence:** Population cards per deck, the adopted state at 289 against 319: Nightly Garbage Run −3.22, Energy
+  Retrieval −3.17, Bill −3.16, Professor Oak −2.86, Energy Search −2.31, Computer Search −1.74; Lickitung +3.52, Tauros
+  +3.43, Kangaskhan +3.26, Cool Porygon +3.03, Dragonair +1.49, Machop +1.38. The draft head's incoming entropy at 296–319
+  was 0.09–0.32 nats (about 5.6 for a uniform pick). On the best deck at 320 its top incoming card is Snorlax at 0.9999.
+  The main line's 40-iteration windows of median Trainers (from 150, every 10) ranged 10, 9, 7, 10, 12, 12, 12, 7, 11, 12,
+  13, 18, 12 and 22, never ≤ 5 (the plan's target). `rl.tests` PASS. On the bandit with a 2-nat floor, every choice was
+  drawn at ≥ 2.00 nats while the head's own entropy fell to 0. 62% of drawn incoming cards were targets (100% without
+  a floor), and the log-prob gap was 2.6e-6. `lab.trainer_swing` has a unit check. A one-iteration fork of `seg_0320.pt`
+  with the floor at 2 ran, with draws 0.8 s.
+- **Found:** (1) The human-shaped population the deck-free branch brought (#104–105) was not a stable state. It was one
+  phase of the same swing the main line has always had (7–22 Trainers in every 40-iteration window). Losing Oak and Bill,
+  the two Trainers even this pilot values above an Energy (#92), shows the drafting is not following the pilot's own
+  values here. It follows a collapsed head that adds whatever card it currently favours to every deck. So the deck
+  shape of the population, and the human-shape gain claimed for the deck-free line in #104–105, should be read only over
+  40-iteration windows. (2) An entropy bonus cannot keep a policy exploring once it has collapsed, and a floor has to act
+  where the choice is drawn.
+- **Next:** Restart the lab with the new `rl/lab.py` before 360 (the running process cannot read `trainer_swing`). The
+  320 milestone, lr2's decision at 320, and the floor cards from 320.

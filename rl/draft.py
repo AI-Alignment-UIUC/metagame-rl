@@ -104,13 +104,38 @@ class DeckView:
         self.s = self.logits = None
 
 
+def floor_temperature(x: np.ndarray, floor: float) -> float:
+    """The smallest temperature >= 1 at which softmax(x / T) over x's finite entries has entropy >= floor (nats, capped
+    just below the uniform's); 1 if it already has."""
+    f = np.isfinite(x)
+    if floor <= 0 or f.sum() <= 1:
+        return 1.0
+    y0 = x[f] - x[f].max()
+    floor = min(floor, math.log(f.sum()) - 1e-3)
+
+    def H(T):
+        p = np.exp(y0 / T)
+        p /= p.sum()
+        return float(-(p * np.log(np.maximum(p, 1e-300))).sum())
+    if H(1.0) >= floor:
+        return 1.0
+    lo, hi = 1.0, 2.0
+    while H(hi) < floor and hi < 1e6:
+        lo, hi = hi, hi * 2
+    for _ in range(30):
+        mid = (lo + hi) / 2
+        lo, hi = (mid, hi) if H(mid) < floor else (lo, mid)
+    return hi
+
+
 class Drafter:
     """The draft head and its optimizer."""
 
-    def __init__(self, pool: Pool, d: int, heads: int, swaps: int, lr: float, device: str):
+    def __init__(self, pool: Pool, d: int, heads: int, swaps: int, lr: float, device: str, h_in_floor: float = 0.0):
         self.pool, self.device, self.swaps = pool, device, swaps
         self.head = DraftHead(pool.n, d, heads).to(device)
         self.opt = torch.optim.Adam(self.head.parameters(), lr=lr)
+        self.h_in_floor = h_in_floor          # nats; an incoming choice below it is sampled warmer (log #109)
 
     @torch.no_grad()
     def view(self, pilot, deck: np.ndarray, field: list) -> DeckView:
@@ -168,7 +193,7 @@ class Drafter:
         """One draw: `swaps` copies of the deck replaced one after another, legal throughout."""
         pool, v = self.pool, vw.deck.copy()
         left = vw.counts.astype(np.int64).copy()                 # copies of the original deck not yet replaced
-        ev_j, ev_c, ev_mask, ev_left = [], [], [], []
+        ev_j, ev_c, ev_mask, ev_left, ev_T = [], [], [], [], []
         lp = 0.0                                                 # log pi of the draw, for the tests
         for _ in range(self.swaps):
             ok = left > 0
@@ -187,15 +212,17 @@ class Drafter:
             m = pool.addable(v)
             m[[0, c]] = False
             x = np.where(m, vw.logits[j], -np.inf)
-            q = np.exp(x - x.max())
+            T = floor_temperature(x, self.h_in_floor)
+            q = np.exp((x - x.max()) / T)
             new = int(rng.choice(pool.n, p=q / q.sum()))
             lp += math.log(q[new] / q.sum())
             v[new] += 1
             ev_j.append(j)
             ev_c.append(new)
             ev_mask.append(m)
+            ev_T.append(T)
         assert pool.legal(v), "drawn deck is not legal"
-        return {"deck": v, "ev_j": ev_j, "ev_c": ev_c, "ev_mask": ev_mask, "ev_left": ev_left, "logp": lp}
+        return {"deck": v, "ev_j": ev_j, "ev_c": ev_c, "ev_mask": ev_mask, "ev_left": ev_left, "ev_T": ev_T, "logp": lp}
 
     def log_prob(self, vw: DeckView, samples: list):
         """log pi of each draw of this deck under the current head, and the head's entropies on the deck."""
@@ -210,7 +237,8 @@ class Drafter:
             left = torch.from_numpy(np.stack([y for x in samples for y in x["ev_left"]])).to(dev).float()
             lw = torch.where(left > 0, torch.log(left.clamp(min=1)) + s[None], torch.full_like(left, -1e9))
             out_lp = lw.gather(1, j[:, None]).squeeze(1) - torch.logsumexp(lw, 1)
-            row = logits[j].masked_fill(~m, -1e9)
+            T = torch.tensor([y for x in samples for y in x.get("ev_T", [1.0] * len(x["ev_j"]))], device=dev)
+            row = (logits[j] / T[:, None]).masked_fill(~m, -1e9)
             in_lp = row.gather(1, c[:, None]).squeeze(1) - torch.logsumexp(row, 1)
             lp = lp.index_add(0, torch.tensor(ev_s, device=dev), out_lp + in_lp)
         po = torch.log_softmax(s + torch.log(torch.tensor(vw.counts, dtype=torch.float32, device=dev)), 0)

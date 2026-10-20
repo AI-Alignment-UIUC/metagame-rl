@@ -69,6 +69,9 @@ def main(argv=None):
     ap.add_argument("--field-sample", type=int, default=4, help="decks of the field each deck is read against")
     ap.add_argument("--draft-lr", type=float, default=1e-3)
     ap.add_argument("--draft-ent", type=float, default=0.01)
+    ap.add_argument("--draft-h-in-floor", type=float, default=0.0,
+                    help="a floor in nats on the entropy the incoming card is drawn with: a choice below it is drawn at "
+                         "the temperature that reaches it (log #109)")
     ap.add_argument("--draft-margin", type=float, default=0.5,
                     help="weight of the end-of-game prize margin in the draft head's reward (0 = result only)")
     ap.add_argument("--shaping", type=float, default=0.0, help="prize-shaping weight at iteration 0")
@@ -138,7 +141,7 @@ def main(argv=None):
         load_grown(net, init["model"])
     net.eval()
     opt = torch.optim.Adam(net.parameters(), lr=args.lr, eps=1e-5)
-    drafter = Drafter(pool, c0["d"], c0["heads"], args.swaps, args.draft_lr, device)
+    drafter = Drafter(pool, c0["d"], c0["heads"], args.swaps, args.draft_lr, device, h_in_floor=args.draft_h_in_floor)
     targs = SimpleNamespace(**{**PPO, "ent": args.ent, "epochs": args.epochs, "micro_batch": args.micro_batch,
                                "aux": args.aux, "distill": args.distill})
 
