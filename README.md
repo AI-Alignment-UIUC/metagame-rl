@@ -61,11 +61,11 @@ log #96 ended in decks unlike the human field, and with the human lists as groun
 pilot: it does not set up before attacking, so every Trainer but Oak and Bill was worth less than an Energy to it, and the
 drafting followed it. In the lab (`rl/lab.py`), working the approved three-stage plan (`notes/plan-rediscovery.md`) with
 Evan's ideas first, the main line's decks have since moved most of the way to the human shape (median 14 / 22 / 24
-Pokémon / Trainers / Energy at 289, from 17 / 7 / 36 at 240, against the human lists' 13.5 / 28 / 18), and the deck-free
-board encoder Evan asked for, warm-started, leads its control and drafted a population at 28 Trainers; it is decided at
-290. Play-time search to the end of the turn fixes most of the setup failure (Trainer-first lethals 60% → 85–88%), but
-distilling it at full weight lost 79 Elo, so lighter and two-turn variants are being tested on a competence score whose
-targets the pilot has not met (0.480). Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
+Pokémon / Trainers / Energy at 289, from 17 / 7 / 36 at 240, against the human lists' 13.5 / 28 / 18), and at 290 it
+adopted the deck-free board encoder Evan asked for (warm-started, +35 Elo on drafted decks, even on the human lists),
+whose population came in at 10 / 29 / 21. Play-time search to the end of the turn fixes most of the setup failure (Trainer-first lethals
+60% → 85–88%), but distilling the one-turn search lost 79 Elo at full weight and 56 at 0.3, so a two-turn variant is
+being tested on a competence score whose targets the pilot has not met (0.480). Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
 
 **Earlier work:**
 
@@ -153,19 +153,24 @@ its steadiest move toward the human shape (median Trainers 7 → 22 from 240 to 
 PlusPower puzzles); the lab's bookkeeping fragility recurred (it died with the session that started it, and two races
 silently dropped hand edits, lowering the competence bar from 0.06 to 0.03 with no decision affected), and all of it is fixed.
 
-**Recent:** no open log entries since #104.
+**Recent (log #105):** At 290 the lab adopted Evan's deck-free board encoder, its first adopted architecture change: warm-started,
+it led the main line's pilot on all three readings (+37, +21, +35 Elo) and was even on the human lists, and the main line
+now carries its population, whose median deck (10 / 29 / 21) is near the human Trainer count. Expert iteration at weight 0.3
+failed (−56 Elo) on what look like noisy targets (60% disagree with the move played, the policy's entropy rose by 0.27), and
+λ = 1 inside a turn failed (−37 Elo), while entropy 0.02 passed its first check and restarts on the new line.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. At 290: the deck-free encoder (`009-pilot-deckcross-w`) is decided, adopted if not clearly worse; the first checks of
-   expert iteration at weight 0.3 (`009x-pilot-exit`), entropy 0.02 and turn-level credit, which are rebased if it is adopted.
-2. Stage 1 step 2 continued: expert iteration over two turns (`009x-pilot-exit-h2`), then prize shaping kept on
-   (`010-pilot-shapeon`), decided on the competence score (bar 0.06).
-3. The 320 milestone's scorecard (competence, deck shape, answer key) on the line that results: whether the move toward
-   the human shape holds.
-4. Evan's call on `008b-meta-practice10` (passed its answer-key rule, drafted away from the human shape).
+1. At 300: the first checks of expert iteration over two turns with 4 lines and a margin (`009x-pilot-exit-h2`),
+   entropy 0.02 (`010-pilot-ent02-b`), prize shaping kept on (`010-pilot-shapeon`) and slot binding grown onto the
+   deck-free pilot (`031-pilot-slotbind`); Stage 1 cards are decided on the competence score (bar 0.06).
+2. The 320 milestone's scorecard on the deck-free line: competence, deck shape and the answer key, and whether its
+   population keeps the human Trainer count.
+3. Evan's call on `008b-meta-practice10` (passed its answer-key rule, drafted away from the human shape).
+4. If expert iteration fails again: Stage 1 step 3 (credit and exploration within the turn) is down to entropy and
+   shaping; plan the next larger change per the stall rule (`notes/plan-lab.md`).
 5. Phase B, in parallel: verification beyond self-written tests, then 2005 rules in the env, six audited
    card-text fixes, ZRE, Blastoise ex and Nidoqueen.
 <!-- status:end -->

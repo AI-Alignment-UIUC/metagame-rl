@@ -2682,3 +2682,30 @@ Entry format:
 - **Next:** At 290, deckcross-w's last segment (adopted if not clearly worse) and the first checks of exit, ent02 and
   lamturn (rebased if deckcross-w is adopted). Then the shape and answer key of the adopted line at the 320 milestone.
   Evan's call on 008b is still open.
+
+### #105 · 2026-10-19 · A4 · At 290: the deck-free board encoder (Evan's idea) adopted; expert iteration at weight 0.3 and turn-level credit fail
+- **Done:** The lab decided its four cards at 290 and adopted `009-pilot-deckcross-w`. That is Evan's 10-13 idea: a
+  board encoder that never sees the deck, then cross-attention to a separate deck encoder. It was warm-started (#98) and
+  ran three segments under a noninferiority test. The main line now goes on from that branch, with its pilot and its
+  population. The main checkpoint's config is `deck_mode cross`, and the earlier state was kept as
+  `seg_0290.before-009-pilot-deckcross-w.pt`. Stopped after their first segment: `009x-pilot-exit` (expert iteration at
+  weight 0.3, one-turn lines) and `010-pilot-lamturn` (λ = 1 inside a turn). `010-pilot-ent02` passed its first check and was
+  rebased as `010-pilot-ent02-b`. Started at 290 on the new main line: `009x-pilot-exit-h2`, `010-pilot-ent02-b`,
+  `010-pilot-shapeon` and `031-pilot-slotbind`.
+- **Evidence:** deckcross-w at 290: +34.9 Elo [15.8, 54.1] against the main line's pilot on drafted decks, after 800
+  games (H1); the archived gate +5.4 [−11.6, 22.4] after 1,104 games, not worse. Its three readings were +36.6, +20.9 and
+  +34.9. exit: −56.1 [−89.4, −23.8] after 400 games. In its last iterations about 1,000 probes an iteration gave 935–997
+  targets, and 570–655 of them differed from the move played. Distillation cross-entropy at 289 was 1.34, with 45%
+  agreement. Its PPO, against the main line's at 289: policy entropy 0.99 / 0.72, KL 0.026 / 0.015, clip fraction 0.21 / 0.13.
+  Target / played verbs at 289: trainer 167 / 188, attach 215 / 210, basic 87 / 83, attack 58 / 58, pass 90 / 80,
+  retreat 27 / 24. lamturn: −37.1 [−56.1, −18.3] after 800 games. ent02: +8.7 [−11.1, 28.5] after 800 games.
+- **Found:** (1) Evan's deck-free encoder, given a fair start, is the first architecture change the lab has adopted for
+  strength. It led on all three readings, by 21–37 Elo, and was even on the human lists. The population it carries into
+  the main line has a median of 10 / 29 / 21 Pokémon / Trainers / Energy (#104), so the main line's decks now start from
+  near the human Trainer count. (2) At weight 0.3 with 2 lines a probe, the one-turn search no longer leans to Trainers.
+  Its targets disagree with the pilot 60% of the time and look close to noise (the verb counts nearly match those of the
+  moves played). Distilling them broadened the policy (entropy +0.27) and cost 56 Elo, so noisy targets are the problem at this
+  weight. The two-turn variant uses 4 lines and a margin of 0.15. (3) λ = 1 inside a turn is worse (−37 Elo), as λ = 1
+  overall was (#73).
+- **Next:** At 300, the first checks of exit-h2, ent02-b, shapeon and slotbind (slot binding grown onto the deck-free
+  pilot). At 320, the milestone: competence, deck shape and the answer key of the adopted line.
