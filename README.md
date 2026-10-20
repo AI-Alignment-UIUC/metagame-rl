@@ -154,21 +154,22 @@ its steadiest move toward the human shape (median Trainers 7 → 22 from 240 to 
 PlusPower puzzles); the lab's bookkeeping fragility recurred (it died with the session that started it, and two races
 silently dropped hand edits, lowering the competence bar from 0.06 to 0.03 with no decision affected), and all of it is fixed.
 
-**Recent (log #105–106):** At 290 the lab adopted Evan's deck-free board encoder, its first adopted architecture
+**Recent (log #105–107):** At 290 the lab adopted Evan's deck-free board encoder, its first adopted architecture
 change: warm-started, it led the main line's pilot on all three readings (+37, +21, +35 Elo), was even on the human lists,
 and brought a population whose median deck (10 / 29 / 20 by 299) sits near the human Trainer count, at a cost of about a
 quarter more time a segment. Every Stage 1 training-signal card then failed: expert iteration in all three forms (−79, −56,
 −37 Elo; its targets disagree with the pilot on 60–70% of probes and make the policy more random, while exact
 won-the-game targets come up once in 1,194 probes), λ = 1 inside a turn (−37), lasting prize shaping (−31), and slot binding
-grown without a warm start (−201, a handicap like #98's). Entropy 0.02 and learning rate 2e-4 are still running, and a
+grown without a warm start (−201, a handicap like #98's). Entropy 0.02 (decided again at 320: a rebase had dropped its
+decision rule, the lab's third bookkeeping bug at a state change, now fixed) and learning rate 2e-4 are still running, and a
 pilot with 6 and with 8 encoder layers, grown as the identity, is queued as the larger change the stall rule calls for.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. At 310: entropy 0.02 (`010-pilot-ent02-b`) decided on the competence score, learning rate 2e-4 (`032-pilot-lr2`) checked.
-2. A deeper pilot (`012-pilot-deep6`, `012-pilot-deep8`, grown as the identity) from 310, decided at 340 on the
+1. At 320: entropy 0.02 (`010-pilot-ent02-b`) decided on the competence score, learning rate 2e-4 (`032-pilot-lr2`) on Elo.
+2. A deeper pilot (`012-pilot-deep6`, `012-pilot-deep8`, grown as the identity), started at 310, decided at 340 on the
    competence score (bar 0.06), with the Elo test as a gate.
 3. The 320 milestone's scorecard on the deck-free line: competence, deck shape (does it keep the human Trainer count),
    staples, archetypes and the answer key.
