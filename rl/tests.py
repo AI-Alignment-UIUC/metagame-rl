@@ -22,8 +22,10 @@
   (grad_norm the pre-clip norm, kl_last the last epoch's kl), and two seeded calls give identical parameters
 """
 import argparse
+import contextlib
 import copy
 import glob
+import io
 import json
 import sys
 import tempfile
@@ -38,8 +40,8 @@ from rl.draft import LEAD, MY_UNSEEN, OPPONENT_LIST, SLOT, Drafter, deck_tokens,
 from rl.model import IdentityMLP
 from rl.rollouts import concat, read_rollout, subset
 from rl.token_model import TokenPointerNet, export_token_onnx
-from rl.train import (ending_kinds, explained_variance, legal_mask, lr_at, ppo_update, save_atomic, schedule_lr,
-                      shape_rewards)
+from rl.train import (ZERO_AT_GROWTH, advantages, aux_targets, ending_kinds, explained_variance, legal_mask, load_grown, lr_at, ppo_update,
+                      remap_adam, save_atomic, schedule_lr, shape_rewards)
 
 PRIZE_GLOB = (6, 22)
 
@@ -511,8 +513,249 @@ def check_train(failures, rng):
         failures.append(f"ppo_update: stats {sa}")
     if sa != sb or not all(torch.equal(p, q) for p, q in zip(ma.parameters(), mb.parameters())):
         failures.append("ppo_update: two seeded calls differ")
+    # Expert iteration (--distill, log #96): with search targets on a quarter of the rows the stats give the cross-entropy
+    # before the step, the step lowers it, and at weight 0 the targets change nothing.
+    st = np.full(T, -1, np.int32)
+    rows = np.arange(0, T, 4)
+    st[rows] = [ids[off[t] + (t % counts[t])] for t in rows]
+    pick = (torch.from_numpy(rows), torch.from_numpy(st[rows].astype(np.int64)))
+    ce0 = float(-lp_all[pick].mean())
+    batch["search_target"] = st
+    md, sd = run(distill=5.0)
+    m0, s0 = run(distill=0.0)
+    del batch["search_target"]
+    ce1 = float(-policy(md)[0][pick].mean())
+    if not (np.isclose(sd["distill"], ce0, atol=1e-4) and ce1 < ce0 and "distill" not in s0
+            and all(torch.equal(p, q) for p, q in zip(m0.parameters(), m1.parameters()))):
+        failures.append(f"ppo_update distill: stats {sd.get('distill')} vs {ce0}, after the step {ce1}; weight 0 {s0}")
+    # Mostly greedy collection (--explore, log #81): only the sampled decisions enter the policy terms, with the
+    # advantage normalized over them; all ones changes nothing; micro-batches give the same step.
+    smp = (np.arange(T) % 3 == 0).astype(np.uint8)
+    k = torch.from_numpy(smp.astype(bool))
+    an4 = (adv - adv[k].mean()) / (adv[k].std() + 1e-8)
+    want4 = {**want, "pi_loss": -torch.min(ratio * an4, ratio.clamp(0.8, 1.2) * an4)[k].mean(), "kl": delta[k].mean(),
+             "clipfrac": ((ratio - 1).abs() > 0.2)[k].float().mean()}
+    batch["sampled"] = smp
+    m4, s4 = run()
+    m4b, _ = run(micro_batch=T // 4)
+    batch["sampled"] = np.ones(T, np.uint8)
+    _, s5 = run()
+    del batch["sampled"]
+    bad = [q for q, w in want4.items() if not np.isclose(s4[q], float(w), atol=1e-4)]
+    if bad:
+        failures.append(f"ppo_update with sampled: {bad} differ from the closed form: {s4} vs {want4}")
+    if not all(np.isclose(s5[q], s1[q], atol=1e-6) for q in want):
+        failures.append(f"ppo_update: sampled all ones gives {s5}, without it {s1}")
+    if not all(torch.allclose(p, q, atol=1e-6) for p, q in zip(m4.parameters(), m4b.parameters())):
+        failures.append("ppo_update with sampled: micro-batches change the step")
     print(f"train: lr_at, explained_variance ({ev[0]:.4f}, {ev[1]:.4f}), ending_kinds, save_atomic ok; ppo_update "
           f"stats match the closed form, grad_norm {s1['grad_norm']:.4f} = step {step(m1):.4f}, kl_last {s3['kl_last']:.5f}")
+
+
+def check_lab(failures, table, text, rng):
+    """rl/lab.py: the sequential test's statistic, the pair scores, growing a pilot, Adam's state by name, the shares."""
+    import subprocess
+    from rl import lab
+    # llr against the normal log-likelihood ratio computed directly; its sign and growth under each hypothesis
+    x = np.clip(rng.normal(0.55, 0.2, 400), 0, 1)
+    s0, s1, var = lab.expected_score(0.0), lab.expected_score(15.0), x.var(ddof=1)
+    direct = float((((x - s0) ** 2 - (x - s1) ** 2) / (2 * var)).sum())
+    if not np.isclose(lab.llr(x, 0.0, 15.0), direct, rtol=1e-9):
+        failures.append(f"lab.llr {lab.llr(x, 0.0, 15.0)} vs direct {direct}")
+    up = [lab.llr(np.clip(rng.normal(s1, 0.2, n), 0, 1), 0.0, 15.0) for n in (5000, 50000)]
+    down = [lab.llr(np.clip(rng.normal(s0, 0.2, n), 0, 1), 0.0, 15.0) for n in (5000, 50000)]
+    if not (0 < up[0] < up[1] and down[1] < down[0] < 0):
+        failures.append(f"lab.llr under H1 {up}, under H0 {down}")
+    if not all(abs(lab.elo_of(lab.expected_score(e)) - e) < 1e-6 for e in (-200.0, -15.0, 0.0, 30.0)):
+        failures.append("lab.elo_of is not the inverse of expected_score")
+    lo, hi = lab.bounds(0.05, 0.05)
+    if not (np.isclose(lo, -2.944, atol=1e-3) and np.isclose(hi, 2.944, atol=1e-3)):
+        failures.append(f"lab.bounds {lo}, {hi}")
+    # pair scores: n = 3 decks; A wins both games on 0 against B on 1, B on 0 wins one of two against A on 1
+    n, W, G = 3, np.zeros((6, 6)), np.full((6, 6), 2.0)
+    W[0, 4], W[3, 1] = 2.0, 1.0
+    if lab.pair_scores(W, G, [(0, 1)], n) != [0.75]:
+        failures.append(f"lab.pair_scores {lab.pair_scores(W, G, [(0, 1)], n)}, want [0.75]")
+    if lab.cli({"--a": 1, "--b": True, "--c": False, "--d": {"k": 2}}) != ["--a", "1", "--b", "--d", '{"k": 2}']:
+        failures.append(f"lab.cli {lab.cli({'--a': 1, '--b': True, '--c': False, '--d': {'k': 2}})}")
+    # growing a pilot: the policy is unchanged, additive new inputs start at 0, Adam's moments follow the names
+    base, grown = tiny_pilot(table, text, seed=3), tiny_pilot(table, text, seed=4, value_query=2, slot_bind=True)
+    missing = load_grown(grown, base.state_dict())
+    if not missing or not all(k.startswith(("vquery", "vcross.", "owner.", "same_bias")) for k in missing):
+        failures.append(f"load_grown: missing {missing}")
+    zeroed = [n for n, q in grown.named_parameters() if n in ZERO_AT_GROWTH]
+    if not zeroed or any(q.abs().sum() > 0 for n, q in grown.named_parameters() if n in ZERO_AT_GROWTH):
+        failures.append(f"load_grown: {zeroed} not at zero")
+    vq = tiny_pilot(table, text, seed=4, value_query=2)
+    load_grown(vq, base.state_dict())
+    B = 4
+    inp = (torch.randint(1, 50, (B, 128), dtype=torch.int16), torch.randint(1, 4, (B, 128), dtype=torch.uint8),
+           torch.zeros(B, 128, dtype=torch.uint8), torch.zeros(B, 82, dtype=torch.uint8),
+           torch.zeros(B, 240, dtype=torch.uint8), torch.randint(0, 9, (B, 48 * 6), dtype=torch.int16),
+           torch.full((B,), 5, dtype=torch.int32))
+    with torch.no_grad():
+        (l0, v0), (l1, v1) = base(*inp), vq(*inp)
+    if not torch.allclose(l0, l1, atol=1e-5):
+        failures.append(f"grown pilot (value_query): policy changed by {(l0 - l1).abs().max():.2e}")
+    opt = torch.optim.Adam(base.parameters(), lr=1e-3)
+    base.train()
+    base(*inp)[1].sum().backward()
+    opt.step()
+    sd = remap_adam(opt.state_dict(), [n for n, _ in base.named_parameters()], vq)
+    opt2 = torch.optim.Adam(vq.parameters(), lr=1e-3)
+    opt2.load_state_dict(sd)
+    names_b = dict(base.named_parameters())
+    same = [n for n, q in vq.named_parameters() if n in names_b and names_b[n] in opt.state]   # had a gradient
+    bad = [n for n in same if not torch.equal(opt2.state[dict(vq.named_parameters())[n]]["exp_avg"],
+                                              opt.state[names_b[n]]["exp_avg"])]
+    new = [n for n, q in vq.named_parameters() if n not in names_b and q in opt2.state]
+    if bad or new:
+        failures.append(f"remap_adam: {len(bad)} moments differ, {len(new)} new parameters with a state")
+    vq.train()
+    vq(*inp)[1].sum().backward()
+    opt2.step()
+    # the shares: RL_GPU_SHARE and RL_CPU_THREADS in a fresh interpreter
+    env = {**__import__("os").environ, "RL_GPU_SHARE": "0.333", "RL_CPU_THREADS": "10"}
+    out = subprocess.run([sys.executable, "-c", "from rl import limits as L; p = L.Pace('cuda', 0.8); "
+                          "print(L.GPU_SHARE, round(L.SERVER_PACE, 3), round(p.rest, 3), L.MAX_WORKERS, L.GPU_MEM_FRACTION)"],
+                         capture_output=True, text=True, env=env).stdout.split()
+    if out != ["0.333", "2.003", "2.003", "8", "0.333"]:
+        failures.append(f"limits shares: {out}")
+    out = subprocess.run([sys.executable, "-c", "from rl import limits as L; print(L.GPU_SHARE, L.SERVER_PACE, L.MAX_WORKERS)"],
+                         capture_output=True, text=True,
+                         env={k: v for k, v in env.items() if k not in ("RL_GPU_SHARE", "RL_CPU_THREADS")}).stdout.split()
+    if out != ["0.8", "0.0", "14"]:
+        failures.append(f"limits without shares: {out}")
+    # auxiliary heads (log #84): targets from interleaved trajectories; a grown pilot plays as its source; the loss
+    # reaches the trunk
+    r = {"traj": np.array([0, 1, 0, 1, 0, 2]), "reward": np.array([0, 0, 0, -1, 1, 0], dtype=np.float32)}
+    t = aux_targets(r)
+    want_left = np.log1p([2, 1, 1, 0, 0, 0]) / np.log(201.0)
+    if not (np.allclose(t[:, 0], want_left) and np.allclose(t[:, 1], [1, -1, 1, -1, 1, 0])):
+        failures.append(f"aux_targets {t.tolist()}")
+    ax = tiny_pilot(table, text, seed=5, aux_heads=2)
+    grown_aux = load_grown(ax, base.state_dict())
+    with torch.no_grad():                                        # base has taken a step above: its outputs now
+        (l0, v0), (l2, v2) = base.eval()(*inp), ax(*inp)
+    if not (grown_aux and all(k.startswith("aux_head.") for k in grown_aux) and torch.equal(l0, l2) and torch.equal(v0, v2)):
+        failures.append(f"aux_heads: grown {grown_aux}, policy or value changed")
+    ax.train()
+    _, _, pooled = ax(*inp, return_pooled=True)
+    ax.aux_head(pooled).pow(2).mean().backward()
+    if not (ax.blocks[0].qkv.weight.grad is not None and ax.blocks[0].qkv.weight.grad.abs().sum() > 0):
+        failures.append("aux_heads: the auxiliary loss does not reach the trunk")
+    with tempfile.TemporaryDirectory() as tmp:
+        export_token_onnx(ax, str(Path(tmp) / "ax.onnx"))
+    print(f"lab: llr = direct ({direct:.3f}), grows under H1 {up[0]:.1f} -> {up[1]:.1f}, H0 {down[0]:.1f} -> {down[1]:.1f}; "
+          f"pair scores, cli; grown pilot ({len(missing)} new weights, policy unchanged), remap_adam, shares ok")
+
+
+def check_lam_turn(failures):
+    """rl/train.py advantages with lam_turn (log #96): lambda 1 inside a turn, lam across turns, on a hand-made
+    trajectory interleaved with another; with lam_turn None it is the ordinary GAE."""
+    v = np.array([0.1, 0.5, 0.2, 0.3, -0.4, 0.6], dtype=np.float32)
+    r = {"action": np.zeros(6), "value": v, "reward": np.array([0, 0, 0, 0, 1, -1], dtype=np.float32),
+         "done": np.array([0, 0, 0, 0, 1, 1]), "traj": np.array([0, 1, 0, 0, 0, 1]),
+         "obs.glob": np.array([[1], [2], [1], [3], [3], [4]], dtype=np.uint8)}
+    a, _ = advantages(r, 1.0, 0.0, 1.0)
+    # trajectory 0 at rows 0, 2, 3, 4 with turns 1, 1, 3, 3: the deltas, then lambda 1 within turn 3 and within turn 1
+    d4 = 1 - v[4]
+    d3 = v[4] - v[3]
+    d2 = v[3] - v[2]
+    d0 = v[2] - v[0]
+    want0 = {4: d4, 3: d3 + d4, 2: d2, 0: d0 + d2}
+    plain, _ = advantages(r, 1.0, 0.5)
+    same, _ = advantages(r, 1.0, 0.5, None)
+    if not (all(np.isclose(a[i], w) for i, w in want0.items()) and np.isclose(a[5], -1 - v[5]) and np.isclose(a[1], v[5] - v[1])
+            and np.allclose(plain, same)):
+        failures.append(f"lam_turn advantages {a.tolist()}, want {want0}")
+    print("lam_turn: lambda 1 inside a turn, lam across turns, interleaved trajectories; None = ordinary GAE")
+
+
+def check_lab_loop(failures):
+    """rl/lab.py's loop with fake runs (an iteration count per run). (1) A STOP in the middle of a branch's segment, then
+    a restart: every card is decided once, at the right iteration, including one that finished before the stop. (2) A
+    card adopted while a two-segment card runs: that card is rebased and decided again from the new main line. (3) A held
+    card that passes is not adopted, and the card beside it is not rebased."""
+    from rl import lab
+    names = ("ROOT", "LAB", "MAIN", "CARDS", "BRANCHES", "STOP", "EVENTS", "SETTINGS", "done", "run_metagame", "decide",
+             "milestone", "wait_resources", "keep_awake", "run_warm")
+    forks = {}                                       # a branch's --fork-from at its first segment
+    saved = {k: getattr(lab, k) for k in names}
+
+    def scenario(specs, stop_branch, stops):
+        decided, stop_at = [], {"branch": stop_branch, "main": 10 ** 9}
+        with tempfile.TemporaryDirectory() as tmp:
+            lab.ROOT = Path(tmp)
+            L = lab.ROOT / "lab"
+            lab.LAB, lab.MAIN, lab.CARDS, lab.BRANCHES = L, L / "main", L / "cards", L / "branches"
+            lab.STOP, lab.EVENTS, lab.SETTINGS = L / "STOP", L / "events.jsonl", L / "lab.json"
+            lab.done = lambda run: int((run / "checkpoint.pt").read_text()) if (run / "checkpoint.pt").exists() else 0
+
+            def run_metagame(run, args, until, s):
+                run.mkdir(parents=True, exist_ok=True)
+                if "--fork-from" in args:
+                    forks[run.name] = args[args.index("--fork-from") + 1]
+                if stop_at["branch"] and run.name.startswith(stop_at["branch"]):  # stopped after 2 of its iterations
+                    (run / "checkpoint.pt").write_text("152")
+                    stop_at["branch"] = None
+                    lab.STOP.touch()
+                    return True
+                (run / "checkpoint.pt").write_text(str(until))
+                if run.name == "main" and until >= stop_at["main"]:
+                    lab.STOP.touch()
+                return True
+
+            def decide(c, m, s):
+                decided.append((c["id"], m))
+                final = m >= c["base"] + s["seg"] * c.get("segments", 1)
+                end = "measured" if c["kind"] == "aa" else "passed" if "pass" in c["id"] else "inconclusive"
+                return {"at": m, **({"status": end} if final else {})}
+
+            lab.run_metagame, lab.decide = run_metagame, decide
+            lab.run_warm = lambda c, base, s: lab.BRANCHES / c["id"] / "warm.pt"
+            lab.milestone, lab.keep_awake = (lambda k, s: None), (lambda: None)
+            lab.wait_resources = lambda s: not lab.STOP.exists()
+            for d in (lab.MAIN, lab.CARDS):
+                d.mkdir(parents=True)
+            (lab.MAIN / "checkpoint.pt").write_text("150")
+            for cid, kind, segs in specs:
+                lab.save_card({"id": cid, "kind": kind, "segments": segs, "args": {}, **({"hold": True} if "hold" in cid else {}),
+                               **({"warm": {"pilot-opts": {}}} if "warm" in cid else {})})
+            runs = []
+            with contextlib.redirect_stdout(io.StringIO()):
+                for stop in stops:
+                    if lab.STOP.exists():
+                        lab.STOP.unlink()
+                    stop_at["main"] = stop
+                    lab.lab_main()
+                    runs.append(list(decided))
+            status = {c["id"]: (c.get("status"), c.get("base")) for c in lab.cards()}
+            return runs, status, [a["card"] for a in lab.settings()["adopted"]]
+
+    try:
+        runs, status, _ = scenario((("001-aa", "aa", 1), ("002-aa", "aa", 1), ("003-pilot", "pilot", 2)), "002", (10 ** 9, 190))
+        want = [("001-aa", 160), ("002-aa", 160), ("003-pilot", 170), ("003-pilot", 180)]
+        if runs != [[], want] or status != {"001-aa": ("measured", 150), "002-aa": ("measured", 150),
+                                            "003-pilot": ("inconclusive", 160)}:
+            failures.append(f"lab loop, restart: decided {runs}, want [[], {want}]; status {status}")
+        runs2, status2, adopted = scenario((("001-long", "pilot", 2), ("002-pass", "pilot", 1)), None, (190,))
+        want2 = [("001-long", 160), ("002-pass", 160), ("001-long-b", 170), ("001-long-b", 180)]
+        if runs2 != [want2] or adopted != ["002-pass"] or status2 != {
+                "001-long": ("rebased", 150), "001-long-b": ("inconclusive", 160), "002-pass": ("adopted", 150)}:
+            failures.append(f"lab loop, adoption: decided {runs2}, want [{want2}]; status {status2}, adopted {adopted}")
+        runs3, status3, adopted3 = scenario((("001-long", "pilot", 2), ("002-pass-hold", "pilot", 1)), None, (190,))
+        if adopted3 or status3 != {"001-long": ("inconclusive", 150), "002-pass-hold": ("passed-held", 150)}:
+            failures.append(f"lab loop, held card: status {status3}, adopted {adopted3}")
+        forks.clear()
+        scenario((("001-warm", "pilot", 1), ("002-plain", "pilot", 1)), None, (170,))
+        if not (forks.get("001-warm", "").endswith("001-warm/warm.pt") and forks.get("002-plain", "").endswith("seg_0150.pt")):
+            failures.append(f"lab loop, warm card: forks {forks}")
+    finally:
+        for k, v in saved.items():
+            setattr(lab, k, v)
+    print(f"lab loop: a STOP mid-branch and a restart decide each card once ({runs[-1]}); a card running at an adoption "
+          f"is rebased ({runs2[-1]}); a held pass is not adopted; a warm card forks from its warm start")
 
 
 def main():
@@ -529,6 +772,9 @@ def main():
     check_rloo(failures)
     check_draft(failures, table, text, archived, rng)
     check_train(failures, np.random.default_rng(1))
+    check_lab(failures, table, text, np.random.default_rng(2))
+    check_lab_loop(failures)
+    check_lam_turn(failures)
     for f in failures[:20]:
         print("FAIL", f)
     print("FAIL" if failures else "PASS")

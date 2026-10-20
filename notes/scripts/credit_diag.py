@@ -322,9 +322,12 @@ def focus_table(frows, focus, lams, min_n=20):
         cards = {card(k) for k in keys if card(k)}
         for c in sorted(cards) + ["(any)"]:
             idx = [i for i, k in enumerate(keys) if card(k) and (c == "(any)" or card(k) == c)]
-            t = max(idx, key=lambda i: pi[i])                 # the pilot's preferred option for this card (target)
             e = {"p_play": float(sum(f["pi_all"][j] for j, k in enumerate(f["all_keys"])
                                      if card(k) and (c == "(any)" or card(k) == c))), "turn": f["turn"]}
+            if not idx:                                       # offered but not probed (a small --max-options): p_play only
+                by[c].append(e)
+                continue
+            t = max(idx, key=lambda i: pi[i])                 # the pilot's preferred option for this card (target)
             alts = {"attack": [i for i, k in enumerate(keys) if verb(k) == "attack"],
                     "pass": [i for i, k in enumerate(keys) if verb(k) == "pass"],
                     "rest": [i for i in range(len(keys)) if i not in idx]}

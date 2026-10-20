@@ -151,7 +151,8 @@ def load(path, info, device):
                                       slot_bind=cfg.get("slot_bind", False), ability_text=cfg.get("ability_text", False),
                                       deck_mode=cfg.get("deck_mode", "joint"), deck_layers=cfg.get("deck_layers", 1),
                                       history=cfg.get("history", 0), memory=cfg.get("memory", "none"),
-                                      value_tower=cfg.get("value_tower", 0), value_query=cfg.get("value_query", 0)),
+                                      value_tower=cfg.get("value_tower", 0), value_query=cfg.get("value_query", 0),
+                                      aux_heads=cfg.get("aux_heads", 0)),
                       info).to(device)
     net.load_state_dict(st["model"] if "model" in st else st["net"])
     return net.eval()

@@ -70,12 +70,15 @@ class Workers:
                 pass
 
 
-def advantages(r: dict, gamma: float, lam: float):
-    """GAE per trajectory (one player's decisions in one game, in order); reward only at the end."""
+def advantages(r: dict, gamma: float, lam: float, lam_turn: float = None):
+    """GAE per trajectory (one player's decisions in one game, in order); reward only at the end. lam_turn (log #96):
+    the lambda between two decisions of the same game turn (glob byte 0, env/tokens.js), lam across turns, so a turn's
+    outcome credits every decision of that turn in full with lam_turn = 1."""
     T = len(r["action"])
     adv = np.zeros(T, dtype=np.float32)
-    nxt_v, nxt_a = {}, {}
+    nxt_v, nxt_a, nxt_turn = {}, {}, {}
     value, reward, done, traj = r["value"], r["reward"], r["done"], r["traj"]
+    turn = r["obs.glob"].reshape(T, -1)[:, 0] if lam_turn is not None else None
     for t in range(T - 1, -1, -1):
         k = traj[t]
         if done[t]:
@@ -83,8 +86,11 @@ def advantages(r: dict, gamma: float, lam: float):
         else:
             v1, a1 = nxt_v.get(k, 0.0), nxt_a.get(k, 0.0)
         delta = reward[t] + gamma * v1 - value[t]
-        adv[t] = delta + gamma * lam * a1
+        l = lam_turn if turn is not None and nxt_turn.get(k) == turn[t] else lam
+        adv[t] = delta + gamma * l * a1
         nxt_v[k], nxt_a[k] = value[t], adv[t]
+        if turn is not None:
+            nxt_turn[k] = turn[t]
     return adv, adv + value
 
 
@@ -174,6 +180,25 @@ def shape_rewards(r: dict, lam: float, prize_glob) -> np.ndarray:
     return reward
 
 
+def aux_targets(r: dict) -> np.ndarray:
+    """[T, 2] targets of the auxiliary heads (TokenPointerNet aux_heads), from a rollout batch alone, so any game has
+    them: the deciding player's decisions left until its trajectory ends, as log(1 + k) / log(201), and the
+    trajectory's result (the sum of its unshaped rewards; call before shape_rewards). A trajectory's rows may be
+    interleaved with others' but are in decision order."""
+    traj = np.asarray(r["traj"])
+    T = len(traj)
+    order = np.lexsort((np.arange(T), traj))
+    tj = traj[order]
+    starts = np.flatnonzero(np.r_[True, tj[1:] != tj[:-1]])
+    lens = np.diff(np.r_[starts, T])
+    rank = np.arange(T) - np.repeat(starts, lens)
+    left = np.empty(T)
+    left[order] = np.repeat(lens, lens) - 1 - rank
+    result = np.empty(T)
+    result[order] = np.repeat(np.add.reduceat(np.asarray(r["reward"], dtype=np.float64)[order], starts), lens)
+    return np.stack([np.log1p(left) / np.log(201.0), result], 1).astype(np.float32)
+
+
 def legal_mask(idx: torch.Tensor, offsets: torch.Tensor, ids: torch.Tensor, action_size: int) -> torch.Tensor:
     starts, ends = offsets[idx], offsets[idx + 1]
     counts = ends - starts
@@ -206,8 +231,24 @@ def ppo_update(model, opt, batch, args, device):
     # agent-conditioned network (rl/league.py): each transition's agent id
     agents = torch.from_numpy(batch["agent"].astype(np.int64)).to(device) if "agent" in batch else None
     ids = torch.from_numpy(batch["legal_ids"].astype(np.int64)).to(device)
-    adv = (adv - adv.mean()) / (adv.std() + 1e-8)
+    # Mostly greedy collection (--explore, log #81): only the sampled decisions train the policy, since at the others
+    # the recorded log-probability is not what the move was chosen with; the value and the entropy use every decision.
+    pol = torch.from_numpy(batch["sampled"].astype(np.float32)).to(device) if "sampled" in batch \
+        else torch.ones(T, device=device)
+    sel = pol > 0 if int((pol > 0).sum()) >= 2 else torch.ones(T, dtype=torch.bool, device=device)
+    adv = (adv - adv[sel].mean()) / (adv[sel].std() + 1e-8)
     stats = {"pi_loss": 0.0, "v_loss": 0.0, "entropy": 0.0, "kl": 0.0, "clipfrac": 0.0}
+    aux_w = getattr(args, "aux", 0.0) if getattr(model, "aux_heads", 0) and "aux_target" in batch else 0.0
+    if aux_w:
+        aux_t = torch.from_numpy(batch["aux_target"]).to(device)
+        stats["aux_loss"] = 0.0
+    # Expert iteration (log #96): at decisions a turn-level search scored (rl/metagame.py --distill), the cross-entropy
+    # toward the option it found best, at weight args.distill, averaged over the minibatch's searched decisions.
+    dist_w = getattr(args, "distill", 0.0) if "search_target" in batch else 0.0
+    if dist_w:
+        s_t = torch.from_numpy(batch["search_target"].astype(np.int64)).to(device)
+        stats["distill"] = 0.0
+        stats["distill_agree"] = 0.0
     n = 0
     grad_norm, kl_last, n_last = 0.0, 0.0, 0      # pre-clip norm per step; kl over the last epoch only
     tok_len = None
@@ -257,8 +298,12 @@ def ppo_update(model, opt, batch, args, device):
             opt.zero_grad(set_to_none=True)
             # The minibatch's loss is accumulated over micro-batches (same gradient, less memory).
             mb_stats = {k: 0.0 for k in stats}
+            M = float(sum(pol[j].sum() for j, _ in micros))      # the minibatch's decisions that train the policy
+            S = float(sum((s_t[j] >= 0).sum() for j, _ in micros)) if dist_w else 0.0   # ... that a search scored
             for j, mem_lens in micros:
                 w = len(j) / rows
+                pm = pol[j]
+                wp = float(pm.sum()) / M if M > 0 else 0.0
                 with torch.autocast("cuda", dtype=torch.bfloat16, enabled=args.amp and device == "cuda"):
                     xs = [x[j] for x in inputs]
                     if tok_len is not None:
@@ -267,7 +312,11 @@ def ppo_update(model, opt, batch, args, device):
                     kw = {"agent": agents[j]} if agents is not None else {}
                     if memory:
                         kw["mem_lens"] = mem_lens
-                    logits, v = model(*xs, **kw)
+                    if aux_w:
+                        logits, v, pooled = model(*xs, return_pooled=True, **kw)
+                        aux_loss = ((model.aux_head(pooled).float() - aux_t[j]) ** 2).mean()
+                    else:
+                        logits, v = model(*xs, **kw)
                 logits, v = logits.float(), v.float()
                 mask = legal_mask(j, offsets, ids, model.action_size)
                 logits = logits.masked_fill(~mask, -1e9)
@@ -277,7 +326,8 @@ def ppo_update(model, opt, batch, args, device):
                 entropy = -(p_all * logp_all).masked_fill(~mask, 0.0).sum(-1).mean()
                 ratio = (logp - old_logp[j]).exp()
                 a = adv[j]
-                pi_loss = -torch.min(ratio * a, ratio.clamp(1 - args.clip, 1 + args.clip) * a).mean()
+                pi_rows = -torch.min(ratio * a, ratio.clamp(1 - args.clip, 1 + args.clip) * a) * pm
+                pi_loss = pi_rows.sum() / pm.sum().clamp(min=1)
                 vclip = getattr(args, "value_clip", None)
                 vclip = args.clip if vclip is None else vclip
                 if vclip > 0:
@@ -285,15 +335,29 @@ def ppo_update(model, opt, batch, args, device):
                     v_loss = torch.max((v - ret[j]) ** 2, (v_clipped - ret[j]) ** 2).mean()
                 else:
                     v_loss = ((v - ret[j]) ** 2).mean()
-                loss = pi_loss + args.vf * v_loss - args.ent * entropy
-                (loss * w).backward()
+                # the policy term is the mean over the minibatch's policy decisions (all of them without --explore)
+                loss = (pi_rows.sum() / M if M > 0 else 0.0 * pi_rows.sum()) + w * (args.vf * v_loss - args.ent * entropy)
+                if aux_w:
+                    loss = loss + w * aux_w * aux_loss
+                if dist_w and S > 0:
+                    srow = s_t[j] >= 0
+                    if srow.any():
+                        ce = -logp_all[srow].gather(1, s_t[j][srow, None]).squeeze(1)
+                        loss = loss + dist_w * ce.sum() / S
+                        with torch.no_grad():
+                            mb_stats["distill"] += ce.sum().item() / S
+                            mb_stats["distill_agree"] += (logp_all[srow].argmax(1) == s_t[j][srow]).float().sum().item() / S
+                loss.backward()
                 pace.tick()                   # per micro-batch: the same share of rest, in finer slices
                 with torch.no_grad():
-                    mb_stats["pi_loss"] += w * pi_loss.item()
+                    n_pm = pm.sum().clamp(min=1)
+                    mb_stats["pi_loss"] += wp * pi_loss.item()
                     mb_stats["v_loss"] += w * v_loss.item()
                     mb_stats["entropy"] += w * entropy.item()
-                    mb_stats["kl"] += w * (old_logp[j] - logp).mean().item()
-                    mb_stats["clipfrac"] += w * ((ratio - 1).abs() > args.clip).float().mean().item()
+                    if aux_w:
+                        mb_stats["aux_loss"] += w * aux_loss.item()
+                    mb_stats["kl"] += wp * ((old_logp[j] - logp) * pm).sum().item() / n_pm.item()
+                    mb_stats["clipfrac"] += wp * (((ratio - 1).abs() > args.clip).float() * pm).sum().item() / n_pm.item()
             grad_norm += float(torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm))
             opt.step()
             for k in stats:
@@ -332,9 +396,52 @@ def build_model(args, info):
                                  slot_bind=getattr(args, "slot_bind", False), ability_text=getattr(args, "ability_text", False),
                                  deck_mode=getattr(args, "deck_mode", "joint"), deck_layers=getattr(args, "deck_layers", 1),
                                  history=getattr(args, "history", 0), memory=getattr(args, "memory", "none"),
-                                 value_tower=getattr(args, "value_tower", 0), value_query=getattr(args, "value_query", 0))
+                                 value_tower=getattr(args, "value_tower", 0), value_query=getattr(args, "value_query", 0),
+                                 aux_heads=getattr(args, "aux_heads", 0))
     i = info["identity"] if "identity" in info else info
     return IdentityMLP(i["obsSize"], i["actionSize"], args.hidden, args.layers)
+
+
+# Weights a pilot may lack when a checkpoint is read into a larger architecture: new modules that start as the
+# identity or at zero, so the larger pilot plays as the checkpoint did (log #77; the lab's branches, rl/lab.py). The
+# memory core (mem_*) starts at zero through mem_out; history tokens (hist_*) and a separate deck encoder (deck_*) do
+# not start as the identity (new tokens to attend to; the board encoder stops seeing the deck), log #94.
+NEW_WEIGHTS = ("cross_extra.", "cand_blocks.", "vquery", "vcross.", "vblocks.", "ln_v.", "owner.", "same_bias",
+               "ability_proj.", "aux_head.", "mem_", "hist_", "deck_null", "deck_blocks.", "fuse.")
+ZERO_AT_GROWTH = ("owner.weight", "ability_proj.weight", "ability_proj.bias",   # additive inputs: start at 0
+                  "fuse.0.proj.weight", "fuse.0.proj.bias", "fuse.0.ff.2.weight", "fuse.0.ff.2.bias")   # deck fusion: a pass-through
+
+
+def token_net(cfg: dict, info: dict, **overrides):
+    """A TokenPointerNet with a checkpoint's architecture (TokenPointerNet.config()) plus `overrides`, sized to the
+    workers' current token bounds (info), as build_model does."""
+    c = {"count_features": False, "cross_layers": 1, "cand_self": 0, **cfg, **overrides}   # older configs lack these
+    return build_model(argparse.Namespace(model="tokens", d=c["d"], tok_layers=c["layers"], heads=c["heads"],
+                                          **{k: c[k] for k in ("count_features", "cross_layers", "cand_self", "n_agents",
+                                                               "card_inputs", "deck_tokens", "slot_bind", "ability_text",
+                                                               "deck_mode", "deck_layers", "history", "memory",
+                                                               "value_tower", "value_query", "aux_heads") if k in c}), info)
+
+
+def load_grown(model, state: dict) -> list:
+    """Loads `state` into `model`, which may have new modules (NEW_WEIGHTS) the state lacks; returns those."""
+    missing, unexpected = model.load_state_dict(state, strict=False)
+    assert not unexpected, f"checkpoint has weights this model lacks: {unexpected[:5]}"
+    assert all(k.startswith(NEW_WEIGHTS) for k in missing), f"missing weights: {missing[:5]}"
+    with torch.no_grad():
+        for n, p in model.named_parameters():
+            if n in missing and n in ZERO_AT_GROWTH:
+                p.zero_()
+    return missing
+
+
+def remap_adam(opt_state: dict, old_names: list, model) -> dict:
+    """An Adam state_dict for `model`'s parameters, from one saved for parameters named `old_names` (in their
+    order): each parameter the old model had keeps its moments, by name; a new one starts without."""
+    by_name = {n: opt_state["state"][i] for i, n in enumerate(old_names) if i in opt_state["state"]}
+    names = [n for n, _ in model.named_parameters()]
+    group = {**opt_state["param_groups"][0], "params": list(range(len(names)))}
+    return {"state": {i: by_name[n] for i, n in enumerate(names) if n in by_name}, "param_groups": [group]}
 
 
 def export_policy(model, path: Path, kind: str) -> str:
@@ -411,6 +518,12 @@ def main(argv=None):
                     help="GAE lambda of the value targets (default --lam; 1 = Monte Carlo returns; log #77)")
     ap.add_argument("--vf", type=float, default=0.5)
     ap.add_argument("--ent", type=float, default=0.01)
+    ap.add_argument("--explore", type=float, default=None,
+                    help="mostly greedy collection (gpu inference; log #81): each decision samples with this probability "
+                         "and otherwise plays the top option; only the sampled ones train the policy. Default: sample all")
+    ap.add_argument("--policy-share", type=float, default=None,
+                    help="train the policy on only this random share of the (sampled) decisions; the value on all "
+                         "(the control for --explore's thinner policy data, log #82)")
     ap.add_argument("--max-grad-norm", type=float, default=0.5)
     ap.add_argument("--shaping", type=float, default=0.0, help="prize-shaping weight at iteration 0 (shape_rewards)")
     ap.add_argument("--shaping-iters", type=int, default=100, help="iterations over which the shaping fades to 0")
@@ -430,6 +543,8 @@ def main(argv=None):
     args = ap.parse_args(argv)
     if args.model == "tokens" and args.inference != "gpu":
         raise SystemExit("the token model needs --inference gpu")
+    if args.explore is not None and (args.inference != "gpu" or not 0 < args.explore <= 1):
+        raise SystemExit("--explore needs --inference gpu and a probability in (0, 1]")
 
     run = ROOT / args.run
     (run / "policies").mkdir(parents=True, exist_ok=True)
@@ -520,11 +635,15 @@ def main(argv=None):
                      "concurrency": args.concurrency, "deckoutWin": args.deckout_win, "seed": args.seed * 1_000_003 + it * 1009 + w,
                      "matchups": matchups, "opponents": opponents, "out": str(run / f"rollout_w{w}.bin"),
                      "history": getattr(args, "history", 0),
+                     **({"explore": args.explore} if args.explore is not None else {}),
                      **({"model": str(policy)} if args.inference == "onnx" else {})} for w in range(args.workers)]
             replies = pool.collect(msgs, models, device) if args.inference == "gpu" else pool.ask_all(msgs)
             model.train()
             t1 = time.time()
             batch = concat([read_rollout(r["out"]) for r in replies])
+            if args.policy_share is not None:      # the control for --explore (log #82): only a random share trains the policy
+                keep = np.random.default_rng(args.seed * 7919 + it).random(len(batch["action"])) < args.policy_share
+                batch["sampled"] = (batch.get("sampled", np.ones(len(keep), np.uint8)) * keep).astype(np.uint8)
             lam_shape = args.shaping * max(0.0, 1.0 - it / max(args.shaping_iters, 1))
             if lam_shape:
                 batch["reward"] = shape_rewards(batch, lam_shape, info["tokens"]["prizeGlob"])
@@ -554,7 +673,8 @@ def main(argv=None):
                    "endings_by_kind": ending_kinds(games),
                    "win_vs": {k: round(float(np.mean(v)), 4) for k, v in vs.items()},
                    "shaping": round(lam_shape, 5), "collect_s": round(t1 - t0, 1), "train_s": round(t2 - t1, 1), **{k: round(v, 5) for k, v in stats.items()},
-                   "ev_mc": ev_mc, "ev_open": ev_open, "lr": opt.param_groups[0]["lr"]}
+                   "ev_mc": ev_mc, "ev_open": ev_open, "lr": opt.param_groups[0]["lr"],
+                   **({"sampled": round(float(batch["sampled"].mean()), 4)} if "sampled" in batch else {})}
             log.write(json.dumps(row) + "\n")
             log.flush()
             print(f"it {it:4d}  T={row['transitions']:6d} games={row['games']:4d} len={row['steps_per_game']:.0f} "

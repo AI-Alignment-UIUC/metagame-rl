@@ -7,6 +7,8 @@ from the `pre-simplify` tag). Training never imports this; the archived lists an
               equilibrium and its support, cyclic triads (intransitivity)
   archived    every agent's deck against each of the 24 archived lists, both piloted by one common pilot
               (--common), so the decks are compared without the pilots' differences
+  sb_archived the same panel with SimpleBot on both sides (log #85): a pilot that shares no habits with the
+              learned ones (#69: pilot-v2 also leaves draw Trainers unplayed, which favours Trainer-light decks)
   answer key  each deck's nearest archived archetype by card overlap, the field staples it plays, and its
               card classes
 
@@ -18,7 +20,6 @@ import json
 import subprocess
 import tempfile
 from pathlib import Path
-from types import SimpleNamespace
 
 import numpy as np
 import torch
@@ -29,7 +30,7 @@ from rl.decks import Pool, archived_decks, deck_shape, overlap
 from rl.gpu_matrix import GpuMatrix
 from rl.nash import solve
 from rl.remote import RemotePool
-from rl.train import build_model, export_policy
+from rl.train import export_policy, token_net
 
 ROOT = Path(__file__).resolve().parent.parent
 # Cards in most archived lists (log #24 and the A5 ablations): evaluation only, never an input.
@@ -64,7 +65,8 @@ def main(argv=None):
     ap.add_argument("--common", default="runs/pilot-v2/model_it00349.pt", help="pilot for the archived-list panel")
     ap.add_argument("--games", type=int, default=32, help="games per pair, meta and archived panel")
     ap.add_argument("--simplebot-games", type=int, default=200)
-    ap.add_argument("--skip", nargs="*", default=[], choices=["simplebot", "meta", "archived"])
+    ap.add_argument("--skip", nargs="*", default=[], choices=["simplebot", "meta", "archived", "sb_archived"])
+    ap.add_argument("--sb-archived-games", type=int, default=240, help="sb_archived: games per deck (both directions)")
     ap.add_argument("--workers", type=int, default=14)
     ap.add_argument("--seed", type=int, default=7)
     ap.add_argument("--out")
@@ -91,10 +93,7 @@ def main(argv=None):
     info = rp.ask_all([{"cmd": "info"}] * args.workers)[0]
 
     def load(state, cfg):
-        net = build_model(SimpleNamespace(model="tokens", d=cfg["d"], tok_layers=cfg["layers"], heads=cfg["heads"],
-                                          count_features=cfg.get("count_features", False),
-                                          cross_layers=cfg.get("cross_layers", 1), cand_self=cfg.get("cand_self", 0)),
-                          info).to(device)
+        net = token_net(cfg, info).to(device)          # any architecture options the checkpoint has (rl/lab.py)
         net.load_state_dict(state)
         return net.eval()
     if "net" in st:
@@ -114,7 +113,7 @@ def main(argv=None):
                            "cyclic_triads": cyclic_triads(P, G), **gm.last}
         if "archived" not in args.skip:
             c = torch.load(ROOT / args.common, map_location=device, weights_only=False)
-            models[N] = load(c["model"], c["config"])
+            models[N] = load(c["model"] if "model" in c else c["net"], c["config"])   # rl.train or rl.metagame
             panel = decks + [{"name": n, "cards": pool.names(v)} for n, v in archived]
             pairs = [(i, N + j) for i in range(N) for j in range(len(archived))]
             W, G, _ = gm.play(panel, args.games, args.seed + 1, pairs=pairs, slots=[N] * len(panel), models=models)
@@ -136,6 +135,26 @@ def main(argv=None):
                                 "--json", str(res)], cwd=ROOT, check=True, stdout=subprocess.DEVNULL)
                 r = json.load(open(res))
                 out.setdefault("simplebot", []).append({"win": round(r["all"]["xWinRate"], 4), "ci95": round(r["all"]["ci95"], 4)})
+
+    if "sb_archived" not in args.skip:
+        # Each deck as D1 against the 24 lists as D2 (evaluate.js cycles D2; even games SimpleBot X has D1, odd D2,
+        # so D1's rate is dir1's for X and 1 - dir2's).
+        arch = [{"name": n, "cards": pool.names(v)} for n, v in archived]
+        with tempfile.TemporaryDirectory() as tmp:
+            rates = []
+            for k in range(N):
+                dfile, res = Path(tmp) / f"sb{k}.json", Path(tmp) / f"sbr{k}.json"
+                dfile.write_text(json.dumps([{"name": "agentdeck", "cards": decks[k]["cards"]}] + arch))
+                subprocess.run(["node", str(ROOT / "env/tools/evaluate.js"), "--x", "simplebot", "--y", "simplebot",
+                                "--decks-file", str(dfile), "--d1", "agentdeck", "--d2", "#", "--tokens",
+                                "--games", str(args.sb_archived_games), "--workers", str(min(6, args.workers)),
+                                "--concurrency", "8", "--seed", str(args.seed + 100 + k), "--json", str(res)],
+                               cwd=ROOT, check=True, stdout=subprocess.DEVNULL)
+                r = json.load(open(res))
+                d1, d2 = r["dir1"], r["dir2"]
+                rates.append((d1["xWinRate"] * d1["n"] + (1 - d2["xWinRate"]) * d2["n"]) / max(d1["n"] + d2["n"], 1))
+            out["sb_archived"] = {"vs_field": np.round(rates, 4).tolist(), "mean": round(float(np.mean(rates)), 4),
+                                  "games_per_deck": args.sb_archived_games}
 
     for k, v in enumerate(vecs):
         o = [overlap(v, x) for _, x in archived]

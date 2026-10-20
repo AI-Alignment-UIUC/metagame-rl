@@ -1,0 +1,478 @@
+{
+ "decks": "runs/lab/main/seg_0200.pt",
+ "games": 64,
+ "pairs": [
+  {
+   "base": 0,
+   "variant": 12,
+   "group": "all",
+   "replaced": 11
+  },
+  {
+   "base": 0,
+   "variant": 13,
+   "group": "draw",
+   "replaced": 7
+  },
+  {
+   "base": 0,
+   "variant": 14,
+   "group": "disrupt",
+   "replaced": 4
+  },
+  {
+   "base": 1,
+   "variant": 15,
+   "group": "all",
+   "replaced": 49
+  },
+  {
+   "base": 1,
+   "variant": 16,
+   "group": "draw",
+   "replaced": 8
+  },
+  {
+   "base": 1,
+   "variant": 17,
+   "group": "search",
+   "replaced": 1
+  },
+  {
+   "base": 1,
+   "variant": 18,
+   "group": "disrupt",
+   "replaced": 9
+  },
+  {
+   "base": 1,
+   "variant": 19,
+   "group": "tempo",
+   "replaced": 11
+  },
+  {
+   "base": 2,
+   "variant": 20,
+   "group": "all",
+   "replaced": 12
+  },
+  {
+   "base": 2,
+   "variant": 21,
+   "group": "draw",
+   "replaced": 7
+  },
+  {
+   "base": 2,
+   "variant": 22,
+   "group": "search",
+   "replaced": 3
+  },
+  {
+   "base": 2,
+   "variant": 23,
+   "group": "disrupt",
+   "replaced": 2
+  },
+  {
+   "base": 3,
+   "variant": 24,
+   "group": "all",
+   "replaced": 14
+  },
+  {
+   "base": 3,
+   "variant": 25,
+   "group": "draw",
+   "replaced": 8
+  },
+  {
+   "base": 3,
+   "variant": 26,
+   "group": "search",
+   "replaced": 2
+  },
+  {
+   "base": 3,
+   "variant": 27,
+   "group": "disrupt",
+   "replaced": 4
+  },
+  {
+   "base": 4,
+   "variant": 28,
+   "group": "all",
+   "replaced": 10
+  },
+  {
+   "base": 4,
+   "variant": 29,
+   "group": "draw",
+   "replaced": 6
+  },
+  {
+   "base": 4,
+   "variant": 30,
+   "group": "disrupt",
+   "replaced": 4
+  },
+  {
+   "base": 5,
+   "variant": 31,
+   "group": "all",
+   "replaced": 11
+  },
+  {
+   "base": 5,
+   "variant": 32,
+   "group": "draw",
+   "replaced": 5
+  },
+  {
+   "base": 5,
+   "variant": 33,
+   "group": "search",
+   "replaced": 3
+  },
+  {
+   "base": 5,
+   "variant": 34,
+   "group": "disrupt",
+   "replaced": 3
+  },
+  {
+   "base": 6,
+   "variant": 35,
+   "group": "all",
+   "replaced": 11
+  },
+  {
+   "base": 6,
+   "variant": 36,
+   "group": "draw",
+   "replaced": 6
+  },
+  {
+   "base": 6,
+   "variant": 37,
+   "group": "search",
+   "replaced": 1
+  },
+  {
+   "base": 6,
+   "variant": 38,
+   "group": "disrupt",
+   "replaced": 4
+  },
+  {
+   "base": 7,
+   "variant": 39,
+   "group": "all",
+   "replaced": 13
+  },
+  {
+   "base": 7,
+   "variant": 40,
+   "group": "draw",
+   "replaced": 8
+  },
+  {
+   "base": 7,
+   "variant": 41,
+   "group": "search",
+   "replaced": 1
+  },
+  {
+   "base": 7,
+   "variant": 42,
+   "group": "disrupt",
+   "replaced": 4
+  },
+  {
+   "base": 8,
+   "variant": 43,
+   "group": "all",
+   "replaced": 10
+  },
+  {
+   "base": 8,
+   "variant": 44,
+   "group": "draw",
+   "replaced": 6
+  },
+  {
+   "base": 8,
+   "variant": 45,
+   "group": "search",
+   "replaced": 1
+  },
+  {
+   "base": 8,
+   "variant": 46,
+   "group": "disrupt",
+   "replaced": 3
+  },
+  {
+   "base": 9,
+   "variant": 47,
+   "group": "all",
+   "replaced": 13
+  },
+  {
+   "base": 9,
+   "variant": 48,
+   "group": "draw",
+   "replaced": 7
+  },
+  {
+   "base": 9,
+   "variant": 49,
+   "group": "search",
+   "replaced": 2
+  },
+  {
+   "base": 9,
+   "variant": 50,
+   "group": "disrupt",
+   "replaced": 4
+  },
+  {
+   "base": 10,
+   "variant": 51,
+   "group": "all",
+   "replaced": 18
+  },
+  {
+   "base": 10,
+   "variant": 52,
+   "group": "search",
+   "replaced": 4
+  },
+  {
+   "base": 10,
+   "variant": 53,
+   "group": "disrupt",
+   "replaced": 4
+  },
+  {
+   "base": 11,
+   "variant": 54,
+   "group": "all",
+   "replaced": 11
+  },
+  {
+   "base": 11,
+   "variant": 55,
+   "group": "draw",
+   "replaced": 6
+  },
+  {
+   "base": 11,
+   "variant": 56,
+   "group": "search",
+   "replaced": 1
+  },
+  {
+   "base": 11,
+   "variant": 57,
+   "group": "disrupt",
+   "replaced": 4
+  }
+ ],
+ "players": {
+  "runs/lab/main/seg_0220.pt": {
+   "by_group": {
+    "all": {
+     "decks": 12,
+     "score": 0.5651,
+     "ci": [
+      0.5481,
+      0.5821
+     ],
+     "replaced": 15.2
+    },
+    "draw": {
+     "decks": 11,
+     "score": 0.5327,
+     "ci": [
+      0.4966,
+      0.5687
+     ],
+     "replaced": 6.7
+    },
+    "search": {
+     "decks": 10,
+     "score": 0.4727,
+     "ci": [
+      0.4184,
+      0.5269
+     ],
+     "replaced": 1.9
+    },
+    "disrupt": {
+     "decks": 12,
+     "score": 0.5169,
+     "ci": [
+      0.4771,
+      0.5567
+     ],
+     "replaced": 4.1
+    },
+    "tempo": {
+     "decks": 1,
+     "score": 0.5156,
+     "ci": [
+      -0.4644,
+      1.4956
+     ],
+     "replaced": 11.0
+    }
+   },
+   "per_pair": [
+    0.5938,
+    0.5391,
+    0.4922,
+    0.5312,
+    0.6094,
+    0.5,
+    0.4844,
+    0.5156,
+    0.5938,
+    0.5469,
+    0.4688,
+    0.5469,
+    0.5312,
+    0.5781,
+    0.5156,
+    0.4844,
+    0.5781,
+    0.4531,
+    0.5703,
+    0.5781,
+    0.5781,
+    0.5234,
+    0.5234,
+    0.6094,
+    0.625,
+    0.4375,
+    0.5469,
+    0.5703,
+    0.4531,
+    0.4375,
+    0.6406,
+    0.5547,
+    0.4688,
+    0.4688,
+    0.4297,
+    0.5859,
+    0.5078,
+    0.3281,
+    0.5781,
+    0.5156,
+    0.6562,
+    0.375,
+    0.5391,
+    0.5,
+    0.3906,
+    0.5312
+   ]
+  },
+  "simplebot": {
+   "by_group": {
+    "all": {
+     "decks": 12,
+     "score": 0.3932,
+     "ci": [
+      0.2815,
+      0.5049
+     ],
+     "replaced": 15.2
+    },
+    "draw": {
+     "decks": 11,
+     "score": 0.3736,
+     "ci": [
+      0.261,
+      0.4862
+     ],
+     "replaced": 6.7
+    },
+    "search": {
+     "decks": 10,
+     "score": 0.5,
+     "ci": [
+      0.4557,
+      0.5443
+     ],
+     "replaced": 1.9
+    },
+    "disrupt": {
+     "decks": 12,
+     "score": 0.4388,
+     "ci": [
+      0.3636,
+      0.514
+     ],
+     "replaced": 4.1
+    },
+    "tempo": {
+     "decks": 1,
+     "score": 0.3906,
+     "ci": [
+      -0.5894,
+      1.3706
+     ],
+     "replaced": 11.0
+    }
+   },
+   "per_pair": [
+    0.4688,
+    0.3438,
+    0.4219,
+    0.875,
+    0.875,
+    0.5,
+    0.4688,
+    0.3906,
+    0.5,
+    0.4844,
+    0.5469,
+    0.5312,
+    0.1406,
+    0.1875,
+    0.3906,
+    0.5,
+    0.3438,
+    0.25,
+    0.3594,
+    0.4375,
+    0.3281,
+    0.4844,
+    0.5,
+    0.3125,
+    0.25,
+    0.3906,
+    0.4844,
+    0.2656,
+    0.25,
+    0.5312,
+    0.5312,
+    0.5,
+    0.4062,
+    0.6094,
+    0.5469,
+    0.3281,
+    0.2812,
+    0.4844,
+    0.3281,
+    0.125,
+    0.5781,
+    0.0781,
+    0.4219,
+    0.4531,
+    0.4844,
+    0.5156
+   ]
+  }
+ }
+}

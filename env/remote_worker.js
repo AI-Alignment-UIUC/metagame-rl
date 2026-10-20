@@ -6,7 +6,10 @@
 //   { "cmd": "info" }
 //   { "cmd": "collect", "encoding": "identity" | "tokens", "transitions": 20000, "out": "<file>",
 //     "seed": 1, "concurrency": 64, "matchups": [[deckA, deckB], ...],
-//     "opponents": [{ "spec": "self" | "slot:<k>" | "random" | "first" | "heuristic", "weight": 1 }] }
+//     "opponents": [{ "spec": "self" | "slot:<k>" | "random" | "first" | "heuristic", "weight": 1 }],
+//     "explore": null }
+//     with explore = e, the model seats sample each decision with probability e and otherwise play the top option
+//     (mostly greedy collection, log #81); each recorded decision says which it did ("sampled")
 //   { "cmd": "games", "encoding": "tokens", "decks": [{ name, cards }], "greedy": true, "concurrency": 64,
 //     "jobs": [{ "i": 0, "j": 1, "iSeat": 1, "seed": 7, "rec": true }], "slots": [0, 3, ...], "out": "<file>",
 //     "deckoutWin": 1 }
@@ -46,7 +49,9 @@ let nextGameUid = 1;
 let drops = [];
 
 class RemoteAgent {
-  constructor(slot, encoding, greedy = false) { this.slot = slot; this.encoding = encoding; this.greedy = greedy; }
+  constructor(slot, encoding, greedy = false, explore = null) {
+    this.slot = slot; this.encoding = encoding; this.greedy = greedy; this.explore = explore;
+  }
 
   forget(game) { if (game.uid) { drops.push(game.uid); game.uid = 0; } }
 
@@ -84,7 +89,8 @@ class RemoteAgent {
     }
     arrays.push(['legal_offsets', offsets], ['legal_ids', ids], ['keys', keys], ['drop', Int32Array.from(drops)]);
     drops = [];
-    F.writeFrame(process.stdout, F.REQUEST, F.packArrays({ id, slot: this.slot, n, encoding: this.encoding, greedy: this.greedy }, arrays));
+    F.writeFrame(process.stdout, F.REQUEST, F.packArrays({ id, slot: this.slot, n, encoding: this.encoding, greedy: this.greedy,
+      ...(this.explore != null ? { explore: this.explore } : {}) }, arrays));
     return new Promise(resolve => pending.set(id, resolve));
   }
 }
@@ -94,12 +100,13 @@ async function collect(cmd) {
   const rng = new Rng(cmd.seed);
   const encoding = cmd.encoding || 'identity';
   const enc = encoding === 'tokens' ? tokens : identity;
-  const agents = { learner: new RemoteAgent(0, encoding) };
+  const explore = cmd.explore ?? null;
+  const agents = { learner: new RemoteAgent(0, encoding, false, explore) };
   const opponents = [];
   for (const [i, o] of (cmd.opponents || [{ spec: 'self', weight: 1 }]).entries()) {
     const name = 'opp' + i;
     if (o.spec === 'self') { opponents.push({ name: 'learner', weight: o.weight }); continue; }
-    if (o.spec.startsWith('slot:')) agents[name] = new RemoteAgent(Number(o.spec.slice(5)), encoding);
+    if (o.spec.startsWith('slot:')) agents[name] = new RemoteAgent(Number(o.spec.slice(5)), encoding, false, explore);
     else if (o.spec === 'random') agents[name] = new RandomAgent({ seed: cmd.seed + i });
     else if (o.spec === 'first') agents[name] = new FirstAgent();
     else if (o.spec === 'heuristic') agents[name] = new HeuristicAgent();
@@ -130,7 +137,7 @@ async function collect(cmd) {
 // Plays the listed games and reports each one's result (rl/gpu_matrix.py, rl/metagame.py). Deck i is
 // piloted by model slot cmd.slots[i], or by slot 0 in both seats. With cmd.out, both seats' decisions
 // are recorded and written there.
-async function games(cmd) {
+async function games(cmd, onDecision = null) {
   const t0 = Date.now();
   const encoding = cmd.encoding || 'tokens';
   const enc = encoding === 'tokens' ? tokens : identity;
@@ -164,7 +171,7 @@ async function games(cmd) {
   const recorded = new Set();
   for (const s of new Set(cmd.slots || [0])) recorded.add(pilot(cmd.slots ? cmd.slots.indexOf(s) : 0, true));
   const runner = new Runner(enc, { concurrency: cmd.concurrency || 64, valueAtTurn: cmd.valueAtTurn || 0, deckoutWin: cmd.deckoutWin ?? 1 });
-  const out = await runner.run(nextJob, agents, { record: cmd.out ? recorded : new Set() });
+  const out = await runner.run(nextJob, agents, { record: cmd.out ? recorded : new Set(), onDecision });
   if (cmd.out) fs.writeFileSync(cmd.out, packRollout(out.rec, 0, { encoding, actionSize: enc.MAX_CAND }));
   const bySeed = new Map(cmd.jobs.map(j => [j.seed, j]));
   const results = out.results.map(r => {
@@ -174,6 +181,74 @@ async function games(cmd) {
   });
   return { ok: true, games: results.length, seconds: (Date.now() - t0) / 1000, results,
            ...(cmd.out ? { out: cmd.out, transitions: out.rec.action.length } : {}) };
+}
+
+// Turn-level search for expert iteration (rl/metagame.py --distill, log #96). Phase 1 is `games` (the same jobs,
+// recordings and results); at a recorded main-phase decision (no prompt open) with two or more options it takes a probe
+// with probability probeP, at most maxProbes a game: a copy of the game. Phase 2 plays each of the probe's options (all
+// of them up to maxOptions, else the one played and a random sample of the rest) `lines` times, each from a copy with
+// what the deciding player cannot see re-dealt, by the pilot playing greedily in both seats until the turn is over
+// (or `horizon` turns are, log #103).
+// A line scores the result if the game ended (1 a win for the deciding player, -1 a loss, 0 drawn or cut), else the
+// pilot's value at the first decision after the turn, from the deciding player's side, plus prizeWeight times the
+// prizes the deciding player took in the line. Returns, per probe, its transition index k in cmd.out and each probed
+// option's mean score.
+async function tsearch(cmd) {
+  const t0 = Date.now();
+  const rng = new Rng(cmd.seed || 1);
+  const maxOptions = cmd.maxOptions || 6, maxProbes = cmd.maxProbes || 2, probeP = cmd.probeP ?? 0.1, L = cmd.lines || 2;
+  const prizeWeight = cmd.prizeWeight || 0;
+  const prizesLeft = (game, id) => { const p = game.state.players.find(q => q.id === id); return p ? p.prizes.reduce((a, z) => a + z.cards.length, 0) : 0; };
+  const probes = [], perGame = new Map();
+  const onDecision = (s, ans, idx) => {
+    if (idx < 0 || s.t.legal.length < 2) return;
+    const d = s.env.game.decision();
+    if (d.prompt || (perGame.get(s.id) || 0) >= maxProbes || rng.float() >= probeP) return;
+    let copy;
+    try { copy = s.env.game.clone(new Rng(1)); } catch (e) { return; }
+    perGame.set(s.id, (perGame.get(s.id) || 0) + 1);
+    probes.push({ k: idx, game: copy, decklists: s.env.decklists, player: s.t.playerId, keys: d.options.map(o => o.key),
+                  chosen: ans.action, prizes0: prizesLeft(copy, s.t.playerId) });
+  };
+  const base = await games(cmd, onDecision);
+  const greedy = { o0: new RemoteAgent(0, 'tokens', true) };
+  const lines = [];
+  probes.forEach((p, pi) => {
+    let opts = p.keys.map((_, i) => i);
+    if (opts.length > maxOptions) {
+      const others = opts.filter(i => i !== p.chosen);
+      const order = rng.permutation(others.length);
+      opts = [p.chosen, ...order.slice(0, maxOptions - 1).map(i => others[i])].sort((x, y) => x - y);
+    }
+    p.probed = opts;
+    p.score = opts.map(() => []);
+    opts.forEach((o, oi) => { for (let r = 0; r < L; r++) lines.push({ pi, oi, seed: rng.u32() }); });
+  });
+  let n = 0;
+  const nextLine = () => {
+    if (n >= lines.length) return null;
+    const l = lines[n++];
+    const p = probes[l.pi];
+    return { fromGame: () => p.game.clone(new Rng(l.seed), p.player), decklists: p.decklists, first: p.keys[p.probed[l.oi]],
+             seats: { 1: 'o0', 2: 'o0' }, seed: n, tag: [l.pi, l.oi], untilTurnEnd: true, horizon: cmd.horizon || 1 };
+  };
+  const runner = new Runner(tokens, { concurrency: cmd.concurrency || 64, deckoutWin: cmd.deckoutWin ?? 1 });
+  let errors = 0;
+  const roll = await runner.run(nextLine, greedy, { onDecision: null });
+  for (const r of roll.results) {
+    const [pi, oi] = r.tag;
+    const p = probes[pi];
+    if (r.error) { errors++; continue; }
+    let z;
+    if (r.stopped) z = r.stopped.player === p.player ? r.stopped.value : -r.stopped.value;
+    else z = r.winner === p.player ? 1 : (r.winner === 1 || r.winner === 2) ? -1 : 0;
+    if (prizeWeight && r.prizesLeft) z += prizeWeight * (p.prizes0 - r.prizesLeft[p.player]);
+    p.score[oi].push(z);
+  }
+  const mean = x => (x.length ? x.reduce((a, b) => a + b, 0) / x.length : null);
+  return { ...base, searchSeconds: (Date.now() - t0) / 1000 - base.seconds, lines: lines.length, lineErrors: errors,
+           probes: probes.map(p => ({ k: p.k, chosen: p.chosen, probed: p.probed, score: p.score.map(mean), n: p.score.map(x => x.length),
+                                      keys: p.probed.map(i => p.keys[i]), chosenKey: p.keys[p.chosen] })) };
 }
 
 // Ground-truth action values for the credit diagnostic (notes/scripts/credit_diag.py, log #75); evaluation only.
@@ -287,7 +362,8 @@ F.readFrames(process.stdin, (type, payload) => {
     const { header, arrays } = F.unpackArrays(payload);
     const resolve = pending.get(header.id);
     pending.delete(header.id);
-    resolve(Array.from({ length: header.n }, (_, i) => ({ action: arrays.action[i], logp: arrays.logp[i], value: arrays.value[i] })));
+    resolve(Array.from({ length: header.n }, (_, i) => ({ action: arrays.action[i], logp: arrays.logp[i], value: arrays.value[i],
+                                                          sampled: arrays.sampled ? arrays.sampled[i] : 1 })));
     return;
   }
   if (type !== F.JSON_FRAME) return;
@@ -301,10 +377,11 @@ F.readFrames(process.stdin, (type, payload) => {
                     prizeGlob: PRIZE_GLOB } });
         return;
       }
-      if (msg.cmd === 'collect' || msg.cmd === 'games' || msg.cmd === 'qprobe') tokens.history = msg.history || 0;
+      if (msg.cmd === 'collect' || msg.cmd === 'games' || msg.cmd === 'qprobe' || msg.cmd === 'tsearch') tokens.history = msg.history || 0;
       if (msg.cmd === 'collect') { F.writeJson(process.stdout, await collect(msg)); return; }
       if (msg.cmd === 'games') { F.writeJson(process.stdout, await games(msg)); return; }
       if (msg.cmd === 'qprobe') { F.writeJson(process.stdout, await qprobe(msg)); return; }
+      if (msg.cmd === 'tsearch') { F.writeJson(process.stdout, await tsearch(msg)); return; }
       throw new Error('unknown command ' + msg.cmd);
     } catch (e) {
       F.writeJson(process.stdout, { ok: false, error: String(e && e.stack || e) });

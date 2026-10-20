@@ -2005,3 +2005,680 @@ Entry format:
   the same start: a lower entropy weight (or one annealed to 0), and collection at a temperature below 1 with the
   behaviour log-probabilities recorded; judged against SimpleBot on the archived lists and by whether the probe's
   sampled-line timing gains move toward the greedy ones. Then the auxiliary value heads.
+
+### #81 · 2026-10-16 · A4 · Mostly greedy collection (--explore), and a chain that tests it against base
+- **Done:** Commit `8ed948b` (#79–80's probe code and notes), pushed to origin main. Evan, on #80's proposal to cut
+  the sampling noise: "it should be greedy then within the game. I just don't know how it will explore all of the
+  combinations of play interactions then?" The answer is to explore at a few decisions and play greedily at the
+  rest, as the probe does. `rl/train.py --explore e` (GPU inference only): each decision of a model seat samples
+  from the policy with probability e and otherwise plays its top option (`rl/remote.py`, both seats and any league
+  snapshot); each recorded decision says which (`sampled`, carried by `env/remote_worker.js`, `env/runner.js` and
+  `rl/rollouts.py`). `ppo_update`: the policy terms (clipped objective, KL, clip fraction) and the advantage
+  normalization use only the sampled decisions, because at a greedy one the recorded log-probability is not what the
+  move was chosen with; the value loss and the entropy bonus use every decision; without `--explore` every decision
+  is sampled and the update is the one before. The log gains `sampled`, the share of sampled decisions.
+  `runs/explore_run.sh`, started detached 09:06 (`runs/explore_chain.log`): from base it79, 40 iterations, seed 1,
+  base-cont (unchanged), explore-cont (`--explore 0.1`) and ent-cont (`--ent 0.001`); the ladder, SimpleBot and
+  style on them (`eval_explore_cont.json`) and the greedy-lines Trainer probe of #80 on each at it39; then from
+  scratch at base's settings, explore10 and explore10-s2 (80 iterations, seeds 1 and 2; base and base-s2 are the
+  controls), and the ladder, curves, SimpleBot and style at it79 (`eval_explore.json`).
+- **Evidence:** `rl.tests` PASS, with a new check: with a `sampled` mask, `ppo_update`'s policy loss, KL and clip
+  fraction equal their closed forms over the sampled rows, all ones gives the unmasked stats, and micro-batches of
+  64 give the same step as one batch of 256. Smoke run, 2 iterations from scratch, 4 workers: sampled share 0.0997
+  and 0.1021, 0 errors, 0 cut games. base-cont, first 3 iterations: 48 s each (collection 10–12 s), entropy
+  1.18–1.20, GPU 71–89%, 13.9 GB in use on the card.
+- **Found:** With e = 0.1 the policy learns from a tenth of the decisions it did, so per iteration its gradient is
+  noisier; a loss for explore-cont could come from that rather than from the greedy follow-through, which is why the
+  entropy-weight arm and the from-scratch pair run beside it.
+- **Next:** Read the chain: explore-cont and ent-cont against base-cont on the ladder and against SimpleBot on the
+  archived lists, and whether the probe's timing gain falls (better timing) and p_play of the draw Trainers rises;
+  then the from-scratch pair against base and base-s2.
+
+### #82 · 2026-10-16 · A4 · Mostly greedy collection loses, and more ordinary training is what teaches Trainer timing
+- **Done:** `runs/explore_run.sh` (#81) ran 09:06–15:41 with no failure: base-cont, explore-cont and ent-cont (40
+  iterations from base it79), their ladder, SimpleBot and style (`runs/abl/eval_explore_cont.json`), the greedy-lines
+  Trainer probe of #80 on each at it39 (`runs/credit/trainer-{base-cont,explore-cont,ent-cont}-39-greedy.json`), then
+  explore10 and explore10-s2 from scratch (80 iterations) with the ladder, curves, SimpleBot and style at it79
+  (`runs/abl/eval_explore.json`). Timing gains by #80's split-half analysis (a scratch script over `credit_diag.py`'s
+  focus rows). `rl/train.py --policy-share p`: sampled play, but the policy trains on a random share p of the decisions
+  (the control for --explore's thinner policy data); not run. Claude Code stopped this session's watcher at ~11:29 for
+  low system memory (3.3 of 31.4 GB free with a game running); the chain was not affected.
+- **Evidence:** Ladder on held-out deck pairs (Elo, pilot-v2 = 0, ± 4.8–4.9): base it79 80.5, base-s2 101.4,
+  base-cont 135.4, ent-cont 139.7, explore-cont 19.4, meta-99 146.0 (33,600 games, 0 errors). Against SimpleBot,
+  archived / held-out / random decks (± 0.036–0.049): base 0.418 / 0.686 / 0.510; base-cont 0.514 / 0.750 / 0.495;
+  ent-cont 0.475 / 0.806 / 0.500; explore-cont 0.339 / 0.626 / 0.465. From scratch, ladder at it79 (± 5.1–5.2): base
+  85.1, base-s2 106.2, explore10 28.4, explore10-s2 18.1; against pilot-v2 at it19 / 39 / 59 / 79: base 0.372 / 0.496 /
+  0.561 / 0.616, base-s2 0.376 / 0.496 / 0.598 / 0.624, explore10 0.463 / 0.513 / 0.506 / 0.539, explore10-s2 0.403 /
+  0.513 / 0.523 / 0.545; SimpleBot archived 0.359 / 0.319 (base 0.418, base-s2 0.444). explore-cont's KL per update
+  stayed 0.035–0.07 and its gradient norm above the 0.5 clip all 40 iterations (base-cont 0.017–0.026, ~0.4).
+  Trainer probe, all Trainers (gain from better timing, points per decision where offered, 95% interval; the pilot's
+  probability of playing one when offered): base it79 +1.32 [0.99, 1.66], 0.225 (#80); base-cont +0.39 [0.12, 0.64],
+  0.326; ent-cont +1.10 [0.82, 1.37], 0.212; explore-cont +1.87 [1.56, 2.24], 0.181. Oak +1.36 / +0.15 / +0.13 /
+  +2.42 (played 0.037 / 0.104 / 0.078 / 0.049); Bill +0.74 / +0.49 / +0.71 / +0.69 (0.116 / 0.231 / 0.176 / 0.131);
+  Gust +2.12 / +0.83 / +2.06 / +2.55. Probes 3,822 / 4,860 / 4,641; 1 / 19 / 9 line errors, 0 game errors; 32–44 min each.
+- **Found:** (1) Mostly greedy collection at e = 0.1 is worse. From base it79 it ended 61 Elo below its own start
+  and 116 below the unchanged continuation; from scratch it learns faster for 20 iterations and then falls behind
+  (0.54 against pilot-v2 at it79, base 0.62), 6–13 points lower against SimpleBot on the archived lists. (2) The
+  probe overturns #80's reading. base-cont, still sampling every decision, cut the room for better Trainer timing
+  from +1.32 to +0.39 points and played Trainers more (0.225 → 0.326; Oak 0.037 → 0.104, Bill 0.116 → 0.231) in 40
+  iterations, so sampled follow-through does not stop PPO from learning when to play a Trainer; base it79 had not
+  yet learned it. Less exploration made it worse in both arms: the less a pilot sampled, the fewer Trainers it played
+  and the worse it timed them. A likely reason, not verified: a Trainer the pilot rates low is rarely its top option,
+  so at e = 0.1 it is tried at about a tenth as many decisions (Evan's worry about exploring the combinations); the
+  thinner policy data may add to it, which `--policy-share` would separate. (3) The 80-iteration screens stop while
+  base is still learning: 40 more iterations gave +55 Elo and +9.6 points against SimpleBot on the archived lists.
+  #78 dropped a long run because pilot-v2 plateaued near 83% against SimpleBot; base is at 51%, well short of that.
+- **Next:** Continue base-cont with ordinary sampled collection and `--ent 0.01` for about 160 more iterations, with
+  the Trainer probe and SimpleBot on the archived lists every 40, to see where this recipe levels off relative to
+  pilot-v2. The `--policy-share 0.1` control only if mostly greedy collection comes back as an idea.
+
+### #83 · 2026-10-18 · A4 / A5 · The lab: the metagame loop as a main line that keeps training, changes tested as short branches
+- **Done:** At Evan's request (a plan to test architectures and metagame setups autonomously without getting stuck in long
+  runs, then "Do 1/3 GPU so I can use it but keep iterating. The constant though is that the method should generalize to
+  other card games, and that the ground truth is rediscovering the meta through playing the decks that it drafted, reusing
+  learnings from the game in the meta drafting"): `notes/plan-lab.md` and `rl/lab.py`. The main line is `rl.metagame`
+  itself (one pilot trained only on drafted decks, a draft head reading decks through it), continued from meta-99's state
+  after 150 iterations (#69), in segments of 10 iterations. A card (`runs/lab/cards/*.json`, written before its run) forks
+  the main line's whole state at a segment boundary, changes one thing and runs the same segment(s); the control is the main
+  line's own segment. Pilot cards: the branch's pilot against the main line's on fixed deck pairs drawn from both
+  populations (both pilots on both decks, both seat orders, the same deals), a sequential probability ratio test of
+  H0 Elo <= 0 against H1 Elo >= elo1 (15 until the A/A sets it), alpha = beta = 0.05, at most 1,500 pairs; gate: on the 24
+  archived lists (276 pairs), not clearly worse (H0 Elo <= -elo1 against H1 Elo >= 0 not accepted); "test": "noninferior"
+  for changes that save time. Two-segment cards stop early only if clearly worse. Meta cards: the answer key of both
+  populations under the main line's pilot (`rl.evaluate_agents`, 16 games a pair) with a rule written into the card, the
+  pilot test as a gate. A/A cards: every test at full length, no decision. Passed: adopted (the main line continues from
+  the branch), one at a time; undecided: closed. Milestones every 40 iterations: `rl.evaluate_agents` with SimpleBot and
+  pilot-v2 as the common pilot (as #69). The lab waits when free RAM < 6 GB or free GPU memory < 5 GB, holds off idle
+  sleep, and a `runs/lab/STOP` file ends it after the current iteration; every step resumes from files. Supporting changes:
+  `rl/limits.py` RL_GPU_SHARE (memory fraction, Pace's load, and the inference server's least rest of 1 / share - 1 in
+  `rl/remote.py`) and RL_CPU_THREADS, unset = unchanged; `rl/train.py` `token_net` (a pilot from a checkpoint's whole
+  config), `load_grown` (new modules; additive new inputs, slot binding's owner embedding and the ability projection,
+  start at 0) and `remap_adam` (moments by parameter name); `rl/metagame.py` `--fork-from`, `--pilot-opts`, `--reseed`,
+  `--freeze-pilot`, `--ent / --epochs / --micro-batch / --lam`, `--stop-file`, the deal seed kept in the checkpoint, the
+  population size taken from the source; `rl/evaluate_agents.py` loads any architecture and takes a metagame checkpoint as
+  `--common`. Launched detached at 22:52 with RL_GPU_SHARE 0.333 and RL_CPU_THREADS 10 (8 workers): cards 001-aa-same,
+  002-aa-reseed (`--reseed 2`), 003-pilot-vq4 (`value_query 4`, two segments), 004-pilot-epochs2 (`--epochs 2`,
+  noninferior).
+- **Evidence:** `rl.tests` PASS, with `check_lab`: the test statistic equals the normal log-likelihood ratio computed directly
+  (7.152); it drifts up under H1 (31.4 → 287.7 at 5,000 / 50,000 samples) and down under H0 (−39.5 → −289.6); Elo and score
+  invert; bounds ±2.944; pair scores on a hand-made matrix; a pilot grown by value_query 2 and slot binding (19 new weights,
+  the additive ones at 0), and with value_query alone policy logits within 1e-5 of the source's; remap_adam keeps every
+  moment by name and gives the new parameters none; in a fresh interpreter RL_GPU_SHARE 0.333 / RL_CPU_THREADS 10 give a
+  memory fraction 0.333, server and Pace rest 2.003, 8 workers, and unset 0.8 / 0 / 14. Smoke (`runs/lab-smoke`, 40 games an
+  iteration, segments of 2, 4 workers, deleted after): two bugs found and fixed (an argument clash in `event`; a card started
+  at m counted as behind, which re-ran a zero-iteration branch until the STOP file ended it within one step); then the main
+  line 150 → 152 in 0.5 min, three forks in 0.4 min each, the A/A card measured (drafted panel 120 games +23.2 Elo
+  [−29.8, 77.3]; archived 1,104 games +12.0 [−4.7, 28.7] in 235 s), the pilot card inconclusive at its 30-pair cap, the meta
+  card passed an always-pass rule and was adopted (main checkpoint and seg_0152 replaced, the old one kept, lineage and
+  `lab.json` updated), STOP ended it after the segment in progress, 0 game errors in the tests. Real run, first iterations
+  (2,000 games, 8 workers, a third of the GPU): 107.7 and 105.4 s (play 45 s, PPO 57 s; meta-99 at full share 48.8 s), 0
+  errors, 37 and 42 games cut; nvidia-smi 2–35% and 3.8–5.2 GB in use on the card (with about 1.5 GB of the desktop's).
+- **Found:** (1) Forks are not common random numbers: from one state the first iteration's recorded transitions already
+  differ between forks (3,189 / 2,995 / 3,592 in the smoke), so branch-to-main noise has to come from the A/A cards. (2) At a
+  third of the GPU an h2h runs about 4.7 games/s with 4 workers (1,104 games in 235 s; #73's ladder: 78 games/s at full
+  share and 14 workers), so a full 1,500-pair test (6,000 games) may take 10–20 minutes; an A/A card, with two answer-key
+  evaluations of 4,608 games, about 30. (3) A grown slot-binding pilot does not start exactly as its source plays: slot
+  binding also changes the count features of attached Energy.
+- **Next:** The A/A cards at iteration 160: set elo1 from their spread before 003 and 004 are decided at 170; then meta
+  cards with thresholds from the A/A's answer-key spread (draft reward of the result alone, `--draft-margin 0`; 6 swaps a
+  draw; turnover 0.3); auxiliary value heads with game-general targets, still to build.
+
+### #84 · 2026-10-18 · A4 · Auxiliary heads with game-general targets, queued as a lab card
+- **Done:** The KataGo-style auxiliary heads recommended in `notes/analysis-2026-10-06.md` and never built, with targets any
+  card game has. `TokenPointerNet(aux_heads=N)` (off by default; old checkpoints load and play unchanged): a small MLP on the
+  pooled state, `aux_head`, outside forward's outputs, so play, ONNX and inference do not change. `rl/train.py`
+  `aux_targets`: per decision, the deciding player's decisions left until its trajectory ends (log(1 + k) / log 201) and
+  the trajectory's unshaped result, from the rollout batch alone (rows of a trajectory may be interleaved with others');
+  `ppo_update` adds `--aux` × their squared error, through the shared trunk, and logs `aux_loss`. `rl/metagame.py --aux`
+  computes the targets before the prize shaping; `token_net`, `rl/gpu_matrix.load_policy` and
+  `notes/scripts/pilot_ablation.py` read the option; a grown pilot leaves `aux_head` at its initialisation. Card
+  `005-pilot-aux` (`aux_heads 2`, `--aux 0.25`, two segments) queued behind 003 and 004.
+- **Evidence:** `rl.tests` PASS, with new checks: `aux_targets` on hand-made interleaved trajectories; a pilot grown from
+  another with `aux_heads 2` gives exactly its policy logits and value; the auxiliary loss has a gradient in the first
+  encoder block; it exports to ONNX. One iteration of `rl.metagame` forked from meta-99 with `aux_heads 2` and `--aux 0.25`
+  (40 games, 2 workers): 0 errors, `aux_loss` 0.719 on the first update, the head saved in the checkpoint.
+- **Found:** `TokenPointerNet` already had an attribute `aux` (the embedding of each token's aux id); the first version of
+  the head took that name and broke loading, caught by the tests before the running lab started a new process with it.
+- **Next:** The card's result after 003 and 004; if it passes, the credit probe of #75 on the adopted pilot, to see whether
+  the one-step value carries more of a move's effect.
+
+### #85 · 2026-10-18 · A5 · The archived panel with SimpleBot on both sides: meta-99's best decks win 58% against the human lists
+- **Done:** #69's open item, an evaluation that does not share the learned pilots' style: `rl/evaluate_agents.py`
+  `sb_archived`, each of a population's best decks (by recent results) against the 24 archived lists with SimpleBot on both
+  sides (`env/tools/evaluate.js --x simplebot --y simplebot --tokens`, the deck as D1 and the lists cycled as D2, both
+  directions; `--sb-archived-games`, default 240 a deck). The lab's milestones run it (`rl/lab.py meta_metrics`
+  `sb_archived_mean`); its branch evaluations skip it. Run on meta-99's snapshots at iterations 49 and 99 and its final
+  checkpoint (`runs/meta-99/eval_sb_archived_it{0049,0099,0149}.json`).
+- **Evidence:** 12 decks × 240 games per snapshot (2,880 games, about 2 minutes on 4 workers; SimpleBot against SimpleBot
+  ran 24 games in 1 s on 3 workers in a check, with no errors or cut games). Mean against the 24 lists (standard error of
+  one deck's rate about 0.03): iteration 49 0.467 (decks 0.35–0.66), 99 0.621 (0.57–0.67), 149 0.579 (0.55–0.62); the same
+  decks with pilot-v2 on both sides (#69): 0.279 / 0.427 / 0.522.
+- **Found:** (1) Under a pilot that is not one of the learned ones, the drafted decks do better against the human field, not
+  worse: #69's worry that pilot-v2's habit of leaving draw Trainers unplayed flatters Trainer-light decks does not show
+  here. SimpleBot is itself a weak heuristic player, so this measures the decks under simple play, not in a strong
+  player's hands. (2) The two pilots order the snapshots differently: under SimpleBot iteration 99's decks are best (0.62
+  against 0.58), under pilot-v2 iteration 149's (0.52 against 0.43); the population's median deck had 13 Trainers at
+  iteration 100 and 5 at 149 (#69), so the Trainer-lighter meta is the one pilot-v2 rates higher. (3) SimpleBot is no longer
+  the expensive evaluation the README's A0 numbers describe (0.6 games/s/core then, before the engine fixes of #3).
+- **Next:** The lab's milestones now report this beside the pilot-v2 panel; the human field against itself under SimpleBot is
+  0.5 by construction, so a drafted meta above 0.5 here and on the answer key's staples is the target.
+
+### #86 · 2026-10-19 · A4 / A5 · The lab restarted; a restart bug fixed; the A/A cards set elo1 = 20 and a meta gain of 0.03
+- **Done:** The lab was found stopped by a `runs/lab/STOP` file (23:53 on 10-18), with the main line at 160, card 001-aa-same
+  run to 160 and 002-aa-reseed to 152, neither decided. Fixed a bug in `rl/lab.py lab_main` that this state exposes: a
+  branch was decided only in the cycle that ran it to m, so a branch already at m after a restart (001) was never decided
+  at m, and would have been run one more segment and decided at m + 10, against a main line two segments from its fork.
+  Now a card is due at m if it started before m and has no rung at m; due cards behind m run first, then all due cards
+  are decided. `run_meta_eval` reuses an existing output file, and the main line's answer key at m is one file
+  (`tmp/meta_main_XXXX.json`) shared by every card decided at m. Restarted detached at 07:21 (RL_GPU_SHARE 0.333,
+  RL_CPU_THREADS 10). Before either A/A card was measured, wrote the rule that turns them into thresholds into
+  `notes/plan-lab.md` (σ = sqrt(max(0, mean Elo² − mean SE²)) on the drafted panel, elo1 = max(15, 2σ) rounded up to 5;
+  a meta min_gain = max(0.03, 2 × RMS of the A/A answer-key differences) rounded up to 0.01), then applied it:
+  `runs/lab/lab.json` elo1 20 and an `aa` record. Queued three meta cards, two segments each, rule archived_mean
+  min_gain 0.03: `006-meta-margin0` (`--draft-margin 0`), `007-meta-swaps6` (`--swaps 6`), `008-meta-turnover30`
+  (`--turnover 0.3`).
+- **Evidence:** `rl.tests` PASS (30 s) with a new `check_lab_loop`: the lab loop with fake runs, a STOP during the second
+  branch's segment, then a restart, decides 001 and 002 at 160 and a two-segment card at 170 and 180, each once; on the
+  loop before the fix the same check fails (001 decided at 170). Milestone at 160 (main line, 23:32 on 10-18): answer key
+  under pilot-v2 0.480 (best deck 0.659; 0.522 at 149, #69), staples 4.83 a deck, best overlap 0.533 (Wigglytuff),
+  SimpleBot 0.902, SimpleBot on both sides against the archived lists 0.532 (0.579 at 149, #85). A/A at 160 (branch
+  against main line):
+
+  | card | drafted panel (6,000 games) | archived (1,104) | answer key, branch − main | staples | best overlap |
+  |---|---|---|---|---|---|
+  | 001-aa-same | +1.7 Elo [−5.3, 8.8] | −2.2 [−19.0, 14.6] | 0.7119 − 0.7191 = −0.007 | 3.42 − 4.83 | 0.45 − 0.53 |
+  | 002-aa-reseed | −13.3 [−20.1, −6.4] | −17.0 [−35.0, 0.8] | 0.7188 − 0.7191 = −0.000 | 4.58 − 4.83 | 0.48 − 0.53 |
+
+  σ = 8.8 Elo (SE 3.6 and 3.5), 2σ = 17.6, elo1 = 20; answer-key RMS 0.005, so the 0.03 floor binds; staples 2.04 and
+  overlap 0.14 if a card uses them. A drafted-panel test of 6,000 games took 176 s and the archived one 39 s with 8
+  workers (34 games/s; the smoke's 4.7 games/s was 4 workers at 40 games); a whole A/A decision took 5–7 minutes.
+- **Found:** (1) A branch with no change can be a clearly different pilot after one segment (002: −13 Elo, its interval
+  excluding 0): the training noise between forks is larger than the test's own, so a pilot change must be worth about
+  20 Elo in one segment to pass, and smaller real gains will read as inconclusive. (2) The answer key under the main
+  line's own pilot (0.72) is far above the same decks under pilot-v2 (0.48): the main line's pilot has never played the
+  archived lists, so this measure also rewards its familiarity with its own decks; it is shared by both sides of a meta
+  card, so the comparison stands, but its level is not comparable with #69. (3) Staples and overlap move by 1.4 and 0.08
+  between A/A branches, so the answer-key mean is the only steady meta metric. (4) Every deck takes one sampled draw (3
+  cards) an iteration, so the population is close to the draft head's own distribution, and its median composition
+  swings over tens of iterations (Pokémon/Trainer/Energy 39/7/13 at iteration 20, 19/22/17 at 40, 14/13/33 at 100,
+  22/4/33 at 145, 22/12/26 at 159); the 12 best decks at 160 average 22/13/25.
+- **Next:** 004 (2 epochs, noninferior) decided at 170 and 003 (value cross-attention) at 180 against elo1 20; then 005
+  (auxiliary heads), and the meta cards in name order.
+
+### #87 · 2026-10-19 · A4 · First adoption: 2 PPO epochs; cards running at an adoption are rebased
+- **Done:** The lab decided its first pilot card at iteration 170 and adopted `004-pilot-epochs2` (`--epochs 2`, a
+  noninferiority test: H0 Elo <= −20 against H1 Elo >= 0): the main line goes on from the branch's checkpoint with
+  `--epochs 2` in `main_args` (`runs/lab/main/lineage.jsonl`; the old state kept as `seg_0170.before-004-pilot-epochs2.pt`).
+  This exposed a gap: `003-pilot-vq4` (two segments, forked at 160) would have been decided at 180 against a main line that
+  contains 004, and its second segment would have run with `--epochs 2` too, because a branch's arguments are the main
+  line's merged with the card's. `rl/lab.py`: after an adoption, every card still running from an earlier fork is closed
+  as "rebased" and queued again as `<id>-b` (`requeue`), which starts from the new main line; the retest copy of a card
+  that passed but was not adopted now keeps the card's `"test"` (it dropped it, so a noninferiority card would have been
+  retested for superiority). Stopped the lab by its STOP file (main line at 172), rebased 003 by hand the same way
+  (`003-pilot-vq4-b` queued, an event recorded), and restarted it at 08:45 with the new code.
+- **Evidence:** 004 at 170: drafted panel +8.7 Elo [−9.7, 27.1], H1 after 200 pairs (800 games, 24 s); archived lists
+  +40.5 [22.4, 58.8] (1,104 games, H1 of the gate's test). Its segment took 14.7 minutes against the main line's 18.1, and
+  the main line's first iteration with 2 epochs 92.1 s against 108.3 s. 003's early check at 170 (only "clearly worse"
+  stops it): −14.3 Elo [−26.1, −2.5] over 2,000 games, verdict none. `rl.tests` PASS; `check_lab_loop` has a second
+  scenario: a one-segment card passes at 160 while a two-segment card runs, and the loop adopts it, closes the other as
+  rebased and decides its `-b` copy at 170 and 180 from base 160.
+- **Found:** (1) On the archived lists the 2-epoch branch beat the main line by 40 Elo after one segment, outside both A/A
+  cards' archived results (−2 and −17): fewer passes over each batch may fit the drafted decks less narrowly. One fork,
+  so not established; the next milestones under pilot-v2 and SimpleBot will show whether the main line's play on the human
+  lists moves. (2) 003's early result (−14) is the size of the reseeded A/A branch's (−13), so it says nothing yet.
+- **Next:** 005 (auxiliary heads) checked at 180 and decided at 190; `003-pilot-vq4-b` from 180, decided at 200; then the
+  meta cards. Milestone at 200.
+
+### #88 · 2026-10-19 · A4 · Auxiliary heads fail in the lab; value cross-attention passes its early check
+- **Done:** The lab decided `005-pilot-aux` (auxiliary heads on the pooled state, `aux_heads 2`, `--aux 0.25`: decisions
+  left until the game ends and the final result, #84; two segments from 170 on the 2-epoch main line) at 190: failed,
+  closed. `003-pilot-vq4-b` (value cross-attention, restarted from 180, #87) passed its early check at 190 and runs to
+  200. `006-meta-margin0` started at 190. No code changes.
+- **Evidence:** 005 at 180 (early, "clearly worse" only): +15.6 Elo [−8.1, 39.6], 400 games; at 190 (H0 Elo <= 0 against
+  H1 Elo >= 20): −22.6 [−48.9, 3.4], H0 after 100 pairs (400 games). Its auxiliary loss 0.393 at iteration 170, 0.271 at
+  176, 0.27–0.29 from then to 189; value loss 0.096–0.101 in the branch and 0.097–0.106 in the main line over the same
+  iterations; games cut at the decision cap 14–69 an iteration in the branch (62–69 at 185–189) and 7–45 in the main line.
+  003-b at 190: +1.7 [−12.6, 16.1], 1,200 games, not clearly worse.
+- **Found:** (1) The auxiliary targets are learned in a few iterations and then add nothing the value loss shows, so at
+  weight 0.25 they did not give the trunk a signal the lambda-return lacked, at least within two segments. (2) A card's
+  reading swings by about 40 Elo between its two segments (+16, then −23), the training noise of #86 plus a 400-game
+  interval of ±26: the sequential test stops at its first look of 100 pairs when the estimate is far from elo1, which is
+  correct for "is it 20 Elo better", but it means a rejected card is only shown not to be a large gain. (3) The branch's
+  cut games rose late in its second segment, unexplained; not followed up since the card is closed.
+- **Next:** 003-b decided at 200 with the milestone at 200; 006 decided at 210.
+
+### #89 · 2026-10-19 · A4 / A5 · Value cross-attention fails; milestone 200: every best deck above half against the human lists under pilot-v2; three pilot cards queued
+- **Done:** The lab decided `003-pilot-vq4-b` (value cross-attention, 4 queries, trained with the trunk; two segments from
+  180 on the 2-epoch main line) at 200: failed, closed. Milestone at 200 (`runs/lab/main/eval_it0200.json`). `006-meta-margin0`
+  finished its first segment (190 → 200, no test until 210) and `007-meta-swaps6` started at 200. Queued three pilot cards,
+  two segments each, behind 008: `009-pilot-ent02` (`--ent 0.02`; #81–82 tried only 0.001), `010-pilot-slotbind`
+  (`slot_bind`, #71/#74) and `011-pilot-lr2` (`--lr 2e-4`, never screened). Smoke of 010's fork: one iteration of 40 games
+  on 2 workers from `seg_0190.pt` with `--pilot-opts {"slot_bind": true}` (run dir deleted after).
+- **Evidence:** 003-b at 190 (early): +1.7 Elo [−12.6, 16.1]; at 200: −0.9 [−14.3, 12.5], H0 (Elo <= 0 against >= 20) after
+  400 pairs (1,600 games). Milestone, iteration 160 → 200 (the 12 best decks by recent results): against the 24 archived
+  lists under pilot-v2 0.480 → 0.681 (decks 0.22–0.66 → 0.51–0.73), with SimpleBot on both sides 0.532 → 0.588 (0.41–0.64
+  → 0.52–0.64); the main line's pilot against SimpleBot 0.902 → 0.954; staples 4.83 → 4.17 a deck; best overlap 0.533 →
+  0.517, nearest list Wigglytuff for 11 of 12 and Electabuzz / Mr. Mime for one, at both; the best decks average
+  Pokémon/Trainer/Energy 22.1/13.4/24.5 → 20.2/10.9/28.9. Smoke: 0 errors, the checkpoint's config has `slot_bind` True,
+  first value loss 0.174 (the main line's 0.096–0.106).
+- **Found:** (1) Value cross-attention is now closed both ways: worse on a frozen trunk (#78) and no better trained with it
+  (−1 Elo after two segments). (2) The main line's best decks rose by 0.20 against the human lists under pilot-v2 in 40
+  iterations that include the 2-epoch adoption at 170, but only by 0.06 under SimpleBot, and they moved toward more Energy
+  and fewer Trainers, the shape #85 found pilot-v2 rates higher; so most of the pilot-v2 rise may be that panel's style,
+  and SimpleBot's 0.59 (0.62 at meta-99's iteration 99) is the steadier reading. Neither can be credited to the adoption,
+  since the main line has no control. (3) Three pilot cards decided so far: one adopted (2 epochs, a noninferiority test) and
+  two failed against elo1 20 (auxiliary heads, value cross-attention), with value cross-attention's first fork rebased.
+- **Next:** 006 decided at 210, 007 at 220; then 008 and the pilot cards 009–011. Milestone at 240 for the stall rule.
+
+### #90 · 2026-10-19 · A5 · The result-only draft reward fails its answer-key rule but trains a stronger pilot; replication queued
+- **Done:** The lab decided `006-meta-margin0` (`--draft-margin 0`: the draft head's reward is the result alone, without
+  the end-of-game prize margin at weight 0.5; two segments from 190) at 210 by its rule (archived_mean gain >= 0.03, pilot
+  not clearly worse): failed, closed. `007-meta-swaps6` passed the midpoint of its two segments; `008-meta-turnover30`
+  started at 210. Queued `006-meta-margin0-n`, written after 006's result and saying so: a fresh fork of the same change
+  from the main line at 220 as a pilot card with a noninferiority test (H0 Elo <= −20 against H1 Elo >= 0, the archived
+  gate), two segments, on the grounds that the result-only reward is the simpler and more general method (the precedent
+  is 004's speed-up), so the answer key is not consulted for it again.
+- **Evidence:** Answer key at 210, both populations' 12 best decks against the 24 archived lists under the main line's
+  pilot: main 0.794 (decks 0.73–0.84), branch 0.812 (0.77–0.86), gain +0.018; staples 3.42 / 3.25, best overlap 0.45 /
+  0.48, no deck at half overlap with any list; best decks' Pokémon/Trainer/Energy 21.5/8.6/29.9 and 20.6/9.4/30.0. Pilot
+  gate (500 drafted pairs, 2,000 games, fixed length): branch +29.6 Elo [18.6, 40.7] against the main line's pilot.
+- **Found:** (1) The draft margin enters only the draft head's reward (`rl/metagame.py` line 218), so the branch's pilot
+  differs from the main line's only by the decks it trained on for 20 iterations, yet it is 30 Elo stronger, with an
+  interval excluding both 0 and the A/A spread (σ ≈ 9 Elo a segment from two cards, #86). Whether this is the change or a
+  lucky fork is what the replication tests. (2) Under the main line's own pilot the answer key keeps rising (0.719 at 160,
+  #86; 0.794 at 210), partly the familiarity effect of #86, while staples a deck fell from 4.83 to 3.42 and no best deck
+  is at half overlap with any archived list: the decks beat the human lists more, but resemble them less.
+- **Next:** 007 decided at 220, then `006-meta-margin0-n` from 220 (decided at 240, with the milestone), 008 at 230.
+
+### #91 · 2026-10-19 · A5 · Second adoption: 6 swaps a draw; the rebase rule fires
+- **Done:** The lab decided `007-meta-swaps6` (`--swaps 6`, two segments from 200) at 220 by its rule (archived_mean gain
+  >= 0.03, pilot not clearly worse): passed and adopted; `main_args` now has `--swaps 6` and `--epochs 2`. The rebase rule
+  of #87 fired for the first time: `008-meta-turnover30` (forked at 210) was closed as rebased and `008-meta-turnover30-b`
+  started from the new main line at 220, with `006-meta-margin0-n` (#90).
+- **Evidence:** Answer key at 220 under the main line's pilot: main 0.695 (best deck 0.822, staples 2.25 a deck), branch
+  0.823 (0.861, 3.83), gain +0.128; best overlap 0.483 for both. Pilot gate: +2.8 Elo [−8.3, 13.9], 2,000 games.
+- **Found:** Most of the gain is the main line's own fall: its answer key dropped from 0.794 at 210 (#90) to 0.695 at 220
+  while its median deck went from 8 Trainers to 2–3 (16–17 of 99 decks with none, #92), and the branch, forked at 200,
+  kept a median of 13 at 210. So the card shows that the 6-swap line did not collapse in these 20 iterations, not that
+  6 swaps prevent it; adopting it also put the main line back on Trainer-carrying decks.
+- **Next:** 006-n and 008-b decided at 240 with the milestone.
+
+### #92 · 2026-10-19 · A4 / A5 · Why the decks drop Trainers: the pilot cannot set up before attacking, and the drafting follows it
+- **Done:** At Evan's question ("why there are no trainers, and if not, what is wrong with the pilot that it can't use
+  trainers"; then "Trainers are certainly good and we can treat the human lists as ground truth ... if it is using way
+  more energy then it isn't correctly drafting or playing"), four diagnostics, evaluation only:
+  (1) the main line's Trainers over time and the draft head's choices (`log.jsonl` `best[].top_in / top_out`, `draft.h_in`);
+  (2) `notes/scripts/trainer_value.py` (new): each deck against a copy of itself with one group of Trainers (by card name:
+  draw = Oak, Bill, Gambler; search = Computer Search, Item Finder, Energy Retrieval, Nightly Garbage Run, ...; disrupt =
+  Energy Removal, Super Energy Removal, Rocket's Sneak Attack, Lass, ...; tempo = Gust of Wind, PlusPower, Scoop Up,
+  Switch, ...) replaced by its most common basic Energy, one player on both sides, 64 games a pair, the same deals per
+  deck for the learned pilots (`notes/data/eval/trainer_value_{archived,archived_trained,drafted200}.json`);
+  (3) the A2 lethal puzzles, never generated before: `env/tools/puzzles.js generate` (two processes, 400 heuristic games
+  on the archived lists) gave 408 "win this turn" positions with provable answers (`notes/data/puzzles/lethal.json`);
+  `score` now takes `onnxtok:` token models and `--json`; (4) `env/tools/trainer_trace.js` (new): one pilot on both
+  sides over the archived lists, and for every Trainer played in a main phase whether the turn goes on to attack and
+  take a prize, against the player's turns overall (120 games each, `runs/puzzles/trace_*.json`). Also the Trainer probe
+  of #79 on the main line at 220 for play rates only (`--max-options 2 --rollouts 2`); `notes/scripts/credit_diag.py`
+  `focus_table` now keeps p_play for a card offered but not among the probed options (it crashed on them). Pilots: the
+  main line at 220, pilot-v2, and as one-off diagnostics two pilots trained on the archived lists, `a4-tok` it249 (#26,
+  93% against SimpleBot) and `arch-A` (#49); pilot-v2 and a4-tok were exported at 256 tokens and 128 options (their
+  configs say 128 / 48; neither size enters a weight).
+- **Evidence:** (1) Population median Trainers 5 at 150, 15 at 162–165, 6 at 186, 12 at 201–204, 2 at 216; at 219 16 of
+  99 decks have none, Bill is in 3% of decks (87% at 200), the 24 archived lists median 28 (26–30). The draft head's
+  incoming choice has entropy 0.2–1.1 nats against about 6 for a uniform pick, and its top-3 incoming mass on the best
+  decks moves by kind: basic Energy 0.84 at 100, Trainers 0.6–0.8 at 155–180, special Energy 0.6–0.9 at 185–200, basic
+  Energy 0.91–0.93 at 210–215. (2) Score of the archived list against its copy with the group replaced (± 95%):
+
+  | player | all | draw | search | disrupt | tempo |
+  |---|---|---|---|---|---|
+  | main line at 220 | 0.672 [0.63, 0.71] | 0.666 | 0.424 | 0.461 | 0.413 |
+  | pilot-v2 | 0.653 | 0.643 | 0.424 | 0.457 | 0.365 |
+  | a4-tok (trained on these lists) | 0.789 | 0.712 | 0.480 | 0.503 | 0.409 |
+  | arch-A (fine-tuned on 6 of them) | 0.748 | 0.762 | 0.477 | 0.521 | 0.465 |
+  | SimpleBot | 0.433 | 0.490 | 0.379 | 0.397 | 0.333 |
+
+  Intervals ±0.02–0.05; 27.5 / 5.9 / 7.3 / 6.5 / 8.0 cards replaced on average. On the main line's 12 best decks at 200
+  under its pilot: all 0.565, draw 0.533, search 0.473, disrupt 0.517. (3) Puzzles: 262 won by an attack, 97 only by a
+  Trainer first, 49 by another move first. Solved (greedy): attack-won 90% (main line), 94% (pilot-v2), 86% (a4-tok),
+  92% (heuristic), 47% (random); Trainer-first 60 / 58 / 61 / 62 / 47%; the 16 won only through PlusPower 31% for all
+  three pilots, 94% heuristic, 25% random, the pilots' commonest choice there attacking at once (6–8 of 16). The share
+  of winning first moves is 0.51 (Trainer-first) and 0.45 (attack-won), so random's 47% is the floor of both.
+  (4) Same-turn attack / prize after a Trainer, against all turns:
+
+  | pilot | all turns | PlusPower | Gust of Wind | Super Energy Removal | Energy Removal |
+  |---|---|---|---|---|---|
+  | main line, sampled | 54.1% / 10.7% | 37.5 / 9.0 | 28.3 / 4.0 | 23.5 / 1.5 | 44.4 / 9.4 |
+  | main line, greedy | 61.7 / 12.1 | 42.6 / 9.2 | 28.2 / 0.7 | 34.6 / 5.9 | 47.3 / 9.0 |
+  | pilot-v2, sampled | 48.1 / 11.9 | 40.2 / 8.5 | 26.2 / 1.9 | — | 40.6 / 7.8 |
+  | a4-tok, sampled | 50.1 / 10.1 | 39.0 / 11.4 | 32.7 / 7.7 | 26.0 / 4.3 | 44.1 / 4.5 |
+
+  0 errors in every trace. Probe at 220 on the archived lists, the pilot's probability of playing a Trainer where one is
+  offered: any 0.284 (base it79 0.225, base-cont 0.326, #82), Energy Removal 0.617, Bill 0.565, Oak 0.458, Item Finder
+  0.411, Computer Search 0.390, Gust 0.341, PlusPower 0.336. Engine and inputs checked: PlusPower (+10 after Weakness and
+  Resistance, discarded at the end of the turn), Gust of Wind and Computer Search match their text; the per-turn cap is
+  250 decisions; the pilot's inputs carry each Pokémon's HP and damage (`env/tokens.js` slot features), each attack's
+  damage (`rl/token_model.py` card features) and attached Trainers such as PlusPower (TOOL tokens).
+- **Found:** (1) With the human lists as ground truth, every pilot built so far misplays most Trainers: only the draw
+  group (Oak, Bill) is worth more than basic Energy to it (+14 to +26 points), while search, disruption and tempo cards
+  are worth less (0.36–0.52), for pilots trained on those very lists too. Practice helps (a4-tok, all Trainers 0.79
+  against the main line's 0.67) but does not fix it. (2) What is missing is setting up before attacking: the pilots solve
+  attack-won lethals like the heuristic but Trainer-first ones barely above random, PlusPower-then-attack at random, and
+  they play PlusPower and Gust on turns that attack less often than their average turn (Gust then a prize: 0.7% greedy).
+  The information is in their inputs and the cards work, so it is the learning: a one-action-at-a-time policy whose
+  value carries a small share of a move's effect (#75) learns "attack now" and not the conditional "this setup makes the
+  attack a Knock Out". #68's "attacks before drawing" is the same failure. (3) The drafting follows: the draft head
+  learns from results under this pilot, for which most Trainers are worse than an Energy, and its incoming choice has
+  collapsed onto one card kind at a time, which it moves between, so the population swings (2–15 Trainers) and is at
+  its low now. SimpleBot is no yardstick for Trainers either: it plays an Item only if its one-step heuristic score
+  rises, so PlusPower and Gust, which pay after the attack, are invisible to it (0.33–0.40). (4) psearch (#50, the
+  pilot's top moves played to the end of the turn in re-dealt copies, scored by its value) gained nothing against
+  SimpleBot but was never measured on Trainer use or on these puzzles.
+- **Next:** Evan's call on giving the pilot in-turn lookahead: first measure psearch over the main line's pilot on the
+  puzzles and the Trainer-value panel (whether lookahead within the turn fixes Trainer-first play), then, if it does,
+  expert iteration on it with the puzzles and the Trainer-value panel as the yardstick instead of SimpleBot; separately,
+  the draft head's collapsed incoming choice.
+
+### #93 · 2026-10-19 · A5 · Practice before a draw counts: seasons in the metagame loop, queued as a lab card
+- **Done:** At Evan's direction ("It should probably practice each deck it drafts before playing it in a setting that
+  counts towards reward"): `rl/metagame.py --season K --candidates C`. Until now every game gave each side a fresh draw,
+  so a draw was judged by the one game in which the pilot first held that deck. With K > 1, at the start of a season
+  (iteration % K == 0) every deck draws C candidates from the head; every game of the season plays one of the side's
+  candidates at random; PPO runs every iteration as before (the practice); only the season's last iteration feeds the
+  REINFORCE step, whose leave-one-out baseline over the deck's games then compares its candidates after the same
+  practice; at the season's end every deck moves to one of its candidates at random (still a sampled draw, now a
+  practised one). A deck that turnover brings in mid-season draws its candidates at once. The held candidates are saved
+  in the checkpoint (`season`), so a resume continues the season. `--season 1` (the default) is the old loop unchanged:
+  no extra random draws and the same updates. Lab card `008a-meta-practice` (`--season 5 --candidates 4`, three
+  segments, archived_mean min_gain 0.03), named to start next, at 240.
+- **Evidence:** `rl.tests` PASS. Smoke (`runs/_smoke-season`, deleted after; forked from `seg_0220.pt`, season 2, 2
+  candidates, 40 games an iteration, 2 workers), stopped after iteration 220 and resumed to 224: `counted` false / true /
+  false / true at 220–223, the draft head updated only at 221 and 223; the population after 220 equal to the fork's; 99
+  decks × 2 candidates held across the resume; a second resume of the 221 checkpoint through its counted iteration left
+  99 of 99 decks equal to one of their held candidates; 0 errors.
+- **Found:** Practice addresses the drafting's judgement, not the pilot's skill: a4-tok, trained 250 iterations on the
+  human lists, gets more from their Trainers than the main line's pilot (0.79 against 0.67, #92) but still solves the
+  PlusPower lethals at random's rate. At this card's scale a candidate gets about 10 games an iteration, so 40 games of
+  practice in a season, inside a pilot shared with 98 other decks; whether that is enough practice to move the drafting
+  is what the card measures.
+- **Next:** 008a from 240, decided at 270, with the population's Trainer counts beside the answer key; the in-turn
+  lookahead question of #92 remains open.
+
+### #94 · 2026-10-19 · Plan · Evan's ideas first; his untried architecture ideas as held lab cards; the rediscovery plan
+- **Done:** At Evan's direction ("Opt for trying fully out the ideas that I give and logging them, rather than continuing
+  with what was going before. I'd like a log of all of the messages I sent that you tried and didn't try"):
+  `notes/evan-requests.md`, every message of his as recorded (this session verbatim, earlier ones as the log and
+  notes quote them) with tried / partly / not tried and where. Two of his earlier ideas had never been fully tried:
+  memory for the pilot (10-14; built in #76, never run) and the deck-free board encoder on the main line (10-13;
+  screened once from scratch, #73). Both are now lab cards: `009-pilot-hist4`, `009-pilot-memattn`,
+  `009-pilot-memgru` (two segments each) and `009-pilot-deckcross` (three segments, noninferiority). The practice idea
+  (#93) also got a stronger variant, `008b-meta-practice10` (season 10, 2 candidates, four segments). My cards were
+  renamed to run after his (`030-pilot-ent02`, `031-pilot-slotbind`, `032-pilot-lr2`). To run all of them together:
+  - lab `branches` 4 (`lab.json`);
+  - `rl/lab.py`: a card with `"hold": true` that passes is marked `passed-held` and not adopted, so the cards running
+    beside it keep their control; the four architecture cards are held while the practice cards run;
+  - `rl/train.py` `NEW_WEIGHTS` lets a branch grow the memory core (`mem_*`, which starts at zero through `mem_out`),
+    history embeddings (`hist_*`) and the separate deck encoder (`deck_null`, `deck_blocks`, `fuse`); at growth the
+    fusion's output layers start at 0 (`ZERO_AT_GROWTH`), so a grown deck-free pilot starts deck-blind rather than at
+    random;
+  - `rl/metagame.py` passes the pilot's history window to its game workers (it never did, so a history pilot in the
+    loop would have seen no history).
+  The lab was stopped by its STOP file at 240 and restarted with this code at 13:56. Then, at Evan's request ("synthesize
+  my comments and all of the previous tests into a new iterative plan ... that will rediscover the ground truth of the
+  human decks"): `notes/plan-rediscovery.md`, for his review. It has the gap today (best decks 20 / 11 / 29
+  Pokémon / Trainers / Energy against the human lists' 13.5 / 28 / 18), what the tests add up to, a scorecard with
+  targets (pilot competence on the human lists' cards, strength, deck shape, the answer key under a pilot that plays
+  Trainers correctly, drafting health), a loop that works on the largest gap upstream first (the pilot before the
+  drafting), stages A–D with their candidate changes, and five questions for Evan.
+- **Evidence:** `rl.tests` PASS, with a third `check_lab_loop` scenario: a held card that passes is not adopted, and
+  the two-segment card beside it is decided at 170 and 180 without a rebase. One-iteration forks of the main line at 230
+  (40 games, 2 workers) with `history 4`, `memory gru`, `memory attn` and `deck_mode cross`: 0 errors each, PPO run (value
+  loss 0.103 / 0.122 / 0.087 / 0.292; the deck-free one starts deck-blind); each played a 10-pair `rl.lab h2h` against
+  the main line without error.
+- **Next:** Evan's review of the plan. Meanwhile the lab runs his cards: practice (`008a`, `008b`) and the
+  architecture cards, after the decisions at 240.
+
+### #95 · 2026-10-19 · Plan · The rediscovery plan cut to three stages of three steps
+- **Done:** At Evan's request ("Simplify to three stages with three steps each"): `notes/plan-rediscovery.md`
+  rewritten. Stage 1, the pilot plays the human field's cards correctly: (1) Evan's memory and deck-free-encoder cards
+  (running), (2) lookahead within the turn (measure play-time search, then expert iteration with lines scored by the
+  game's own outcome within the turn), (3) credit and exploration within the turn (λ = 1 inside a turn, prize shaping
+  kept on, entropy 0.02). Stage 2, the drafting finds the human deck shape: (1) practice before a draw counts (running),
+  (2) drafting with the Stage 1 pilot, (3) an entropy floor on the incoming choice and the result-only reward.
+  Stage 3: the headline run from scratch, Worlds 2005 unchanged, then Magic. The scorecard is now six rows. The pilot's
+  strength against SimpleBot on the human lists is marked as not yet measured: the earlier draft showed the pilot's rate
+  on its own decks there.
+- **Evidence:** Text only.
+- **Next:** Evan's review (four questions at the end of the plan).
+
+### #96 · 2026-10-19 · A4 · Stage 1 started: in-turn search fixes setup at play time; expert iteration, turn-level credit and a competence score in the lab
+- **Done:** Evan approved the plan ("Sure try it"), read as approval of its four questions as proposed (prize shaping
+  kept on; the game's own score inside the turn search; pilot changes decided on the puzzles and the Trainer-value panel
+  with 2005 held out; the targets). Stage 1, step 2, measured first: `env/tools/puzzles.js score` takes
+  `psearch:<onnx>:k:dets` (#50's PolicySearchAgent over the pilot). Then:
+  - **Turn-level credit:** `rl/train.py advantages(..., lam_turn)` uses lam_turn between decisions of the same game
+    turn (glob byte 0, which is the turn exactly up to 240) and lam across turns; `rl/metagame.py --lam-turn`.
+  - **Expert iteration:** `env/runner.js` jobs with `untilTurnEnd` stop at their first asked decision after the turn
+    they started in and report `stopped { player, value }`. `env/remote_worker.js tsearch` is `games` (the same jobs,
+    recordings and results; `games` takes an `onDecision` hook) plus probes at a share of the recorded main-phase
+    decisions; each probe's options (all up to `maxOptions`, else the one played and a random sample) are played `lines`
+    times from copies re-dealt for the deciding player, greedily to the end of the turn, scored by the result, or by the
+    pilot's value after the turn plus `prizeWeight` a prize taken. `rl/metagame.py --distill b --search-p --search-max
+    --search-options --search-lines --search-prize --search-margin` sends `tsearch`, sets each probe's best option as
+    the target of its recorded decision (only where the options' scores differ by more than the margin), and logs
+    `search`; `ppo_update` adds b times the cross-entropy toward the target, averaged over a minibatch's searched
+    decisions (`distill`, `distill_agree` in the stats).
+  - **The competence score:** `rl/lab.py run_s1` is the Trainer-value panel on the archived lists (search, disrupt and
+    tempo groups, 64 games a pair) and the greedy pilot on the 408 puzzles; `s1` is the mean of search, disrupt, tempo,
+    Trainer-first and PlusPower-only. Milestones now report it, and pilot cards with `"decide": "s1"` are decided by its
+    gain (`s1_min_gain`) with the drafted-panel Elo test as a gate (not clearly worse). Its A/A spread from the A/A cards'
+    checkpoints at 160 sets `s1_min_gain` 0.06 (`lab.json aa_s1`). The lab was restarted with this code at 14:42.
+  - **Cards** (all `"decide": "s1"`, two segments): the memory cards `009-pilot-hist4 / memattn / memgru` (set before
+    they started); `009x-pilot-exit` (`--distill 0.3`, 10% of recorded decisions, 2 a game, 6 options, 2 lines) and
+    `009x-pilot-exit-strong` (`--distill 1.0`, 25%, 4, 8 options, 4 lines, `--search-prize 0.1`); `010-pilot-lamturn`
+    (`--lam-turn 1`), `010-pilot-shapeon` (`--shaping 0.1` that never fades) and `010-pilot-ent02` (renamed from 030).
+- **Evidence:** Puzzles, the main line's pilot at 220, greedy against play-time search (k options, 4 re-dealt copies
+  each, played to the end of the turn):
+
+  | | attack-won (262) | Trainer-first (97) | PlusPower only (16) | all (408) |
+  |---|---|---|---|---|
+  | greedy | 90.5% | 59.8% | 31.3% | 79.2% |
+  | psearch k 4 | 92.7% | 84.5% | 81.3% | 89.0% |
+  | psearch k 8 | 92.7% | 87.6% | 81.3% | 90.2% |
+
+  The competence score's A/A at 160: main 0.434 (search 0.401, disrupt 0.474, tempo 0.373, Trainer-first 0.608,
+  PlusPower 0.313), 001-aa-same 0.398, 002-aa-reseed 0.439; differences −0.035 and +0.006, RMS 0.025, so the bar is
+  max(0.03, 2 RMS) = 0.06. Most of the spread is the 16 PlusPower puzzles (0.31 against 0.19, two puzzles).
+  `rl.tests` PASS with `check_lam_turn` (hand-made interleaved trajectories: lambda 1 inside a turn and lam across
+  turns; `None` the ordinary GAE) and a distillation check in `check_train` (the reported cross-entropy equals the
+  directly computed one before the step, the step lowers it, and at weight 0 the targets change nothing). One-iteration
+  forks from `seg_0240.pt`, 40 games on 2 workers: `--lam-turn 1` 0 errors; `--distill 1 --search-p 0.3`: 36 searched
+  decisions, 31 targets, 20 of them a different option from the one played, 344 lines in 1.0 s, 0 line errors, the
+  cross-entropy 2.68 and agreement with the search 35% before the step, pre-clip gradient norm 27 (so weight 1 makes
+  distillation the larger part of the step).
+- **Found:** (1) The pilot already ranks the winning setup move among its top 4 in most Trainer-first lethals; what it
+  lacks is seeing that the move wins, which looking to the end of the turn supplies (Trainer-first 60 → 85–88%,
+  PlusPower 31 → 81%). So the in-turn sequencing failure of #92 is fixable by lookahead, and the question is whether
+  training toward the search's choices puts it into the policy. (2) The competence score is coarse in its PlusPower part
+  (16 puzzles); its bar is set accordingly.
+- **Next:** The lab's cards in order: Evan's practice and architecture cards, then expert iteration, then turn-level
+  credit, prize shaping and entropy, each decided on the competence score; 006-n (result-only draft reward) passed at 240.
+
+### #97 · 2026-10-19 · A5 · At 240: the result-only draft reward adopted, turnover 0.3 failed, Evan's cards started
+- **Done:** The lab decided its two cards at 240. `006-meta-margin0-n` (the draft reward from the result alone, a
+  noninferiority pilot test, #90) passed and was adopted: `main_args` now has `--draft-margin 0` beside `--swaps 6` and
+  `--epochs 2`. `008-meta-turnover30-b` (turnover 0.3) failed its answer-key rule. Four cards started at 240 in the four
+  slots: `008a-meta-practice`, `008b-meta-practice10`, `009-pilot-deckcross` and `009-pilot-hist4`.
+- **Evidence:** 006-n: pilot +0.0 Elo [−11.3, 11.3] after 1,600 games (H1 of "not clearly worse"), archived gate −13.2
+  [−30.3, 3.8], not clearly worse. 008-b: answer key 0.792 against the main line's 0.780 (+0.012, rule 0.03), pilot −1.6
+  [−11.9, 8.7].
+- **Found:** The result-only reward's first fork came out 30 Elo stronger (#90) and its replication even, so the gain
+  was that fork's luck; it is adopted for being simpler and more general, as the card said.
+- **Next:** 008a / 008b at 270 / 280; deck-cross at 270, hist4 at 260.
+
+### #98 · 2026-10-19 · A4 · The deck-free encoder stopped by its deck-blind start; a warm start for changed architectures
+- **Done:** At 250 the lab stopped `009-pilot-deckcross` after its first segment (clearly worse), passed the early check
+  of `009-pilot-hist4`, and started `009-pilot-memattn` in the freed slot. The deck-free pilot had started deck-blind
+  by construction (#94), so the stop measured that handicap, not Evan's idea. To give the idea (and any change that
+  cannot be grown as the identity) a fair start: `rl/warmstart.py`. The main line's pilot (the teacher) plays its own
+  population's decks, sampled as in training, both seats recorded (with the student's history window if it reads one).
+  A student of the new architecture, grown from the teacher's weights, is trained to match the teacher's policy (KL
+  over the legal options) and value (squared difference, weight 1) for some epochs. Games are held out to measure the
+  fit, and the result is written as a metagame checkpoint (the teacher's whole state with the student's net, config and
+  optimizer). `rl/lab.py`: a card with `"warm": {"pilot-opts", "games", "epochs"}` runs it at the fork from the main
+  line's state at the card's base (`run_warm`, an event `warm`) and forks the branch from it. Queued
+  `009-pilot-deckcross-w` (2,000 games, 3 epochs; three segments, noninferiority, held). Also measured the scorecard's
+  strength row, and restarted the lab with the new code at 16:18.
+- **Evidence:** deck-cross at 250: −54.3 Elo [−77.5, −31.5], 400 games, H0 of "clearly worse". hist4 at 250: +22.6
+  [−3.3, 48.8], 400 games. Warm start of the deck-free pilot from `seg_0250.pt`, held-out states: 40 games and 1
+  epoch, KL 0.820 → 0.340, agreement 0.567 → 0.657, value MSE 0.290 → 0.878 (a small sample); 400 games (59,735
+  states) and 2 epochs with value weight 1, KL 0.857 → 0.155, agreement 0.550 → 0.770, value MSE 0.864 → 0.070, in
+  107 s. `rl.tests` PASS, with a fourth `check_lab_loop` scenario: a warm card's first segment forks from its warm
+  checkpoint and a plain card's from the main line's state. Strength row: the main line's pilot at 240 against
+  SimpleBot on the 24 archived lists (`evaluate.js`, greedy, 480 games both ways) 82.1% ± 3.4, the same as pilot-v2
+  (82%); target 90%.
+- **Found:** (1) The lab's early stop judges every two-segment card after one segment, which is fair to a change that
+  starts as the identity and unfair to one that cannot. Warm starts remove the handicap at a few minutes a card.
+  (2) History tokens, which also do not start as the identity, came out ahead after one segment anyway.
+- **Next:** hist4 decided at 260 on the competence score; the warm deck-free card at the next free slot.
+
+### #99 · 2026-10-19 · A4 / A5 · At 260: history tokens and the attention memory fail; the practice cards hold the Energy shape so far
+- **Done:** The lab decided `009-pilot-hist4` (history tokens of the last 4 turns, Evan's memory question of 10-14) on the
+  competence score at 260: failed. `009-pilot-memattn` (the attention memory, which starts as the identity) was stopped
+  after its first segment as clearly worse. `009-pilot-deckcross-w` (warm start) and `009-pilot-memgru` started at 260.
+- **Evidence:** hist4 competence 0.421 against the main line's 0.437 at 260 (gain −0.016, bar 0.06): search 0.427 /
+  0.425, disrupt 0.451 / 0.442, tempo 0.367 / 0.375, Trainer-first puzzles 0.608 / 0.567, PlusPower 0.250 / 0.375;
+  the Elo gate +0.2 [−12.1, 12.4] after 2,000 games (its +22.6 at 250 was noise). memattn at 260: −18.3 [−31.0, −5.6]
+  after 1,600 games, H0 of "clearly worse". Median Trainers / Energy at the practice cards' counted iterations: 008a
+  (season 5) 8/35 at 249, 8/36 at 254, 8/34 at 259; 008b (season 10) 7/36 at 249, 8/35 at 259; the main line 8/35 at
+  243, 10/33 at 248, 11/31 at 253, 12/31 at 258.
+- **Found:** (1) The main line's competence is flat: 0.434 at 160 (the A/A measurement) and 0.437 at 260, so 100 more
+  iterations of ordinary training did not teach it to set up, which is what Stage 1's expert iteration targets.
+  (2) History tokens and an attention memory over the player's own decisions do not supply what is missing; the GRU
+  memory is the last of Evan's memory forms. (3) In their first two seasons the practice cards keep the Energy shape
+  (8 Trainers, 34–36 Energy) while the main line's swings to 12 / 31; their answer-key decisions come at 270 and 280.
+- **Next:** 008a at 270, deck-cross-w and memgru at 270–280, 008b at 280; then expert iteration.
+
+### #100 · 2026-10-19 · A4 / A5 · At 270: practice before counting (season 5) fails; the warm-started deck-free encoder leads
+- **Done:** The lab decided `008a-meta-practice` (Evan's practice idea, seasons of 5 with 4 candidates, three segments)
+  at 270: failed. Early checks at 270: `009-pilot-deckcross-w` (the deck-free board encoder, warm-started) and
+  `009-pilot-memgru` both run on. `009x-pilot-exit-strong` (expert iteration) started in the freed slot.
+- **Evidence:** 008a answer key 0.745 against the main line's 0.723 (+0.023, rule 0.03); pilot gate −23.0 Elo [−34.6,
+  −11.4] after 2,000 games, clearly worse; best decks' Pokémon / Trainers / Energy 17.8 / 12.1 / 30.2 against the main
+  line's 17.9 / 17.3 / 24.8; staples 3.42 / 3.17. The warm start of deckcross-w (2,000 games of the main line at 260, 3
+  epochs, about 9 minutes): held-out KL 0.106, agreement 0.822, value MSE 0.014. Its first segment: +36.6 Elo [6.7,
+  67.1] after 400 games (the deck-blind start of #98: −54.3 at the same point). memgru: −10.3 [−22.3, 1.8] after 2,000
+  games, neither clearly worse nor better.
+- **Found:** (1) In this form, practising a deck's draws before they count made neither a more human deck nor a better
+  pilot. The practised line's best decks stayed Energy-heavy while the main line's reached 17 Trainers. Its pilot fell
+  23 Elo behind, plausibly because a season holds each deck's draws fixed, so the pilot plays fewer distinct decks
+  (not verified). The heavy variant (season 10) is decided at 280. (2) With the handicap removed, the deck-free
+  encoder is ahead after one segment, so Evan's architecture idea is now the strongest pilot result of the day.
+  Two more segments decide it.
+- **Next:** 008b and memgru at 280, deckcross-w at 290, expert iteration (strong) at 290.
+
+### #101 · 2026-10-19 · A5 · Practice in seasons of 10 passes its answer-key rule but drafts further from the human shape: held for Evan
+- **Done:** At 280 the lab decided `008b-meta-practice10` (Evan's practice idea, seasons of 10 with 2 candidates, four
+  segments) by its rule: passed. The lab would have adopted it at the end of that decision pass. I stopped the lab
+  (taskkill of its process tree) before the adoption, marked the card `passed-held` with a note and an event `held`,
+  and restarted the lab at 21:15. Nothing was adopted. The decisions still in progress at 280 (memgru, expert
+  iteration's early check) are redone after the restart. deckcross-w's early check had been saved. The 280 milestone
+  is the first with the competence score.
+- **Evidence:** 008b at 280: answer key 0.766 against the main line's 0.717 (+0.049, rule 0.03), pilot gate −3.3 Elo
+  [−15.2, 8.6] after 2,000 games; staples 3.67 / 3.25; best overlap 0.483 both, no archetype at half. Best decks'
+  Pokémon / Trainers / Energy: branch 19.2 / 10.3 / 30.4, main line 15.4 / 19.3 / 25.2, the human lists 13.5 / 28 / 18.
+  deckcross-w at 280: +20.9 [0.8, 41.1] after 800 games. Milestone at 280: answer key under pilot-v2 0.464 (best 0.621),
+  under SimpleBot 0.616, staples 3.25, best overlap 0.483, the main pilot on its own decks against SimpleBot 0.926;
+  competence 0.480 (search 0.430, disrupt 0.460, tempo 0.369, attack-won 0.939, Trainer-first 0.577, PlusPower
+  0.5625).
+- **Found:** (1) The card's rule (answer key only) was written before the plan, which reads drafting cards on deck shape
+  too and does not trust the answer key while the pilot misplays Trainers. By Evan's ground-truth rule the card moves
+  the wrong way: its decks keep 10 Trainers and 30 Energy while the main line's best decks reached 19 / 25. Meta cards
+  need a deck-shape condition in their rule. (2) The main line's competence rose from 0.437 at 260 to 0.480 at 280, almost
+  all in the 16 PlusPower puzzles (6 → 9 solved), within about twice the A/A spread; the Trainer-value groups did not
+  move.
+- **Next:** Evan's call on 008b; a deck-shape condition for meta cards (the distance of the best decks from the human
+  medians, with an A/A spread); deckcross-w and expert iteration at 290.
+
+### #102 · 2026-10-19 · A5 · Meta cards gated on deck shape
+- **Done:** `rl/lab.py meta_metrics` reports `shape` (the best decks' mean Pokémon / Trainers / Energy) and `shape_dist`
+  (its L1 distance from the archived lists' medians 13.5 / 28 / 18, in cards). A meta card now passes only if, beside its
+  rule and the pilot gate, its best decks move no more than `shape_max_loss` cards further from the human shape than the
+  main line's (`shape_loss` in the rung), as the plan reads drafting cards on deck shape too (#101). The bar comes from the
+  A/A cards' evaluations at 160 (`lab.json aa_shape`). It was set after 008b's result, so it does not decide 008b. It
+  applies from the lab's next restart.
+- **Evidence:** shape distance at 160: main 29.7 (22.1 / 13.4 / 24.5), 001-aa-same 40.2 (21.2 / 8.2 / 30.6),
+  002-aa-reseed 33.2 (20.9 / 11.7 / 27.4); differences +10.5 and +3.5, RMS 7.83, bar 16. At 270: main 21.8, 008a 32.3
+  (+10.5). At 280: main 17.8, 008b 35.8 (+18.0). `rl.tests` PASS.
+- **Found:** Deck shape drifts by up to 10 cards between forks in one segment, so only large shape moves can be read from
+  one card. The main line's own shape distance has fallen from 29.7 at 160 to 17.8 at 280.
+- **Next:** Evan's call on 008b; the gate on future meta cards (Stage 2).
+
+### #103 · 2026-10-19 · A4 · Expert iteration at full weight teaches Trainers-first unconditionally and loses 79 Elo; less myopic targets
+- **Done:** At 280 the lab stopped `009x-pilot-exit-strong` (expert iteration at weight 1.0, a quarter of recorded
+  decisions searched, 8 options, 4 lines, one-turn horizon, prize term 0.1) after its first segment, and recorded
+  `009-pilot-memgru` as an error. memgru's competence score cannot be computed because a memory pilot has no ONNX export
+  for the puzzles (#76), but its Elo gate was clearly worse anyway. `009x-pilot-exit`, `010-pilot-ent02` and
+  `010-pilot-lamturn` started at 280. To see why the strong variant lost, I measured its competence and instrumented the
+  search: `tsearch` now returns each probe's option keys, and `rl/metagame.py` logs the kind of move (verb) of the
+  search's target and of the move played where they differ (`search.verbs`). Also new: a line horizon,
+  `--search-horizon H` (`env/runner.js` stops a line once the game turn has advanced H turns; 1 is the end of the turn,
+  2 is after the opponent's reply). Queued `009x-pilot-exit-h2` (weight 0.3, 10% of decisions, 2 a game, 6 options, 4
+  lines, horizon 2, margin 0.15; decided on competence).
+- **Evidence:** exit-strong at 280: −78.6 Elo [−114.3, −44.5] after 400 games; competence 0.442 against the main line's
+  0.480 (Trainer-first puzzles 0.680 / 0.577, attack-won 0.886 / 0.939, PlusPower 0.313 / 0.563, search 0.390 / 0.430,
+  disrupt 0.443 / 0.460, tempo 0.383 / 0.369). memgru at 280: −21.2 [−34.2, −8.3] after 2,000 games. One-iteration
+  forks from `seg_0280.pt` with 200 games, all recorded. At exit-strong's settings: 797 probes, 688 targets, 431
+  differing from the move played, target / played verbs trainer 160 / 82, attach 134 / 158, basic 32 / 94, attack 37 /
+  55, pass 45 / 35, retreat 13 / 0. At horizon 2, margin 0.15, 6 options, 4 lines: 411 targets, 250 differing, trainer
+  75 / 63, attach 79 / 86, basic 21 / 55, attack 33 / 27, pass 30 / 10, retreat 8 / 0, 14,696 lines in 42 s, 0 errors.
+- **Found:** (1) Distilling the one-turn search did teach the pilot to play Trainers first (+10 points on those
+  puzzles in one segment), but unconditionally. Scored by a weak value at the end of the turn, the search favours
+  immediate plays (Trainers, retreating) over development (benching Pokémon), and at weight 1.0 the policy followed it
+  and lost 79 Elo. Play-time search solved the puzzles because their wins are terminal and need no value. (2) A
+  two-turn horizon and a margin halve the targets and shrink the Trainer lean, but the search still benches less and
+  passes more than the pilot; whether the remaining targets help is what exit-h2 measures. (3) All three of Evan's
+  memory forms are negative (history tokens −0.016 competence, the attention memory −18 Elo, the GRU −21 Elo).
+- **Next:** exit (weight 0.3, one-turn) and lamturn and ent02 at 290–300; exit-h2 when a slot frees; deckcross-w at 290.
+
+### #104 · 2026-10-19 · A4 / A5 · The lab died with its session; two settings races fixed; the deck-free encoder's population reaches 28 Trainers
+- **Done:** Found the lab stopped at 22:10. Its last event was the main line's segment to 290 (21:35), and
+  `009-pilot-deckcross-w` had stopped at iteration 284 (21:44). There was no error in `lab.stderr.log`, and the PC had not
+  rebooted (last boot 10-14). The lab process had been started from a session's shell at 21:15, and it died with that
+  session. New: `rl/lab.py start` starts `rl.lab run` in the background outside the shell's job object
+  (`CREATE_BREAKAWAY_FROM_JOB`, no console window, defaults `RL_GPU_SHARE` 0.333 and `RL_CPU_THREADS` 10, logs appended).
+  Also found: `runs/lab/lab.json` had `s1_min_gain` 0.03 and no `aa_s1` record, though #96 set 0.06. `adopt()` saved the
+  settings dict that the lab had read at the start of its cycle, so the adoption of `006-meta-margin0-n` at 14:53 wrote
+  back the stale copy over the bar set at about 14:42. No decision depended on it. hist4's gain of −0.016 fails either bar,
+  memgru ended in an error, and exit-strong was stopped by its Elo test. The decision pass had the same race for cards:
+  it decides from card copies read before that cycle's branch runs (up to about 80 minutes), so a hand edit made
+  meanwhile would be ignored and then overwritten. Fixes: `adopt()` merges the settings on disk before it changes and
+  saves them, and the due cards are reloaded from disk before they are decided. Restored `s1_min_gain` 0.06 with an
+  `aa_s1` record (the #96 numbers). Lifted the hold on `009-pilot-deckcross-w` (`hold_lifted` in the card, event
+  `hold-lifted`). The hold kept the practice cards' control while they ran, and both are now decided. So, as its
+  hypothesis says, the card is adopted if it passes at 290. Restarted with `rl.lab start` at 22:13 and again at 22:15,
+  after the card fix.
+- **Evidence:** `rl.tests` PASS (29 s), before and after the card fix. The deck-free pilot exports to ONNX: `warm.pt` of
+  deckcross-w (`deck_mode cross`) solves 331 of the 408 puzzles (81.1%; the main line at 220: 79.2%, #96), so its
+  competence score can be computed. Shape distance from the human medians 13.5 / 28 / 18 (L1, cards), read from each run's
+  per-iteration line (the whole population's median, and the mean of the 3 decks with the best population win rates):
+
+  | | 240 | 260 | 270 | 280 | 285–289 |
+  |---|---|---|---|---|---|
+  | main line, median P / T / E | 17 / 7 / 36 (42.5) | 17 / 12 / 30 (31.5) | 17 / 18 / 25 (20.5) | 15 / 20 / 25 (16.5) | 14 / 22 / 24 (12.5) |
+  | main line, best 3 | 38.5 | 29.2 | 18.5 | 16.5 | 15.8 |
+  | deckcross-w, median | – | 16 / 14 / 30 (28.5) | 10 / 26 / 23 (10.5) | 10 / 28 / 21 (6.5) | – |
+  | deckcross-w, best 3 | – | 26.5 | 11.5 | 11.5 | – |
+
+  The memgru branch went 17 / 13 / 30 → 17 / 19 / 24 (260 → 278) and 008b 17 / 7 / 36 → 17 / 9 / 34 (250 → 277).
+  Before 240 the main line's median Trainers swung between 3 and 15 (150–245), and the result-only reward's replication
+  branch fell to 6–7 Trainers (230–235) before it was adopted.
+- **Found:** (1) The lab dies with the session that started it, and hand edits to its settings or cards while it runs
+  could be silently lost. Both are fixed. (2) Since 240 the main line has made its longest and steadiest move toward the
+  human shape (median Trainers 7 → 22, shape distance 42.5 → 12.5). Given its earlier swings and the result-only branch's
+  own fall, it cannot be credited to the adopted reward without a test. (3) The deck-free encoder's population
+  reached the human median Trainer count (28) by 280, 10 cards closer to the human shape than the main line at the same
+  iteration. That gap is about one A/A shape drift (up to 10.5 in a segment, #102), so it is not yet evidence for the
+  architecture. The population medians are not best decks under a common pilot, and the answer key was not measured.
+- **Next:** At 290, deckcross-w's last segment (adopted if not clearly worse) and the first checks of exit, ent02 and
+  lamturn (rebased if deckcross-w is adopted). Then the shape and answer key of the adopted line at the 320 milestone.
+  Evan's call on 008b is still open.

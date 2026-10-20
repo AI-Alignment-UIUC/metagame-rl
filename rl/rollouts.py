@@ -30,6 +30,8 @@ def concat(rollouts: list) -> dict:
     extra = sorted({k for r in rollouts for k in r if k.startswith("obs.")})   # token fields
     if rollouts and all("slot" in r for r in rollouts):
         extra.append("slot")                       # model slot of each transition (league rollouts)
+    if rollouts and all("sampled" in r for r in rollouts):
+        extra.append("sampled")                    # sampled (1) or the top option (0; rl/train.py --explore)
     parts = {k: [] for k in keys + ("traj", "legal_offsets") + tuple(extra)}
     for r in rollouts:
         for k in keys + tuple(extra):

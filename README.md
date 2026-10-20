@@ -53,18 +53,19 @@ gives a biased or blind builder, so pilot strength is the bottleneck.
 ## Status
 
 <!-- status:start -->
-*Updated 2026-10-16.*
+*Updated 2026-10-19.*
 
-**Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup
-matrix. Trained pilots beat SimpleBot (a human-free pilot plateaus near 83%), but every hand-built deck
-search ends in decks unlike the human field, and tournaments of deck-owning agents recovered none of the human
-meta; the meta level is now one learned procedure whose best decks break even with the human field under
-pilot-v2, a measure that favours their Trainer-light style. Work on the pilot found that no architecture change beat the noise of short
-screens and that the value head's one-step change carries a small share of a move's effect, limited by the number
-of games rather than by its readout. A probe of Trainer decisions on the human lists found that training does see a
-Trainer's delayed effect, and that drawing pays only when the rest of the turn is played well: under the sampled play
-training learns from, draw Trainers are worth nothing extra, while with greedy follow-through better timing of every
-Trainer is worth about one to two points a decision, so the pilot's own sampling noise hides their value from it. Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
+**Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup matrix. Trained pilots
+beat SimpleBot (a human-free pilot plateaus near 83%), but every deck search, tournament and learned drafting loop through
+log #96 ended in decks unlike the human field, and with the human lists as ground truth (Evan) the cause found was the
+pilot: it does not set up before attacking, so every Trainer but Oak and Bill was worth less than an Energy to it, and the
+drafting followed it. In the lab (`rl/lab.py`), working the approved three-stage plan (`notes/plan-rediscovery.md`) with
+Evan's ideas first, the main line's decks have since moved most of the way to the human shape (median 14 / 22 / 24
+Pokémon / Trainers / Energy at 289, from 17 / 7 / 36 at 240, against the human lists' 13.5 / 28 / 18), and the deck-free
+board encoder Evan asked for, warm-started, leads its control and drafted a population at 28 Trainers; it is decided at
+290. Play-time search to the end of the turn fixes most of the setup failure (Trainer-first lethals 60% → 85–88%), but
+distilling it at full weight lost 79 Elo, so lighter and two-turn variants are being tested on a competence score whose
+targets the pilot has not met (0.480). Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
 
 **Earlier work:**
 
@@ -102,8 +103,7 @@ Trainer is worth about one to two points a decision, so the pilot's own sampling
   cross-attends to a separate deck encoder, so the game state has a deck-free representation. The first
   screen stopped when the PC was shut down overnight, so it was restarted with 40 iterations per arm, scored
   at the same iteration against the base pilot's two seeds; no result yet.
-
-**Recent (log #73–80):** About a dozen pilot changes (slot binding, a deck-free board encoder, options attending
+- **Log #73–80 (A4).** About a dozen pilot changes (slot binding, a deck-free board encoder, options attending
 to each other, each attack's own text, hidden decklists, three value refits) separated from base by no more than the
 evaluation's own noise, and every 40-iteration variant won only 27–38% against SimpleBot on the archived lists
 (pilot-v2: 82%). A probe that plays options to the end found that the training signal at lambda 0.95 carries 56–75% of
@@ -116,21 +116,57 @@ under sampled play draw Trainers are worth nothing extra while better timing of 
 worth 0.6–1.3 points a decision, and that with greedy follow-through every Trainer becomes worth timing better, most
 for the current recipe (all Trainers +1.3 against +0.35 sampled; Oak +1.4, Bill +0.7), so the pilot's own sampling
 after a Trainer erases most of its value, and a lower entropy weight, never tried, is the next arm.
+- **Log #81–88 (A4, A5).** Mostly greedy collection lost to plain continued training by 116 Elo while continued
+training cut the room for better Trainer timing from 1.3 to 0.4 points a decision, so the short screens had stopped too
+early, and the lab (`rl/lab.py`, `notes/plan-lab.md`) replaced them: the metagame loop itself trains as a main line from
+meta-99 at a third of the GPU, each change runs as a fork decided against it by a sequential test on drafted decks or by
+the answer key, and SimpleBot on both sides joined pilot-v2 as a panel of the drafted decks against the human lists (0.47,
+0.62 and 0.58 at meta-99's iterations 49, 99 and 149, 0.53 at the lab's 160). Its A/A cards showed that a fork with no
+change can end a segment 13 Elo weaker (a training spread of about 9 Elo), so a pilot change must show 20 Elo and a meta
+change 0.03 on the answer key, and a card's reading can swing by 40 Elo between its segments; the first adopted change is
+2 PPO epochs instead of 3 (not worse on drafted decks, +40 Elo on the human lists, 19% faster), auxiliary heads with
+game-general targets failed (−23 Elo), and value cross-attention, restarted after the adoption, passed its first check.
+Each new lab state exposed a bookkeeping bug (a branch never decided after a restart, a card forked before an adoption
+losing its control, a retest dropping its test), the first two fixed with a loop test, while the population's median deck kept
+swinging between Pokémon-, Trainer- and Energy-heavy shapes over tens of iterations.
+- **Log #89–96 (A4, A5, plan).** The lab adopted 6 swaps a draw and passed the result-only draft reward (whose first fork
+trained a pilot 30 Elo stronger), value cross-attention failed, and the main line's answer key swung with the pilot doing
+the judging (under pilot-v2 0.68 at 200 and 0.48 at 240, under SimpleBot 0.59 and 0.62) as its decks drifted from the
+human shape (best decks 20 / 11 / 29 Pokémon / Trainers / Energy against the human lists' 13.5 / 28 / 18). Taking the
+human lists as ground truth (Evan), every pilot built so far misplays every Trainer but Oak and Bill (basic Energy beats
+search, disruption and tempo Trainers even for pilots trained on the human lists) because it does not set up before
+attacking (PlusPower-then-attack lethals at random's 31%), with its inputs and the cards checked, and the drafting
+follows it with a collapsed incoming choice; play-time search over the same pilot to the end of the turn lifts
+Trainer-first lethals from 60% to 85–88%. Evan's ideas now go first and are tracked in `notes/evan-requests.md`:
+practice before a draw counts (seasons), memory and the deck-free encoder as held lab cards, and the approved
+`notes/plan-rediscovery.md`, three stages of three steps decided on a competence score (A/A bar 0.06), with expert
+iteration toward the turn search, turn-level credit and lasting prize shaping built and queued behind his cards.
+- **Log #97–104 (A4, A5).** Evan's ideas ran first in the lab: practice before a draw counts failed in seasons of 5,
+and in seasons of 10 it passed its answer-key rule while drafting further from the human shape (10 Trainers / 30 Energy
+against the main line's 19 / 25), so it is held for Evan and meta cards are now gated on deck shape. All three memory forms
+failed, the result-only draft reward was adopted, and the deck-free board encoder, warm-started with `rl/warmstart.py` after
+its deck-blind start was stopped, led by 21–37 Elo over two segments while its population reached the human median of 28
+Trainers (a lead over the main line about one A/A shape drift wide). Expert iteration toward the one-turn search at full
+weight taught Trainers-first play unconditionally (+10 points on those puzzles) and lost 79 Elo, because a search scored by
+the pilot's weak value at the end of the turn favours immediate plays over benching Pokémon, while the main line itself made
+its steadiest move toward the human shape (median Trainers 7 → 22 from 240 to 289, competence 0.437 → 0.480, mostly in the 16
+PlusPower puzzles); the lab's bookkeeping fragility recurred (it died with the session that started it, and two races
+silently dropped hand edits, lowering the competence bar from 0.06 to 0.03 with no decision affected), and all of it is fixed.
+
+**Recent:** no open log entries since #104.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. A training arm with less sampling noise in the play it learns from (a lower or annealed entropy weight, or
-   collection at a temperature below 1 with the behaviour log-probabilities recorded), against base and base-s2,
-   judged against SimpleBot on the archived lists and by whether the Trainer probe's sampled-line timing gains move
-   toward the greedy ones.
-2. For telling situations apart: the KataGo-style auxiliary value heads recommended in
-   `notes/analysis-2026-10-06.md` (prize difference at the end, turns remaining, the opponent's next action), never
-   built.
-3. An evaluation that does not share the pilot's style (#69), then the headline run from scratch, scored on the
-   answer key.
-4. Phase B, in parallel: verification beyond self-written tests, then 2005 rules in the env, six audited
+1. At 290: the deck-free encoder (`009-pilot-deckcross-w`) is decided, adopted if not clearly worse; the first checks of
+   expert iteration at weight 0.3 (`009x-pilot-exit`), entropy 0.02 and turn-level credit, which are rebased if it is adopted.
+2. Stage 1 step 2 continued: expert iteration over two turns (`009x-pilot-exit-h2`), then prize shaping kept on
+   (`010-pilot-shapeon`), decided on the competence score (bar 0.06).
+3. The 320 milestone's scorecard (competence, deck shape, answer key) on the line that results: whether the move toward
+   the human shape holds.
+4. Evan's call on `008b-meta-practice10` (passed its answer-key rule, drafted away from the human shape).
+5. Phase B, in parallel: verification beyond self-written tests, then 2005 rules in the env, six audited
    card-text fixes, ZRE, Blastoise ex and Nidoqueen.
 <!-- status:end -->
 

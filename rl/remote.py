@@ -17,6 +17,8 @@ from pathlib import Path
 import numpy as np
 import torch
 
+from rl import limits
+
 ROOT = Path(__file__).resolve().parent.parent
 JSON_FRAME, REQUEST, RESPONSE = 1, 2, 3
 DT = {"uint8": np.uint8, "int16": np.int16, "int32": np.int32, "float32": np.float32}
@@ -120,11 +122,12 @@ class RemotePool:
 
     @torch.no_grad()
     def _serve(self, requests, models, device):
-        t0 = time.perf_counter() if self.pace > 0 and device == "cuda" else None
+        pace = max(self.pace, limits.SERVER_PACE)          # RL_GPU_SHARE sets the least rest (rl/limits.py)
+        t0 = time.perf_counter() if pace > 0 and device == "cuda" else None
         self._serve_batches(requests, models, device)
         if t0 is not None:                     # the responses are already sent: the workers play on meanwhile
             torch.cuda.synchronize()
-            time.sleep((time.perf_counter() - t0) * self.pace)
+            time.sleep((time.perf_counter() - t0) * pace)
 
     @torch.no_grad()
     def _serve_batches(self, requests, models, device):
@@ -134,8 +137,8 @@ class RemotePool:
                 self.mem.pop((i, 2 * int(uid) + 1), None)
         by_slot = {}
         for r in requests:
-            by_slot.setdefault((r[1]["slot"], bool(r[1].get("greedy"))), []).append(r)
-        for (slot, greedy), group in by_slot.items():
+            by_slot.setdefault((r[1]["slot"], bool(r[1].get("greedy")), r[1].get("explore")), []).append(r)
+        for (slot, greedy, explore), group in by_slot.items():
             model = models[slot]
             ns = [h["n"] for _, h, _ in group]
             B = sum(ns)
@@ -171,15 +174,26 @@ class RemotePool:
             mask[torch.from_numpy(np.concatenate(rows)).to(device),
                  torch.from_numpy(np.concatenate(cols).astype(np.int64)).to(device)] = True
             logp_all = torch.log_softmax(logits.float().masked_fill(~mask, -1e9), -1)
-            action = logp_all.argmax(-1) if greedy else torch.multinomial(logp_all.exp(), 1).squeeze(1)
+            # explore = e (mostly greedy collection, log #81): each decision samples with probability e and otherwise
+            # plays the top option; "sampled" marks which, since only the sampled ones train the policy (rl/train.py).
+            if greedy:
+                action = logp_all.argmax(-1)
+                sampled = torch.zeros(B, dtype=torch.bool, device=device)
+            elif explore is not None:
+                sampled = torch.rand(B, device=device) < float(explore)
+                action = torch.where(sampled, torch.multinomial(logp_all.exp(), 1).squeeze(1), logp_all.argmax(-1))
+            else:
+                action = torch.multinomial(logp_all.exp(), 1).squeeze(1)
+                sampled = torch.ones(B, dtype=torch.bool, device=device)
             logp = logp_all.gather(1, action[:, None]).squeeze(1)
-            action = action.int().cpu().numpy()
+            action, sampled = action.int().cpu().numpy(), sampled.cpu().numpy().astype(np.uint8)
             logp, value = logp.cpu().numpy(), value.float().cpu().numpy()
             start = 0
             for (i, h, _), n in zip(group, ns):
                 sl = slice(start, start + n)
                 self._send(i, RESPONSE, pack_arrays({"id": h["id"], "n": n},
-                                                    [("action", action[sl]), ("logp", logp[sl]), ("value", value[sl])]))
+                                                    [("action", action[sl]), ("logp", logp[sl]), ("value", value[sl]),
+                                                     ("sampled", sampled[sl])]))
                 start += n
 
     def close(self):

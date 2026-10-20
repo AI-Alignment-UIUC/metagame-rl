@@ -9,7 +9,8 @@
 // For the agents named in `record`, every decision is kept for training: the observation
 // (bytes), the action id, its log-probability and value estimate, the legal ids, and at each
 // seat's last decision of a game the reward (+1 win, -1 loss, 0 draw or cut off), and the model
-// slot of the agent that decided (-1 for agents without one; rl/league.py maps slots to agents).
+// slot of the agent that decided (-1 for agents without one; rl/league.py maps slots to agents), and whether the
+// action was sampled from the policy (1) or its top option (0; mostly greedy collection, log #81).
 'use strict';
 const { Env } = require('./env.js');
 
@@ -30,10 +31,13 @@ class Runner {
   // one decided in): answer is the agent's { action, logp, value }, k its index in rec (-1 if not recorded).
   // A job with fromGame (a function returning a Game, e.g. a clone) starts from that game instead of a new deal,
   // with decklists { 1, 2 }; with first (an option key) that option is played before any agent is asked
-  // (env/remote_worker.js qprobe). A job's tag is copied to its result.
+  // (env/remote_worker.js qprobe). A job's tag is copied to its result. A job with untilTurnEnd stops at its first asked
+  // decision once the game turn has advanced `horizon` turns (default 1: after the turn it started in; env/remote_worker.js
+  // tsearch, logs #96, #103): its result has no winner and stopped { player, value }, the deciding player there and the
+  // agent's value for it.
   async run(nextJob, agents, { record = new Set(), onDecision = null } = {}) {
     const enc = this.encoder;
-    const rec = { obs: [], action: [], logp: [], value: [], reward: [], done: [], traj: [], legal: [], slot: [] };
+    const rec = { obs: [], action: [], logp: [], value: [], reward: [], done: [], traj: [], legal: [], slot: [], sampled: [] };
     const results = [];
     const slots = [];
     let jobCount = 0, forced = 0, engineMoves = 0, fallbacks = 0;
@@ -41,9 +45,11 @@ class Runner {
     const start = job => {
       const env = new Env(enc, { u8: true, showOpponentDecklist: this.showOpponentDecklist });
       let t;
+      let turn0;
       if (job.fromGame) {
         env.game = job.fromGame();
         env.decklists = job.decklists;
+        turn0 = env.game.state.turn;
         t = env.observe();
         if (job.first !== undefined && !t.done) {
           const j = env.current.options.findIndex(o => o.key === job.first);
@@ -54,7 +60,7 @@ class Runner {
         const usesEngine = [1, 2].some(s => agents[job.seats[s]].engine);
         t = env.reset(job.deckA, job.deckB, job.seed, { backup: usesEngine });
       }
-      return { job, env, t, id: jobCount++, last: { 1: -1, 2: -1 }, valueAt: { 1: null, 2: null } };
+      return { job, env, t, id: jobCount++, last: { 1: -1, 2: -1 }, valueAt: { 1: null, 2: null }, turn0, stopped: null };
     };
     const fill = () => {
       while (slots.length < this.concurrency) {
@@ -79,7 +85,7 @@ class Runner {
       };
       results.push({ seats: slot.job.seats, decks: [slot.job.deckName, slot.job.deckBName], seed: slot.job.seed,
         winner: w, ending: slot.env.game.ending, turns: slot.env.game.state.turn, prizesLeft: { 1: left(1), 2: left(2) },
-        ...(slot.job.tag !== undefined ? { tag: slot.job.tag } : {}),
+        ...(slot.job.tag !== undefined ? { tag: slot.job.tag } : {}), ...(slot.stopped ? { stopped: slot.stopped } : {}),
         ...(this.valueAtTurn ? { valueAt: slot.valueAt } : {}), steps: slot.t.steps, error: slot.t.error ? String(slot.t.error.message || slot.t.error) : undefined });
     };
 
@@ -119,6 +125,10 @@ class Runner {
         const out = outs[gi];
         const keep = record.has(name);
         group.forEach((s, i) => {
+          if (s.job.untilTurnEnd && s.env.game.state.turn >= s.turn0 + (s.job.horizon || 1)) {   // horizon turns over: stop
+            s.stopped = { player: s.t.playerId, value: out[i].value };
+            return;
+          }
           if (this.valueAtTurn && s.valueAt[s.t.playerId] === null && s.env.game.state.turn >= this.valueAtTurn) {
             s.valueAt[s.t.playerId] = out[i].value;
           }
@@ -134,6 +144,7 @@ class Runner {
             rec.traj.push(s.id * 2 + s.t.playerId - 1);
             rec.legal.push(s.t.legal);
             rec.slot.push(agents[name].slot ?? -1);
+            rec.sampled.push(out[i].sampled ?? 1);
             s.last[s.t.playerId] = k;
           }
           s.t = s.env.step(out[i].action);
@@ -141,7 +152,7 @@ class Runner {
       }
       // Retire finished games and start new ones.
       for (let i = slots.length - 1; i >= 0; i--) {
-        if (slots[i].t.done) { finish(slots[i]); slots.splice(i, 1); }
+        if (slots[i].t.done || slots[i].stopped) { finish(slots[i]); slots.splice(i, 1); }
       }
       fill();
     }
@@ -178,6 +189,7 @@ function packRollout(rec, obsSize, meta = {}) {
     ['reward', 'float32', Float32Array.from(rec.reward)], ['done', 'uint8', Uint8Array.from(rec.done)],
     ['traj', 'int32', Int32Array.from(rec.traj)], ['legal_offsets', 'int32', offsets], ['legal_ids', 'int32', ids], ...obsArrays);
   if (rec.slot && rec.slot.length === T) arrays.push(['slot', 'int32', Int32Array.from(rec.slot)]);
+  if (rec.sampled && rec.sampled.length === T) arrays.push(['sampled', 'uint8', Uint8Array.from(rec.sampled)]);
   const sections = [];
   let offset = 0;
   for (const [name, dtype, arr] of arrays) {

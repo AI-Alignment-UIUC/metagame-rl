@@ -39,7 +39,7 @@ def load_policy(path: str, device: str, overrides: dict = None):
                               ability_text=cfg.get("ability_text", False), deck_mode=cfg.get("deck_mode", "joint"),
                               deck_layers=cfg.get("deck_layers", 1), history=cfg.get("history", 0),
                               memory=cfg.get("memory", "none"), value_tower=cfg.get("value_tower", 0),
-                              value_query=cfg.get("value_query", 0))
+                              value_query=cfg.get("value_query", 0), aux_heads=cfg.get("aux_heads", 0))
         enc = "tokens"
     else:
         from rl.model import build
@@ -47,7 +47,7 @@ def load_policy(path: str, device: str, overrides: dict = None):
         enc = "identity"
     missing, unexpected = m.load_state_dict(state["model"] if "model" in state else state["net"],   # rl.train or rl.metagame
                                             strict=not overrides)
-    assert not unexpected and all(k.startswith(("vquery", "vcross.", "vblocks.", "ln_v.")) for k in missing), (missing, unexpected)
+    assert not unexpected and all(k.startswith(("vquery", "vcross.", "vblocks.", "ln_v.", "aux_head.")) for k in missing), (missing, unexpected)
     return m.to(device).eval(), enc
 
 

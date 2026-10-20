@@ -1,0 +1,1062 @@
+{
+ "decks": "archived",
+ "games": 64,
+ "pairs": [
+  {
+   "base": 0,
+   "variant": 24,
+   "group": "all",
+   "replaced": 30
+  },
+  {
+   "base": 0,
+   "variant": 25,
+   "group": "draw",
+   "replaced": 8
+  },
+  {
+   "base": 0,
+   "variant": 26,
+   "group": "search",
+   "replaced": 8
+  },
+  {
+   "base": 0,
+   "variant": 27,
+   "group": "disrupt",
+   "replaced": 5
+  },
+  {
+   "base": 0,
+   "variant": 28,
+   "group": "tempo",
+   "replaced": 9
+  },
+  {
+   "base": 1,
+   "variant": 29,
+   "group": "all",
+   "replaced": 28
+  },
+  {
+   "base": 1,
+   "variant": 30,
+   "group": "draw",
+   "replaced": 7
+  },
+  {
+   "base": 1,
+   "variant": 31,
+   "group": "search",
+   "replaced": 9
+  },
+  {
+   "base": 1,
+   "variant": 32,
+   "group": "disrupt",
+   "replaced": 3
+  },
+  {
+   "base": 1,
+   "variant": 33,
+   "group": "tempo",
+   "replaced": 9
+  },
+  {
+   "base": 2,
+   "variant": 34,
+   "group": "all",
+   "replaced": 32
+  },
+  {
+   "base": 2,
+   "variant": 35,
+   "group": "draw",
+   "replaced": 7
+  },
+  {
+   "base": 2,
+   "variant": 36,
+   "group": "search",
+   "replaced": 9
+  },
+  {
+   "base": 2,
+   "variant": 37,
+   "group": "disrupt",
+   "replaced": 12
+  },
+  {
+   "base": 2,
+   "variant": 38,
+   "group": "tempo",
+   "replaced": 4
+  },
+  {
+   "base": 3,
+   "variant": 39,
+   "group": "all",
+   "replaced": 29
+  },
+  {
+   "base": 3,
+   "variant": 40,
+   "group": "draw",
+   "replaced": 3
+  },
+  {
+   "base": 3,
+   "variant": 41,
+   "group": "search",
+   "replaced": 9
+  },
+  {
+   "base": 3,
+   "variant": 42,
+   "group": "disrupt",
+   "replaced": 6
+  },
+  {
+   "base": 3,
+   "variant": 43,
+   "group": "tempo",
+   "replaced": 11
+  },
+  {
+   "base": 4,
+   "variant": 44,
+   "group": "all",
+   "replaced": 26
+  },
+  {
+   "base": 4,
+   "variant": 45,
+   "group": "draw",
+   "replaced": 6
+  },
+  {
+   "base": 4,
+   "variant": 46,
+   "group": "search",
+   "replaced": 6
+  },
+  {
+   "base": 4,
+   "variant": 47,
+   "group": "disrupt",
+   "replaced": 3
+  },
+  {
+   "base": 4,
+   "variant": 48,
+   "group": "tempo",
+   "replaced": 9
+  },
+  {
+   "base": 5,
+   "variant": 49,
+   "group": "all",
+   "replaced": 28
+  },
+  {
+   "base": 5,
+   "variant": 50,
+   "group": "draw",
+   "replaced": 8
+  },
+  {
+   "base": 5,
+   "variant": 51,
+   "group": "search",
+   "replaced": 6
+  },
+  {
+   "base": 5,
+   "variant": 52,
+   "group": "disrupt",
+   "replaced": 7
+  },
+  {
+   "base": 5,
+   "variant": 53,
+   "group": "tempo",
+   "replaced": 7
+  },
+  {
+   "base": 6,
+   "variant": 54,
+   "group": "all",
+   "replaced": 33
+  },
+  {
+   "base": 6,
+   "variant": 55,
+   "group": "draw",
+   "replaced": 7
+  },
+  {
+   "base": 6,
+   "variant": 56,
+   "group": "search",
+   "replaced": 8
+  },
+  {
+   "base": 6,
+   "variant": 57,
+   "group": "disrupt",
+   "replaced": 10
+  },
+  {
+   "base": 6,
+   "variant": 58,
+   "group": "tempo",
+   "replaced": 8
+  },
+  {
+   "base": 7,
+   "variant": 59,
+   "group": "all",
+   "replaced": 27
+  },
+  {
+   "base": 7,
+   "variant": 60,
+   "group": "draw",
+   "replaced": 4
+  },
+  {
+   "base": 7,
+   "variant": 61,
+   "group": "search",
+   "replaced": 7
+  },
+  {
+   "base": 7,
+   "variant": 62,
+   "group": "disrupt",
+   "replaced": 6
+  },
+  {
+   "base": 7,
+   "variant": 63,
+   "group": "tempo",
+   "replaced": 10
+  },
+  {
+   "base": 8,
+   "variant": 64,
+   "group": "all",
+   "replaced": 30
+  },
+  {
+   "base": 8,
+   "variant": 65,
+   "group": "draw",
+   "replaced": 4
+  },
+  {
+   "base": 8,
+   "variant": 66,
+   "group": "search",
+   "replaced": 10
+  },
+  {
+   "base": 8,
+   "variant": 67,
+   "group": "disrupt",
+   "replaced": 9
+  },
+  {
+   "base": 8,
+   "variant": 68,
+   "group": "tempo",
+   "replaced": 7
+  },
+  {
+   "base": 9,
+   "variant": 69,
+   "group": "all",
+   "replaced": 30
+  },
+  {
+   "base": 9,
+   "variant": 70,
+   "group": "draw",
+   "replaced": 8
+  },
+  {
+   "base": 9,
+   "variant": 71,
+   "group": "search",
+   "replaced": 8
+  },
+  {
+   "base": 9,
+   "variant": 72,
+   "group": "disrupt",
+   "replaced": 5
+  },
+  {
+   "base": 9,
+   "variant": 73,
+   "group": "tempo",
+   "replaced": 9
+  },
+  {
+   "base": 10,
+   "variant": 74,
+   "group": "all",
+   "replaced": 31
+  },
+  {
+   "base": 10,
+   "variant": 75,
+   "group": "draw",
+   "replaced": 4
+  },
+  {
+   "base": 10,
+   "variant": 76,
+   "group": "search",
+   "replaced": 8
+  },
+  {
+   "base": 10,
+   "variant": 77,
+   "group": "disrupt",
+   "replaced": 8
+  },
+  {
+   "base": 10,
+   "variant": 78,
+   "group": "tempo",
+   "replaced": 11
+  },
+  {
+   "base": 11,
+   "variant": 79,
+   "group": "all",
+   "replaced": 30
+  },
+  {
+   "base": 11,
+   "variant": 80,
+   "group": "draw",
+   "replaced": 8
+  },
+  {
+   "base": 11,
+   "variant": 81,
+   "group": "search",
+   "replaced": 6
+  },
+  {
+   "base": 11,
+   "variant": 82,
+   "group": "disrupt",
+   "replaced": 8
+  },
+  {
+   "base": 11,
+   "variant": 83,
+   "group": "tempo",
+   "replaced": 8
+  },
+  {
+   "base": 12,
+   "variant": 84,
+   "group": "all",
+   "replaced": 34
+  },
+  {
+   "base": 12,
+   "variant": 85,
+   "group": "draw",
+   "replaced": 4
+  },
+  {
+   "base": 12,
+   "variant": 86,
+   "group": "search",
+   "replaced": 11
+  },
+  {
+   "base": 12,
+   "variant": 87,
+   "group": "disrupt",
+   "replaced": 8
+  },
+  {
+   "base": 12,
+   "variant": 88,
+   "group": "tempo",
+   "replaced": 11
+  },
+  {
+   "base": 13,
+   "variant": 89,
+   "group": "all",
+   "replaced": 28
+  },
+  {
+   "base": 13,
+   "variant": 90,
+   "group": "draw",
+   "replaced": 7
+  },
+  {
+   "base": 13,
+   "variant": 91,
+   "group": "search",
+   "replaced": 7
+  },
+  {
+   "base": 13,
+   "variant": 92,
+   "group": "disrupt",
+   "replaced": 8
+  },
+  {
+   "base": 13,
+   "variant": 93,
+   "group": "tempo",
+   "replaced": 6
+  },
+  {
+   "base": 14,
+   "variant": 94,
+   "group": "all",
+   "replaced": 18
+  },
+  {
+   "base": 14,
+   "variant": 95,
+   "group": "draw",
+   "replaced": 3
+  },
+  {
+   "base": 14,
+   "variant": 96,
+   "group": "search",
+   "replaced": 3
+  },
+  {
+   "base": 14,
+   "variant": 97,
+   "group": "disrupt",
+   "replaced": 4
+  },
+  {
+   "base": 14,
+   "variant": 98,
+   "group": "tempo",
+   "replaced": 8
+  },
+  {
+   "base": 15,
+   "variant": 99,
+   "group": "all",
+   "replaced": 28
+  },
+  {
+   "base": 15,
+   "variant": 100,
+   "group": "draw",
+   "replaced": 6
+  },
+  {
+   "base": 15,
+   "variant": 101,
+   "group": "search",
+   "replaced": 7
+  },
+  {
+   "base": 15,
+   "variant": 102,
+   "group": "disrupt",
+   "replaced": 5
+  },
+  {
+   "base": 15,
+   "variant": 103,
+   "group": "tempo",
+   "replaced": 10
+  },
+  {
+   "base": 16,
+   "variant": 104,
+   "group": "all",
+   "replaced": 27
+  },
+  {
+   "base": 16,
+   "variant": 105,
+   "group": "draw",
+   "replaced": 8
+  },
+  {
+   "base": 16,
+   "variant": 106,
+   "group": "search",
+   "replaced": 9
+  },
+  {
+   "base": 16,
+   "variant": 107,
+   "group": "disrupt",
+   "replaced": 4
+  },
+  {
+   "base": 16,
+   "variant": 108,
+   "group": "tempo",
+   "replaced": 6
+  },
+  {
+   "base": 17,
+   "variant": 109,
+   "group": "all",
+   "replaced": 26
+  },
+  {
+   "base": 17,
+   "variant": 110,
+   "group": "draw",
+   "replaced": 7
+  },
+  {
+   "base": 17,
+   "variant": 111,
+   "group": "disrupt",
+   "replaced": 8
+  },
+  {
+   "base": 17,
+   "variant": 112,
+   "group": "tempo",
+   "replaced": 11
+  },
+  {
+   "base": 18,
+   "variant": 113,
+   "group": "all",
+   "replaced": 25
+  },
+  {
+   "base": 18,
+   "variant": 114,
+   "group": "draw",
+   "replaced": 4
+  },
+  {
+   "base": 18,
+   "variant": 115,
+   "group": "search",
+   "replaced": 8
+  },
+  {
+   "base": 18,
+   "variant": 116,
+   "group": "disrupt",
+   "replaced": 5
+  },
+  {
+   "base": 18,
+   "variant": 117,
+   "group": "tempo",
+   "replaced": 7
+  },
+  {
+   "base": 19,
+   "variant": 118,
+   "group": "all",
+   "replaced": 28
+  },
+  {
+   "base": 19,
+   "variant": 119,
+   "group": "draw",
+   "replaced": 7
+  },
+  {
+   "base": 19,
+   "variant": 120,
+   "group": "search",
+   "replaced": 7
+  },
+  {
+   "base": 19,
+   "variant": 121,
+   "group": "disrupt",
+   "replaced": 6
+  },
+  {
+   "base": 19,
+   "variant": 122,
+   "group": "tempo",
+   "replaced": 8
+  },
+  {
+   "base": 20,
+   "variant": 123,
+   "group": "all",
+   "replaced": 23
+  },
+  {
+   "base": 20,
+   "variant": 124,
+   "group": "draw",
+   "replaced": 5
+  },
+  {
+   "base": 20,
+   "variant": 125,
+   "group": "search",
+   "replaced": 6
+  },
+  {
+   "base": 20,
+   "variant": 126,
+   "group": "disrupt",
+   "replaced": 6
+  },
+  {
+   "base": 20,
+   "variant": 127,
+   "group": "tempo",
+   "replaced": 6
+  },
+  {
+   "base": 21,
+   "variant": 128,
+   "group": "all",
+   "replaced": 26
+  },
+  {
+   "base": 21,
+   "variant": 129,
+   "group": "draw",
+   "replaced": 6
+  },
+  {
+   "base": 21,
+   "variant": 130,
+   "group": "search",
+   "replaced": 5
+  },
+  {
+   "base": 21,
+   "variant": 131,
+   "group": "disrupt",
+   "replaced": 8
+  },
+  {
+   "base": 21,
+   "variant": 132,
+   "group": "tempo",
+   "replaced": 7
+  },
+  {
+   "base": 22,
+   "variant": 133,
+   "group": "all",
+   "replaced": 19
+  },
+  {
+   "base": 22,
+   "variant": 134,
+   "group": "draw",
+   "replaced": 6
+  },
+  {
+   "base": 22,
+   "variant": 135,
+   "group": "search",
+   "replaced": 2
+  },
+  {
+   "base": 22,
+   "variant": 136,
+   "group": "disrupt",
+   "replaced": 7
+  },
+  {
+   "base": 22,
+   "variant": 137,
+   "group": "tempo",
+   "replaced": 4
+  },
+  {
+   "base": 23,
+   "variant": 138,
+   "group": "all",
+   "replaced": 24
+  },
+  {
+   "base": 23,
+   "variant": 139,
+   "group": "draw",
+   "replaced": 5
+  },
+  {
+   "base": 23,
+   "variant": 140,
+   "group": "search",
+   "replaced": 8
+  },
+  {
+   "base": 23,
+   "variant": 141,
+   "group": "disrupt",
+   "replaced": 4
+  },
+  {
+   "base": 23,
+   "variant": 142,
+   "group": "tempo",
+   "replaced": 7
+  }
+ ],
+ "players": {
+  "runs/a4-tok/model_it00249.pt": {
+   "by_group": {
+    "all": {
+     "decks": 24,
+     "score": 0.7887,
+     "ci": [
+      0.7552,
+      0.8223
+     ],
+     "replaced": 27.5
+    },
+    "draw": {
+     "decks": 24,
+     "score": 0.7119,
+     "ci": [
+      0.655,
+      0.7688
+     ],
+     "replaced": 5.9
+    },
+    "search": {
+     "decks": 23,
+     "score": 0.48,
+     "ci": [
+      0.4401,
+      0.5198
+     ],
+     "replaced": 7.3
+    },
+    "disrupt": {
+     "decks": 24,
+     "score": 0.5029,
+     "ci": [
+      0.4707,
+      0.5352
+     ],
+     "replaced": 6.5
+    },
+    "tempo": {
+     "decks": 24,
+     "score": 0.4089,
+     "ci": [
+      0.3701,
+      0.4476
+     ],
+     "replaced": 8.0
+    }
+   },
+   "per_pair": [
+    0.7344,
+    0.6094,
+    0.4531,
+    0.4062,
+    0.3438,
+    0.7969,
+    0.8906,
+    0.5156,
+    0.5625,
+    0.625,
+    0.7812,
+    0.6562,
+    0.4844,
+    0.5312,
+    0.4219,
+    0.7188,
+    0.75,
+    0.5469,
+    0.4531,
+    0.4219,
+    0.6406,
+    0.6406,
+    0.4531,
+    0.3594,
+    0.4062,
+    0.7656,
+    0.3984,
+    0.6875,
+    0.5,
+    0.4375,
+    0.9219,
+    0.8281,
+    0.5469,
+    0.625,
+    0.4375,
+    0.8125,
+    0.7812,
+    0.5312,
+    0.4844,
+    0.3594,
+    0.7109,
+    0.5625,
+    0.5,
+    0.375,
+    0.3281,
+    0.7031,
+    0.4375,
+    0.1875,
+    0.4844,
+    0.1406,
+    0.8438,
+    0.8281,
+    0.4375,
+    0.5,
+    0.3594,
+    0.8125,
+    0.8125,
+    0.4688,
+    0.4375,
+    0.3281,
+    0.9062,
+    0.8906,
+    0.6406,
+    0.5469,
+    0.3906,
+    0.8281,
+    0.8906,
+    0.3906,
+    0.3281,
+    0.4531,
+    0.8281,
+    0.8438,
+    0.4062,
+    0.5,
+    0.5469,
+    0.8906,
+    0.7812,
+    0.4688,
+    0.5156,
+    0.3125,
+    0.8906,
+    0.9375,
+    0.5625,
+    0.5,
+    0.4219,
+    0.75,
+    0.6094,
+    0.5312,
+    0.375,
+    0.7188,
+    0.6719,
+    0.4609,
+    0.6016,
+    0.4297,
+    0.7031,
+    0.625,
+    0.4531,
+    0.5156,
+    0.4531,
+    0.875,
+    0.7344,
+    0.4688,
+    0.5781,
+    0.4375,
+    0.9062,
+    0.6406,
+    0.375,
+    0.5938,
+    0.4375,
+    0.75,
+    0.6094,
+    0.5469,
+    0.6406,
+    0.5938,
+    0.6406,
+    0.6562,
+    0.4531,
+    0.5,
+    0.3516
+   ]
+  },
+  "runs/arch-A/checkpoint.pt": {
+   "by_group": {
+    "all": {
+     "decks": 24,
+     "score": 0.748,
+     "ci": [
+      0.7091,
+      0.787
+     ],
+     "replaced": 27.5
+    },
+    "draw": {
+     "decks": 24,
+     "score": 0.7624,
+     "ci": [
+      0.7244,
+      0.8004
+     ],
+     "replaced": 5.9
+    },
+    "search": {
+     "decks": 23,
+     "score": 0.4772,
+     "ci": [
+      0.4333,
+      0.5211
+     ],
+     "replaced": 7.3
+    },
+    "disrupt": {
+     "decks": 24,
+     "score": 0.5212,
+     "ci": [
+      0.4877,
+      0.5547
+     ],
+     "replaced": 6.5
+    },
+    "tempo": {
+     "decks": 24,
+     "score": 0.4645,
+     "ci": [
+      0.4314,
+      0.4976
+     ],
+     "replaced": 8.0
+    }
+   },
+   "per_pair": [
+    0.625,
+    0.6719,
+    0.3438,
+    0.4219,
+    0.4062,
+    0.7344,
+    0.7812,
+    0.3906,
+    0.4688,
+    0.5,
+    0.6562,
+    0.7812,
+    0.4844,
+    0.5,
+    0.4375,
+    0.7188,
+    0.7188,
+    0.5156,
+    0.5625,
+    0.4531,
+    0.5625,
+    0.5,
+    0.4531,
+    0.4219,
+    0.4219,
+    0.7734,
+    0.7656,
+    0.3438,
+    0.5156,
+    0.5,
+    0.875,
+    0.8125,
+    0.5781,
+    0.5312,
+    0.4531,
+    0.8281,
+    0.8906,
+    0.5781,
+    0.4531,
+    0.3516,
+    0.6562,
+    0.7031,
+    0.3594,
+    0.5391,
+    0.3906,
+    0.6719,
+    0.75,
+    0.2969,
+    0.5,
+    0.3281,
+    0.8516,
+    0.8438,
+    0.5,
+    0.5156,
+    0.4453,
+    0.7656,
+    0.7656,
+    0.4141,
+    0.3594,
+    0.4531,
+    0.8594,
+    0.8438,
+    0.5781,
+    0.5938,
+    0.6094,
+    0.7969,
+    0.8125,
+    0.5156,
+    0.4219,
+    0.5625,
+    0.7656,
+    0.8906,
+    0.6094,
+    0.4844,
+    0.5,
+    0.8281,
+    0.8594,
+    0.4688,
+    0.4688,
+    0.5156,
+    0.8438,
+    0.7812,
+    0.7656,
+    0.5156,
+    0.5781,
+    0.8281,
+    0.7344,
+    0.6719,
+    0.3281,
+    0.625,
+    0.75,
+    0.4531,
+    0.4688,
+    0.5234,
+    0.7031,
+    0.5938,
+    0.5156,
+    0.5469,
+    0.4062,
+    0.8125,
+    0.8281,
+    0.5312,
+    0.7031,
+    0.3438,
+    0.9062,
+    0.875,
+    0.4375,
+    0.6172,
+    0.5625,
+    0.6406,
+    0.6562,
+    0.5,
+    0.625,
+    0.5781,
+    0.625,
+    0.6875,
+    0.3438,
+    0.6016,
+    0.5
+   ]
+  }
+ }
+}

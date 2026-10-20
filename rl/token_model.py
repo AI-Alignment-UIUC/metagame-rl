@@ -160,7 +160,7 @@ class TokenPointerNet(nn.Module):
                  count_features: bool = False, cross_layers: int = 1, cand_self: int = 0, n_agents: int = 0,
                  card_inputs: str = "all", deck_tokens: bool = True, slot_bind: bool = False,
                  ability_text: dict = None, deck_mode: str = "joint", deck_layers: int = 1, history: int = 0,
-                 memory: str = "none", value_tower: int = 0, value_query: int = 0):
+                 memory: str = "none", value_tower: int = 0, value_query: int = 0, aux_heads: int = 0):
         super().__init__()
         feats = torch.from_numpy(card_feature_matrix(card_table))
         self.register_buffer("card_feats", feats)
@@ -171,7 +171,7 @@ class TokenPointerNet(nn.Module):
                         cross_layers=cross_layers, cand_self=cand_self, n_agents=n_agents, card_inputs=card_inputs,
                         deck_tokens=deck_tokens, slot_bind=slot_bind, ability_text=ability_text is not None,
                         deck_mode=deck_mode, deck_layers=deck_layers, history=history, memory=memory,
-                        value_tower=value_tower, value_query=value_query)
+                        value_tower=value_tower, value_query=value_query, aux_heads=aux_heads)
         self.max_tok, self.max_cand, self.glob_f, self.slot_f = max_tok, max_cand, glob_f, slot_f
         self.action_size = max_cand
         # What a card id is read from (the ablations of log #70): "all" structured features + rules text +
@@ -265,6 +265,13 @@ class TokenPointerNet(nn.Module):
             for lin in (self.vcross.proj, self.vcross.ff[-1]):      # starts as the identity: the value first reads
                 nn.init.zeros_(lin.weight)                          # the pooled token (plus the small queries), so a
                 nn.init.zeros_(lin.bias)                            # checkpoint without it keeps its value
+        # aux_heads (the lab, log #84; KataGo's auxiliary targets): a small head on the pooled state predicts
+        # aux_heads game-general quantities (rl/train.py aux_targets: the decisions left until the game ends, the final
+        # result). Not part of forward's outputs, so play, ONNX and inference are unchanged; trained through the shared
+        # trunk by PPO's --aux loss, as a denser signal for the representation the value reads.
+        self.aux_heads = aux_heads
+        if aux_heads:
+            self.aux_head = nn.Sequential(nn.LayerNorm(d), nn.Linear(d, d), nn.GELU(), nn.Linear(d, aux_heads))
         self.ln_out = nn.LayerNorm(d)
         self.verb = nn.Embedding(NUM_VERBS, d)
         self.name = nn.Embedding(n_names + 1, d)

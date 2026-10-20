@@ -13,7 +13,8 @@
 // Run: node env/tools/puzzles.js generate [--games 400] [--max 300] [--out notes/data/puzzles/lethal.json]
 //        [--start 0]   (first game index, to split generation across processes)
 //      node env/tools/puzzles.js merge <part.json> ... [--out notes/data/puzzles/lethal.json]
-//      node env/tools/puzzles.js score --agent heuristic|random|simplebot|onnx:<file> [--in ...]
+//      node env/tools/puzzles.js score --agent heuristic|random|simplebot|onnx:<file>|onnxtok:<file>|psearch:<file>[:k[:dets]] [--in ...]
+//        [--json out.json]   (per puzzle: the move chosen, whether it wins)
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -134,11 +135,19 @@ async function score() {
   const { Encoder } = require('../encode.js');
   const { Env } = require('../env.js');
   const agents = require('../agents.js');
-  const enc = new Encoder([...new Set(decks.flatMap(d => d.cards))]);
+  const ps = spec.startsWith('psearch:');            // psearch:<token.onnx>[:k[:dets]], the pilot with play-time search
+  const tok = spec.startsWith('onnxtok:') || ps;     // a token model (rl/token_model.py), greedy
+  const enc = tok ? new (require('../tokens.js').TokenEncoder)() : new Encoder([...new Set(decks.flatMap(d => d.cards))]);
+  const [psFile, psK, psDets] = ps ? spec.slice(8).split(':') : [];
   const agent = spec === 'heuristic' ? new agents.HeuristicAgent()
     : spec === 'random' ? new agents.RandomAgent({ seed: 1 })
     : spec === 'simplebot' ? new agents.SimpleBotAgent()
+    : ps ? new agents.PolicySearchAgent(await agents.OnnxTokenAgent.load(psFile, enc, { greedy: true }), enc,
+                                        { k: Number(psK || 4), dets: Number(psDets || 4), seed: 1 })
+    : tok ? await agents.OnnxTokenAgent.load(spec.slice(8).replace(/:greedy$/, ''), enc, { greedy: true })
     : await agents.OnnxAgent.load(spec.replace(/^onnx:/, '').replace(/:greedy$/, ''), enc.obsSize, enc.actionSize, { greedy: true });
+  const jsonOut = flag('json', null);                // per puzzle: the move chosen and whether it wins
+  const rows = [];
   let solved = 0, n = 0;
   for (const p of puzzles) {
     const env = new Env(enc, { u8: true });
@@ -154,8 +163,10 @@ async function score() {
     }
     n++;
     if (p.wins.includes(key)) solved++;
+    rows.push({ chosen: key, solved: p.wins.includes(key), wins: p.wins, options: p.options });
   }
   console.log(`${spec}: solved ${solved}/${n} (${(100 * solved / Math.max(n, 1)).toFixed(1)}%) of "${path.basename(file)}"`);
+  if (jsonOut) fs.writeFileSync(jsonOut, JSON.stringify({ agent: spec, puzzles: file, solved, n, rows }, null, 1));
 }
 
 // Which option an engine action (SimpleBot's) corresponds to: the option whose action has the

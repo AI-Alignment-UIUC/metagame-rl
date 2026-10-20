@@ -7,6 +7,11 @@ runs ONNX single-threaded, so it uses about one core; the Python process keeps t
 GPU *utilization* is held to ~80% in training updates by Pace (rests a quarter of each step);
 the watchdog warns when the card still sits near 100% or runs hot. The hard cap is a lower power limit set from an admin shell
 (nvidia-smi -pl 240).
+
+Shares (the lab, rl/lab.py and notes/plan-lab.md): RL_GPU_SHARE (e.g. 0.333) holds a process and its children to that
+share of the GPU, in memory (the per-process fraction) and in time (Pace rests 1 / share - 1 of each step, and the
+inference server as much of each served batch), so Evan can use the rest of the card; RL_CPU_THREADS caps the threads
+the same way. Unset, nothing changes.
 """
 import os
 import subprocess
@@ -18,8 +23,13 @@ import torch
 
 LOAD = 0.8
 CPU_THREADS = max(1, int((os.cpu_count() or 1) * LOAD))    # 16 of 20
+if os.environ.get("RL_CPU_THREADS"):
+    CPU_THREADS = max(3, min(CPU_THREADS, int(os.environ["RL_CPU_THREADS"])))
 MAX_WORKERS = max(1, CPU_THREADS - 2)                       # 14: two threads left for Python
-GPU_MEM_FRACTION = LOAD
+_share = os.environ.get("RL_GPU_SHARE")
+GPU_SHARE = min(LOAD, float(_share)) if _share else LOAD    # of the card, in memory and in time
+GPU_MEM_FRACTION = GPU_SHARE
+SERVER_PACE = 1 / GPU_SHARE - 1 if _share else 0.0          # the inference server's least rest (rl/remote.py)
 WARN_UTIL, WARN_TEMP = 95, 83                               # %, degrees C
 _watching = False
 
@@ -69,6 +79,7 @@ class Pace:
     Costs that share of the loop's wall time; a no-op on the CPU."""
 
     def __init__(self, device: str, load: float = LOAD):
+        load = min(load, GPU_SHARE)
         self.on = device == "cuda" and load < 1
         self.rest = 1 / load - 1 if self.on else 0.0
         self.t = time.perf_counter()
