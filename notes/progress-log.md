@@ -2868,3 +2868,26 @@ Entry format:
   segments. Its effect on competence was not measured. (3) Capacity looks promising after one segment (+14 Elo at 6
   layers), though its competence decision is at 350, after the rebase.
 - **Next:** deep6-b and deep8-m: first checks at 330, decisions at 350. hin2 and hin3 at 360.
+
+### #112 · 2026-10-20 · A5 · Two forks of one state: one population collapses to 8 Trainers, the other keeps 23–29; the 320 milestone measured the line replaced at 320
+- **Done:** Read the median deck of every run since 300. `adopt()` copies the branch's whole state, population
+  included, over `main/seg_0320.pt`. So the main line since 320 is `032-pilot-lr2`'s lineage, and the 320 milestone of
+  #110 measured the main line before the adoption, which is no longer the main line. The floor cards, `deep6-b` and
+  `deep8-m` all forked from the adopted state.
+- **Evidence:** Median Pokémon / Trainers / Energy, both forked from the main line's state at 300 (10 / 29 / 20):
+
+  | | 303 | 306 | 309 | 312 | 315 | 318 |
+  |---|---|---|---|---|---|---|
+  | old main line (lr 1e-4) | 12 / 27 / 20 | 14 / 26 / 20 | 19 / 21 / 20 | 31 / 9 / 20 | 32 / 8 / 20 | 31 / 8 / 20 |
+  | lr2 branch (lr 2e-4), adopted at 320 | 12 / 28 / 20 | 17 / 23 / 20 | 17 / 24 / 19 | 16 / 25 / 19 | 15 / 25 / 19 | 13 / 27 / 19 |
+
+  The main line since the adoption: 10 / 30 / 19 at 321, 9 / 31 / 19 at 324, 8 / 32 / 19 at 327 and 329. Branches from 320,
+  at 329: deep6-b 8 / 27 / 25, deep8-m 8 / 24 / 27. hin2 at 320: 12 / 29 / 20.
+- **Found:** (1) The collapse of #109 is not something every run from that state does. Two forks of the same state
+  diverged within 12 iterations, one to 8 Trainers and one staying at 23–29. The two differ in learning rate and in
+  their random draws. So a single fork's deck shape is a weak signal for any card, and the 40-iteration stability
+  rule of the floor cards compares each against a main line that itself may or may not collapse in that window. (2) The
+  320 milestone's deck rows (#110: answer key 0.34, shape distance 38) describe the collapsed line, not the one the lab
+  continues. The next milestone, at 360, is the first on the adopted line. (3) The adopted line now overshoots on
+  Trainers (32) and undershoots on Pokémon (8 against 13.5), which is a different miss from the human shape.
+- **Next:** The checks at 330; the floor cards at 360 against this main line; the 360 milestone.
