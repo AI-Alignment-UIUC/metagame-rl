@@ -3014,3 +3014,23 @@ Entry format:
   games, 2 workers) ran: iteration 0, `deck_mode cross`, 99 decks, median 22 / 16 / 17.
 - **Found:** The card takes a slot for about 16 cycles of the lab, roughly a day at the current pace.
 - **Next:** The scratch card starts at 370. draftlr3 at 380. Evan's choice of the larger change (#116).
+
+### #118 · 2026-10-20 · A5 · A slower draft head adopted at 380 (weak evidence: the main line was also calm); the from-scratch check out of memory, restarted
+- **Done:** `016-scratch-recipe` stopped at its iteration 4 with a CUDA out-of-memory error in the PPO forward pass, under
+  the lab's 5.30 GB cap at micro-batch 512. Its random decks (best decks up to 48 Pokémon) make longer states than the
+  main line's, which has 8 Pokémon. Requeued as `016-scratch-recipe-m` with `--micro-batch 256`, the same gradient
+  (as for deep8, #111), and deleted the failed run's rollout files. At 380 the lab decided `015-meta-draftlr3`
+  (`--draft-lr 3e-4`) by its rule: passed, and adopted. `main_args` now has `--draft-lr 0.0003`. The scratch card
+  started at 380, after the adoption, so it runs the whole adopted recipe, the slower draft head included.
+- **Evidence:** scratch run to iteration 3: median decks 22 / 16 / 17 → 29 / 13 / 13, best decks up to 48 / 6 / 6.
+  draftlr3 at 380: range of median Trainers over 340–379, branch 4 and main line 5 (gain 1; rule: at most 5 and no more
+  than the main line's). Answer key under the main line's pilot 0.815 / 0.855 against 0.805 / 0.848 (+0.009; floor −0.03).
+  Staples 5.0 and 5.0, best overlap 0.467 and 0.433, shape 8.0 / 26.4 / 25.6 (14.7) and 8.0 / 25.8 / 26.2 (15.8). Pilot gate
+  −6.8 Elo [−18.9, 5.4] after 2,000 games, neither verdict. Adopted so far:
+  `004-pilot-epochs2, 007-meta-swaps6, 006-meta-margin0-n, 009-pilot-deckcross-w, 032-pilot-lr2, 015-meta-draftlr3`.
+- **Found:** (1) The card passed in the first 40-iteration window in which the main line itself stayed within 5 Trainers
+  (5; every window from 150 to 319 was 7–22, and the floor cards' window, 320–359, was 8). So the pass shows the slower
+  head did no harm on stability, the answer key or the pilot. It does not show that it steadies the decks; the one-card
+  margin is within the drift. It is adopted as a small, general change that its rule accepted. (2) The main line's calm
+  since 340 follows the line adopted at 320. Whether the drafting has settled or only paused, the next windows will show.
+- **Next:** The scratch check from 380 (160 of its iterations). The 400 milestone. Evan's choice of the larger change.

@@ -165,14 +165,16 @@ its test, is under test on a 40-iteration stability rule. Three more bookkeeping
 died with its session, two races dropped hand edits, a rebase dropped a card's decision rule), each of which had silently
 changed or risked changing a decision rather than failing loudly.
 
-**Recent (log #113–117):** The 360 milestone, the first on the line adopted at 320, is the most human-like meta yet by
+**Recent (log #113–118):** The 360 milestone, the first on the line adopted at 320, is the most human-like meta yet by
 shape and staples (12 best decks of one Trainer-heavy type, 4 Chansey / 4 Snorlax with Oak, Bill, Computer Search, Energy
 Removal and Double Colorless; 11.5 cards from the human shape) and beats the human lists 67% under SimpleBot on both sides,
 but 28% under pilot-v2, which misplays those Trainers. A 3-nat floor on the draft head's incoming entropy held the
 decks' median Trainers within 3 over 40 iterations (main line 8) but cost the pilot 33 Elo, the 2-nat floor steadied
 nothing, and the deeper pilots and a warm-started slot binding failed, so none of the 16 pilot cards since the plan began
 has moved Trainer competence (0.43–0.48 since 160), and the plan's stall rule has fired: small cards stop, and the choice of
-a larger change goes to Evan, while the plan's from-scratch check of the adopted recipe now runs as a lab slot.
+a larger change goes to Evan. A slower draft head (learning rate 3e-4), queued before the stall, was adopted at 380 on weak
+evidence (the main line was itself calm in that window, the first ever within 5 Trainers), and the plan's from-scratch check
+of the adopted recipe, restarted at a smaller micro-batch after running out of memory on random decks, runs as a lab slot.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
@@ -180,8 +182,8 @@ The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 1. Evan's choice of the larger change the stall rule calls for (log #116): a bigger pilot through distillation, a league,
    or a different draft procedure; my recommendation is in the session report.
-2. The from-scratch check (`016-scratch-recipe`, from 370): measured every 40 of its iterations, done in about a day.
-3. A slower draft head (`015-meta-draftlr3`) decided at 380 on Trainer stability.
+2. The from-scratch check (`016-scratch-recipe-m`, from 380): measured every 40 of its iterations, done in about a day.
+3. The 400 milestone: whether the main line's decks stay calm (within 5 Trainers over 40 iterations).
 4. Evan's call on `008b-meta-practice10`; Phase B in parallel (verification, 2005 rules, card-text fixes).
 <!-- status:end -->
 
