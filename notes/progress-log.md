@@ -3152,3 +3152,40 @@ Entry format:
   start. A card whose decks drift away from the main line's now slows down instead of stopping.
 - **Next:** The restarted league card's first segment at the 420 boundary. Both league cards decided at 480. The scratch
   check, and the 440 milestone.
+
+### #123 · 2026-10-20 · A5 · At 420 the fresh league's one learning head drafts toward the main type; exploiter heads built and queued
+- **Done:** Read the restarted fresh-head card `017-meta-league3-m` after its first 20 iterations (it ran 400–420 in one go,
+  49.8 minutes, with no out-of-memory error at micro-batch 256), and the deck types and each head's best decks of both
+  league cards at 420. Then added `rl/metagame.py --draft-exploit`. With it, the heads after the first are exploiters,
+  as AlphaStar's main exploiters are. They are still paired at random, so the pilot trains on the same mix. But their
+  REINFORCE step and their decks' results (used for turnover and for picking the best decks) count only their games
+  against head 0's decks. Head 0 still learns from all games. Every league run's `heads` rows now also give each head's
+  mean result against head 0's decks (`vs0`). Without the flag, the loop and its random draws are unchanged. Queued
+  `018-meta-league3-exploit` (3 heads, fresh, exploiters, micro-batch 256, 8 segments), with 017's rule.
+- **Evidence:** `017-meta-league3-m`, per head: mean result z, median Pokémon / Trainers / Energy, incoming entropy (nats).
+
+  | it | head 0 | head 1 | head 2 |
+  |---|---|---|---|
+  | 400 | 0.64, 8 / 23 / 28, 0.07 | 0.46, 12 / 21 / 26, 5.59 | 0.41, 13 / 22 / 26, 5.59 |
+  | 409 | 0.83, 8 / 25 / 27, 0.16 | 0.41, 26 / 16 / 17, 4.65 | 0.25, 34 / 15 / 11, 5.60 |
+  | 419 | 0.79, 8 / 23 / 28, 0.26 | 0.52, 13 / 20 / 25, 2.77 | 0.18, 30 / 18 / 11, 4.93 |
+
+  Head 1's three best decks at 420 hold 2–4 Chansey and 2–3 Snorlax, 8–11 Psychic Energy, 4 Double Colorless, Oak, Bill,
+  Gambler, Energy Removal or Retrieval, and 2–4 each of Full Heal and Potion Energy. That is the main type, with 1–2
+  extra Pokémon (Clefable, Dark Dragonair and Eevee, Dark Persian). Head 0's are the main type (13–15 Psychic Energy, 4
+  Chansey, 4 Snorlax). Head 2's are piles of single Pokémon and Trainers, 3–6 Psychic Energy. Deck types among the 12
+  best decks at 420: the fresh card 1 (all 12 head 0's), the copy card 1 (6, 2 and 4 from heads 0, 1 and 2).
+  `rl.tests` PASS. Smoke test of `--draft-exploit` (a fork of `main/seg_0420.pt`, 200 games an iteration, turnover every
+  iteration, 2 iterations):
+  - each head turned over 5 decks;
+  - head 0's result against itself was 0.50;
+  - the exploiters' mean results were 0.34 and 0.28, then 0.35 and 0.10, close to their pooled results against head 0
+    (0.37 and 0.30, then 0.36 and 0.12), as expected when only those games count.
+- **Found:** (1) A fresh head can learn fast once it starts: head 1's incoming entropy halved in 10 iterations. (2) What it
+  learned is the main type, the best response to a field two thirds weak, so this card may end with one type. Rewarding
+  the later heads only against the main head's decks is the standard league answer: a copy then scores 0.5 at best, and
+  only a counter scores more. (3) The exploiter card's decision is strict. Its decks are ranked by their results
+  against the main type alone, so they enter the 12 best only by beating it about as well as the main decks beat the
+  whole field. The `vs0` readout shows a counter earlier.
+- **Next:** The scratch check's iteration-40 measurement (at 420). The exploiter card from the next boundary. The 017 cards
+  decided at 480. The 440 milestone.

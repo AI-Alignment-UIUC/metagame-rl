@@ -24,7 +24,9 @@ a deck's candidates after the same practice; at its end every deck moves to one 
 reads it, draws for it and learns from its games (steps 1, 2, 4, 5); all decks still play one another at random, and
 turnover replaces each head's worst decks within its own share, with mutants from its own best quarter (step 6). A
 source with fewer heads keeps its own as the first ones; the others start uniform (--draft-heads-init fresh) or as
-copies of its first head (copy), and the decks are dealt to the heads round-robin.
+copies of its first head (copy), and the decks are dealt to the heads round-robin. With --draft-exploit (log #123) the
+heads after the first are exploiters, as in AlphaStar's league: still paired at random, but their REINFORCE step and their
+decks' results (turnover, best decks) count only their games against the first head's decks.
 Nothing human enters training: the archived lists and SimpleBot are for evaluation only
 (rl/evaluate_agents.py).
 
@@ -88,6 +90,9 @@ def main(argv=None):
                     help="draft heads, each drafting its share of the population with the one pilot (a league, log #120)")
     ap.add_argument("--draft-heads-init", choices=["fresh", "copy"], default="fresh",
                     help="heads a source does not have: uniform at the start (fresh) or copies of its first head (copy)")
+    ap.add_argument("--draft-exploit", action="store_true",
+                    help="heads after the first are exploiters: their draws and decks count only the games against the "
+                         "first head's decks (log #123)")
     ap.add_argument("--draft-margin", type=float, default=0.5,
                     help="weight of the end-of-game prize margin in the draft head's reward (0 = result only)")
     ap.add_argument("--shaping", type=float, default=0.0, help="prize-shaping weight at iteration 0")
@@ -304,12 +309,17 @@ def main(argv=None):
             # 4. REINFORCE for the draft head on every draw
             games = [r for rep in replies for r in rep["results"]]
             per = {d: {"samples": [], "z": [], "margin": []} for d in range(D)}
+            vs0 = [[] for _ in range(K)]                     # each head's results against head 0's decks
             for r in games:
                 g, k, l, k_seat = games_meta[r["seed"]]
                 zk = 1.0 if r["winner"] == k_seat else 0.0 if r["winner"] in (1, 2) else 0.5
                 left = r.get("prizesLeft") or {}
                 mk = (left.get(str(3 - k_seat), 0) - left.get(str(k_seat), 0)) / 6.0
-                for a, z, m in ((k, zk, mk), (l, 1.0 - zk, -mk)):
+                for a, b, z, m in ((k, l, zk, mk), (l, k, 1.0 - zk, -mk)):
+                    if pop[b]["head"] == 0:
+                        vs0[pop[a]["head"]].append(z)
+                    elif args.draft_exploit and pop[a]["head"] > 0:   # an exploiter counts only games against head 0
+                        continue
                     per[a]["samples"].append(draws[g, a])
                     per[a]["z"].append(z)
                     per[a]["margin"].append(m)
@@ -380,8 +390,9 @@ def main(argv=None):
                              **({"head": pop[d]["head"]} if K > 1 else {}),
                              **deck_shape(pool, pop[d]["deck"]), **drafters[pop[d]["head"]].summary(views[d])} for d in best],
                    **({"heads": [{"decks": len(mine), "z": round(float(np.nanmean(z_iter[mine])), 3) if mine else None,
-                                  "median": np.median(shapes[mine], 0).tolist() if mine else None}
-                                 for mine in ([d for d in range(D) if pop[d]["head"] == h] for h in range(K))]}
+                                  "median": np.median(shapes[mine], 0).tolist() if mine else None,
+                                  "vs0": round(float(np.mean(vs0[h])), 3) if vs0[h] else None}
+                                 for h, mine in enumerate([d for d in range(D) if pop[d]["head"] == h] for h in range(K))]}
                       if K > 1 else {}),
                    "turnover": turnover,
                    "seconds": {"read": round(t1 - t0, 1), "draw": round(t2 - t1, 1), "play": round(t3 - t2, 1),
