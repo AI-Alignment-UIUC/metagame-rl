@@ -160,10 +160,10 @@ and brought a population whose median deck (10 / 29 / 20 by 299) sits near the h
 quarter more time a segment. Every Stage 1 training-signal card then failed: expert iteration in all three forms (−79, −56,
 −37 Elo; its targets disagree with the pilot on 60–70% of probes and make the policy more random, while exact
 won-the-game targets come up once in 1,194 probes), λ = 1 inside a turn (−37), lasting prize shaping (−31), and slot binding
-grown without a warm start (−201, a handicap like #98's). Entropy 0.02, decided again by its own rule after a rebase had
-dropped it (the lab's third bookkeeping bug at a state change, now fixed), failed on competence (−0.005), learning rate 2e-4
-is still running, and a
-pilot with 6 and with 8 encoder layers, grown as the identity, is queued as the larger change the stall rule calls for.
+grown without a warm start (−201, a handicap like #98's), and entropy 0.02 on competence (−0.005, decided by its own rule
+after a rebase had dropped it, the lab's third bookkeeping bug at a state change, now fixed). The deck-free line itself
+solves more Trainer-first puzzles (68% at 310 against 58% at 280, within twice the noise), and a pilot with 6 and with 8
+encoder layers, grown as the identity, started at 310 as the larger change the stall rule calls for.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
