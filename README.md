@@ -101,9 +101,9 @@ engine plays two 2005 lists and passes a fuzz over 340 cards.
 **Recent (log #121–122).** In the league's first segment, the two fresh draft heads, still drafting almost at random
 from a pool that is mostly Pokémon, drifted to Pokémon piles (median 23–24 Pokémon) that lose to the main head's type
 (mean result 0.32–0.36 against 0.80), while the three copies of the main head drafted alike. The fresh card then ran out
-of GPU memory on those longer states, the third such stop on decks unlike the main line's, and was restarted from 400 at
-half the PPO chunk size so it is still decided at 480 beside the copy card. PPO now halves its chunks by itself when it
-runs out of memory, with the same gradient (tested), so such cards slow down instead of stopping.
+of GPU memory on those longer states, the third such stop on decks unlike the main line's, so it was restarted from 400
+at half the PPO chunk size (still decided at 480 beside the copy card), and PPO now halves its chunks by itself when out
+of memory, with the same gradient (tested), so such cards slow down instead of stopping.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
