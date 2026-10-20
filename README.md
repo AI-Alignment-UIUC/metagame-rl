@@ -62,7 +62,7 @@ does not set up before attacking, so every Trainer but Oak and Bill is worth les
 follows it. In the lab (`rl/lab.py`), working the approved three-stage plan (`notes/plan-rediscovery.md`) with Evan's
 ideas first, the main line adopted his deck-free board encoder and a larger learning rate (both for strength), but none
 of 16 pilot changes moved the pilot's Trainer competence (0.43–0.48 since 160), so the plan's stall rule fired and Evan
-chose a league: three draft heads sharing one pilot, under test as two cards decided at 480. The drafted population has
+chose a league: three draft heads sharing one pilot, under test as three cards (two decided at 480). The drafted population has
 held one deck type since 160, by a count that tells the human archetypes apart, and came closest to the human field at
 360 (11.5 cards from the human shape, 67% against the human lists under SimpleBot) before trading 7 Trainers for healing
 special Energy by 400 (10.5 Energy above the human median) in a meta where most training games end by deck-out. Phase B's
