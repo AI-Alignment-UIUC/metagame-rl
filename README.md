@@ -98,11 +98,12 @@ engine plays two 2005 lists and passes a fuzz over 340 cards.
   draft heads sharing one pilot; lab bookkeeping faults that silently changed or risked decisions recurred throughout and
   were each fixed as found.
 
-**Recent (log #121).** In the league's first segment, the two fresh draft heads, still drafting almost at random from
-a pool that is mostly Pokémon, drifted to Pokémon piles (median 23–24 Pokémon) that lose to the main head's type (mean
-result 0.32–0.36 against 0.80), while the three copies of the main head drafted alike. The fresh card then ran out of GPU
-memory on those longer states, the third such stop on decks unlike the main line's, and was restarted from 400 at half
-the PPO chunk size so it is still decided at 480 beside the copy card.
+**Recent (log #121–122).** In the league's first segment, the two fresh draft heads, still drafting almost at random
+from a pool that is mostly Pokémon, drifted to Pokémon piles (median 23–24 Pokémon) that lose to the main head's type
+(mean result 0.32–0.36 against 0.80), while the three copies of the main head drafted alike. The fresh card then ran out
+of GPU memory on those longer states, the third such stop on decks unlike the main line's, and was restarted from 400 at
+half the PPO chunk size so it is still decided at 480 beside the copy card. PPO now halves its chunks by itself when it
+runs out of memory, with the same gradient (tested), so such cards slow down instead of stopping.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
@@ -113,9 +114,7 @@ The full record is in [`notes/progress-log.md`](notes/progress-log.md).
    1, and whether the fresh heads leave their Pokémon piles. The restarted card's first segment runs at the 420 boundary.
 2. The from-scratch check (`016-scratch-recipe-m`, from 380): at its iteration 30, measured every 40 of its iterations.
 3. The 440 milestone: whether the healing special Energy stays (Energy against the human median of 18), and the deck types.
-4. A PPO update that falls back to smaller chunks by itself when it runs out of GPU memory, so that cards whose decks move
-   away from the main line's stop needing hand restarts.
-5. If neither league card passes: the other larger changes named by the stall rule (a bigger pilot through distillation,
+4. If neither league card passes: the other larger changes named by the stall rule (a bigger pilot through distillation,
    a different draft procedure), with Evan. Phase B in parallel (verification, 2005 rules, card-text fixes).
 <!-- status:end -->
 

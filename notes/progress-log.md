@@ -3134,3 +3134,21 @@ Entry format:
   hand restart at micro-batch 256. A run that falls back to smaller chunks on its own would stop the restarts.
 - **Next:** The restarted card's first segment (400–420) at the 420 boundary. Both league cards decided at 480. The
   scratch check, and the 440 milestone.
+
+### #122 · 2026-10-20 · A5 · PPO falls back to smaller micro-batches on its own when it runs out of GPU memory
+- **Done:** `rl/train.py ppo_update`: the micro-batch loop moved into two helpers, `cut` (a minibatch's micro-batches)
+  and `accumulate` (their loss, accumulated into `.grad`, and the minibatch's stats). When a minibatch runs out of GPU
+  memory, the whole minibatch is redone from a zeroed gradient, because part of it may already be in `.grad`. It is
+  redone in micro-batches half the size, and that size is kept for the rest of the run, which prints
+  `ppo_update: out of GPU memory; micro-batch now N`. At micro-batch 1 it raises the error as before. Each micro-batch's
+  terms are weighted by its share of the minibatch, so the gradient is the same at any micro-batch size. Without an
+  out-of-memory error the update is as before: the same random draws, order and chunks. The lab's runs pick up the code
+  at their next segment.
+- **Evidence:** `rl.tests` PASS (on the CPU). A new check raises an out-of-memory error in the second of two
+  micro-batches of 128 (after the first one's backward pass). The forward calls are then 128, 128 and eight of 64 over
+  two epochs. The stats and parameters equal a run at micro-batch 64 (within 1e-6). `torch.cuda.OutOfMemoryError` is
+  `torch.OutOfMemoryError` in torch 2.11, the class of the three lab errors.
+- **Found:** The three out-of-memory stops (#111, #118, #121) each cost a hand restart and, for two of them, a later
+  start. A card whose decks drift away from the main line's now slows down instead of stopping.
+- **Next:** The restarted league card's first segment at the 420 boundary. Both league cards decided at 480. The scratch
+  check, and the 440 milestone.

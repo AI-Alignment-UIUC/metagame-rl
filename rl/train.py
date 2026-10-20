@@ -278,13 +278,83 @@ def ppo_update(model, opt, batch, args, device):
                 cur, n = [], 0
         return out + ([cur] if cur else [])
 
+    def cut(src, rows):
+        """A minibatch's micro-batches: chunks of its sorted rows, or groups of whole trajectories (memory)."""
+        size = args.micro_batch or rows
+        if memory:
+            return [(torch.cat([trajs[t] for t in mc]), [int(lens[t]) for t in mc]) for mc in chunks(src, size)]
+        return [(src[m:m + size], None) for m in range(0, len(src), size)]
+
+    def accumulate(rows, micros):
+        """The minibatch's loss accumulated over its micro-batches (same gradient, less memory) into .grad; its stats."""
+        mb_stats = {k: 0.0 for k in stats}
+        M = float(sum(pol[j].sum() for j, _ in micros))      # the minibatch's decisions that train the policy
+        S = float(sum((s_t[j] >= 0).sum() for j, _ in micros)) if dist_w else 0.0   # ... that a search scored
+        for j, mem_lens in micros:
+            w = len(j) / rows
+            pm = pol[j]
+            wp = float(pm.sum()) / M if M > 0 else 0.0
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=args.amp and device == "cuda"):
+                xs = [x[j] for x in inputs]
+                if tok_len is not None:
+                    L = int(tok_len[j].max())
+                    xs[:3] = [x[:, :L] for x in xs[:3]]
+                kw = {"agent": agents[j]} if agents is not None else {}
+                if memory:
+                    kw["mem_lens"] = mem_lens
+                if aux_w:
+                    logits, v, pooled = model(*xs, return_pooled=True, **kw)
+                    aux_loss = ((model.aux_head(pooled).float() - aux_t[j]) ** 2).mean()
+                else:
+                    logits, v = model(*xs, **kw)
+            logits, v = logits.float(), v.float()
+            mask = legal_mask(j, offsets, ids, model.action_size)
+            logits = logits.masked_fill(~mask, -1e9)
+            logp_all = F.log_softmax(logits, dim=-1)
+            logp = logp_all.gather(1, act[j, None]).squeeze(1)
+            p_all = logp_all.exp()
+            entropy = -(p_all * logp_all).masked_fill(~mask, 0.0).sum(-1).mean()
+            ratio = (logp - old_logp[j]).exp()
+            a = adv[j]
+            pi_rows = -torch.min(ratio * a, ratio.clamp(1 - args.clip, 1 + args.clip) * a) * pm
+            pi_loss = pi_rows.sum() / pm.sum().clamp(min=1)
+            vclip = getattr(args, "value_clip", None)
+            vclip = args.clip if vclip is None else vclip
+            if vclip > 0:
+                v_clipped = old_v[j] + (v - old_v[j]).clamp(-vclip, vclip)
+                v_loss = torch.max((v - ret[j]) ** 2, (v_clipped - ret[j]) ** 2).mean()
+            else:
+                v_loss = ((v - ret[j]) ** 2).mean()
+            # the policy term is the mean over the minibatch's policy decisions (all of them without --explore)
+            loss = (pi_rows.sum() / M if M > 0 else 0.0 * pi_rows.sum()) + w * (args.vf * v_loss - args.ent * entropy)
+            if aux_w:
+                loss = loss + w * aux_w * aux_loss
+            if dist_w and S > 0:
+                srow = s_t[j] >= 0
+                if srow.any():
+                    ce = -logp_all[srow].gather(1, s_t[j][srow, None]).squeeze(1)
+                    loss = loss + dist_w * ce.sum() / S
+                    with torch.no_grad():
+                        mb_stats["distill"] += ce.sum().item() / S
+                        mb_stats["distill_agree"] += (logp_all[srow].argmax(1) == s_t[j][srow]).float().sum().item() / S
+            loss.backward()
+            pace.tick()                   # per micro-batch: the same share of rest, in finer slices
+            with torch.no_grad():
+                n_pm = pm.sum().clamp(min=1)
+                mb_stats["pi_loss"] += wp * pi_loss.item()
+                mb_stats["v_loss"] += w * v_loss.item()
+                mb_stats["entropy"] += w * entropy.item()
+                if aux_w:
+                    mb_stats["aux_loss"] += w * aux_loss.item()
+                mb_stats["kl"] += wp * ((old_logp[j] - logp) * pm).sum().item() / n_pm.item()
+                mb_stats["clipfrac"] += wp * (((ratio - 1).abs() > args.clip).float() * pm).sum().item() / n_pm.item()
+        return mb_stats
+
     for e in range(args.epochs):
         if memory:
             plan = []
             for mb in chunks(torch.randperm(len(trajs)).tolist(), args.minibatch):
-                rows = int(sum(lens[t] for t in mb))
-                plan.append((rows, [(torch.cat([trajs[t] for t in mc]), [int(lens[t]) for t in mc])
-                                    for mc in chunks(mb, args.micro_batch or rows)]))
+                plan.append((int(sum(lens[t] for t in mb)), mb))
         else:
             perm = torch.randperm(T, device=device)
             plan = []
@@ -292,72 +362,22 @@ def ppo_update(model, opt, batch, args, device):
                 idx = perm[s:s + args.minibatch]
                 if tok_len is not None:           # similar lengths share a micro-batch, cut to its longest
                     idx = idx[torch.argsort(tok_len[idx])]
-                micro = args.micro_batch or len(idx)
-                plan.append((len(idx), [(idx[m:m + micro], None) for m in range(0, len(idx), micro)]))
-        for rows, micros in plan:
-            opt.zero_grad(set_to_none=True)
-            # The minibatch's loss is accumulated over micro-batches (same gradient, less memory).
-            mb_stats = {k: 0.0 for k in stats}
-            M = float(sum(pol[j].sum() for j, _ in micros))      # the minibatch's decisions that train the policy
-            S = float(sum((s_t[j] >= 0).sum() for j, _ in micros)) if dist_w else 0.0   # ... that a search scored
-            for j, mem_lens in micros:
-                w = len(j) / rows
-                pm = pol[j]
-                wp = float(pm.sum()) / M if M > 0 else 0.0
-                with torch.autocast("cuda", dtype=torch.bfloat16, enabled=args.amp and device == "cuda"):
-                    xs = [x[j] for x in inputs]
-                    if tok_len is not None:
-                        L = int(tok_len[j].max())
-                        xs[:3] = [x[:, :L] for x in xs[:3]]
-                    kw = {"agent": agents[j]} if agents is not None else {}
-                    if memory:
-                        kw["mem_lens"] = mem_lens
-                    if aux_w:
-                        logits, v, pooled = model(*xs, return_pooled=True, **kw)
-                        aux_loss = ((model.aux_head(pooled).float() - aux_t[j]) ** 2).mean()
-                    else:
-                        logits, v = model(*xs, **kw)
-                logits, v = logits.float(), v.float()
-                mask = legal_mask(j, offsets, ids, model.action_size)
-                logits = logits.masked_fill(~mask, -1e9)
-                logp_all = F.log_softmax(logits, dim=-1)
-                logp = logp_all.gather(1, act[j, None]).squeeze(1)
-                p_all = logp_all.exp()
-                entropy = -(p_all * logp_all).masked_fill(~mask, 0.0).sum(-1).mean()
-                ratio = (logp - old_logp[j]).exp()
-                a = adv[j]
-                pi_rows = -torch.min(ratio * a, ratio.clamp(1 - args.clip, 1 + args.clip) * a) * pm
-                pi_loss = pi_rows.sum() / pm.sum().clamp(min=1)
-                vclip = getattr(args, "value_clip", None)
-                vclip = args.clip if vclip is None else vclip
-                if vclip > 0:
-                    v_clipped = old_v[j] + (v - old_v[j]).clamp(-vclip, vclip)
-                    v_loss = torch.max((v - ret[j]) ** 2, (v_clipped - ret[j]) ** 2).mean()
-                else:
-                    v_loss = ((v - ret[j]) ** 2).mean()
-                # the policy term is the mean over the minibatch's policy decisions (all of them without --explore)
-                loss = (pi_rows.sum() / M if M > 0 else 0.0 * pi_rows.sum()) + w * (args.vf * v_loss - args.ent * entropy)
-                if aux_w:
-                    loss = loss + w * aux_w * aux_loss
-                if dist_w and S > 0:
-                    srow = s_t[j] >= 0
-                    if srow.any():
-                        ce = -logp_all[srow].gather(1, s_t[j][srow, None]).squeeze(1)
-                        loss = loss + dist_w * ce.sum() / S
-                        with torch.no_grad():
-                            mb_stats["distill"] += ce.sum().item() / S
-                            mb_stats["distill_agree"] += (logp_all[srow].argmax(1) == s_t[j][srow]).float().sum().item() / S
-                loss.backward()
-                pace.tick()                   # per micro-batch: the same share of rest, in finer slices
-                with torch.no_grad():
-                    n_pm = pm.sum().clamp(min=1)
-                    mb_stats["pi_loss"] += wp * pi_loss.item()
-                    mb_stats["v_loss"] += w * v_loss.item()
-                    mb_stats["entropy"] += w * entropy.item()
-                    if aux_w:
-                        mb_stats["aux_loss"] += w * aux_loss.item()
-                    mb_stats["kl"] += wp * ((old_logp[j] - logp) * pm).sum().item() / n_pm.item()
-                    mb_stats["clipfrac"] += wp * (((ratio - 1).abs() > args.clip).float() * pm).sum().item() / n_pm.item()
+                plan.append((len(idx), idx))
+        for rows, src in plan:
+            # Out of GPU memory, the minibatch starts again in micro-batches half the size, kept for the rest of the run:
+            # the same gradient (log #121). A part of it may already be in .grad, so the whole minibatch is redone.
+            while True:
+                opt.zero_grad(set_to_none=True)
+                try:
+                    mb_stats = accumulate(rows, cut(src, rows))
+                    break
+                except torch.cuda.OutOfMemoryError:
+                    if (args.micro_batch or rows) < 2:
+                        raise
+                opt.zero_grad(set_to_none=True)
+                torch.cuda.empty_cache()
+                args.micro_batch = (args.micro_batch or rows) // 2
+                print(f"ppo_update: out of GPU memory; micro-batch now {args.micro_batch}", flush=True)
             grad_norm += float(torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm))
             opt.step()
             for k in stats:

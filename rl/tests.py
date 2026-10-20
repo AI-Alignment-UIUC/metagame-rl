@@ -19,7 +19,8 @@
 - rl/train.py logging and lr schedule: lr_at's endpoints and clipping, and without --lr-final the optimizer's
   lr is left alone; explained_variance equals the closed form on two trajectories; ending_kinds' PP / PR / RR;
   save_atomic keeps the old file when a save fails; ppo_update's stats equal their closed forms on one step
-  (grad_norm the pre-clip norm, kl_last the last epoch's kl), and two seeded calls give identical parameters
+  (grad_norm the pre-clip norm, kl_last the last epoch's kl), and two seeded calls give identical parameters;
+  out of GPU memory mid-minibatch, it redoes the minibatch in micro-batches half the size, with the same step
 """
 import argparse
 import contextlib
@@ -573,6 +574,23 @@ def check_train(failures, rng):
         failures.append(f"ppo_update: sampled all ones gives {s5}, without it {s1}")
     if not all(torch.allclose(p, q, atol=1e-6) for p, q in zip(m4.parameters(), m4b.parameters())):
         failures.append("ppo_update with sampled: micro-batches change the step")
+    # Out of GPU memory (log #121) in a minibatch's second micro-batch, after the first one's gradient is in .grad: the
+    # minibatch is redone from zero in micro-batches half the size, kept for the next epoch, the step of that size.
+    calls = []
+
+    def tight(mod, inp):
+        calls.append(len(inp[0]))
+        if calls == [T // 2, T // 2]:
+            raise torch.cuda.OutOfMemoryError("test")
+    hook = net.register_forward_pre_hook(tight)
+    try:
+        m6, s6 = run(epochs=2, micro_batch=T // 2)
+    finally:
+        hook.remove()
+    m6b, s6b = run(epochs=2, micro_batch=T // 4)
+    if calls != [T // 2, T // 2] + [T // 4] * 8 or not all(np.isclose(s6[q], s6b[q], atol=1e-6) for q in s6b) \
+            or not all(torch.allclose(p, q, atol=1e-6) for p, q in zip(m6.parameters(), m6b.parameters())):
+        failures.append(f"ppo_update out of memory: calls {calls}, stats {s6} vs {s6b}")
     print(f"train: lr_at, explained_variance ({ev[0]:.4f}, {ev[1]:.4f}), ending_kinds, save_atomic ok; ppo_update "
           f"stats match the closed form, grad_norm {s1['grad_norm']:.4f} = step {step(m1):.4f}, kl_last {s3['kl_last']:.5f}")
 
