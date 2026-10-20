@@ -26,6 +26,10 @@ Cards (runs/lab/cards/*.json, taken in name order), written before their run, ne
          ({"metric": "archived_mean", "min_gain": x}) decides; the pilot test is a gate (not clearly worse)
   aa     no change (or only --reseed): every test at full length and no decision; the noise a branch sees, from
          which elo1 and the meta rules' thresholds are set
+  scratch the adopted recipe (main_args plus the card's args) from random decks and a fresh pilot, the plan's
+         from-scratch check (log #117): it counts its own iterations (segment k of the card reaches k * seg), is never
+         forked, rebased or adopted, and is measured every milestone_every of its iterations and at its end (the
+         answer key under the main line's pilot and SimpleBot, competence)
 A pilot card with "decide": "s1" is decided instead on Stage 1's pilot competence (run_s1: the Trainer-value panel and
 the win-this-turn puzzles, built from the archived lists, evaluation only), with the Elo test as a gate.
 A card with "warm" forks from a pilot of its architecture first trained to play as the main line's (rl/warmstart.py),
@@ -197,6 +201,11 @@ def wait_resources(s: dict) -> bool:
 
 
 # ---------------------------------------------------------------- jobs
+
+def goal(c: dict, m: int) -> int:
+    """The iteration card c's branch should reach when the main line is at m: m, or for a scratch card its own count."""
+    return m - c["base"] if c["kind"] == "scratch" else m
+
 
 def run_metagame(run: Path, args: list, until: int, s: dict) -> bool:
     run.mkdir(parents=True, exist_ok=True)
@@ -452,6 +461,14 @@ def decide(c: dict, m: int, s: dict) -> dict:
         rung["meta_branch"] = run_meta_eval(br, ref, LAB / "tmp" / f"meta_{c['id']}_{m:04d}.json", s)
         rung["status"] = "measured"
         return rung
+    if c["kind"] == "scratch":                                   # measured, never decided against the main line
+        rung["progress"] = k = done(BRANCHES / c["id"])
+        if final or k % s["milestone_every"] == 0:
+            rung["meta"] = run_meta_eval(br, ref, LAB / "tmp" / f"meta_{c['id']}_{k:04d}.json", s, simplebot=True)
+            rung["s1"] = run_s1(br, f"{c['id']}_{k:04d}", s)
+        if final:
+            rung["status"] = "measured"
+        return rung
     if c["kind"] == "pilot":
         if not final:                                            # only "clearly worse" stops a longer card early
             rung["pilot"] = p = run_h2h(br, ref, "drafted", m, s, -e1, 0.0, s["early_cap"], True)
@@ -579,17 +596,18 @@ def lab_main():
         # 1. branches started before m and not yet decided at m: run them to m, then decide (a restart can fall between)
         running = cards({"running"})
         due = [c for c in running if c["base"] < m and all(r["at"] != m for r in c.get("rungs", []))]
-        behind = [c for c in due if done(BRANCHES / c["id"]) < m]
+        behind = [c for c in due if done(BRANCHES / c["id"]) < goal(c, m)]
         if due:
             for c in behind:
                 if STOP.exists():
                     break
                 bdir = BRANCHES / c["id"]
-                extra = [] if (bdir / "checkpoint.pt").exists() else ["--fork-from", str(seg_path(c["base"]).relative_to(ROOT).as_posix())]
+                extra = ([] if (bdir / "checkpoint.pt").exists() or c["kind"] == "scratch"
+                         else ["--fork-from", str(seg_path(c["base"]).relative_to(ROOT).as_posix())])
                 if extra and c.get("warm"):                      # fork from the warm-started pilot instead
                     warm = run_warm(c, c["base"], s)
                     extra = ["--fork-from", str(warm.relative_to(ROOT).as_posix())] if warm else None
-                if extra is None or not run_metagame(bdir, cli({**s["main_args"], **c.get("args", {})}) + extra, m, s):
+                if extra is None or not run_metagame(bdir, cli({**s["main_args"], **c.get("args", {})}) + extra, goal(c, m), s):
                     c["status"] = "error"
                     save_card(c)
                     event("card-error", card=c["id"])
@@ -598,7 +616,7 @@ def lab_main():
             due = [load_card(CARDS / f"{c['id']}.json") for c in due]   # an edit made during the runs is kept (#104)
             passed = []
             for c in due:
-                if c.get("status") != "running" or done(BRANCHES / c["id"]) < m:
+                if c.get("status") != "running" or done(BRANCHES / c["id"]) < goal(c, m):
                     continue
                 rung = decide(c, m, s)
                 c.setdefault("rungs", []).append(rung)
@@ -625,7 +643,7 @@ def lab_main():
                     save_card(c)
                     requeue(c, "-r", retest_of=c["id"])
                 for c in cards({"running"}):                     # forked before the adoption: its control is gone, and
-                    if c["base"] < m:                            # its next segment would take the adopted arguments too
+                    if c["base"] < m and c["kind"] != "scratch":  # its next segment would take the adopted arguments too
                         c["status"], c["ended"] = "rebased", now()
                         save_card(c)
                         requeue(c, "-b", rebase_of=c["id"])

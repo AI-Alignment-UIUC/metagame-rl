@@ -720,6 +720,7 @@ def check_lab_loop(failures):
     names = ("ROOT", "LAB", "MAIN", "CARDS", "BRANCHES", "STOP", "EVENTS", "SETTINGS", "done", "run_metagame", "decide",
              "milestone", "wait_resources", "keep_awake", "run_warm")
     forks = {}                                       # a branch's --fork-from at its first segment
+    untils = []                                      # (run, the iteration it was run to)
     saved = {k: getattr(lab, k) for k in names}
 
     def scenario(specs, stop_branch, stops):
@@ -733,6 +734,7 @@ def check_lab_loop(failures):
 
             def run_metagame(run, args, until, s):
                 run.mkdir(parents=True, exist_ok=True)
+                untils.append((run.name, until))
                 if "--fork-from" in args:
                     forks[run.name] = args[args.index("--fork-from") + 1]
                 if stop_at["branch"] and run.name.startswith(stop_at["branch"]):  # stopped after 2 of its iterations
@@ -791,6 +793,12 @@ def check_lab_loop(failures):
         if adopted3 or status3 != {"001-long": ("inconclusive", 150), "002-pass-hold": ("passed-held", 150)}:
             failures.append(f"lab loop, held card: status {status3}, adopted {adopted3}")
         forks.clear()
+        untils.clear()
+        _, status4, adopted4, _ = scenario((("001-scratch", "scratch", 2), ("002-pass", "pilot", 1)), None, (190,))
+        if not ([u for r, u in untils if r == "001-scratch"] == [10, 20] and "001-scratch" not in forks
+                and adopted4 == ["002-pass"] and status4.get("001-scratch") == ("inconclusive", 150)):
+            failures.append(f"lab loop, scratch card: runs {untils}, forks {forks}, status {status4}, adopted {adopted4}")
+        forks.clear()
         scenario((("001-warm", "pilot", 1), ("002-plain", "pilot", 1)), None, (170,))
         if not (forks.get("001-warm", "").endswith("001-warm/warm.pt") and forks.get("002-plain", "").endswith("seg_0150.pt")):
             failures.append(f"lab loop, warm card: forks {forks}")
@@ -798,7 +806,7 @@ def check_lab_loop(failures):
         for k, v in saved.items():
             setattr(lab, k, v)
     print(f"lab loop: a STOP mid-branch and a restart decide each card once ({runs[-1]}); a card running at an adoption "
-          f"is rebased with its decision rule ({runs2[-1]}); a held pass is not adopted; a warm card forks from its warm start")
+          f"is rebased with its decision rule ({runs2[-1]}); a scratch card counts its own iterations, unforked and not rebased; a held pass is not adopted; a warm card forks from its warm start")
 
 
 def main():

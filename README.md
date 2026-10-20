@@ -60,12 +60,11 @@ beat SimpleBot (a human-free pilot plateaus near 83%), but every deck search, to
 log #96 ended in decks unlike the human field, and with the human lists as ground truth (Evan) the cause found was the
 pilot: it does not set up before attacking, so every Trainer but Oak and Bill was worth less than an Energy to it, and the
 drafting followed it. In the lab (`rl/lab.py`), working the approved three-stage plan (`notes/plan-rediscovery.md`) with
-Evan's ideas first, the main line adopted the deck-free board encoder Evan asked for (warm-started, +35 Elo on drafted
-decks, even on the human lists), but no change to the training signal has moved the pilot's competence (0.496, short of
-its targets): expert iteration toward a turn search failed in three forms, as did in-turn credit, lasting shaping and
-entropy, so a deeper pilot is under test. The drafted decks reach the human shape only in passing (median 10 / 29 / 20 at
-300, then 33 / 8 / 20 by 313, dropping Oak and Bill), because the draft head's incoming choice is collapsed and the whole
-population follows its favourite card; a floor on that choice's entropy is under test. Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
+Evan's ideas first, the main line adopted his deck-free board encoder and a larger learning rate (both for strength), but
+none of 16 pilot changes has moved the pilot's Trainer competence (0.43–0.48 since 160), so the plan's stall rule has
+fired and a larger change waits on Evan. The decks came closest to the human field at 360 (one Trainer-heavy deck type
+with five staples, 11.5 cards from the human shape, 67% against the human lists under SimpleBot), after swinging between
+Trainer- and Pokémon-heavy shapes, and an entropy floor that steadies them costs the pilot 33 Elo. Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
 
 **Earlier work:**
 
@@ -166,25 +165,24 @@ its test, is under test on a 40-iteration stability rule. Three more bookkeeping
 died with its session, two races dropped hand edits, a rebase dropped a card's decision rule), each of which had silently
 changed or risked changing a decision rather than failing loudly.
 
-**Recent (log #113–114):** Both deeper pilots were stopped at 330 (−25 and −19 Elo after the first one had read +14
-from an earlier fork), so capacity by depth is inconclusive, and no pilot change has moved competence (0.447 at 360, flat
-since 160). The 360 milestone, the first on the adopted line, is the most human-like meta yet by shape and staples: its 12
-best decks are one Trainer-heavy deck type (4 Chansey, 4 Snorlax, 31 Trainers with Oak, Bill, Computer Search and Energy
-Removal, 21 Energy with Double Colorless; 11.5 cards from the human shape, overlap 0.43 with Haymaker) that beats the
-human lists 67% under SimpleBot on both sides, the panel's best, but 28% under pilot-v2, which misplays exactly those
-Trainers, so pilot-v2's answer key no longer tracks Trainer-heavy decks.
+**Recent (log #113–117):** The 360 milestone, the first on the line adopted at 320, is the most human-like meta yet by
+shape and staples (12 best decks of one Trainer-heavy type, 4 Chansey / 4 Snorlax with Oak, Bill, Computer Search, Energy
+Removal and Double Colorless; 11.5 cards from the human shape) and beats the human lists 67% under SimpleBot on both sides,
+but 28% under pilot-v2, which misplays those Trainers. A 3-nat floor on the draft head's incoming entropy held the
+decks' median Trainers within 3 over 40 iterations (main line 8) but cost the pilot 33 Elo, the 2-nat floor steadied
+nothing, and the deeper pilots and a warm-started slot binding failed, so none of the 16 pilot cards since the plan began
+has moved Trainer competence (0.43–0.48 since 160), and the plan's stall rule has fired: small cards stop, and the choice of
+a larger change goes to Evan, while the plan's from-scratch check of the adopted recipe now runs as a lab slot.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. 360: the entropy floors (`013-meta-hin2`, `013-meta-hin3`) decided on Trainer stability; the 360 milestone, the first
-   on the adopted line.
-2. From 340: slot binding warm-started (`031-pilot-slotbind-w`, competence) and a slower draft head (`015-meta-draftlr3`,
-   stability).
-3. The plan's from-scratch check, due after 3 adoptions: after the floor cards decide.
-4. If drafting stability is not reached by these cards: a different draft procedure (the stall rule's other larger change).
-5. Evan's call on `008b-meta-practice10`; Phase B in parallel (verification, 2005 rules, card-text fixes).
+1. Evan's choice of the larger change the stall rule calls for (log #116): a bigger pilot through distillation, a league,
+   or a different draft procedure; my recommendation is in the session report.
+2. The from-scratch check (`016-scratch-recipe`, from 370): measured every 40 of its iterations, done in about a day.
+3. A slower draft head (`015-meta-draftlr3`) decided at 380 on Trainer stability.
+4. Evan's call on `008b-meta-practice10`; Phase B in parallel (verification, 2005 rules, card-text fixes).
 <!-- status:end -->
 
 ---

@@ -2948,3 +2948,69 @@ Entry format:
   at 320), about one A/A bar (0.06) below 280. It is still flat since 160, and its Trainer rows did not improve as the decks took
   more Trainers.
 - **Next:** The decisions at 360: hin2, hin3 (stability), slotbind-w (competence); draftlr3 runs on to 380.
+
+### #115 · 2026-10-20 · A5 · The incoming-entropy floor steadies the decks at 3 nats but costs the pilot 27–33 Elo: both floor cards fail
+- **Done:** The lab decided `013-meta-hin2` and `013-meta-hin3` at 360, after four segments each, by the rule of #109.
+  Both failed. `015-meta-draftlr3` runs on to 380; meta cards are not stopped early.
+- **Evidence:** Range of the population's median Trainers over 320–359 (the main line's over the same iterations is 8):
+  hin2 10, hin3 **3**. Answer key, the best decks against the 24 archived lists under the main line's pilot (mean / best;
+  the main line's 0.813 / 0.846): hin2 0.814 / 0.854, hin3 0.776 / 0.807 (−0.037, past the −0.03 floor). Staples a deck:
+  main line 5.0, hin2 4.92, hin3 4.58. Best overlap: main line 0.433, hin2 0.45, hin3 0.45. Best decks' shape (distance):
+  main line 8.0 / 29.0 / 23.0 (11.5), hin2 8.2 / 28.0 / 23.8 (11.2), hin3 8.6 / 26.5 / 24.9 (13.3). Pilot gate
+  (branch pilot against the main line's, drafted decks of both, 2,000 games): hin2 −27.0 Elo [−39.2, −14.8], hin3 −33.3
+  [−45.1, −21.6], both clearly worse. So hin2 failed on stability and the pilot gate, and hin3 on the answer-key floor
+  and the pilot gate. Trainer range of draftlr3 so far, 340–359: 2.
+- **Found:** (1) A floor at 3 nats does what the plan asked of it for the decks. The median Trainers held within 3 for 40
+  iterations, against 8 for the main line and 7–22 in every earlier window. (2) It costs the pilot. Both floors' pilots
+  lost about 30 Elo against the main line's in 40 iterations. Plausibly this is because the pilot trains on draws that
+  are a third noisier, so it sees each deck less often and plays less coherent ones (not verified). The answer key,
+  played by the main line's pilot, fell with the stronger floor. So steadiness from exploration, as built, trades
+  against pilot strength. (3) The 2-nat floor did not steady the decks at all (10), so the effect needs the floor above
+  the head's usual collapse by a wide margin. (4) Under the main line's own pilot, its best decks score 0.81 against the
+  human lists, against 0.67 under SimpleBot and 0.28 under pilot-v2 (#114). Read as each pilot scoring best the decks it
+  was trained on; that is an inference, not tested.
+- **Next:** slotbind-w's decision at 360; draftlr3 at 380. A floor that applies only to the draws that count for the
+  draft head, not to the decks the pilot trains on, would separate the two effects (not built). The deferred
+  from-scratch check.
+
+### #116 · 2026-10-20 · A4 · Warm-started slot binding is neutral; the program-level stall rule fires
+- **Done:** At 360 the lab decided `031-pilot-slotbind-w` on the competence score: failed. Then checked the stall rule of
+  `notes/plan-lab.md`: "if the main line gains less than the A/A noise over three milestones in a row and the last five
+  cards failed, the lab stops queueing small changes and moves to a larger one (a bigger pilot through distillation, a
+  league, or a different draft procedure), and I report it." Both conditions hold on the plan's Stage 1 measure, so no
+  small card is queued. Only `015-meta-draftlr3` (to 380) and the main line run.
+- **Evidence:** slotbind-w at 360: competence 0.460 against the main line's 0.447 (gain +0.013, bar 0.06); search 0.434 /
+  0.435, disrupt 0.441 / 0.452, tempo 0.368 / 0.335, attack-won 0.908 / 0.901, Trainer-first 0.619 / 0.577, PlusPower
+  0.438 / 0.438; Elo gate −3.8 [−16.2, 8.5] after 2,000 games. The last five decided cards: `012-pilot-deep6-b`,
+  `012-pilot-deep8-m` (stopped at 330), `013-meta-hin2`, `013-meta-hin3`, `031-pilot-slotbind-w` (failed at 360). The main
+  line's competence at the last three milestones: 0.480 (280), 0.472 (320), 0.447 (360). The A/A bar is 0.06, and 0.434
+  at 160. Over the same milestones its strength rose by the adoptions (+35 and +14 Elo on drafted decks). Its SimpleBot
+  answer key went 0.616, 0.532, 0.668, and its shape distance 17.8, 38.0, 11.5.
+- **Found:** (1) Slot binding with a fair start is neutral, as it was in the 40-iteration screen (#74). (2) None of the 16
+  pilot cards decided since the plan began has moved the pilot's Trainer competence by its bar: memory in three forms, the
+  deck-free encoder cold and warm (warm adopted for strength), expert iteration in three forms, in-turn credit, lasting
+  shaping, entropy, learning rate (adopted for strength), depth at 6 and 8 layers, and slot binding cold and warm. The
+  competence score has stayed at 0.43–0.48 since 160. The deck side, unlike competence, moved: the 360 meta is the
+  closest to the human shape so far, without any change aimed at it passing.
+  (3) The larger changes the rule names touch Evan's own design choices (one
+  population with one draft head, #67; a learned procedure, #65). So the choice among them goes to him.
+- **Next:** Report to Evan with a recommendation. Meanwhile the lab runs the main line and draftlr3, and the deferred
+  from-scratch check (plan: every 3 adoptions) is built as a lab slot, since it does not depend on which larger change
+  comes.
+
+### #117 · 2026-10-20 · Plan · The from-scratch check as a lab slot
+- **Done:** The plan's from-scratch check had been due since the third adoption (learning rate 2e-4, at 320) and was
+  deferred to the floor cards' decision (#111). It is now a lab card kind, `scratch`, in `rl/lab.py`. The card runs the
+  adopted recipe (`main_args` plus its own args) from random decks and a fresh pilot. It counts its own iterations
+  (`goal(c, m) = m − base`), takes no `--fork-from`, is never rebased at an adoption and never adopted, and gets one
+  segment a cycle like any branch, so it stays within the lab's third of the GPU. It is measured every 40 of its
+  iterations and at its end: `run_meta_eval` with SimpleBot (the answer key under the main line's pilot, SimpleBot on
+  both sides, its own pilot against SimpleBot, shape, staples), and the competence score. `check_lab_loop` has a new
+  scenario: a scratch card beside an adopted card runs to 10 and 20 of its own iterations, unforked, and is not rebased.
+  Queued `016-scratch-recipe`: 16 segments (160 iterations), `--pilot-opts {"deck_mode": "cross"}` (the main line's only
+  departure from the default architecture), seed 2. Restarted the lab with `rl.lab start` at 11:44. The main line was
+  partway into its segment to 370.
+- **Evidence:** `rl.tests` PASS. A fresh one-iteration run with the adopted arguments and the deck-free pilot (200
+  games, 2 workers) ran: iteration 0, `deck_mode cross`, 99 decks, median 22 / 16 / 17.
+- **Found:** The card takes a slot for about 16 cycles of the lab, roughly a day at the current pace.
+- **Next:** The scratch card starts at 370. draftlr3 at 380. Evan's choice of the larger change (#116).
