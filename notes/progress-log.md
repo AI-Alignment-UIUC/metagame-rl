@@ -2768,3 +2768,19 @@ Entry format:
   bug at a lab state change (#86, #88, #107). Each one so far silently changed a decision rather than failing loudly.
 - **Next:** The 320 milestone, then the decisions at 320: ent02-b (competence), lr2 (Elo), and the first checks of deep6
   and deep8.
+
+### #108 · 2026-10-20 · A4 · Correction to #107: entropy 0.02 decided at 310 by its own rule, and failed; the deck-free line's competence at 310
+- **Done:** #107 said the restored `010-pilot-ent02-b` would run one more segment and be decided at 320. In fact the
+  restart at 02:19 came before the main line had finished an iteration past 310, so the lab's first cycle ran at
+  m = 310. The card was due there (no rung at 310 once the wrong one was moved aside, and its branch at 310), and the lab
+  decided it at 310 by its own rule. That gives two segments, as written. The decision is valid, and the card has ended.
+- **Evidence:** ent02-b at 310: competence 0.491 against the main line's 0.496 (gain −0.005, bar 0.06), failed; the Elo
+  gate +0.7 [−11.0, 12.4] after 2,000 games, not worse. By part, branch / main: search 0.465 / 0.444, disrupt 0.481 /
+  0.459, tempo 0.381 / 0.335, attack-won puzzles 0.889 / 0.893, Trainer-first 0.629 / 0.680, PlusPower 0.500 / 0.563.
+  The main line's competence: 0.480 at 280 (before the deck-free encoder, #101) and 0.496 at 310 (after it), with
+  Trainer-first puzzles 0.577 → 0.680.
+- **Found:** (1) Entropy 0.02 is not a fix for Trainer play either. It raised the Trainer-value groups by 0.02–0.05
+  and lowered the puzzles by about the same. That ends Stage 1 step 3 with no adoption: in-turn λ, lasting shaping and
+  entropy all failed. (2) The deck-free main line solves 10 points more Trainer-first puzzles than the line before it
+  (6 of the 97 more). That is within about twice the competence A/A spread, and it comes from a single reading.
+- **Next:** The 320 milestone; lr2 at 320; deep6 / deep8 first checks at 320.
