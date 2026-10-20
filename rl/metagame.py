@@ -104,6 +104,9 @@ def main(argv=None):
                     help="--distill: turns a line is played before it is scored (1: the end of the turn; 2: after the reply)")
     ap.add_argument("--search-margin", type=float, default=0.02,
                     help="--distill: a search sets a target only if its best and worst options differ by more than this")
+    ap.add_argument("--search-lethal", action="store_true",
+                    help="--distill: targets only where an option won the game in every line (no value in the target; "
+                         "the played option if it is one of them), log #106")
     ap.add_argument("--stop-file", default="", help="end cleanly after the iteration in which this file appears")
     args = ap.parse_args(argv)
     D = args.decks
@@ -234,8 +237,14 @@ def main(argv=None):
                     for r, ro in zip(replies, rolls):
                         for pr in r.get("probes", []):
                             sc = [x for x in pr["score"] if x is not None]
-                            if len(sc) >= 2 and max(sc) - min(sc) > args.search_margin:
+                            won = [i for i, (w, n) in enumerate(zip(pr.get("won", []), pr["n"])) if n and w == n]
+                            if args.search_lethal:
+                                bi = next((i for i in won if pr["probed"][i] == pr["chosen"]), won[0] if won else None)
+                            elif len(sc) >= 2 and max(sc) - min(sc) > args.search_margin:
                                 bi = max((x, i) for i, x in enumerate(pr["score"]) if x is not None)[1]
+                            else:
+                                bi = None
+                            if bi is not None:
                                 best = pr["probed"][bi]
                                 batch["search_target"][off + pr["k"]] = best
                                 n_t += 1

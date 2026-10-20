@@ -46,9 +46,9 @@ from rl.train import (ZERO_AT_GROWTH, advantages, aux_targets, ending_kinds, exp
 PRIZE_GLOB = (6, 22)
 
 
-def tiny_pilot(table, text, seed=0, n_names=8, **kw):
+def tiny_pilot(table, text, seed=0, n_names=8, layers=2, **kw):
     torch.manual_seed(seed)
-    return TokenPointerNet(table, text, n_names=n_names, glob_f=82, slot_f=20, max_tok=128, max_cand=48, d=64, layers=2,
+    return TokenPointerNet(table, text, n_names=n_names, glob_f=82, slot_f=20, max_tok=128, max_cand=48, d=64, layers=layers,
                            heads=4, count_features=True, **kw).eval()
 
 
@@ -597,6 +597,15 @@ def check_lab(failures, table, text, rng):
         (l0, v0), (l1, v1) = base(*inp), vq(*inp)
     if not torch.allclose(l0, l1, atol=1e-5):
         failures.append(f"grown pilot (value_query): policy changed by {(l0 - l1).abs().max():.2e}")
+    for mode in ("joint", "cross"):                                   # a deeper pilot: two more encoder blocks
+        b2, deep = tiny_pilot(table, text, seed=3, deck_mode=mode), tiny_pilot(table, text, seed=5, layers=4, deck_mode=mode)
+        miss = load_grown(deep, b2.state_dict())
+        if sorted({k.split(".")[1] for k in miss}) != ["2", "3"] or not all(k.startswith("blocks.") for k in miss):
+            failures.append(f"load_grown (deeper, {mode}): missing {miss[:4]}")
+        with torch.no_grad():
+            (dl0, dv0), (dl1, dv1) = b2(*inp), deep(*inp)
+        if not (torch.allclose(dl0, dl1, atol=1e-5) and torch.allclose(dv0, dv1, atol=1e-5)):
+            failures.append(f"grown pilot (deeper, {mode}): changed by {(dl0 - dl1).abs().max():.2e}")
     opt = torch.optim.Adam(base.parameters(), lr=1e-3)
     base.train()
     base(*inp)[1].sum().backward()
@@ -647,7 +656,7 @@ def check_lab(failures, table, text, rng):
     with tempfile.TemporaryDirectory() as tmp:
         export_token_onnx(ax, str(Path(tmp) / "ax.onnx"))
     print(f"lab: llr = direct ({direct:.3f}), grows under H1 {up[0]:.1f} -> {up[1]:.1f}, H0 {down[0]:.1f} -> {down[1]:.1f}; "
-          f"pair scores, cli; grown pilot ({len(missing)} new weights, policy unchanged), remap_adam, shares ok")
+          f"pair scores, cli; grown pilot ({len(missing)} new weights, policy unchanged; 2 more blocks, joint and cross: unchanged), remap_adam, shares ok")
 
 
 def check_lam_turn(failures):

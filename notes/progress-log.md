@@ -2709,3 +2709,40 @@ Entry format:
   overall was (#73).
 - **Next:** At 300, the first checks of exit-h2, ent02-b, shapeon and slotbind (slot binding grown onto the deck-free
   pilot). At 320, the milestone: competence, deck shape and the answer key of the adopted line.
+
+### #106 · 2026-10-20 · A4 · At 300: expert iteration fails a third time, as do lasting shaping and grown slot binding; lethal-only targets too rare; a deeper pilot queued
+- **Done:** These are the lab's first decisions on the deck-free main line. At 300 it stopped three cards after their
+  first segment: `009x-pilot-exit-h2` (two-turn lines, 4 a probe, margin 0.15, weight 0.3), `010-pilot-shapeon` (prize
+  shaping that never fades) and `031-pilot-slotbind` (slot binding grown onto the deck-free pilot).
+  `010-pilot-ent02-b` (entropy 0.02) runs on to its decision at 310, and `032-pilot-lr2` (learning rate 2e-4) started at 300.
+  Tried, outside the lab, expert iteration with exact targets: `rl/metagame.py --search-lethal` sets a target only where
+  an option won the game in every line, which uses no value. That is the played option if it is one of them. To keep it
+  exact, `env/remote_worker.js tsearch` now reports `won`, each option's count of lines that won outright, because a
+  stopped line's tanh value can round to 1. A one-iteration fork of `seg_0300.pt` had too few targets to queue as a card.
+  Then the larger change from the stall rule (`notes/plan-lab.md`), a bigger pilot. `load_grown` now grows encoder
+  blocks beyond the checkpoint's as the identity, with their attention and MLP outputs at 0 (`DEEPER_ZERO`). Queued
+  `012-pilot-deep6` and `012-pilot-deep8` (`--pilot-opts {"layers": 6 / 8}`), three segments each, decided on the
+  competence score.
+- **Evidence:** exit-h2: −36.6 Elo [−62.8, −10.9] after 400 games. At 299 its search made 962 probes, 670 targets and
+  463 different from the move played (17,876 lines in 29 s). The distillation cross-entropy was 1.51, with 37%
+  agreement. Policy entropy 0.90 against the main line's 0.61, clip fraction 0.17 / 0.11. Target / played verbs:
+  trainer 149 / 138, attach 124 / 124, basic 84 / 75, pass 69 / 78, attack 29 / 40. shapeon: −31.4 [−50.3, −12.6] after
+  800 games. slotbind: −201.4 [−245.7, −162.4] after 400 games. ent02-b: −14.1 [−26.7, −1.5] after 2,000 games, neither
+  verdict. Lethal-only smoke (200 games, all recorded, distill 1.0, 30% of decisions, 6 a game, 8 options, 4 lines):
+  1,194 probes, 24,704 lines in 38 s, **1 target**, the same as the move played. `rl.tests` PASS with a deeper-pilot
+  check: 2 → 4 blocks, joint and cross, logits and value unchanged within 1e-5. Smoke forks of `seg_0300.pt`, 200 games
+  on 2 workers, plain against 6 layers: PPO 29.9 / 42.1 s, total 60.9 / 67.9 s; first-update KL 0.0091 / 0.0100,
+  clip fraction 0.075 / 0.084. The main line's first deck-free segment took 21.1 minutes (16.8 before), and its median
+  deck held at 10 / 29 / 20 through 290–299.
+- **Found:** (1) Expert iteration has failed in all three forms (−79, −56, −37 Elo). Each time, the targets disagreed with
+  the pilot on 60–70% of probes, and distilling them made the policy more random (entropy +0.27 and +0.29). So the search's
+  scores, a few re-dealt lines scored by the pilot's value, are too noisy to teach from. Exact targets, which need no
+  value, are too rare at random probes: 1 in 1,194, since a win within the turn is available only at a game's end.
+  Stage 1 step 2 is closed as far as distillation goes. Play-time search still works and stays a tool for evaluation.
+  (2) The rest of Stage 1 step 3 is also negative: λ = 1 inside a turn (−37) and lasting shaping (−31). Entropy 0.02
+  is the last card in it. (3) Slot binding cannot be grown onto a pilot without breaking its play, as it changes the
+  attached-Energy count inputs (#83). Like the deck-blind start of #98, its −201 tests the handicap, not the idea; a
+  warm start would test the idea. (4) So the competence gap (Trainer setup) has not been moved by any
+  training-signal change. The untested lever is capacity, which #25 flagged as the token model's limit.
+- **Next:** ent02-b and lr2 at 310, deep6 and deep8 from 310 (first checks at 320, decisions at 340). The 320
+  milestone's scorecard on the deck-free line.

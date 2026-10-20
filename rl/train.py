@@ -410,6 +410,7 @@ NEW_WEIGHTS = ("cross_extra.", "cand_blocks.", "vquery", "vcross.", "vblocks.", 
                "ability_proj.", "aux_head.", "mem_", "hist_", "deck_null", "deck_blocks.", "fuse.")
 ZERO_AT_GROWTH = ("owner.weight", "ability_proj.weight", "ability_proj.bias",   # additive inputs: start at 0
                   "fuse.0.proj.weight", "fuse.0.proj.bias", "fuse.0.ff.2.weight", "fuse.0.ff.2.bias")   # deck fusion: a pass-through
+DEEPER_ZERO = ("proj.weight", "proj.bias", "ff.2.weight", "ff.2.bias")    # a new encoder block: a pass-through
 
 
 def token_net(cfg: dict, info: dict, **overrides):
@@ -424,13 +425,16 @@ def token_net(cfg: dict, info: dict, **overrides):
 
 
 def load_grown(model, state: dict) -> list:
-    """Loads `state` into `model`, which may have new modules (NEW_WEIGHTS) the state lacks; returns those."""
+    """Loads `state` into `model`, which may have new modules (NEW_WEIGHTS) the state lacks; returns those. Encoder
+    blocks beyond the state's (a deeper pilot, log #106) start as the identity: their attention and MLP outputs at 0."""
     missing, unexpected = model.load_state_dict(state, strict=False)
     assert not unexpected, f"checkpoint has weights this model lacks: {unexpected[:5]}"
-    assert all(k.startswith(NEW_WEIGHTS) for k in missing), f"missing weights: {missing[:5]}"
+    depth = len({k.split(".")[1] for k in state if k.startswith("blocks.")})
+    deeper = lambda k: k.startswith("blocks.") and int(k.split(".")[1]) >= depth
+    assert all(k.startswith(NEW_WEIGHTS) or deeper(k) for k in missing), f"missing weights: {missing[:5]}"
     with torch.no_grad():
         for n, p in model.named_parameters():
-            if n in missing and n in ZERO_AT_GROWTH:
+            if n in missing and (n in ZERO_AT_GROWTH or deeper(n) and n.split(".", 2)[2] in DEEPER_ZERO):
                 p.zero_()
     return missing
 

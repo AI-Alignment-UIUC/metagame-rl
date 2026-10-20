@@ -53,7 +53,7 @@ gives a biased or blind builder, so pilot strength is the bottleneck.
 ## Status
 
 <!-- status:start -->
-*Updated 2026-10-19.*
+*Updated 2026-10-20.*
 
 **Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup matrix. Trained pilots
 beat SimpleBot (a human-free pilot plateaus near 83%), but every deck search, tournament and learned drafting loop through
@@ -64,8 +64,9 @@ Evan's ideas first, the main line's decks have since moved most of the way to th
 Pokémon / Trainers / Energy at 289, from 17 / 7 / 36 at 240, against the human lists' 13.5 / 28 / 18), and at 290 it
 adopted the deck-free board encoder Evan asked for (warm-started, +35 Elo on drafted decks, even on the human lists),
 whose population came in at 10 / 29 / 21. Play-time search to the end of the turn fixes most of the setup failure (Trainer-first lethals
-60% → 85–88%), but distilling the one-turn search lost 79 Elo at full weight and 56 at 0.3, so a two-turn variant is
-being tested on a competence score whose targets the pilot has not met (0.480). Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
+60% → 85–88%), but no change to the training signal has moved the pilot's competence (0.480, short of its targets):
+expert iteration toward that search failed in three forms on noisy targets, and so did in-turn credit and lasting
+shaping, so a deeper pilot (capacity, never tested in RL) is next. Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
 
 **Earlier work:**
 
@@ -153,26 +154,27 @@ its steadiest move toward the human shape (median Trainers 7 → 22 from 240 to 
 PlusPower puzzles); the lab's bookkeeping fragility recurred (it died with the session that started it, and two races
 silently dropped hand edits, lowering the competence bar from 0.06 to 0.03 with no decision affected), and all of it is fixed.
 
-**Recent (log #105):** At 290 the lab adopted Evan's deck-free board encoder, its first adopted architecture change: warm-started,
-it led the main line's pilot on all three readings (+37, +21, +35 Elo) and was even on the human lists, and the main line
-now carries its population, whose median deck (10 / 29 / 21) is near the human Trainer count. Expert iteration at weight 0.3
-failed (−56 Elo) on what look like noisy targets (60% disagree with the move played, the policy's entropy rose by 0.27), and
-λ = 1 inside a turn failed (−37 Elo), while entropy 0.02 passed its first check and restarts on the new line.
+**Recent (log #105–106):** At 290 the lab adopted Evan's deck-free board encoder, its first adopted architecture
+change: warm-started, it led the main line's pilot on all three readings (+37, +21, +35 Elo), was even on the human lists,
+and brought a population whose median deck (10 / 29 / 20 by 299) sits near the human Trainer count, at a cost of about a
+quarter more time a segment. Every Stage 1 training-signal card then failed: expert iteration in all three forms (−79, −56,
+−37 Elo; its targets disagree with the pilot on 60–70% of probes and make the policy more random, while exact
+won-the-game targets come up once in 1,194 probes), λ = 1 inside a turn (−37), lasting prize shaping (−31), and slot binding
+grown without a warm start (−201, a handicap like #98's). Entropy 0.02 and learning rate 2e-4 are still running, and a
+pilot with 6 and with 8 encoder layers, grown as the identity, is queued as the larger change the stall rule calls for.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. At 300: the first checks of expert iteration over two turns with 4 lines and a margin (`009x-pilot-exit-h2`),
-   entropy 0.02 (`010-pilot-ent02-b`), prize shaping kept on (`010-pilot-shapeon`) and slot binding grown onto the
-   deck-free pilot (`031-pilot-slotbind`); Stage 1 cards are decided on the competence score (bar 0.06).
-2. The 320 milestone's scorecard on the deck-free line: competence, deck shape and the answer key, and whether its
-   population keeps the human Trainer count.
-3. Evan's call on `008b-meta-practice10` (passed its answer-key rule, drafted away from the human shape).
-4. If expert iteration fails again: Stage 1 step 3 (credit and exploration within the turn) is down to entropy and
-   shaping; plan the next larger change per the stall rule (`notes/plan-lab.md`).
-5. Phase B, in parallel: verification beyond self-written tests, then 2005 rules in the env, six audited
-   card-text fixes, ZRE, Blastoise ex and Nidoqueen.
+1. At 310: entropy 0.02 (`010-pilot-ent02-b`) decided on the competence score, learning rate 2e-4 (`032-pilot-lr2`) checked.
+2. A deeper pilot (`012-pilot-deep6`, `012-pilot-deep8`, grown as the identity) from 310, decided at 340 on the
+   competence score (bar 0.06), with the Elo test as a gate.
+3. The 320 milestone's scorecard on the deck-free line: competence, deck shape (does it keep the human Trainer count),
+   staples, archetypes and the answer key.
+4. Evan's call on `008b-meta-practice10` (passed its answer-key rule, drafted away from the human shape).
+5. If capacity also fails to move competence: the remaining larger changes of the stall rule (a league, a different
+   draft procedure) or a warm-started slot binding; Phase B in parallel (verification, 2005 rules, card-text fixes).
 <!-- status:end -->
 
 ---

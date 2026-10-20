@@ -222,6 +222,7 @@ async function tsearch(cmd) {
     }
     p.probed = opts;
     p.score = opts.map(() => []);
+    p.won = opts.map(() => 0);                       // lines that won the game outright (no value), log #106
     opts.forEach((o, oi) => { for (let r = 0; r < L; r++) lines.push({ pi, oi, seed: rng.u32() }); });
   });
   let n = 0;
@@ -242,12 +243,13 @@ async function tsearch(cmd) {
     let z;
     if (r.stopped) z = r.stopped.player === p.player ? r.stopped.value : -r.stopped.value;
     else z = r.winner === p.player ? 1 : (r.winner === 1 || r.winner === 2) ? -1 : 0;
+    if (!r.stopped && r.winner === p.player) p.won[oi]++;
     if (prizeWeight && r.prizesLeft) z += prizeWeight * (p.prizes0 - r.prizesLeft[p.player]);
     p.score[oi].push(z);
   }
   const mean = x => (x.length ? x.reduce((a, b) => a + b, 0) / x.length : null);
   return { ...base, searchSeconds: (Date.now() - t0) / 1000 - base.seconds, lines: lines.length, lineErrors: errors,
-           probes: probes.map(p => ({ k: p.k, chosen: p.chosen, probed: p.probed, score: p.score.map(mean), n: p.score.map(x => x.length),
+           probes: probes.map(p => ({ k: p.k, chosen: p.chosen, probed: p.probed, score: p.score.map(mean), n: p.score.map(x => x.length), won: p.won,
                                       keys: p.probed.map(i => p.keys[i]), chosenKey: p.keys[p.chosen] })) };
 }
 
