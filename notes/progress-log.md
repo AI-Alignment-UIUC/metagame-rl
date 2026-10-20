@@ -2916,3 +2916,35 @@ Entry format:
   population is for its 40-iteration rule to show.
 - **Next:** 340: slotbind-w (warm) and draftlr3 start. 360: the floor cards' decisions and the 360 milestone, the
   first on the adopted line.
+
+### #114 · 2026-10-20 · A5 · Milestone 360, the first on the adopted line: the closest shape and most staples yet, the answer key split by the judging pilot
+- **Done:** The lab's 360 milestone ran, the first on the line adopted at 320 (#112). Read its best decks from
+  `main/eval_it0360.json` and `seg_0360.pt`. Also: at 340 the lab started `015-meta-draftlr3` and `031-pilot-slotbind-w`.
+  The latter's warm start (2,000 games of the main line at 340, 3 epochs) fit well, and its first check at 350 passed.
+  The floor cards and draftlr3 passed their checkpoints at 350; meta cards are not stopped early.
+- **Evidence:** Milestone 360 against 280 and 320 (#110):
+
+  | at | pilot-v2 mean / best | SimpleBot both sides | staples | overlap | shape (P / T / E), distance | own vs SimpleBot | competence |
+  |---|---|---|---|---|---|---|---|
+  | 280 | 0.464 / 0.621 | 0.616 | 3.25 | 0.483 | 15.4 / 19.3 / 25.2, 17.8 | 0.926 | 0.480 |
+  | 320 | 0.340 / 0.408 | 0.532 | 2.42 | 0.367 | 24.9 / 9.2 / 25.8, 38.0 | 0.947 | 0.472 |
+  | 360 | 0.280 / 0.305 | **0.668** | **5.0** | 0.433 | **8.0 / 29.0 / 23.0, 11.5** | 0.971 | 0.447 |
+
+  All 12 best decks are one deck type, nearest Haymaker at overlap 0.42–0.43. Each holds the same five staples:
+  Professor Oak, Bill, Computer Search, Energy Removal and Double Colorless Energy. Against each of the 24 archived
+  lists, under SimpleBot on both sides they score 0.63–0.70, and under pilot-v2 0.24–0.30. The best deck (#361): 4 Chansey,
+  4 Snorlax; 4 each of Bill, Computer Search, Energy Removal, Energy Retrieval, Energy Search, Gambler and Professor Oak,
+  3 Nightly Garbage Run; 17 Psychic Energy and 4 Double Colorless Energy. The competence parts at 360: search 0.435,
+  disrupt 0.452, tempo 0.335, attack-won 0.901, Trainer-first 0.577, PlusPower 0.438. slotbind-w's warm start, held out:
+  KL 0.043, agreement 0.898, value MSE 0.003. At 350: +11.7 Elo [−8.5, 32.0] after 800 games.
+- **Found:** (1) By deck shape and staples this is the most human-like meta the lab has drafted. The best decks run 29
+  Trainers (the human median is 28) and five of the ten field staples, at 11.5 cards from the human shape. Under
+  SimpleBot on both sides they beat the human lists 67% of the time, the best the panel has recorded. It is still one deck type
+  (two Colorless walls on generic Energy, overlap 0.43), not the human field's eight archetypes. Its Pokémon count, 8
+  against 13.5, is the largest gap left in the shape. (2) The two answer keys now disagree by 0.39. pilot-v2 rates these
+  decks worst of any milestone, and SimpleBot best. By #92, pilot-v2 misplays search and disruption Trainers, so a 31-Trainer
+  deck is the kind it pilots worst. Its answer key can no longer be read as the trend for Trainer-heavy decks. The
+  SimpleBot panel (#85), which plays Trainers by rule, is the fairer of the two here. (3) Competence fell to 0.447 (0.472
+  at 320), about one A/A bar (0.06) below 280. It is still flat since 160, and its Trainer rows did not improve as the decks took
+  more Trainers.
+- **Next:** The decisions at 360: hin2, hin3 (stability), slotbind-w (competence); draftlr3 runs on to 380.

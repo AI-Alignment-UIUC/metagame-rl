@@ -166,11 +166,13 @@ its test, is under test on a 40-iteration stability rule. Three more bookkeeping
 died with its session, two races dropped hand edits, a rebase dropped a card's decision rule), each of which had silently
 changed or risked changing a decision rather than failing loudly.
 
-**Recent (log #113):** Both deeper pilots were stopped at 330 (−25 and −19 Elo after the first one had read +14 from an
-earlier fork, with PPO statistics matching the main line's), so capacity by depth is inconclusive and no pilot change has
-yet moved competence; the lab's pilot gains are in strength on drafted decks. Queued for 340: slot binding warm-started
-(its cold start had lost 201 Elo) and a slower draft head (draft learning rate 3e-4) beside the entropy floors, both on the
-same 40-iteration stability rule for drafting.
+**Recent (log #113–114):** Both deeper pilots were stopped at 330 (−25 and −19 Elo after the first one had read +14
+from an earlier fork), so capacity by depth is inconclusive, and no pilot change has moved competence (0.447 at 360, flat
+since 160). The 360 milestone, the first on the adopted line, is the most human-like meta yet by shape and staples: its 12
+best decks are one Trainer-heavy deck type (4 Chansey, 4 Snorlax, 31 Trainers with Oak, Bill, Computer Search and Energy
+Removal, 21 Energy with Double Colorless; 11.5 cards from the human shape, overlap 0.43 with Haymaker) that beats the
+human lists 67% under SimpleBot on both sides, the panel's best, but 28% under pilot-v2, which misplays exactly those
+Trainers, so pilot-v2's answer key no longer tracks Trainer-heavy decks.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
