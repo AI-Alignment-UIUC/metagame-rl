@@ -55,18 +55,20 @@ gives a biased or blind builder, so pilot strength is the bottleneck.
 <!-- status:start -->
 *Updated 2026-10-20.*
 
-**Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup matrix. Trained pilots
-beat SimpleBot (a human-free pilot plateaus near 83%), but every deck search, tournament and learned drafting loop has
-ended in decks unlike the human field, and with the human lists as ground truth (Evan) the cause found was the pilot: it
-does not set up before attacking, so every Trainer but Oak and Bill is worth less than an Energy to it, and the drafting
+**Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup matrix. Trained pilots beat
+SimpleBot (a human-free pilot plateaus near 83%), but every deck search, tournament and learned drafting loop has ended
+in decks unlike the human field, and with the human lists as ground truth (Evan) the cause found was the pilot: it does
+not set up before attacking, so every Trainer but Oak and Bill is worth less than an Energy to it, and the drafting
 follows it. In the lab (`rl/lab.py`), working the approved three-stage plan (`notes/plan-rediscovery.md`) with Evan's
 ideas first, the main line adopted his deck-free board encoder and a larger learning rate (both for strength), but none
 of 16 pilot changes moved the pilot's Trainer competence (0.43–0.48 since 160), so the plan's stall rule fired and Evan
-chose a league: three draft heads sharing one pilot, under test as three cards (two decided at 480). The drafted population has
-held one deck type since 160, by a count that tells the human archetypes apart, and came closest to the human field at
-360 (11.5 cards from the human shape, 67% against the human lists under SimpleBot) before trading 7 Trainers for healing
-special Energy by 400 (10.5 Energy above the human median) in a meta where most training games end by deck-out. Phase B's
-engine plays two 2005 lists and passes a fuzz over 340 cards.
+chose a league: three draft heads sharing one pilot, under test as three cards (two decided at 480). The drafted
+population has held one deck type since 160, by a count that tells the human archetypes apart, and came closest to the
+human field at 360 (11.5 cards from the human shape, 67% against the human lists under SimpleBot) before trading 7
+Trainers for healing special Energy by 400 (10.5 Energy above the human median) in a meta where most training games end
+by deck-out; from scratch the same recipe collapses within 40 iterations into Pokémon piles that never attack (99%
+deck-outs), so the main line's attacking rests on its pilot's non-general start (deck-out wins paid 0). Phase B's engine
+plays two 2005 lists and passes a fuzz over 340 cards.
 
 **Earlier work:**
 
@@ -98,12 +100,14 @@ engine plays two 2005 lists and passes a fuzz over 340 cards.
   draft heads sharing one pilot; lab bookkeeping faults that silently changed or risked decisions recurred throughout and
   were each fixed as found.
 
-**Recent (log #121–123).** In the league of three draft heads, the two fresh heads first drafted Pokémon piles that
-lose to the main head's type, and on those longer states the fresh card ran out of GPU memory (the third such stop), so
-it was restarted from 400 and PPO now halves its chunks by itself when out of memory, with the same gradient (tested).
-By 420 one fresh head had learned fast, but toward the main type itself (all 12 best decks still one type in both league
-cards), the best response to a field two thirds weak. So exploiter heads, rewarded only by their games against the main
-head's decks as in AlphaStar's league, are built and queued as a third league card.
+**Recent (log #121–124).** In the league of three draft heads, the fresh heads first drafted Pokémon piles (an
+untrained head draws a Pokémon 81% of the time from a pool of 225 Pokémon, 42 Trainers and 10 Energy), ran out of GPU
+memory on them (PPO now halves its chunks by itself, with the same gradient), and by 420 one had learned the main type
+itself, so exploiter heads rewarded only against the main head's decks are queued as a third card. The from-scratch
+check showed the same drift unchecked: from random decks and a fresh pilot, within 40 iterations nobody attacks, 99% of
+games end by deck-out and the decks are all Pokémon, so it was stopped. The main line escaped this only through pilot-v2's
+start, trained with deck-out wins paying 0, a game-specific reward since ruled out, so a general way to bootstrap the pilot
+(pilot before drafting, or the prize margin in its reward) is a question for Evan.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
@@ -111,9 +115,10 @@ The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 1. The league cards `017-meta-league3-m` (the main head plus two fresh ones, restarted from 400) and
    `017-meta-league3-copy` (three copies), decided at 480: deck types among the 12 best decks against the main line's 1.
-2. `018-meta-league3-exploit` (fresh heads rewarded only against the main head's decks), from the next boundary and
-   decided 80 iterations later: deck types, and each exploiter's result against the main type (`vs0`, above 0.5 is a counter).
-3. The from-scratch check (`016-scratch-recipe-m`, from 380): its iteration-40 measurement, then every 40.
+2. `018-meta-league3-exploit` (fresh heads rewarded only against the main head's decks), from 420 and decided at 500:
+   deck types, and each exploiter's result against the main type (`vs0`, above 0.5 is a counter).
+3. With Evan: a general bootstrap for a pilot from scratch, (a) the pilot first on random undrafted decks, then
+   drafting, or (b) the prize margin in the pilot's reward; then the from-scratch check again (Stage 3 depends on it).
 4. The 440 milestone: whether the healing special Energy stays (Energy against the human median of 18), and the deck types.
 5. If no league card passes: the other larger changes named by the stall rule (a bigger pilot through distillation,
    a different draft procedure), with Evan. Phase B in parallel (verification, 2005 rules, card-text fixes).

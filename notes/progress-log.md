@@ -3189,3 +3189,42 @@ Entry format:
   whole field. The `vs0` readout shows a counter earlier.
 - **Next:** The scratch check's iteration-40 measurement (at 420). The exploiter card from the next boundary. The 017 cards
   decided at 480. The 440 milestone.
+
+### #124 · 2026-10-20 · A5 · The from-scratch check collapses into a no-attack, deck-out equilibrium of Pokémon piles; stopped at 40
+- **Done:** Read `016-scratch-recipe-m`'s measurement at its iteration 40 (lab rung at 420) and its training log, then stopped
+  the card by hand (status `stopped`, with a `closed_note`) at 40 of its 160 iterations, so its slot goes to the league
+  cards. Counted the card pool by kind, and checked how the main line's pilot came to attack (#48).
+- **Evidence:**
+  - **Iteration-40 measurement:** the 12 best decks score 0.0375 on the answer key under the main line's pilot (best
+    0.094), and 0.089 with SimpleBot on both sides. Staples 0.25, best overlap 0.25, deck types 0. The best decks' median
+    shape is 55.2 / 2.3 / 2.4, 83 cards from the human shape. Its own pilot wins 0.345 against SimpleBot. Competence is
+    0.356 against the main line's 0.46: trainer-first puzzles 0.24, PlusPower 0.06, attack lethals 0.76.
+  - **Training log:**
+
+    | it | median P / T / E | deck-out / no Pokémon / prizes of 2,000 games | steps a game |
+    |---|---|---|---|
+    | 0 | 22 / 17 / 17 | 1,724 / 267 / 7 | 215 |
+    | 8 | 40 / 10 / 8 | 1,951 / 44 / 5 | 193 |
+    | 20 | 54 / 3 / 3 | 1,967 / 25 / 8 | 152 |
+    | 39 | 59 / 1 / 0 | 1,988 / 8 / 4 | 120 |
+
+    Prize shaping was 0.1 at iteration 0 and 0.061 at 39. The draft head's incoming entropy was 5.60 → 5.22 nats
+    (near uniform), its outgoing entropy 2.54 → 3.87.
+  - **The pool:** 277 allowed cards, of them 225 Pokémon, 42 Trainers, 6 basic Energy and 4 special Energy.
+- **Found:** (1) The adopted recipe does not rediscover from nothing. Within 40 iterations it settles where nobody attacks:
+  99% of games end by deck-out, and the decks are all Pokémon. (2) Two pulls lead there, and they reinforce each other. A
+  near-uniform incoming draw brings a Pokémon 81% of the time and a basic Energy 2%, so an untrained head's decks drift
+  toward Pokémon whatever the results; the league's fresh heads did the same (#121, #123). Then, with a pilot that does
+  not attack, a deck wins by never running out of Pokémon and by not drawing, so the results favour the drift. With no
+  Energy left, nothing can take a prize, so prize shaping has nothing to reward. (3) The main line escaped only because
+  its pilot descends from pilot-v2, which was trained on random decks with deck-out wins paying 0 (#48). That reward was
+  ruled out as game-specific on 2026-10-09 (#51). So the main line's ability to attack rests on a non-general bootstrap.
+  The same deck-out pull may lie behind its own drift to stall (40–61% deck-outs, the healing Energy at 400, #119); that
+  is a hypothesis, not tested.
+- **Next:** Raise with Evan, since Stage 3 (the headline run from scratch) depends on it. Two general remedies:
+  - (a) Pilot before drafting: the pilot learns on random, undrafted decks until it takes prizes, then drafting
+    starts. This is the plan's own order, and how pilot-v2 was made, but without the deck-out reward.
+  - (b) The game's score at the end, the prize margin, in the pilot's reward, as the draft reward had it. The plan's
+    constants allow it.
+
+  Meanwhile the league cards continue.
