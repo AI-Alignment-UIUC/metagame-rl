@@ -115,6 +115,56 @@ def deck_shape(pool: Pool, v: np.ndarray) -> dict:
             "special_energy": int(v[[c["id"] for c in pool.cards if c["superType"] == 3 and c["energyType"] != 0]].sum())}
 
 
+def wide_deck(pool: Pool, rng) -> np.ndarray:
+    """A random deck with a playable structure and no strategy, for the pilot's practice (log #127; log #42's generator,
+    on which pilot-v2 learned, over the whole pool): 1-4 Pokémon lines (a Basic, 1-4 copies; a Stage 1 of it 60% of
+    the time, 1-3 copies, and then a Stage 2 of that half the time, 1-2 copies), an Energy count drawn uniformly from
+    8-34, each basic Energy of one of the lines' types 75% of the time and any basic type otherwise, and the rest
+    Trainers and special Energy drawn uniformly. It reads only what the rules give (stages, what evolves from what, a
+    Pokémon's type, the Energy a card provides); no human list or deck shape enters it."""
+    ok = [c for c in pool.cards if pool.allowed[c["id"]]]
+    basics = [c for c in ok if c["superType"] == 1 and c["stage"] == 2]
+    evolves = {}
+    for c in ok:
+        if c["superType"] == 1 and c.get("evolvesFrom"):
+            evolves.setdefault(c["evolvesFrom"], []).append(c)
+    limited = [c["id"] for c in ok if c["superType"] == 2 or (c["superType"] == 3 and c["energyType"] != 0)]
+    energy = [c for c in ok if c["superType"] == 3 and c["energyType"] == 0]
+
+    def room(v, cid):
+        return MAX_COPIES - int(pool.name_counts(np.where(pool.basic_energy, 0, v))[pool.name_of[cid]])
+
+    def add(v, c, k):
+        v[c["id"]] += max(0, min(k, room(v, c["id"])))
+
+    while True:
+        v = np.zeros(pool.n, dtype=np.int32)
+        types = set()
+        for i in rng.choice(len(basics), size=int(rng.integers(1, 5)), replace=False):
+            b = basics[i]
+            add(v, b, int(rng.integers(1, 5)))
+            types |= {t for t, x in enumerate(b["types"]) if x}
+            s1 = evolves.get(b["name"], [])
+            if s1 and rng.random() < 0.6:
+                e1 = s1[rng.integers(len(s1))]
+                add(v, e1, int(rng.integers(1, 4)))
+                s2 = evolves.get(e1["name"], [])
+                if s2 and rng.random() < 0.5:
+                    add(v, s2[rng.integers(len(s2))], int(rng.integers(1, 3)))
+        typed = [e for e in energy if any(e["provides"][t] for t in types)] or energy
+        for _ in range(int(rng.integers(8, 35))):
+            pick = typed if rng.random() < 0.75 else energy
+            v[pick[rng.integers(len(pick))]["id"]] += 1
+        for _ in range(2000):
+            if v.sum() >= DECK_SIZE:
+                break
+            cid = limited[rng.integers(len(limited))]
+            if room(v, cid) > 0:
+                v[cid] += 1
+        if pool.legal(v):
+            return v
+
+
 def random_deck(pool: Pool, rng) -> np.ndarray:
     """A random legal deck from the format's rules alone (the 'flat' decks of log #52): a Dirichlet split
     of 60 into Pokémon / limited cards (Trainers, Special Energy) / basic Energy, one Basic Pokémon, the

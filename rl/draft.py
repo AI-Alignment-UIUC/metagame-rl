@@ -17,7 +17,10 @@ cards go together is what the head reads. A draw makes k changes, one after anot
        (E_c . W q_j) / sqrt(d) + b_in[c], over the cards that keep the deck legal (never j itself)
 
 The number of changes is fixed (log #66: a learned change rate collapsed to 0, after which nothing more was
-learned). Only copies of the original deck can go out, and the masks are updated after each change, so every
+learned). With group_p > 0 (log #127) a change is, with that probability, a group change: after the same two choices
+every remaining original copy of card j goes out for copies of c, as many as the copy limit lets in (4 Snorlax for 4
+Hitmonchan, 9 Psychic Energy for 9 Fighting), so one draw can make the coordinated moves a deck type needs; the extra
+copies follow from the two choices, so the draw's log-probability is still exact. Only copies of the original deck can go out, and the masks are updated after each change, so every
 draw is legal and its log-probability exact. REINFORCE on the games' results trains the head.
 """
 import math
@@ -26,7 +29,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from rl.decks import Pool
+from rl.decks import MAX_COPIES, Pool
 from rl.token_model import CrossBlock
 
 GLOBAL, SLOT, MY_UNSEEN, OPPONENT_LIST = 1, 2, 9, 10      # token kinds (env/tokens.js KIND)
@@ -131,8 +134,9 @@ def floor_temperature(x: np.ndarray, floor: float) -> float:
 class Drafter:
     """The draft head and its optimizer."""
 
-    def __init__(self, pool: Pool, d: int, heads: int, swaps: int, lr: float, device: str, h_in_floor: float = 0.0):
-        self.pool, self.device, self.swaps = pool, device, swaps
+    def __init__(self, pool: Pool, d: int, heads: int, swaps: int, lr: float, device: str, h_in_floor: float = 0.0,
+                 group_p: float = 0.0):
+        self.pool, self.device, self.swaps, self.group_p = pool, device, swaps, group_p
         self.head = DraftHead(pool.n, d, heads).to(device)
         self.opt = torch.optim.Adam(self.head.parameters(), lr=lr)
         self.h_in_floor = h_in_floor          # nats; an incoming choice below it is sampled warmer (log #109)
@@ -217,6 +221,18 @@ class Drafter:
             new = int(rng.choice(pool.n, p=q / q.sum()))
             lp += math.log(q[new] / q.sum())
             v[new] += 1
+            if self.group_p > 0 and rng.random() < self.group_p:     # a group change: the rest of j's copies too
+                n = int(left[j])
+                if not pool.basic_energy[new]:
+                    nb = v.copy()
+                    nb[pool.basic_energy] = 0
+                    n = min(n, MAX_COPIES - int(pool.name_counts(nb)[pool.name_of[new]]))
+                if pool.basic_pokemon[c] and not pool.basic_pokemon[new]:
+                    n = min(n, int(v[pool.basic_pokemon].sum()) - 1)    # the last Basic stays
+                n = max(n, 0)
+                v[c] -= n
+                left[j] -= n
+                v[new] += n
             ev_j.append(j)
             ev_c.append(new)
             ev_mask.append(m)

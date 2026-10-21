@@ -57,18 +57,19 @@ gives a biased or blind builder, so pilot strength is the bottleneck.
 
 **Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup matrix. Trained pilots beat
 SimpleBot (a human-free pilot plateaus near 83%), but every deck search, tournament and learned drafting loop has ended
-in decks unlike the human field, and with the human lists as ground truth (Evan) the cause found was the pilot: it does
-not set up before attacking, so every Trainer but Oak and Bill is worth less than an Energy to it, and the drafting
-follows it. In the lab (`rl/lab.py`), working the approved three-stage plan (`notes/plan-rediscovery.md`) with Evan's
-ideas first, the main line adopted his deck-free board encoder and a larger learning rate (both for strength), but none
-of 16 pilot changes moved the pilot's Trainer competence (0.43–0.48 since 160), so the plan's stall rule fired and Evan
-chose a league: three draft heads sharing one pilot, under test as four cards (the first two decided at 480). The
-drafted population has held one deck type since 160, by a count that tells the human archetypes apart, and came closest
-to the human field at 360 (11.5 cards from the human shape, 67% against the human lists under SimpleBot) before trading
-7 Trainers for healing special Energy by 400 and its draw Trainers for basic Energy by 440 (36.5 Energy, 18.5 above the
-human median) as its games moved from deck-outs to Knock Outs; from scratch the same recipe collapses within 40
-iterations into Pokémon piles that never attack (99% deck-outs), so the main line's attacking rests on its pilot's
-non-general start (deck-out wins paid 0). Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
+in decks unlike the human field, first traced to the pilot (it does not set up before attacking, so most Trainers are
+worth less than an Energy to it) and in log #127 to two traps that have held the lab's main line on one deck type since
+160: the drafting moves every deck to a draw of forced changes whatever its results, so whichever card the collapsed draft
+head favours piles up (basic Energy, 36.5 at 440 against the human median 18), and the pilot is so specialised in that
+type that the same decks swap verdicts with the judge (they beat the human lists 0.80 under it and 0.26 under pilot-v2,
+while a Hitmonchan variant loses to them under it and beats them 0.72–0.91 under pilot-v2). In the lab (`rl/lab.py`),
+working the approved three-stage plan with Evan's ideas first, the main line adopted his deck-free board encoder and a
+larger learning rate, but none of 16 pilot changes moved Trainer competence (0.43–0.48), and the league of draft heads
+Evan chose when the stall rule fired shares the specialised pilot, so its heads drafted the main type or lost. Under test
+now: selection of draws on real results, group changes and practice games between wide random decks (lab cards to 490
+and later), and a diagnostic fork whose pilot practises the human lists. From scratch the recipe collapses within 40
+iterations into Pokémon piles that never attack (the main line escaped only through pilot-v2's non-general start), and
+Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
 
 **Earlier work:**
 
@@ -100,31 +101,30 @@ non-general start (deck-out wins paid 0). Phase B's engine plays two 2005 lists 
   draft heads sharing one pilot; lab bookkeeping faults that silently changed or risked decisions recurred throughout and
   were each fixed as found.
 
-**Recent (log #121–126).** An untrained draft head draws a Pokémon 81% of the time (the pool has 225 Pokémon, 42
-Trainers and 10 Energy), so the league's fresh heads first drafted Pokémon piles (which ran PPO out of GPU memory; it now
-halves its chunks by itself, with the same gradient) and then learned only the main type itself, while fresh exploiter
-heads, rewarded only against the main head's decks, lost nearly every game and learned nothing, so exploiters copied from
-the main head are queued to complete a 2 × 2 of league cards. From random decks and a fresh pilot the same drift goes
-unchecked, so the from-scratch check was stopped at 40 iterations with nobody attacking (99% deck-outs, all-Pokémon decks);
-the main line escaped it only through pilot-v2's start, trained with deck-out wins paying 0 (a game-specific reward since
-ruled out), and a general bootstrap is a question for Evan. By the 440 milestone the main type had traded its draw
-Trainers for basic Energy of four types (36.5 Energy, 18.5 above the human median) as its games moved from deck-outs (59%
-→ 13%) to Knock Outs, with competence at the top of its range (0.483).
+**Recent (log #121–127).** The league's fresh draft heads drafted Pokémon piles and then the main type (PPO now halves
+its chunks when out of GPU memory), from random decks the recipe fell within 40 iterations into Pokémon piles that never
+attack, and by 440 the main type held 36.5 Energy as its games moved from deck-outs to Knock Outs. At Evan's request to get
+out of the local minimum, #127 found that the drafting is a ratchet (each deck moves every iteration to a draw of 6 forced
+changes whatever its results, the head's incoming choice sits on one card at a time, and basic Energy, the only card
+without a copy limit, piles up through Energy-for-Energy null swaps) and that the pilot has specialised so far that no
+other deck type can win a place (the main decks beat the human lists 0.80 under it and 0.26 under pilot-v2), which is
+also why the league failed. Selection on real results (a deck moves only to a draw that beat it), group changes, practice
+games between wide random decks and a gate on the human lists were built; two selection cards run to 490, a combined card
+waits on its smoke test, three league cards were stopped, and a fork whose pilot practises the human lists (diagnosis
+only) asks whether they win once played well.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. The league cards `017-meta-league3-m` (the main head plus two fresh ones, restarted from 400) and
-   `017-meta-league3-copy` (three copies), decided at 480: deck types among the 12 best decks against the main line's 1.
-2. The exploiter cards (heads rewarded only against the main head's decks): `018-meta-league3-exploit` (fresh, from 420,
-   decided at 500) and `018-meta-league3-exploit-copy` (copies, from 440, decided at 520); deck types, and each
-   exploiter's result against the main type (`vs0`, above 0.5 is a counter).
-3. With Evan: a general bootstrap for a pilot from scratch, (a) the pilot first on random undrafted decks, then
-   drafting, or (b) the prize margin in the pilot's reward; then the from-scratch check again (Stage 3 depends on it).
-4. The 480 milestone: whether the Energy (36.5 at 440, human median 18) comes back down, and the deck types.
-5. If no league card passes: the other larger changes named by the stall rule (a bigger pilot through distillation,
-   a different draft procedure), with Evan. Phase B in parallel (verification, 2005 rules, card-text fixes).
+1. The human-practice diagnostic (`runs/diag-human-practice`, to 470): whether the human lists rise against the
+   population once its pilot practises them, and the human lists against its best decks under its own pilot.
+2. Smoke-test `--practice-games`, release `020-meta-select-practice` (selection, a 3-nat floor, group changes, 250
+   practice games; gate on the human lists; held on passing), and restart the lab before 490 for the new rule fields.
+3. `019-meta-select` and `019-meta-select-floor` at 490: the best decks' shape 16 cards closer to the human median.
+4. `017-meta-league3-m` at 480, and the 480 milestone (Energy, deck types).
+5. With Evan: a general bootstrap for a pilot from scratch, now with practice on wide random decks as option (a); then
+   the from-scratch check again. Phase B in parallel.
 <!-- status:end -->
 
 ---

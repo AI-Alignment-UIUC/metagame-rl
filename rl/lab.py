@@ -24,8 +24,10 @@ Cards (runs/lab/cards/*.json, taken in name order), written before their run, ne
   meta   the answer key of both populations (rl/evaluate_agents.py: their best decks against the archived lists
          under the main line's pilot, the field staples they play, archetype overlap); the card's "rule"
          ({"metric": "archived_mean", "min_gain": x}; or "trainer_swing", the decks' stability; or "deck_types", the
-         deck types among the best decks; any of them with an "archived_floor" on the answer key) decides; the pilot
-         test is a gate (not clearly worse)
+         deck types among the best decks; "lower": true for a metric where less is better, such as "shape_dist"; any
+         of them with an "archived_floor" on the answer key) decides; the pilot test is a gate (not clearly worse), on
+         deck pairs from both populations, or with "gate": "archived" on the 24 archived lists (log #127: two
+         populations of one deck type measure a pilot's skill at that type alone)
   aa     no change (or only --reseed): every test at full length and no decision; the noise a branch sees, from
          which elo1 and the meta rules' thresholds are set
   scratch the adopted recipe (main_args plus the card's args) from random decks and a fresh pilot, the plan's
@@ -526,7 +528,7 @@ def decide(c: dict, m: int, s: dict) -> dict:
         rule = c.get("rule", {"metric": "archived_mean", "min_gain": 0.03})
         rung["meta_main"] = mm = run_meta_eval(ref, ref, LAB / "tmp" / f"meta_main_{m:04d}.json", s)
         rung["meta_branch"] = mb = run_meta_eval(br, ref, LAB / "tmp" / f"meta_{c['id']}_{m:04d}.json", s)
-        rung["pilot"] = p = run_h2h(br, ref, "drafted", m, s, -e1, 0.0, s["early_cap"], False)
+        rung["pilot"] = p = run_h2h(br, ref, c.get("gate", "drafted"), m, s, -e1, 0.0, s["early_cap"], False)
         if mm.get("error") or mb.get("error") or p.get("error"):
             rung["status"] = "error"
             return rung
@@ -538,8 +540,8 @@ def decide(c: dict, m: int, s: dict) -> dict:
             rung["types"] = ty = [deck_types(br), deck_types(ref)]   # best decks than the main line has
             gain = ty[0] - ty[1]
             ok = gain >= rule["min_gain"]
-        else:
-            gain = (mb[rule["metric"]] or 0) - (mm[rule["metric"]] or 0)
+        else:                                                    # "lower": true for a metric where less is better
+            gain = ((mb[rule["metric"]] or 0) - (mm[rule["metric"]] or 0)) * (-1 if rule.get("lower") else 1)
             ok = gain >= rule["min_gain"]
         ok = ok and (mb["archived_mean"] or 0) - (mm["archived_mean"] or 0) >= rule.get("archived_floor", -math.inf)
         rung["gain"] = round(gain, 4)

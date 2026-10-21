@@ -20,6 +20,11 @@ Every iteration:
 by PPO, but only the season's last iteration feeds the draft head (step 4), whose leave-one-out baseline then compares
 a deck's candidates after the same practice; at its end every deck moves to one of its candidates, chosen at random
 (step 5). A deck that turnover brings in mid-season draws its candidates at once. --season 1 is the loop above.
+--select (log #127): the deck itself is one of its candidates, played unchanged beside its --candidates draws (every
+iteration with --season 1, else through the season), and at the move (step 5) the deck moves to whichever of them scored
+best in its games, itself on a tie, instead of to a random draw. Without it a deck moves every iteration to a draw of
+--swaps forced changes whatever their results, and once the head's incoming choice collapses onto one card every draw
+adds that card until the copy limit stops it, so basic Energy, which has none, piles up (#127).
 --draft-heads K > 1 (log #120): a league of K draft heads sharing the one pilot. Every deck belongs to one head, which
 reads it, draws for it and learns from its games (steps 1, 2, 4, 5); all decks still play one another at random, and
 turnover replaces each head's worst decks within its own share, with mutants from its own best quarter (step 6). A
@@ -28,7 +33,13 @@ copies of its first head (copy), and the decks are dealt to the heads round-robi
 heads after the first are exploiters, as in AlphaStar's league: still paired at random, but their REINFORCE step and their
 decks' results (turnover, best decks) count only their games against the first head's decks.
 Nothing human enters training: the archived lists and SimpleBot are for evaluation only
-(rl/evaluate_agents.py).
+(rl/evaluate_agents.py). The one exception is a diagnosis, never a lab card or the main line: --fixed-decks (log #127)
+puts fixed lists, such as the archived ones, on one side of a --fixed-share of the games, never drafted or turned over,
+so a fork's pilot practises them and one can ask whether they would win once played well.
+--practice-games N (log #127): N more games an iteration between two fresh random decks of a playable structure and no
+strategy (rl/decks.py wide_deck, the kind pilot-v2 learned on), all recorded for PPO and outside the population and the
+draft head, so the pilot keeps playing every kind of deck: a pilot trained only on its population's one deck type
+played other types so badly that no other type could win a place (#127).
 
 Run: .venv/Scripts/python -m rl.metagame --run runs/meta-99 --decks 99 --init-from runs/pilot-v2/model_it00349.pt
 
@@ -49,7 +60,7 @@ import numpy as np
 import torch
 
 from rl import limits
-from rl.decks import Pool, deck_shape, random_deck
+from rl.decks import Pool, deck_shape, random_deck, wide_deck
 from rl.draft import Drafter, random_changes, rloo
 from rl.remote import RemotePool
 from rl.rollouts import concat, read_rollout, subset
@@ -86,6 +97,8 @@ def main(argv=None):
     ap.add_argument("--draft-h-in-floor", type=float, default=0.0,
                     help="a floor in nats on the entropy the incoming card is drawn with: a choice below it is drawn at "
                          "the temperature that reaches it (log #109)")
+    ap.add_argument("--draft-group-p", type=float, default=0.0,
+                    help="chance that a change of a draw is a group change: all of the card's remaining copies (log #127)")
     ap.add_argument("--draft-heads", type=int, default=1,
                     help="draft heads, each drafting its share of the population with the one pilot (a league, log #120)")
     ap.add_argument("--draft-heads-init", choices=["fresh", "copy"], default="fresh",
@@ -99,7 +112,9 @@ def main(argv=None):
     ap.add_argument("--shaping-iters", type=int, default=100, help="iterations over which the shaping fades to 0")
     ap.add_argument("--season", type=int, default=1,
                     help="iterations a deck's draws are played before their results count (1 = a fresh draw every game)")
-    ap.add_argument("--candidates", type=int, default=4, help="--season > 1: draws per deck per season")
+    ap.add_argument("--candidates", type=int, default=4, help="--season > 1 or --select: draws per deck per season")
+    ap.add_argument("--select", action="store_true",
+                    help="a deck moves to the best-scoring of itself and its candidates, not to a random draw (log #127)")
     ap.add_argument("--turnover-every", type=int, default=10)
     ap.add_argument("--turnover", type=float, default=0.15, help="share of the population replaced at a turnover")
     ap.add_argument("--workers", type=int, default=14)
@@ -131,6 +146,10 @@ def main(argv=None):
     ap.add_argument("--search-lethal", action="store_true",
                     help="--distill: targets only where an option won the game in every line (no value in the target; "
                          "the played option if it is one of them), log #106")
+    ap.add_argument("--practice-games", type=int, default=0,
+                    help="games an iteration between fresh wide random decks, for PPO only (log #127)")
+    ap.add_argument("--fixed-decks", default="", help="diagnosis only (log #127): a JSON [{name, cards}] of fixed decks")
+    ap.add_argument("--fixed-share", type=float, default=0.3, help="--fixed-decks: share of games with one on one side")
     ap.add_argument("--stop-file", default="", help="end cleanly after the iteration in which this file appears")
     args = ap.parse_args(argv)
     D, K = args.decks, args.draft_heads
@@ -162,7 +181,8 @@ def main(argv=None):
         load_grown(net, init["model"])
     net.eval()
     opt = torch.optim.Adam(net.parameters(), lr=args.lr, eps=1e-5)
-    drafters = [Drafter(pool, c0["d"], c0["heads"], args.swaps, args.draft_lr, device, h_in_floor=args.draft_h_in_floor)
+    drafters = [Drafter(pool, c0["d"], c0["heads"], args.swaps, args.draft_lr, device, h_in_floor=args.draft_h_in_floor,
+                        group_p=args.draft_group_p)
                 for _ in range(K)]
     targs = SimpleNamespace(**{**PPO, "ent": args.ent, "epochs": args.epochs, "micro_batch": args.micro_batch,
                                "aux": args.aux, "distill": args.distill})
@@ -192,7 +212,7 @@ def main(argv=None):
         next_id, start = src["next_id"], src["iter"] + 1
         rng.bit_generator.state = src["rng"]
         deal_seed = src.get("deal_seed", args.seed)
-        cands = (src.get("season") or {}).get("cands", {}) if args.season > 1 else {}
+        cands = (src.get("season") or {}).get("cands", {}) if args.season > 1 or args.select else {}
         if fork and args.reseed is not None:
             rng, deal_seed = np.random.default_rng(args.reseed), args.reseed
             torch.manual_seed(args.reseed)
@@ -205,6 +225,7 @@ def main(argv=None):
         assign_heads(pop, K, keep=False)
         next_id = D
     D = len(pop)                                         # a fork or resume keeps its own population size
+    fixed = [pool.vector(x["cards"]) for x in json.load(open(ROOT / args.fixed_decks, encoding="utf-8"))] if args.fixed_decks else []
     assert D >= K, f"{D} decks for {K} draft heads"
     log = open(run / "log.jsonl", "a")
 
@@ -212,8 +233,8 @@ def main(argv=None):
         for it in range(start, args.iters):
             t0 = time.time()
             lam = args.shaping * max(0.0, 1.0 - it / max(args.shaping_iters, 1))
-            season = args.season > 1
-            counted = not season or it % args.season == args.season - 1   # the draft head learns from this iteration
+            season = args.season > 1 or args.select
+            counted = it % args.season == args.season - 1                # the draft head learns from this iteration
             if season and it % args.season == 0:
                 cands = {}
             # 1. read every deck against a sample of the field
@@ -227,16 +248,25 @@ def main(argv=None):
             if season:
                 for d in range(D):
                     if pop[d]["id"] not in cands:
-                        cands[pop[d]["id"]] = [drafters[pop[d]["head"]].sample(views[d], rng) for _ in range(args.candidates)]
+                        held = ([{"deck": pop[d]["deck"].copy(), "ev_j": [], "ev_c": [], "ev_mask": [], "ev_left": [],
+                                  "ev_T": [], "logp": 0.0}] if args.select else [])     # the deck itself, unchanged
+                        held += [drafters[pop[d]["head"]].sample(views[d], rng) for _ in range(args.candidates)]
+                        for x in held:
+                            x["sum"], x["n"] = 0.0, 0
+                        cands[pop[d]["id"]] = held
             shards = [{"decks": [], "jobs": []} for _ in range(args.workers)]
             games_meta, draws = {}, {}
             rec_share = 0.0 if args.freeze_pilot else min(1.0, args.record / max(args.games, 1))
             for g in range(args.games):
                 k, l = (int(x) for x in rng.choice(D, 2, replace=False))
+                if fixed and rng.random() < args.fixed_share:   # a fixed deck f on l's side, as l = -1 - f
+                    l = -1 - int(rng.integers(len(fixed)))
                 k_seat, seed = 1 + int(rng.integers(2)), (deal_seed * 100_000 + it) * 1_000_003 + g
                 sh = shards[g % args.workers]
                 for a in (k, l):
-                    if season:
+                    if a < 0:
+                        draws[g, a] = {"deck": fixed[-1 - a]}
+                    elif season:
                         held = cands[pop[a]["id"]]
                         draws[g, a] = held[int(rng.integers(len(held)))]
                     else:
@@ -245,6 +275,14 @@ def main(argv=None):
                 i = len(sh["decks"]) - 2
                 sh["jobs"].append({"i": i, "j": i + 1, "iSeat": k_seat, "seed": seed, "rec": bool(rng.random() < rec_share)})
                 games_meta[seed] = (g, k, l, k_seat)
+            for g in range(args.games, args.games + (0 if args.freeze_pilot else args.practice_games)):
+                seed = (deal_seed * 100_000 + it) * 1_000_003 + g    # practice: two wide decks, recorded, nobody's draw
+                sh = shards[g % args.workers]
+                sh["decks"] += [{"name": f"p{g}a", "cards": pool.names(wide_deck(pool, rng))},
+                                {"name": f"p{g}b", "cards": pool.names(wide_deck(pool, rng))}]
+                i = len(sh["decks"]) - 2
+                sh["jobs"].append({"i": i, "j": i + 1, "iSeat": 1 + int(rng.integers(2)), "seed": seed, "rec": True})
+                games_meta[seed] = None
             t2 = time.time()
             search = args.distill > 0 and not args.freeze_pilot
             extra = ({"cmd": "tsearch", "probeP": args.search_p, "maxProbes": args.search_max, "maxOptions": args.search_options,
@@ -307,22 +345,30 @@ def main(argv=None):
             t4 = time.time()
 
             # 4. REINFORCE for the draft head on every draw
-            games = [r for rep in replies for r in rep["results"]]
+            practice = [r for rep in replies for r in rep["results"] if games_meta[r["seed"]] is None]
+            games = [r for rep in replies for r in rep["results"] if games_meta[r["seed"]] is not None]
             per = {d: {"samples": [], "z": [], "margin": []} for d in range(D)}
             vs0 = [[] for _ in range(K)]                     # each head's results against head 0's decks
+            fixed_z = [[] for _ in fixed]                    # --fixed-decks: each fixed deck's results
             for r in games:
                 g, k, l, k_seat = games_meta[r["seed"]]
                 zk = 1.0 if r["winner"] == k_seat else 0.0 if r["winner"] in (1, 2) else 0.5
                 left = r.get("prizesLeft") or {}
                 mk = (left.get(str(3 - k_seat), 0) - left.get(str(k_seat), 0)) / 6.0
                 for a, b, z, m in ((k, l, zk, mk), (l, k, 1.0 - zk, -mk)):
-                    if pop[b]["head"] == 0:
+                    if a < 0:
+                        fixed_z[-1 - a].append(z)
+                        continue
+                    if b >= 0 and pop[b]["head"] == 0:
                         vs0[pop[a]["head"]].append(z)
                     elif args.draft_exploit and pop[a]["head"] > 0:   # an exploiter counts only games against head 0
                         continue
                     per[a]["samples"].append(draws[g, a])
                     per[a]["z"].append(z)
                     per[a]["margin"].append(m)
+                    if season:                               # each candidate's results this season (--select)
+                        draws[g, a]["sum"] += z
+                        draws[g, a]["n"] += 1
             batch_d, z_iter = [[] for _ in range(K)], np.full(D, np.nan)      # each head learns from its own decks
             for d in range(D):
                 if not per[d]["z"]:
@@ -338,14 +384,28 @@ def main(argv=None):
                                               "heads": parts}) if parts else {}
             t5 = time.time()
 
-            # 5. every population deck moves to one more draw (in a season, at its end: to one of its practised candidates)
+            # 5. every population deck moves to one more draw (in a season, at its end: to one of its practised candidates;
+            #    with --select to the best-scoring of them, the deck itself first among equals)
+            select = {}
             if not season:
                 for d in range(D):
                     pop[d]["deck"] = drafters[pop[d]["head"]].sample(views[d], rng)["deck"]
             elif counted:
+                moved, gain = 0, []
                 for d in range(D):
                     held = cands[pop[d]["id"]]
-                    pop[d]["deck"] = held[int(rng.integers(len(held)))]["deck"].copy()
+                    if args.select:
+                        mean = [x["sum"] / x["n"] if x["n"] else -1.0 for x in held]
+                        k = max(range(len(held)), key=lambda q: (mean[q], -q))
+                        moved += k > 0
+                        if k > 0 and held[0]["n"]:
+                            gain.append(mean[k] - mean[0])
+                    else:
+                        k = int(rng.integers(len(held)))
+                    pop[d]["deck"] = held[k]["deck"].copy()
+                if args.select:
+                    select = {"moved": moved, "gain": round(float(np.mean(gain)), 4) if gain else None,
+                              "games_per_candidate": round(float(np.mean([x["n"] for h in cands.values() for x in h])), 2)}
                 cands = {}
 
             # 6. turnover
@@ -380,6 +440,10 @@ def main(argv=None):
                    "cut_off": cut, "steps_per_game": round(float(np.mean([r["steps"] for r in games])), 1),
                    "endings": {e: sum(1 for r in games if (r.get("ending") or "none") == e) for e in {r.get("ending") or "none" for r in games}},
                    "recorded": recorded, "ppo": ppo, "draft": draft, "counted": counted,
+                   **({"select": select} if select else {}),
+                   **({"practice": {"games": len(practice), "errors": sum(1 for r in practice if r.get("error")),
+                                    "steps_per_game": round(float(np.mean([r["steps"] for r in practice])), 1)}}
+                      if practice else {}),
                    **({"search": search_stats} if search and not args.freeze_pilot and recorded else {}),
                    "margin_abs": round(float(np.mean([abs(m) for d in range(D) for m in per[d]["margin"]])), 4),
                    "shape_quartiles": {k: np.percentile(shapes[:, i], [25, 50, 75]).tolist()
@@ -395,6 +459,9 @@ def main(argv=None):
                                  for h, mine in enumerate([d for d in range(D) if pop[d]["head"] == h] for h in range(K))]}
                       if K > 1 else {}),
                    "turnover": turnover,
+                   **({"fixed": {"games": sum(map(len, fixed_z)), "z": round(float(np.mean([x for f in fixed_z for x in f])), 4)
+                                 if any(fixed_z) else None,
+                                 "by_deck": [round(float(np.mean(f)), 3) if f else None for f in fixed_z]}} if fixed else {}),
                    "seconds": {"read": round(t1 - t0, 1), "draw": round(t2 - t1, 1), "play": round(t3 - t2, 1),
                                "ppo": round(t4 - t3, 1), "draft": round(t5 - t4, 1), "total": round(time.time() - t0, 1)}}
             log.write(json.dumps(row) + "\n")

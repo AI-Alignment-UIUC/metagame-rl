@@ -369,6 +369,21 @@ def check_draft(failures, table, text, archived, rng):
     if wrong:
         failures.append(f"draft: {wrong} draws do not make exactly 3 replacements")
     print(f"draft: {n} draws legal, 3 replacements each, log-prob gap {max(gaps):.1e}")
+    # group changes (log #127): every change takes all of the card's remaining copies the copy limit lets in; the draws
+    # stay legal (sample asserts it), the log-prob stays exact, and they change more than one card per change
+    gr = Drafter(pool, 64, 4, swaps=3, lr=1e-3, device="cpu", group_p=1.0)
+    gaps, sizes = [], []
+    for v in [v for _, v in archived[:2]] + [random_deck(pool, rng) for _ in range(2)]:
+        vw = gr.view(pilot, v, field)
+        samples = [gr.sample(vw, rng) for _ in range(125)]
+        with torch.no_grad():
+            lp, _, _ = gr.log_prob(vw, samples)
+        gaps.append(np.abs(lp.numpy() - np.array([s["logp"] for s in samples])).max())
+        sizes += [changed(s["deck"], v) for s in samples]
+    if max(gaps) > 1e-3 or np.mean(sizes) <= 3.5:
+        failures.append(f"draft groups: log-prob gap {max(gaps):.1e}, {np.mean(sizes):.2f} cards changed a draw (want > 3.5)")
+    print(f"draft groups: {len(sizes)} draws legal, {np.mean(sizes):.2f} cards changed a draw by 3 changes, "
+          f"log-prob gap {max(gaps):.1e}")
 
     # Bandit: a draw pays the share of its incoming cards that are among 8 targets.
     v = archived[0][1]

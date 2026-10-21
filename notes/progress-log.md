@@ -3287,3 +3287,67 @@ Entry format:
   36.5 Energy says the drafting or the playing is wrong. The league cards are the test now running.
 - **Next:** The league cards (017's two at 480, the exploiters at 500 and 520). The 480 milestone. The pilot bootstrap
   question for Evan (#124).
+
+### #127 · 2026-10-20 · A5 · Two traps behind the one deck type: a forced-swap ratchet in the drafting and a pilot that plays only its own type
+- **Done:** At Evan's message ("iterate in a deep thinking loop about how to improve, and try many different ideas. The goal
+  is human type decks rediscovered. Get out of the local minima"), logged as row 13 of `notes/evan-requests.md`. Two
+  diagnostics, evaluation only: (1) the main line's draft moves from `runs/lab/main/log.jsonl` (`best[].top_in / top_out`,
+  `draft.h_in`), every 20 iterations from 160 to 449; (2) `notes/scripts/probe_matchups.py` (new: every deck of one group
+  against every deck of another, one pilot on both sides, greedy, seats alternating, 32 games a pair): the main line's 3 best
+  decks at 450 and two hand-made variants of the best one (`probe-hitmonchan`: 4 Snorlax -> 4 Hitmonchan, 9 Psychic -> 9
+  Fighting Energy; `probe-chan-buzz`: that plus 4 Chansey -> 4 Electabuzz, 8 Fire -> 8 Lightning) against the 24 human lists
+  and the 3 main decks, once under the main line's pilot (`seg_0450.pt`) and once under pilot-v2 (`runs/probe/*.json`; the
+  variants are diagnosis only, never a training input). Code: `rl/metagame.py --select` (each deck plays itself unchanged
+  beside `--candidates` draws, and moves to whichever scored best in its games, itself on a tie; REINFORCE still on the
+  draws, the deck's own games in their leave-one-out baseline); `rl/draft.py` group changes (`--draft-group-p`: with that
+  chance a change also moves every remaining original copy of the card, as many as the copy limit lets in; log-prob exact);
+  `rl/decks.py wide_deck` (log #42's generator over the whole pool: 1-4 Pokémon lines, Energy 8-34 mostly of their types,
+  random Trainers and special Energy; 300 decks median 8 / 29 / 20 + 2) and `rl/metagame.py --practice-games N` (N more
+  games an iteration between fresh wide decks, recorded for PPO only, outside the population and the draft);
+  `--fixed-decks` / `--fixed-share` (diagnosis only: fixed lists on one side of a share of the games); `rl/lab.py` meta
+  rules may set `"lower": true` (for `shape_dist`) and `"gate": "archived"` (the pilot gate on the 24 human lists).
+  Lab: `018-meta-league3-exploit`, `018-meta-league3-exploit-copy` and `017-meta-league3-copy` stopped by hand at 450 with
+  notes; `019-meta-select` and `019-meta-select-floor` (`--select --candidates 3`, the second with `--draft-h-in-floor 3`)
+  started at 450, decided at 490 on the best decks' shape (16 cards closer to the human median than the main line's, the
+  answer key no more than 0.03 worse, the pilot gate); `020-meta-select-practice` (select, 3-nat floor, group changes 0.3,
+  250 practice games; gate on the archived lists, held on passing) written and held until its code is smoke-tested. The lab
+  was stopped at 22:34 and restarted at 22:35 (pid 8424) to drop the stopped cards' pending segments; it still runs the
+  `rl/lab.py` it loaded then, so it must be restarted again before the 019 cards' decision at 490 (`"lower"` is newer).
+  Diagnostic fork `runs/diag-human-practice` started (main line at 450, `--fixed-decks` the 24 human lists on one side of 30%
+  of the games, 20 iterations, side budget `RL_GPU_SHARE=0.15 RL_CPU_THREADS=6`).
+- **Evidence:** (1) The best deck's incoming choice holds one card at a time (top card's share): Bill 0.97 at 300, Energy
+  Search 0.56 at 320, Nightly Garbage Run 0.79 at 340, Oak 0.84 at 360, Potion Energy 0.77 at 380, Bill 0.96 at 400, Full
+  Heal Energy 0.93 at 420, then basic Energy (Water 0.95 at 440; Fire 0.85-0.98, Psychic 0.95, Lightning 0.97 at 448-449);
+  `draft.h_in` 0.13-0.27 nats at 438-447. At 448-449 the best decks' top outgoing card is a basic Energy too (0.57-0.91), so
+  87-97% of their moves trade one basic Energy type for another; their median Energy went 22 (360) -> 28 (400) -> 37 (440).
+  The population at 450 is one list: per deck on average Chansey 3.5, Snorlax 3.5, Double Colorless 3.5, Energy Removal 3.3,
+  Oak 3.6, Gambler 3.0, Potion Energy 3.4, Full Heal Energy 2.4, Bill 2.2, Computer Search 1.3, and basic Energy (Psychic 9.4,
+  Water 5.2, Fire 5.1, Lightning 5.0). (2) Score of each row deck (32 games a pair):
+
+  | deck | pilot | vs 24 human lists | Haymaker (7) | Wigglytuff (10) | vs the 3 main decks |
+  |---|---|---|---|---|---|
+  | main decks (3) | main line at 450 | 0.784-0.826 | 0.77-0.79 | 0.78-0.84 | 0.38-0.62 |
+  | probe-hitmonchan | main line at 450 | 0.553 | 0.46 | 0.57 | 0.19 / 0.34 / 0.39 |
+  | probe-chan-buzz | main line at 450 | 0.355 | 0.27 | 0.43 | 0.39 / 0.48 / 0.44 |
+  | main decks (3) | pilot-v2 | 0.253-0.263 | 0.11-0.15 | 0.31-0.32 | 0.44-0.66 |
+  | probe-hitmonchan | pilot-v2 | 0.452 | 0.32 | 0.56 | 0.86 / 0.72 / 0.91 |
+  | probe-chan-buzz | pilot-v2 | 0.340 | 0.27 | 0.40 | 0.97 / 0.97 / 0.94 |
+
+  4,320 games each, 0 errors. Smoke runs (2 iterations, 160 games, `runs/smoke/select`, `runs/smoke/fixed`) ran clean;
+  `check_decks` and `check_draft` PASS on the CPU, including the new group check (500 draws legal, 9.36 cards changed a draw
+  by 3 changes, log-prob gap 2.6e-06).
+- **Found:** (1) The drafting is a ratchet, not an optimizer. Every iteration each deck moves to a draw of 6 forced changes
+  whatever its results, and the head's incoming choice has collapsed onto one card, so every draw adds that card until the
+  copy limit stops it; basic Energy has no limit, so once the favourite is a basic Energy the decks fill with it, and the
+  draws turn into null moves (one Energy type for another), which a deck of colourless attackers absorbs at no cost. That is
+  the 36.5 Energy of #126. (2) The pilot has specialised. Under the main line's pilot its decks beat the human lists 0.80 and
+  a Hitmonchan variant of them (Chansey and Snorlax are weak to Fighting) loses to them; under pilot-v2, which learned on
+  wide random decks, the same main decks score 0.26 against the human lists and the two variants beat them 0.72-0.97. A
+  pilot that has played only Chansey / Snorlax since about 160 plays any other type so badly that no other type can win a
+  place in the population, and the league of draft heads (017, 018) shares that pilot, which is why its heads either drafted
+  the main type or lost. Neither pilot is a fair judge (pilot-v2 never played Snorlax); a pilot that has practised both is
+  what `runs/diag-human-practice` gives. (3) The lab's own gate rewards the trap: a meta card's pilot is tested on decks
+  from two one-type populations, which measures skill at that type only; the incoming-entropy floor of #115 failed there.
+- **Next:** The human-practice diagnostic at 470 (do the human lists rise against the population once its pilot practises
+  them?); smoke-test `--practice-games`, release `020-meta-select-practice`, and restart the lab before 490; the 019 cards at
+  490; `017-meta-league3-m` at 480.
