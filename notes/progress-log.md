@@ -3228,3 +3228,31 @@ Entry format:
     constants allow it.
 
   Meanwhile the league cards continue.
+
+### #125 · 2026-10-20 · A5 · At 430: both fresh heads drift to the main type; fresh exploiters get almost no signal; exploiters from copies queued
+- **Done:** Read the three league cards' per-head rows over 420–429, then queued `018-meta-league3-exploit-copy`: the
+  exploiters started as copies of the main head (`--draft-heads-init copy --draft-exploit`, 8 segments, the same rule).
+  With 017's two cards and 018 it makes a 2 × 2: fresh or copied heads, rewarded on all games or only against head 0.
+  It starts at the 440 boundary.
+- **Evidence:** Per head, at iterations 420 and 429: mean result z, result against head 0's decks (vs0), median
+  Pokémon / Trainers / Energy, incoming entropy (nats).
+
+  | card | head 0 | head 1 | head 2 |
+  |---|---|---|---|
+  | `017-meta-league3-m`, 420 | 0.72, 0.50, 8 / 23 / 29, 0.14 | 0.54, 0.27, 14 / 21 / 25, 2.50 | 0.25, 0.12, 28 / 19 / 12, 4.50 |
+  | `017-meta-league3-m`, 429 | 0.70, 0.50, 8 / 22 / 30, 0.16 | 0.60, 0.32, 15 / 22 / 23, 1.70 | 0.19, 0.06, 8 / 24 / 27, 2.24 |
+  | `018-meta-league3-exploit`, 420 | 0.59, 0.50, 8 / 20 / 31, 0.24 | 0.35, 0.36, 13 / 19 / 28, 5.59 | 0.36, 0.35, 12 / 20 / 28, 5.59 |
+  | `018-meta-league3-exploit`, 429 | 0.81, 0.50, 8 / 14 / 38, 0.19 | 0.05, 0.05, 29 / 17 / 13, 5.41 | 0.02, 0.02, 37 / 11 / 12, 5.58 |
+  | `017-meta-league3-copy`, 429 | 0.52, 0.50, 8 / 23 / 28, 0.05 | 0.49, 0.47, 8 / 23 / 28, 0.06 | 0.49, 0.48, 8 / 23 / 29, 0.05 |
+
+  No out-of-memory fallback fired in any of the three runs (fresh card at micro-batch 256, the others with the fallback at 512 or 256).
+- **Found:** (1) In the fresh card both new heads now learn, and both head for the main type. Head 2's median deck went
+  28 / 19 / 12 → 8 / 24 / 27 in 9 iterations, and head 1 is at 15 / 22 / 23. Both still lose to head 0 (0.32 and 0.06).
+  They score well overall only by beating each other's weaker decks. (2) The fresh exploiters lose almost every game they
+  are scored on (0.02–0.05), so their leave-one-out advantages are nearly all zero. Their incoming choice has not moved
+  (5.41–5.60 nats), and their decks keep drifting into Pokémon piles. A head that starts from nothing has no signal when
+  rewarded only against a strong opponent. Started as copies, exploiters begin near 0.5 against head 0, where any
+  improvement counts. (3) In the exploiter card, head 0's decks, now two-thirds against piles, went to 38 Energy
+  (8 / 14 / 38). That is 20 above the human median, so that card may also fail its shape gate.
+- **Next:** The 440 milestone. The four league cards: 017's two decided at 480, `018-meta-league3-exploit` at 500, the
+  copy exploiters from 440 to 520. The pilot bootstrap question for Evan (#124).

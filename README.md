@@ -100,14 +100,15 @@ plays two 2005 lists and passes a fuzz over 340 cards.
   draft heads sharing one pilot; lab bookkeeping faults that silently changed or risked decisions recurred throughout and
   were each fixed as found.
 
-**Recent (log #121–124).** In the league of three draft heads, the fresh heads first drafted Pokémon piles (an
-untrained head draws a Pokémon 81% of the time from a pool of 225 Pokémon, 42 Trainers and 10 Energy), ran out of GPU
-memory on them (PPO now halves its chunks by itself, with the same gradient), and by 420 one had learned the main type
-itself, so exploiter heads rewarded only against the main head's decks are queued as a third card. The from-scratch
-check showed the same drift unchecked: from random decks and a fresh pilot, within 40 iterations nobody attacks, 99% of
-games end by deck-out and the decks are all Pokémon, so it was stopped. The main line escaped this only through pilot-v2's
-start, trained with deck-out wins paying 0, a game-specific reward since ruled out, so a general way to bootstrap the pilot
-(pilot before drafting, or the prize margin in its reward) is a question for Evan.
+**Recent (log #121–125).** An untrained draft head draws a Pokémon 81% of the time (the pool has 225 Pokémon, 42
+Trainers and 10 Energy), so the league's fresh heads first drafted Pokémon piles (which ran PPO out of GPU memory; it now
+halves its chunks by itself, with the same gradient) and then learned only the main type itself, while fresh exploiter
+heads, rewarded only against the main head's decks, lost nearly every game and so learned nothing; exploiters started as
+copies of the main head are queued, completing a 2 × 2 of league cards. The from-scratch check showed the same drift
+unchecked: from random decks and a fresh pilot, within 40 iterations nobody attacks, 99% of games end by deck-out and the
+decks are all Pokémon, so it was stopped. The main line escaped this only through pilot-v2's start, trained with deck-out
+wins paying 0, a game-specific reward since ruled out, so a general way to bootstrap the pilot (pilot before drafting, or
+the prize margin in its reward) is a question for Evan.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
@@ -115,8 +116,9 @@ The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 1. The league cards `017-meta-league3-m` (the main head plus two fresh ones, restarted from 400) and
    `017-meta-league3-copy` (three copies), decided at 480: deck types among the 12 best decks against the main line's 1.
-2. `018-meta-league3-exploit` (fresh heads rewarded only against the main head's decks), from 420 and decided at 500:
-   deck types, and each exploiter's result against the main type (`vs0`, above 0.5 is a counter).
+2. The exploiter cards (heads rewarded only against the main head's decks): `018-meta-league3-exploit` (fresh, from 420,
+   decided at 500) and `018-meta-league3-exploit-copy` (copies, from 440, decided at 520); deck types, and each
+   exploiter's result against the main type (`vs0`, above 0.5 is a counter).
 3. With Evan: a general bootstrap for a pilot from scratch, (a) the pilot first on random undrafted decks, then
    drafting, or (b) the prize margin in the pilot's reward; then the from-scratch check again (Stage 3 depends on it).
 4. The 440 milestone: whether the healing special Energy stays (Energy against the human median of 18), and the deck types.
