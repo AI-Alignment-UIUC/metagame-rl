@@ -1,6 +1,7 @@
 """Group-against-group matchups under one pilot (evaluation only, log #127): every deck of --a against every deck
 of --b, --games games a pair (seats alternate), greedy, the pilot on both sides. Prints the matrix of A's scores and
-each A deck's mean, and writes them with --out.
+each A deck's mean, and writes them with --out. With --pilot-b the B decks are played by that pilot instead (agents
+against agents: each population's decks under its own pilot).
 
   .venv/Scripts/python notes/scripts/probe_matchups.py --pilot runs/lab/main/seg_0450.pt \
       --a runs/probe/a.json --b archived --games 32 --out runs/probe/main_vs_archived.json
@@ -29,7 +30,7 @@ def group(spec: str, pool: Pool) -> list:
     if spec == "archived":
         return [{"name": n, "cards": pool.names(v)} for n, v in archived_decks(pool)]
     if spec.startswith("best:"):
-        _, path, k = spec.rsplit(":", 2) if spec.count(":") > 2 else (None, *spec[5:].split(":"))
+        path, k = spec[5:].rsplit(":", 1)
         st = torch.load(ROOT / path, map_location="cpu", weights_only=False)
 
         def score(a):
@@ -44,6 +45,7 @@ def main(argv=None):
     ap.add_argument("--pilot", required=True)
     ap.add_argument("--a", required=True)
     ap.add_argument("--b", required=True)
+    ap.add_argument("--pilot-b", default="", help="pilot for the B decks (default: --pilot for both)")
     ap.add_argument("--games", type=int, default=32)
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--seed", type=int, default=11)
@@ -59,19 +61,25 @@ def main(argv=None):
     rp = RemotePool(args.workers)
     rp.pace = 0.25
     info = rp.ask_all([{"cmd": "info"}] * args.workers)[0]
-    st = torch.load(ROOT / args.pilot, map_location=device, weights_only=False)
-    net = token_net(st["config"], info).to(device)
-    net.load_state_dict(st["model"] if "model" in st else st["net"])
-    net.eval()
+
+    def load(path):
+        st = torch.load(ROOT / path, map_location=device, weights_only=False)
+        net = token_net(st["config"], info).to(device)
+        net.load_state_dict(st["model"] if "model" in st else st["net"])
+        return net.eval()
+    net = load(args.pilot)
+    models = {0: net, 1: load(args.pilot_b)} if args.pilot_b else None
     try:
         gm = GpuMatrix.attach(net, rp, args.workers, device=device)
         gm.greedy = not args.sample
         pairs = [(i, len(A) + j) for i in range(len(A)) for j in range(len(B))]
-        W, G, _ = gm.play(decks, args.games, args.seed, pairs=pairs)
+        W, G, _ = gm.play(decks, args.games, args.seed, pairs=pairs, models=models,
+                          slots=[0] * len(A) + [1] * len(B) if models else None)
     finally:
         rp.close()
     P = (W / np.maximum(G, 1))[:len(A), len(A):]
-    out = {"pilot": args.pilot, "games": args.games, "a": [d["name"] for d in A], "b": [d["name"] for d in B],
+    out = {"pilot": args.pilot, "pilot_b": args.pilot_b or args.pilot, "games": args.games,
+           "a": [d["name"] for d in A], "b": [d["name"] for d in B],
            "P": np.round(P, 4).tolist(), "a_mean": np.round(P.mean(1), 4).tolist(), "mean": round(float(P.mean()), 4),
            **gm.last}
     for name, row in zip(out["a"], P):

@@ -13,8 +13,9 @@ Every iteration:
      always lost (log #66)
   5. every population deck moves to one more draw
   6. every --turnover-every iterations the --turnover share of decks with the worst results over that
-     period is replaced: by a fresh random deck (the format's rules only), or 1 in 4 by a deck of the
-     best quarter with 10 cards replaced at random (log #67)
+     period is replaced: by a fresh random deck (the format's rules only; with --turnover-wide a wide deck, log #127),
+     or 1 in 4 by a deck of the best quarter with 10 cards replaced at random (log #67); with --protect K decks younger
+     than K iterations are spared, so a new deck is drafted for a while before it is judged (log #127)
 --season K > 1 (log #93): a deck's draws are practised before they count. At the start of a season every deck draws
 --candidates draws, and every game of the season plays one of them, chosen at random; the pilot trains on all of them
 by PPO, but only the season's last iteration feeds the draft head (step 4), whose leave-one-out baseline then compares
@@ -117,6 +118,12 @@ def main(argv=None):
                     help="a deck moves to the best-scoring of itself and its candidates, not to a random draw (log #127)")
     ap.add_argument("--turnover-every", type=int, default=10)
     ap.add_argument("--turnover", type=float, default=0.15, help="share of the population replaced at a turnover")
+    ap.add_argument("--init-wide", action="store_true", help="a new population starts from wide decks (log #127)")
+    ap.add_argument("--protect", type=int, default=0,
+                    help="a deck younger than this many iterations is not replaced at a turnover (log #127)")
+    ap.add_argument("--turnover-wide", action="store_true",
+                    help="turnover's fresh decks are wide decks (Pokemon lines with their Energy, rl/decks.py), not "
+                         "rules-only random ones, which are Pokemon piles that never win a place (log #127)")
     ap.add_argument("--workers", type=int, default=14)
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--resume", action="store_true")
@@ -220,7 +227,8 @@ def main(argv=None):
         (run / "config.json").write_text(json.dumps({**vars(args), "pilot": net.config(), "ppo": vars(targs),
                                                     "device": device}, indent=1))
     if not (st or fork):
-        pop = [{"id": i, "deck": random_deck(pool, rng), "born": 0, "parent": None, "kind": "initial", "sum": 0.0, "n": 0}
+        pop = [{"id": i, "deck": (wide_deck if args.init_wide else random_deck)(pool, rng), "born": 0, "parent": None,
+                "kind": "initial", "sum": 0.0, "n": 0}
                for i in range(D)]
         assign_heads(pop, K, keep=False)
         next_id = D
@@ -416,13 +424,15 @@ def main(argv=None):
                     mine = np.array([d for d in range(D) if pop[d]["head"] == h])
                     order = mine[np.argsort(score[mine])]
                     top = order[-max(1, len(mine) // 4):]
-                    for d in order[:int(round(args.turnover * len(mine)))]:
+                    old = [d for d in order if it + 1 - pop[d]["born"] >= args.protect]    # --protect: the young stay
+                    for d in old[:int(round(args.turnover * len(mine)))]:
                         if rng.random() < MUTANT_SHARE:
                             p = int(rng.choice(top))
                             new = {"deck": random_changes(pool, pop[p]["deck"], MUTANT_CHANGES, rng), "parent": pop[p]["id"],
                                    "kind": "mutant"}
                         else:
-                            new = {"deck": random_deck(pool, rng), "parent": None, "kind": "random"}
+                            new = {"deck": (wide_deck if args.turnover_wide else random_deck)(pool, rng), "parent": None,
+                                   "kind": "wide" if args.turnover_wide else "random"}
                         turnover.append({"out": pop[d]["id"], "score": round(float(score[d]), 4), "in": next_id,
                                          "kind": new["kind"], **({"head": h} if K > 1 else {})})
                         pop[d] = {"id": next_id, "born": it + 1, "sum": 0.0, "n": 0, "head": h, **new}

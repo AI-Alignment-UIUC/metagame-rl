@@ -528,6 +528,8 @@ def decide(c: dict, m: int, s: dict) -> dict:
         rule = c.get("rule", {"metric": "archived_mean", "min_gain": 0.03})
         rung["meta_main"] = mm = run_meta_eval(ref, ref, LAB / "tmp" / f"meta_main_{m:04d}.json", s)
         rung["meta_branch"] = mb = run_meta_eval(br, ref, LAB / "tmp" / f"meta_{c['id']}_{m:04d}.json", s)
+        if c.get("gate") == "archived":                          # a readout: its decks under its own pilot (log #127)
+            rung["meta_branch_own"] = run_meta_eval(br, br, LAB / "tmp" / f"meta_{c['id']}_own_{m:04d}.json", s)
         rung["pilot"] = p = run_h2h(br, ref, c.get("gate", "drafted"), m, s, -e1, 0.0, s["early_cap"], False)
         if mm.get("error") or mb.get("error") or p.get("error"):
             rung["status"] = "error"
