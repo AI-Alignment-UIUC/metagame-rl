@@ -3256,3 +3256,34 @@ Entry format:
   (8 / 14 / 38). That is 20 above the human median, so that card may also fail its shape gate.
 - **Next:** The 440 milestone. The four league cards: 017's two decided at 480, `018-meta-league3-exploit` at 500, the
   copy exploiters from 440 to 520. The pilot bootstrap question for Evan (#124).
+
+### #126 · 2026-10-20 · A5 · Milestone 440: the main type trades its draw Trainers for basic Energy of four types (36.5 Energy); deck-outs fall from 59% to 13%
+- **Done:** The lab's 440 milestone on the main line. Read the 12 best decks' average counts at 400 and 440
+  (`main/seg_0400.pt`, `seg_0440.pt`) and the endings of the training games from 395 to 439.
+- **Evidence:** Milestones (pilot-v2 = answer key under pilot-v2, mean / best; SB = answer key with SimpleBot on both sides):
+
+  | at | pilot-v2 | SB | own vs SimpleBot | staples | overlap | shape P / T / E (distance) | competence (trainer-first, PlusPower) | types |
+  |---|---|---|---|---|---|---|---|---|
+  | 360 | 0.280 / 0.305 | 0.668 | 0.971 | 5.0 | 0.433 | 8.0 / 29.0 / 23.0 (11.5) | 0.447 (0.577, 0.438) | — |
+  | 400 | 0.286 / 0.335 | 0.704 | 0.978 | 5.0 | 0.467 | 7.9 / 23.6 / 28.5 (20.5) | 0.460 (0.608, 0.438) | (1) |
+  | 440 | 0.270 / 0.311 | 0.685 | 0.934 | 4.9 | 0.500 | 7.8 / 15.8 / 36.5 (36.5) | 0.483 (0.639, 0.500) | 1 |
+
+  The 400 type count is from #120's reading of the checkpoint. The milestone event first recorded it at 440.
+  - **Best decks, average counts 400 → 440:**
+    - Basic Energy: Psychic 17.0 → 9.0, Fire 0.1 → 6.0, Water 0 → 5.6, Lightning 0 → 4.3, Grass 0 → 1.6 (17.1 → 26.5).
+    - Trainers and special Energy: Computer Search 4.0 → 1.8, Bill 3.8 → 2.8, Energy Retrieval 2.0 → 0, Nightly
+      Garbage Run 1.8 → 0.1, Full Heal Energy 3.5 → 2.6, Potion Energy 3.9 → 3.5.
+    - Unchanged: 4 Snorlax, 3.8 Chansey, 4 Double Colorless, Energy Removal 3.8, Gambler 3.7, Oak 3.6.
+  - **Training games,** deck-out / prizes / no Pokémon: 395 47 / 40 / 13%; 400 59 / 23 / 17%; 420 46 / 31 / 22%; 430 30 /
+    39 / 29%; 439 13 / 45 / 38%. Steps a game 212 → 169. The median deck's Trainers: 24 at 400, 15 at 439 (a swing of 9).
+- **Found:** (1) The same deck type (4 Chansey, 4 Snorlax) took on 8 more Energy in 40 iterations, now 18.5 above the human
+  median, the furthest from the human shape since 320. Its attackers need only colorless Energy, so the new basic Energy
+  is spread over four types the draft drew at random: the drift of #124, among the 6 basic Energy cards. (2) What left
+  is the draw and recursion Trainers (Computer Search, Bill, Energy Retrieval, Nightly Garbage Run), the cards a
+  deck-out game punishes. The games moved from stall to attack: deck-outs 59% → 13%, prizes and no-Pokémon endings
+  40% → 83%. That is the direction the human game is played in, but reached with more Energy, not with Trainers. (3)
+  Competence 0.483 is the top of its range since 160 (0.43–0.48), with trainer-first puzzles at 0.64 (0.61 at 400).
+  The answer key is a little lower: 0.685 under SimpleBot and 0.270 under pilot-v2. By the ground-truth rule (Evan),
+  36.5 Energy says the drafting or the playing is wrong. The league cards are the test now running.
+- **Next:** The league cards (017's two at 480, the exploiters at 500 and 520). The 480 milestone. The pilot bootstrap
+  question for Evan (#124).
