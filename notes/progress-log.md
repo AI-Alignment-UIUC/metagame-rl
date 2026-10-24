@@ -6833,3 +6833,37 @@ Entry format:
 - **Next:** The loop's first experiments (`ar/results.tsv`); at the first keeps that add up to 2 × delta, a long run of
   the kept train.py, M on fresh deals and the other direction (6 Energy turned into Trainers), and one metagame screen
   for deck shape against 13.5 / 28 / 18.
+
+### #240 · 2026-10-24 · A5 · The day's loops planned and started: the 5-minute loop owns the GPU, a scheduler borrows it for four windows (probes at 17:00 and 23:30, the loop's milestone at 07:00, a screen at 12:00), and five probes are built
+- **Done:** Evan's row 55 ("Plan out loops for all day and then run them").
+  - `ar/` v2: `fixed.py` returns `paused` while `ar/PAUSE` exists and kills a `train.py` a killed run left behind (pid
+    file, checked by command line); `drive.py` starts no session while paused, numbers sessions on from earlier ones,
+    and gives its sessions none of the launching session's Claude Code variables; `program.md` ends a session on
+    `paused` and reads `ar/ideas.md` first; `.gitignore` covers ideas.md, PAUSE and the session files. Re-setup after
+    each change; best, delta and the guard bar kept.
+  - `notes/scripts/dayplan.py`: at each window's time it creates `ar/PAUSE`, waits until no ar/ experiment runs,
+    launches the window's jobs one after another through `loop.py launch`, waits for each, then removes the pause; it
+    re-reads `runs/dayplan/plan.json` every minute so later windows can be filled in. Started 16:36.
+  - Five probes built by a 10-agent workflow (a builder and an adversarial reviewer each; new files only, so ar/'s
+    hashes are untouched; each with a record and chain under `runs/probe/`): C68 X1 and X4 (`env/tools/probe_worker.js`,
+    `notes/scripts/probe_prompts_pace.py`: random answers inside the seat's own Trainer prompts; must-attack), C69 X3
+    (`probe_offmirror.py`: the lists' Trainers against the other 23 lists), C70 X5 (`probe_filler.py`: Energy,
+    off-type Energy and Clefairy Doll fillers), C71 X10 (`probe_identity.py`: the pilot with its Trainers' card inputs
+    permuted, and an Energy-permuted control), C72 the ar/ milestone (`ar_milestone.py`: the kept train.py for 30
+    minutes in a worktree, M on fresh deals and the reverse direction).
+  - Plan: probes-1 at 17:00 (C68 at 64 games a pair, C71, C70, C69; about 25-45 minutes); probes-2 at 23:30 (to be
+    filled from probes-1); milestone at 07:00 on 2026-10-25 (C72); screen at 12:00 (to be filled from the milestone).
+- **Evidence:**
+  - ar/ before the plan: 13 experiments, 0 kept; 3 reached `confirm` and failed their second seed (LAM 0.8 0.4815 ->
+    0.4750; the no-Pokémon-weighted curriculum 0.4829 -> 0.4636), so seed-to-seed spread is 0.006-0.02, wider than the
+    3-seed A/A's 0.002. SEARCH_DISTILL 0 cut M to 0.449.
+  - Each probe's CPU smoke passes (2 lists, 2 games a pair; 5-23 s); reviewers fixed band logic, missing readouts and a
+    crash on empty groups; X1's switch touches only prompts inside the seat's own Trainers (0 draw-card prompts in a
+    1,763-prompt audit).
+  - Sessions started by a `drive.py` that this session had launched detached exited with code 129 within 2 s (16:13,
+    16:23, 16:30) while the same command run by hand, in the foreground or once detached all ran; the cause was not
+    found. A scheduled task for `drive.py`, like loop.py's, was refused by Claude Code's auto mode as persistence, so
+    `drive.py` now runs as a background task of this session (session 5 from 16:34).
+- **Found:** If this session ends, `drive.py` stops with it (`dayplan.py` keeps running and resumes nothing); a
+  scheduled task needs Evan's approval.
+- **Next:** probes-1 at 17:00; its results go into `ar/ideas.md` and probes-2.
