@@ -6867,3 +6867,42 @@ Entry format:
 - **Found:** If this session ends, `drive.py` stops with it (`dayplan.py` keeps running and resumes nothing); a
   scheduled task needs Evan's approval.
 - **Next:** probes-1 at 17:00; its results go into `ar/ideas.md` and probes-2.
+
+### #241 · 2026-10-24 · A5 C68-C71 · Probe window 1: the pilot answers the prompts inside its own Trainers no better than random, never passes with an attack on offer, reads card identity, and plays the lists' search Trainers as worth no more than a blank card
+- **Done:** Evan's row 55, `dayplan.py` window probes-1 (17:01-17:14; ar/ paused at its next experiment, session 5
+  ended on `paused`, session 6 resumed at 17:14). Four probes (#240), each through `loop.py launch`, C49-sd at 199 on
+  both seats, greedy, the round rule 20-45, the fixed engine (#235); records written before launch in their folders.
+- **Evidence:** 0 game errors in every cell; 62-82 games/s at 6 workers.
+  - C68 X1 (`runs/probe/X1X4-prompts-pace/xprobe.json`, 64 games a pair, 6,080 games an arm): random answers inside
+    the seat's own Trainer prompts (U) minus the pilot's (G), paired by list: search −0.001 (SE 0.013), disrupt
+    −0.005 (0.012), tempo +0.013 (0.014), mean of the three +0.002 (0.009); draw (opens no such prompts) +0.015
+    (0.011). 72,462 Trainer prompts in G (Computer Search 20,940, Super Energy Removal 12,891, Energy Removal 8,245,
+    Energy Retrieval 7,738, Gust of Wind 7,601). Band: untrained prompts (search within ±0.02).
+  - C68 X4 (same deals, must-attack on both seats, A): A − G within ±0.002 in every group (SE 0.001): inert; the
+    pilot never passed with an attack on offer. A doubles as the GPU A/A: its floor is about 0.001.
+  - C71 X10 (`runs/probe/X10/x10.json`): the pilot with its Trainer cards' inputs permuted loses to the original 0.401
+    (SE 0.013, 1,536 games, −70 Elo); with its basic Energy cards' inputs permuted 0.467 (−23 Elo). Its Trainer-group
+    prices move little (all −0.042, search −0.017, disrupt −0.044, tempo +0.037). The script's call: identity-reading
+    (on the head-to-head; the Energy control did not move the prices).
+  - C70 X5 (`runs/probe/X5-filler/x5.json`, 32 games a pair): the lists against copies whose search, disrupt and tempo
+    Trainers are their commonest basic Energy (E), an off-type basic Energy (O), or Clefairy Doll up to 4 then O (D):
+    search 0.410 / 0.446 / 0.488, disrupt 0.481 / 0.536 / 0.563, tempo 0.440 / 0.471 / 0.470. Paired: O − E +0.041
+    (SE 0.012), D − O +0.022 (0.009), D − E +0.062 (0.010).
+  - C69 X3 (`runs/probe/X3-offmirror/offmirror.json`, 9,936 off-mirror games): the lists minus their Energy copies
+    (search, disrupt and tempo together) against the other 23 lists −0.040 (SE 0.021), in the mirror −0.039 (0.023);
+    off minus mirror −0.001 (0.015). Band: general (provisional, within 2 SE of an edge).
+- **Found:**
+  - The pilot plays the Trainers but has not learned their choices: what it fetches, discards or targets is worth no
+    more than a random pick. The soft search targets (C49) and every search so far skip prompts (#234), and PPO alone
+    has not trained them.
+  - It is not slow from passing (X4), and the self-mirror readout is not the fault (X3). It tells cards apart (X10),
+    so its inputs are not the block.
+  - As it plays them, the lists' search Trainers are worth no more than a blank 10-HP card (0.488), and a basic Energy
+    of the deck's own type is worth more than one of another type (+0.041): the typed attach is what the pilot gets
+    paid for.
+  - So the ground truth's deviation (too few Trainers) traces to an untrained part of the pilot's policy, the prompt
+    answers, not to the engine, the readout or the clock.
+- **Next:** `ar/ideas.md` gives the 5-minute loop these findings and prompt-decision training ideas (weight the policy
+  loss at prompt rows, credit a turn's outcome to every decision in it, exploration at prompt rows). X1b, a lookahead
+  oracle for those prompt answers, is being built for window probes-2 at 23:30: would well-chosen answers lift the
+  lists' Trainers above the Energy?

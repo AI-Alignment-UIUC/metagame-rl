@@ -162,31 +162,30 @@ gives a biased or blind builder, so pilot strength is the bottleneck.
   exceeded, so the loop now checks GPU memory at launch, keeps its switches from rounds, shows game errors and allows 20
   rounds a day; R1 from a random pilot (C63) and Evan's seasons with selection (C66) ran on R1.
 
-**Recent (log #233–239).** An audit of all 42 pool Trainers found the human lists' staples resolving as printed, and
+**Recent (log #233–241).** An audit of all 42 pool Trainers found the human lists' staples resolving as printed, and
 the faults it did find (Potion dead, Digger reversed, Challenge! and Maintenance too strong, PlusPower lost into
 Defender, Clefairy Doll and Mysterious Fossil never offered, multi-card picks in an order the pilot cannot see, 1-card
-mulligans) were fixed in the engine and the env and each verified against the audit's own failing tests; rerun on the
-fixed build, the strongest human-free pilot still prices the lists' search, disrupt and tempo Trainers below a basic
-Energy (0.434 against 0.429, paired SE 0.006), so the fault is the pilot, not the simulator. The night's last screens,
-on the old build, closed as an inconclusive Nf pair (R1's control slid 1.32 per 100 moves, just over its band) and a
-null for Evan's practice-before-it-counts seasons (selection's Energy lean +0.35 a move with and without them). A
-Karpathy-style loop now trains one edited `train.py` for 5 minutes from that pilot and keeps an edit only if it raises
-the lists' share against copies 6 Trainers lighter (0.474 at the start, A/A noise 0.002), and it runs unattended.
+mulligans) were fixed and verified; on the fixed build the strongest human-free pilot still prices the lists' search,
+disrupt and tempo Trainers below a basic Energy (0.434 against 0.429), so the fault is the pilot. Fast probes then
+located it: the pilot's answers inside its own Trainer prompts are no better than random (+0.002, SE 0.009), while it
+never passes with an attack on offer, reads card identity, and plays the lists' search Trainers as worth no more than a
+blank card, with the same deficit off the mirror as in it. A Karpathy-style loop trains one edited `train.py` for 5
+minutes from that pilot and keeps an edit only if it raises the lists' share against copies 6 Trainers lighter (0.474
+at the start, kept only on two seeds), now pointed at the prompt decisions, beside a day's schedule of probe windows.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. The 5-minute loop (`ar/`, #239): read `ar/results.tsv` and `git -C ar log`; at keeps adding up to 2 × delta, train
-   the kept `train.py` for 30-60 minutes, read M on fresh deals and the other direction (Energy turned into Trainers),
-   then one metagame screen for deck shape against 13.5 / 28 / 18.
-2. Decision for Evan: the keep threshold is 0.01 (about 5 A/A sd, both seeds), not the design's 0.03, which even
-   practice on the evaluation decks did not reach (+0.015); restore 0.03 or a 20-minute budget if he prefers.
-3. Evan's row 5, by his rule: a variant of practice-before-it-counts on the fixed engine (seasons matched on draft
-   steps, or 4 candidates), beside a concurrent control (#238).
-4. R1 (#231, #237): a second concurrent Nf-against-uniform pair on the fixed build, or drop Nf for the simpler
-   uniform base if the loop's pilot changes what drafting needs.
-5. The unattended rounds (`loop.py`) stay paused while `ar/` runs; `loop.py resume` restarts them.
+1. The 5-minute loop (`ar/`, #239-#241) on the prompt-decision ideas in `ar/ideas.md`; its results are in
+   `ar/results.tsv` and `git -C ar log`.
+2. Probe window 2 at 23:30 (`runs/dayplan/plan.json`): X1b, a lookahead oracle for the pilot's prompt answers inside
+   Trainers: would well-chosen answers lift the lists' Trainers above the Energy?
+3. The loop's milestone at 07:00 on 2026-10-25 (C72): the kept `train.py` for 30 minutes, M on fresh deals and the
+   reverse direction; then, if it holds, a metagame screen at 12:00 for deck shape against 13.5 / 28 / 18.
+4. Decisions for Evan: (a) the keep threshold 0.01 (not 0.03); (b) a scheduled task for `ar/drive.py` so the loop
+   outlives this session (Claude Code's auto mode refused to create one).
+5. Evan's row 5 variant on the fixed engine and a second concurrent Nf pair (#237, #238), after the loop's milestone.
 <!-- status:end -->
 
 ---

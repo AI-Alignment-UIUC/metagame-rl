@@ -67,7 +67,14 @@ def main(plan_path: str):
     done = {w["name"] for w in status["windows"]}
     while not (DIR / "STOP").exists():
         # the plan is re-read every minute, so later windows can be filled in or moved while earlier ones run
-        plan = json.loads(Path(plan_path).read_text(encoding="utf-8"))
+        try:
+            plan = json.loads(Path(plan_path).read_text(encoding="utf-8"))
+            good = plan
+        except (OSError, ValueError) as e:                  # a half-saved or broken edit: keep the last good plan
+            if "good" not in locals():
+                raise
+            log(f"plan.json unreadable ({e}); keeping the last good plan")
+            plan = good
         pending = sorted((w for w in plan["windows"] if w["name"] not in done), key=lambda w: w["at"])
         if not pending:
             break
