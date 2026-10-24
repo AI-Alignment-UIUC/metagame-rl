@@ -22,6 +22,12 @@ every remaining original copy of card j goes out for copies of c, as many as the
 Hitmonchan, 9 Psychic Energy for 9 Fighting), so one draw can make the coordinated moves a deck type needs; the extra
 copies follow from the two choices, so the draw's log-probability is still exact. Only copies of the original deck can go out, and the masks are updated after each change, so every
 draw is legal and its log-probability exact. REINFORCE on the games' results trains the head.
+
+With base="features" (H110's Nf, log #193) the incoming draw starts from a base measure q0 instead of the uniform: q0(c | j)
+∝ exp(cos(E_c, E_j) / tau), the pilot's own reading of each candidate against the card going out, with tau set per view
+so q0's mean entropy is base_ent nats. Its log is a fixed offset on the head's incoming logits, so log-probs stay exact;
+the floor tempers the head's part toward q0 (KL(q || q0) at most log(legal) - floor, which is the entropy floor when
+q0 is uniform), and the head's entropy bonus becomes -KL(q || q0). No card kinds or names are used.
 """
 import math
 
@@ -105,21 +111,34 @@ class DeckView:
     def __init__(self, deck, ids, counts, H, h0, E, base):
         self.deck, self.ids, self.counts, self.H, self.h0, self.E, self.base = deck, ids, counts, H, h0, E, base
         self.s = self.logits = None
+        self.b0 = self.b0np = None                               # base measure offsets [J, n] (base="features")
 
 
-def floor_temperature(x: np.ndarray, floor: float) -> float:
+def floor_temperature(x: np.ndarray, floor: float, b: np.ndarray = None) -> float:
     """The smallest temperature >= 1 at which softmax(x / T) over x's finite entries has entropy >= floor (nats, capped
-    just below the uniform's); 1 if it already has."""
+    just below the uniform's); 1 if it already has. With a base measure's offsets b, softmax(b + x / T) instead, with
+    KL from softmax(b) at most log(n) - floor (the same condition when b is constant)."""
     f = np.isfinite(x)
     if floor <= 0 or f.sum() <= 1:
         return 1.0
     y0 = x[f] - x[f].max()
     floor = min(floor, math.log(f.sum()) - 1e-3)
+    if b is not None:
+        lq0 = b[f] - b[f].max()
+        lq0 -= np.log(np.exp(lq0).sum())
+        budget = math.log(f.sum()) - floor
 
-    def H(T):
-        p = np.exp(y0 / T)
-        p /= p.sum()
-        return float(-(p * np.log(np.maximum(p, 1e-300))).sum())
+        def H(T):                                                # -KL, so the search below is the same
+            y = lq0 + y0 / T
+            p = np.exp(y - y.max())
+            p /= p.sum()
+            return float(-(p * (np.log(np.maximum(p, 1e-300)) - lq0)).sum())
+        floor = -budget
+    else:
+        def H(T):
+            p = np.exp(y0 / T)
+            p /= p.sum()
+            return float(-(p * np.log(np.maximum(p, 1e-300))).sum())
     if H(1.0) >= floor:
         return 1.0
     lo, hi = 1.0, 2.0
@@ -131,15 +150,34 @@ def floor_temperature(x: np.ndarray, floor: float) -> float:
     return hi
 
 
+def base_tau(cos: torch.Tensor, mask: torch.Tensor, target: float) -> float:
+    """The temperature at which softmax(cos / tau) over each row's legal entries has mean entropy `target` nats
+    (inf, a uniform base, if the target is at or above the uniform's)."""
+    n = mask.sum(1).clamp(min=1).float()
+    if target >= float(torch.log(n).mean()) - 1e-6:
+        return math.inf
+
+    def H(tau):
+        lq = torch.log_softmax((cos / tau).masked_fill(~mask, -1e9), 1)
+        return float((-(lq.exp() * lq).masked_fill(~mask, 0).sum(1)).mean())
+    lo, hi = math.log(1e-4), math.log(1e4)                      # entropy rises with tau; bisect on log tau
+    for _ in range(40):
+        mid = (lo + hi) / 2
+        lo, hi = (mid, hi) if H(math.exp(mid)) < target else (lo, mid)
+    return math.exp(hi)
+
+
 class Drafter:
     """The draft head and its optimizer."""
 
     def __init__(self, pool: Pool, d: int, heads: int, swaps: int, lr: float, device: str, h_in_floor: float = 0.0,
-                 group_p: float = 0.0):
+                 group_p: float = 0.0, base: str = "uniform", base_ent: float = 3.0):
+        assert base in ("uniform", "features"), base
         self.pool, self.device, self.swaps, self.group_p = pool, device, swaps, group_p
         self.head = DraftHead(pool.n, d, heads).to(device)
         self.opt = torch.optim.Adam(self.head.parameters(), lr=lr)
         self.h_in_floor = h_in_floor          # nats; an incoming choice below it is sampled warmer (log #109)
+        self.base, self.base_ent = base, base_ent       # the incoming draw's base measure (log #193)
 
     @torch.no_grad()
     def view(self, pilot, deck: np.ndarray, field: list) -> DeckView:
@@ -184,8 +222,21 @@ class Drafter:
             base[j] = pool.addable(w)
             base[j, [0, c]] = False
         vw = DeckView(deck.copy(), ids, counts, H, h0, E, torch.from_numpy(base).to(dev))
+        self.set_base(vw)
         self.refresh(vw)
         return vw
+
+    @torch.no_grad()
+    def set_base(self, vw: DeckView):
+        """base="features": q0(c | j) ∝ exp(cos(E_c, E_j) / tau) on the view, tau giving mean entropy base_ent."""
+        if self.base != "features":
+            return
+        F = torch.nn.functional.normalize(vw.E, dim=1)
+        cos = F[torch.from_numpy(vw.ids).to(F.device)] @ F.T           # [J, n]
+        tau = base_tau(cos, vw.base, self.base_ent)
+        vw.b0 = cos / tau if math.isfinite(tau) else torch.zeros_like(cos)
+        vw.b0np = vw.b0.cpu().numpy().astype(np.float64)
+        vw.tau = tau
 
     @torch.no_grad()
     def refresh(self, vw: DeckView):
@@ -216,8 +267,10 @@ class Drafter:
             m = pool.addable(v)
             m[[0, c]] = False
             x = np.where(m, vw.logits[j], -np.inf)
-            T = floor_temperature(x, self.h_in_floor)
-            q = np.exp((x - x.max()) / T)
+            b = None if vw.b0np is None else vw.b0np[j]
+            T = floor_temperature(x, self.h_in_floor, b)
+            y = (x - x.max()) / T if b is None else b + x / T
+            q = np.exp(y - y.max())
             new = int(rng.choice(pool.n, p=q / q.sum()))
             lp += math.log(q[new] / q.sum())
             v[new] += 1
@@ -241,9 +294,11 @@ class Drafter:
         return {"deck": v, "ev_j": ev_j, "ev_c": ev_c, "ev_mask": ev_mask, "ev_left": ev_left, "ev_T": ev_T, "logp": lp}
 
     def log_prob(self, vw: DeckView, samples: list):
-        """log pi of each draw of this deck under the current head, and the head's entropies on the deck."""
+        """log pi of each draw of this deck under the current head, the head's entropies on the deck, and the incoming
+        choice's bonus (its entropy, or -KL from the base measure)."""
         dev = self.device
         s, logits = self.head(vw.H, vw.h0, vw.E)
+        b0 = vw.b0
         lp = torch.zeros(len(samples), device=dev)
         ev_s = [i for i, x in enumerate(samples) for _ in x["ev_j"]]
         if ev_s:
@@ -254,14 +309,19 @@ class Drafter:
             lw = torch.where(left > 0, torch.log(left.clamp(min=1)) + s[None], torch.full_like(left, -1e9))
             out_lp = lw.gather(1, j[:, None]).squeeze(1) - torch.logsumexp(lw, 1)
             T = torch.tensor([y for x in samples for y in x.get("ev_T", [1.0] * len(x["ev_j"]))], device=dev)
-            row = (logits[j] / T[:, None]).masked_fill(~m, -1e9)
+            row = logits[j] / T[:, None] if b0 is None else b0[j] + logits[j] / T[:, None]
+            row = row.masked_fill(~m, -1e9)
             in_lp = row.gather(1, c[:, None]).squeeze(1) - torch.logsumexp(row, 1)
             lp = lp.index_add(0, torch.tensor(ev_s, device=dev), out_lp + in_lp)
         po = torch.log_softmax(s + torch.log(torch.tensor(vw.counts, dtype=torch.float32, device=dev)), 0)
         h_out = -(po.exp() * po).sum()
-        q = torch.log_softmax(logits.masked_fill(~vw.base, -1e9), 1)
+        q = torch.log_softmax((logits if b0 is None else b0 + logits).masked_fill(~vw.base, -1e9), 1)
         h_in = (po.exp().detach() * -(q.exp() * q).masked_fill(~vw.base, 0).sum(1)).sum()
-        return lp, h_out, h_in
+        if b0 is None:
+            return lp, h_out, h_in, h_in
+        q0 = torch.log_softmax(b0.masked_fill(~vw.base, -1e9), 1)
+        kl = (po.exp().detach() * (q.exp() * (q - q0)).masked_fill(~vw.base, 0).sum(1)).sum()
+        return lp, h_out, h_in, -kl
 
     def update(self, batch: list, beta: float) -> dict:
         """One REINFORCE step over [(view, draws, advantages)]; advantages are scaled to unit standard
@@ -270,19 +330,23 @@ class Drafter:
         sd = a_all.std() if len(a_all) and a_all.std() > 0 else 1.0
         n = max(len(a_all), 1)
         self.opt.zero_grad()
-        h_out = h_in = 0.0
+        h_out = h_in = kl_in = 0.0
         for vw, samples, a in batch:
-            lp, ho, hi = self.log_prob(vw, samples)
+            lp, ho, hi, bonus = self.log_prob(vw, samples)
             at = torch.tensor(np.asarray(a) / sd, dtype=torch.float32, device=self.device)
-            loss = -(at * lp).sum() / n - beta * (ho + hi) / len(batch)
+            loss = -(at * lp).sum() / n - beta * (ho + bonus) / len(batch)
             loss.backward()
             h_out += float(ho.detach()) / len(batch)
             h_in += float(hi.detach()) / len(batch)
+            kl_in -= float(bonus.detach()) / len(batch)
         grad = float(torch.nn.utils.clip_grad_norm_(self.head.parameters(), 1.0))
         self.opt.step()
         for vw, _, _ in batch:
             self.refresh(vw)
-        return {"h_out": round(h_out, 4), "h_in": round(h_in, 4), "grad_norm": round(grad, 4)}
+        out = {"h_out": round(h_out, 4), "h_in": round(h_in, 4), "grad_norm": round(grad, 4)}
+        if self.base != "uniform":
+            out["kl_in"] = round(kl_in, 4)
+        return out
 
     def summary(self, vw: DeckView, top: int = 3) -> dict:
         """The head's favourite moves on a deck: cards out and cards in."""
@@ -291,7 +355,7 @@ class Drafter:
         po = np.exp(po - po.max())
         po /= po.sum()
         base = vw.base.cpu().numpy()
-        x = np.where(base, vw.logits, -np.inf)
+        x = np.where(base, vw.logits if vw.b0np is None else vw.b0np + vw.logits, -np.inf)
         q = np.exp(x - x.max(1, keepdims=True))
         q /= q.sum(1, keepdims=True)
         incoming = (po[:, None] * q).sum(0)

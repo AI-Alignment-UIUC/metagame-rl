@@ -1,17 +1,21 @@
 """Operator composition audit (evaluation only, no games): for a saved metagame snapshot, sample draws from the saved
 draft head under several operator variants and report the mean change in Pokemon / Trainer / Energy per draw, plus the
 kind shares of the cards cut (out) and added (in) per change. Validates against the logged 'prop' of the next iteration.
+Given a pilot checkpoint instead (no population), it audits fresh heads on 99 fresh wide decks, C51's start (log #195);
+the Nf variant is H110's features base measure (rl/draft.py base="features"). Card kinds are read here only.
 """
+import os
 import sys
 import json
+from pathlib import Path
 import numpy as np
 import torch
 
 ROOT = "C:/Users/evanc/Desktop/333/metagame-rl"
 sys.path.insert(0, ROOT)
 from rl import limits  # noqa: E402
-from rl.decks import Pool, deck_shape  # noqa: E402
-from rl.draft import Drafter  # noqa: E402
+from rl.decks import Pool, deck_shape, wide_deck  # noqa: E402
+from rl.draft import DeckView, Drafter  # noqa: E402
 from rl.gpu_matrix import load_policy  # noqa: E402
 
 snap = sys.argv[1]
@@ -27,19 +31,34 @@ st = torch.load(f"{ROOT}/{snap}", map_location="cpu", weights_only=False)
 net, _ = load_policy(snap, dev)
 cfg = st["config"]
 rng = np.random.default_rng(7)
-pop = [pool.vector(a["deck"]) for a in st["population"]][:ND]
-allpop = [pool.vector(a["deck"]) for a in st["population"]]
+wide = "population" not in st                    # a pilot checkpoint: fresh wide decks as rl.metagame --init-wide makes
+if wide:
+    w = np.random.default_rng(3)
+    allpop = [wide_deck(pool, w) for _ in range(99)]
+else:
+    allpop = [pool.vector(a["deck"]) for a in st["population"]]
+pop = allpop[:ND]
 
 
-def make(floor, group, fresh=False):
-    dr = Drafter(pool, cfg["d"], cfg["heads"], 6, 3e-4, dev, h_in_floor=floor, group_p=group)
+def make(floor, group, fresh=False, base="uniform", base_ent=3.0):
+    dr = Drafter(pool, cfg["d"], cfg["heads"], 6, 3e-4, dev, h_in_floor=floor, group_p=group, base=base,
+                 base_ent=base_ent)
     if not fresh:
         dr.load(st["drafter"])
     return dr
 
 
-variants = {"as_run(f3,g.3)": make(3.0, 0.3), "T1(f0,g.3)": make(0.0, 0.3), "f3,g0": make(3.0, 0.0),
-            "uniform(g.3)": make(0.0, 0.3, fresh=True)}
+# a saved head is scored under its own run's base measure (the run folder's config.json; uniform before #195)
+run_cfg = Path(f"{ROOT}/{snap}").parent / "config.json"
+run_cfg = json.loads(run_cfg.read_text()) if run_cfg.exists() else {}
+rb, re_ = run_cfg.get("draft_base", "uniform"), run_cfg.get("draft_base_ent", 3.0)
+variants = ({} if wide else {"as_run(f3,g.3)": make(3.0, 0.3, base=rb, base_ent=re_), "T1(f0,g.3)": make(0.0, 0.3, base=rb, base_ent=re_),
+                             "f3,g0": make(3.0, 0.0, base=rb, base_ent=re_)})
+variants.update({"uniform(g.3)": make(0.0, 0.3, fresh=True), "uniform(f3,g.3)": make(3.0, 0.3, fresh=True),
+                 "Nf(f3,g.3)": make(3.0, 0.3, fresh=True, base="features")})
+# AUDIT_BASE_ENTS="1.5,2": fresh Nf heads at other base entropies (the dose lever, log #196)
+for b in [float(x) for x in os.environ.get("AUDIT_BASE_ENTS", "").split(",") if x]:
+    variants[f"Nf{b:g}(f3,g.3)"] = make(3.0, 0.3, fresh=True, base="features", base_ent=b)
 res = {k: {"d": [], "out": np.zeros(4), "inn": np.zeros(4)} for k in variants}
 hin = []
 for i, deck in enumerate(pop):
@@ -50,9 +69,9 @@ for i, deck in enumerate(pop):
         vw = dr.view(net, deck, field) if base is None else None
         if base is None:
             base = vw
-        else:                                      # same reading, this head's scores
-            from rl.draft import DeckView
+        else:                                      # same reading, this head's scores (and base measure)
             vw = DeckView(base.deck, base.ids, base.counts, base.H, base.h0, base.E, base.base)
+            dr.set_base(vw)
             dr.refresh(vw)
         s0 = deck_shape(pool, deck)
         s0 = np.array([s0["pokemon"], s0["trainer"], s0["basic_energy"] + s0["special_energy"]])

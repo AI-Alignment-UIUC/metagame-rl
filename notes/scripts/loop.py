@@ -49,9 +49,17 @@ MAX_SLOTS = 3            # method §1: at most 3 screens; pilot trainers count a
 # What a run holds (#161, #175: a soft-target trainer about 8 GB, a plain fork about 5, a lists h2h 3.3); a launch
 # leaves at least RAM_CRIT_GB free after it.
 FOOTPRINT_GB = {"pilot": 8.0, "screen": 5.0, "probe": 3.5}
+# GPU memory a run adds once loaded (#190, #230: a screen about 3.7 GB, a pilot trainer with its watcher's evaluations
+# about 6); a launch keeps the card at most GPU_SHARE full (CLAUDE.md), counting runs launched in the last
+# GPU_LOADING_MIN minutes as not yet loaded.
+GPU_GB = {"pilot": 6.0, "screen": 3.7, "probe": 3.0}
+GPU_SHARE = 0.8
+GPU_LOADING_MIN = 10
 RAM_LOW_GB = 5.0         # wakes a round
 RAM_CRIT_GB = 3.0        # two ticks running: the newest trainer gets its STOP file
-ROUNDS_PER_DAY = 12      # Evan's cap (log #176)
+ROUNDS_PER_DAY = 20      # Evan's cap (log #176: 12; 20 from log #232)
+# The loop's switches are Evan's (log #232): a round may not run them.
+SWITCHES = ("pause", "resume", "disable", "enable", "round", "daemon", "rehash", "seed", "install")
 TICK_S = 600
 HEARTBEAT_H = 4.0
 EVENT_GAP_MIN = 20       # after a round ends, before an event starts the next one
@@ -159,6 +167,31 @@ def gpu() -> str:
         return f"{int(out[0]) / 1024:.1f} of {int(out[1]) / 1024:.1f} GB, {int(out[2])}% busy"
     except Exception:
         return "n/a"
+
+
+def gpu_mem():
+    """(used, total) GPU memory in GB, or None if nvidia-smi can't be read."""
+    try:
+        out = subprocess.run(["nvidia-smi", "--query-gpu=memory.used,memory.total", "--format=csv,noheader,nounits"],
+                             capture_output=True, text=True, timeout=30,
+                             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.split(",")
+        return int(out[0]) / 1024, int(out[1]) / 1024
+    except Exception:
+        return None
+
+
+def loading_gb(reg: dict) -> float:
+    """The GPU memory of live runs launched in the last GPU_LOADING_MIN minutes, which may not show in nvidia-smi yet."""
+    cut = time.time() - GPU_LOADING_MIN * 60
+    total = 0.0
+    for e in reg.values():
+        try:
+            t = datetime.strptime(e.get("launched", ""), "%Y-%m-%d %H:%M").timestamp()
+        except ValueError:
+            continue
+        if e.get("alive") and t >= cut:
+            total += e.get("gpu_gb", GPU_GB.get(e.get("kind"), 0.0))
+    return total
 
 
 def processes() -> dict:
@@ -278,6 +311,23 @@ def iteration(row):
     return None if row is None else row.get("iter", row.get("iteration"))
 
 
+def error_iterations(path: Path) -> list:
+    """"iteration:count" for each logged iteration whose games had errors (round.md §2: one is a warning)."""
+    out = []
+    try:
+        with open(path, encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                try:
+                    r = json.loads(line)
+                except ValueError:
+                    continue
+                if isinstance(r, dict) and r.get("errors"):
+                    out.append(f"{iteration(r)}:{r['errors']}")
+    except OSError:
+        pass
+    return out
+
+
 def progress(e) -> Path:
     return ROOT / (e.get("progress") or (e["run"] + "/log.jsonl"))
 
@@ -385,7 +435,9 @@ def floor_problems(reg: dict, start: str, frm: str) -> list:
     return p
 
 
-def launch_problems(a, cmd: list, reg: dict, free_gb: float, slots_used: int) -> list:
+def launch_problems(a, cmd: list, reg: dict, free_gb: float, slots_used: int, gpu=(0.0, 16.0)) -> list:
+    """Why a launch is refused (empty if it isn't). gpu is (GB in use, counting runs still loading; GB total), or None
+    when nvidia-smi can't be read."""
     p = []
     if not re.fullmatch(r"C\d+[a-z]?", a.candidate or ""):
         p.append("--candidate must be a candidate id like C50 (§10)")
@@ -409,6 +461,13 @@ def launch_problems(a, cmd: list, reg: dict, free_gb: float, slots_used: int) ->
     if free_gb < need:
         p.append(f"free RAM {free_gb:.1f} GB is under the {need:.1f} GB a {a.kind} needs ({FOOTPRINT_GB[a.kind]:.1f} "
                  f"held, {RAM_CRIT_GB:.0f} left over; #175)")
+    g = GPU_GB[a.kind] if a.gpu_gb is None else a.gpu_gb
+    if gpu is None:
+        if g > 0:
+            p.append("GPU memory can't be read (nvidia-smi); launch when it can (CLAUDE.md: at most 80%)")
+    elif gpu[0] + g > GPU_SHARE * gpu[1]:
+        p.append(f"GPU memory {gpu[0]:.1f} GB in use (runs still loading included) plus the {g:.1f} GB a {a.kind} adds "
+                 f"is over {GPU_SHARE:.0%} of {gpu[1]:.1f} GB (CLAUDE.md; #190); a CPU-only probe passes --gpu-gb 0")
     if len(a.components) > 2:
         p.append(f"{len(a.components)} unadopted components; a launch stacks at most 2 on a recipe (§10)")
     for toks in invocations(cmd):
@@ -450,7 +509,9 @@ def launch(a, cmd: list) -> None:
         sys.exit(f"dry run: launch refused (it would run {' '.join(cmd)})")
     reg = registry()
     free, _ = ram_gb()
-    problems = launch_problems(a, cmd, reg, free, live_slots(reg, processes()))
+    g = gpu_mem()
+    g = g and (g[0] + loading_gb(reg), g[1])
+    problems = launch_problems(a, cmd, reg, free, live_slots(reg, processes()), g)
     if problems:
         print("launch refused:\n  - " + "\n  - ".join(problems))
         sys.exit(2)
@@ -461,7 +522,7 @@ def launch(a, cmd: list) -> None:
          "start": a.start, "from": a.frm, "components": a.components, "evan_row": a.evan_row,
          "looks": [int(x) for x in a.looks.split(",")] if a.looks else None, "look_wait": a.look_wait, "until": a.until,
          "progress": a.progress or None, "cmd": cmd, "sig": signature(cmd), "seeds": seeds(cmd),
-         "replicate_of": a.replicate_of, "pid": p.pid, "ctime": creation_time(p.pid), "launched": stamp(),
+         "replicate_of": a.replicate_of, "gpu_gb": GPU_GB[a.kind] if a.gpu_gb is None else a.gpu_gb, "pid": p.pid, "ctime": creation_time(p.pid), "launched": stamp(),
          "git": subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True,
                                text=True).stdout.strip(), "it0": None}
     if a.resume or e["looks"] is None:
@@ -700,13 +761,16 @@ def write_state(reason: str = "", dry: bool = False) -> str:
     L += ["", "## Live runs (registered)", ""]
     live = [(k, e) for k, e in reg.items() if e["alive"]]
     if live:
-        L += ["| run | C | kind | start | iteration | looks | launched |", "|---|---|---|---|---|---|---|"]
+        L += ["| run | C | kind | start | iteration | looks | game errors (iteration:count) | launched |",
+              "|---|---|---|---|---|---|---|---|"]
         for k, e in live:
             it = iteration(rows(progress(e)))
             lk = looks(e)
             nxt = next((x for x in lk if it is None or x > it), None)
+            errs = error_iterations(progress(e))
             L.append(f"| {k} | {e['candidate']} | {e['kind']} | {e['start']} from {Path(e['from']).name} | {it} | "
-                     f"{','.join(map(str, lk)) or 'from first iteration'} (next {nxt}) | {e['launched']} |")
+                     f"{','.join(map(str, lk)) or 'from first iteration'} (next {nxt}) | {', '.join(errs) or 'none'} | "
+                     f"{e['launched']} |")
     else:
         L.append("None.")
     L += ["", "## Ground truth (the 24 STS 2000 lists)", "",
@@ -809,7 +873,8 @@ def selftest() -> None:
 
     def args(**kw):
         d = dict(name="T1", candidate="C50", record=str(rec), kind="screen", start="escape", frm="S479",
-                 components=[], evan_row=None, resume=False, replicate_of=None, looks=None, until=None, progress=None)
+                 components=[], evan_row=None, resume=False, replicate_of=None, looks=None, until=None, progress=None,
+                 gpu_gb=None)
         d.update(kw)
         return argparse.Namespace(**d)
 
@@ -831,6 +896,11 @@ def selftest() -> None:
     check("ram", launch_problems(args(), cmd, {}, 7, 0), "free RAM")
     check("pilot ram", launch_problems(args(kind="pilot"), cmd, {}, 10, 0), "free RAM")
     check("probe ram", launch_problems(args(kind="probe"), cmd, {}, 7, 3), None)
+    check("gpu", launch_problems(args(), cmd, {}, 20, 0, (10.0, 16.3)), "GPU memory")
+    check("gpu ok", launch_problems(args(), cmd, {}, 20, 0, (9.0, 16.3)), None)
+    check("pilot gpu", launch_problems(args(kind="pilot"), cmd, {}, 20, 0, (7.5, 16.3)), "GPU memory")
+    check("gpu unread", launch_problems(args(), cmd, {}, 20, 0, None), "can't be read")
+    check("cpu probe", launch_problems(args(kind="probe", gpu_gb=0.0), cmd, {}, 20, 0, (12.9, 16.3)), None)
     check("stack", launch_problems(args(components=["a", "b", "c"]), cmd, {}, 20, 0), "unadopted")
     try:
         good.write_text(chain.read_text())
@@ -891,11 +961,15 @@ def main(argv=None) -> None:
     ap.add_argument("--looks", default="", help="absolute look iterations, comma-separated (default: method §9 offsets)")
     ap.add_argument("--look-wait", type=float, default=0,
                     help="minutes after a look is reached before it wakes a round (a watcher's readings take ~25)")
+    ap.add_argument("--gpu-gb", type=float, default=None,
+                    help="GPU memory the run adds (default by --kind; 0 for a CPU-only probe)")
     ap.add_argument("--until", type=int, default=None)
     ap.add_argument("--progress", default="", help="the log.jsonl to read iterations from (default <run>/log.jsonl)")
     ap.add_argument("--dry", action="store_true", help="round: a dry round that launches and edits nothing")
     a = ap.parse_args(argv)
     a.components = [c for c in a.components.split(",") if c]
+    if os.environ.get(ROUND_ENV) and a.cmd in SWITCHES:
+        sys.exit(f"`loop.py {a.cmd}` is Evan's switch; a round may not run it (log #232)")
     if a.cmd == "launch":
         if not a.name:
             sys.exit("launch needs a run id")

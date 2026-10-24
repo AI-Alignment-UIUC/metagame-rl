@@ -364,7 +364,7 @@ def check_draft(failures, table, text, archived, rng):
         vw = dr.view(pilot, v, field)
         samples = [dr.sample(vw, rng) for _ in range(125)]
         n += len(samples)
-        lp, _, _ = dr.log_prob(vw, samples)
+        lp = dr.log_prob(vw, samples)[0]
         gaps.append(np.abs(lp.detach().numpy() - np.array([s["logp"] for s in samples])).max())
         wrong += sum(len(s["ev_c"]) != 3 or changed(s["deck"], v) > 3 for s in samples)
     if max(gaps) > 1e-3:
@@ -380,7 +380,7 @@ def check_draft(failures, table, text, archived, rng):
         vw = gr.view(pilot, v, field)
         samples = [gr.sample(vw, rng) for _ in range(125)]
         with torch.no_grad():
-            lp, _, _ = gr.log_prob(vw, samples)
+            lp = gr.log_prob(vw, samples)[0]
         gaps.append(np.abs(lp.numpy() - np.array([s["logp"] for s in samples])).max())
         sizes += [changed(s["deck"], v) for s in samples]
     if max(gaps) > 1e-3 or np.mean(sizes) <= 3.5:
@@ -435,6 +435,37 @@ def check_draft(failures, table, text, archived, rng):
     print(f"draft bandit: incoming mass on 8 target cards {m0:.3f} -> {m1:.3f} in 200 steps, incoming entropy "
           f"{st['h_in']:.2f}; with a 2-nat floor: drawn entropy >= {min(hs):.2f}, head's own {sf['h_in']:.2f}, "
           f"targets {np.mean(zs[-20:]):.2f} of the draws, log-prob gap {gap:.1e}")
+    # the features base measure (H110's Nf, log #193): q0's mean entropy is the target, a draw's log-prob is still the
+    # one the update uses, the floor holds as KL(q || q0) <= log(legal) - floor, and the head still learns the targets
+    nf = Drafter(pool, 64, 4, swaps=3, lr=3e-3, device="cpu", h_in_floor=2.0, group_p=0.3, base="features", base_ent=2.5)
+    vn = nf.view(pilot, v, field)
+    lq0 = torch.log_softmax(vn.b0.masked_fill(~vn.base, -1e9), 1)
+    hq0 = float((-(lq0.exp() * lq0).masked_fill(~vn.base, 0).sum(1)).mean())
+    zs, gap = [], 0.0
+    for i in range(200):
+        samples = [nf.sample(vn, rng) for _ in range(64)]
+        if i in (0, 199):
+            with torch.no_grad():
+                gap = max(gap, float(np.abs(nf.log_prob(vn, samples)[0].numpy() - [s["logp"] for s in samples]).max()))
+        z = np.array([np.mean([c in target for c in s["ev_c"]]) for s in samples])
+        zs.append(z.mean())
+        sn = nf.update([(vn, samples, rloo(z, np.zeros(len(z))))], beta=0.0)
+    kls = []
+    for j in range(len(vn.ids)):
+        x = np.where(vn.base[j].numpy(), vn.logits[j], -np.inf)
+        b = vn.b0np[j]
+        y = b + x / floor_temperature(x, 2.0, b)
+        f = np.isfinite(y)
+        q = np.exp(y[f] - y[f].max())
+        q /= q.sum()
+        p0 = np.exp(b[f] - b[f].max())
+        p0 /= p0.sum()
+        kls.append(float((q * np.log(np.maximum(q, 1e-300) / p0)).sum()) - (np.log(f.sum()) - 2.0))
+    if not (abs(hq0 - 2.5) < 0.01 and gap < 1e-3 and max(kls) <= 1e-3 and np.mean(zs[-20:]) > np.mean(zs[:20]) + 0.1):
+        failures.append(f"draft base: q0 entropy {hq0:.3f} (want 2.5), log-prob gap {gap:.1e}, KL over the floor's "
+                        f"budget by {max(kls):.3f}, targets {np.mean(zs[:20]):.2f} -> {np.mean(zs[-20:]):.2f}")
+    print(f"draft base (features): q0 mean entropy {hq0:.3f} (target 2.5), log-prob gap {gap:.1e}, KL within the floor's "
+          f"budget ({max(kls):+.1e}), kl_in {sn['kl_in']:.2f}, targets {np.mean(zs[:20]):.2f} -> {np.mean(zs[-20:]):.2f}")
 
 
 def check_train(failures, rng):

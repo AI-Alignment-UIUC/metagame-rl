@@ -27,6 +27,7 @@ from rl import limits
 from rl.decks import Pool, archived_decks
 from rl.gpu_matrix import GpuMatrix, load_policy
 from rl.remote import RemotePool
+from rl.train import round_turns
 
 ROOT = Path(__file__).resolve().parents[2]
 GROUPS = {
@@ -60,14 +61,16 @@ def variants(pool: Pool, decks: list, groups: list) -> tuple:
     return out, pairs
 
 
-def play_pilot(path: str, decks: list, pairs: list, games: int, seed: int, workers: int, device: str) -> list:
+def play_pilot(path: str, decks: list, pairs: list, games: int, seed: int, workers: int, device: str,
+               rounds=0, search: dict = None) -> list:
     model, enc = load_policy(path, device)
     rp = RemotePool(workers)
     rp.pace = 0.25
     try:
         gm = GpuMatrix.attach(model, rp, workers, device=device)
         W, G, _ = gm.play(decks, games, seed, pairs=[(p["base"], p["variant"]) for p in pairs],
-                          pair_keys=[p["base"] for p in pairs])
+                          pair_keys=[p["base"] for p in pairs], round_turns=rounds, search=search)
+        print(path, gm.last, flush=True)
     finally:
         rp.close()
     return [float(W[p["base"], p["variant"]] / max(G[p["base"], p["variant"]], 1)) for p in pairs]
@@ -99,8 +102,17 @@ def main(argv=None):
     ap.add_argument("--games", type=int, default=64, help="games per deck pair (both seats)")
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--seed", type=int, default=91)
+    ap.add_argument("--round-turns", default="0", help='learned pilots only: the 2000 round rule in every game, "T" or '
+                    '"A-B" (log #160; a win on Prizes at time counts as a win); default off')
+    ap.add_argument("--search", default="", help='learned pilots only: both seats searched on the GPU (C03, log #162), '
+                    '"K:DETS" or "K:DETS:crn"; default off')
+    ap.add_argument("--search-conc", type=int, default=16, help="searched games at once per worker")
     ap.add_argument("--out")
     args = ap.parse_args(argv)
+    rounds = round_turns(args.round_turns)
+    sp = args.search.split(":") if args.search else None
+    search = {"k": int(sp[0]), "dets": int(sp[1]), "maxSteps": 40, "concurrency": args.search_conc,
+              "crn": len(sp) > 2 and sp[2] == "crn"} if sp else None
     device = "cuda" if torch.cuda.is_available() else "cpu"
     workers = limits.cap_workers(args.workers)
     limits.apply(device, workers)
@@ -113,10 +125,11 @@ def main(argv=None):
         best = sorted(st["population"], key=lambda a: -score(a))[:args.top]
         decks = [{"name": f"a{a['id']}", "cards": a["deck"]} for a in best]
     alld, pairs = variants(pool, decks, args.groups)
-    out = {"decks": args.decks, "games": args.games, "pairs": pairs, "players": {}}
+    out = {"decks": args.decks, "games": args.games, "round_turns": args.round_turns, "search": args.search,
+           "pairs": pairs, "players": {}}
     for pl in args.players:
         s = (play_simplebot(alld, pairs, args.games, args.seed, min(6, workers)) if pl == "simplebot"
-             else play_pilot(pl, alld, pairs, args.games, args.seed, workers, device))
+             else play_pilot(pl, alld, pairs, args.games, args.seed, workers, device, rounds, search))
         rows = {}
         for g in args.groups:
             x = np.array([v for v, p in zip(s, pairs) if p["group"] == g])

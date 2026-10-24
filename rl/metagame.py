@@ -253,6 +253,11 @@ def main(argv=None):
                          "the temperature that reaches it (log #109)")
     ap.add_argument("--draft-group-p", type=float, default=0.0,
                     help="chance that a change of a draw is a group change: all of the card's remaining copies (log #127)")
+    ap.add_argument("--draft-base", choices=["uniform", "features"], default="uniform",
+                    help="the incoming draw's base measure: uniform over legal cards (R0), or features: H110's Nf, "
+                         "exp(cos of the pilot's readings of the card in and the card out / tau) (log #193)")
+    ap.add_argument("--draft-base-ent", type=float, default=3.0,
+                    help="with --draft-base features: tau is set per deck so the base measure's mean entropy is this (nats)")
     ap.add_argument("--draft-heads", type=int, default=1,
                     help="draft heads, each drafting its share of the population with the one pilot (a league, log #120)")
     ap.add_argument("--draft-heads-init", choices=["fresh", "copy"], default="fresh",
@@ -426,7 +431,7 @@ def main(argv=None):
     net.eval()
     opt = torch.optim.Adam(net.parameters(), lr=args.lr, eps=1e-5)
     drafters = [Drafter(pool, c0["d"], c0["heads"], args.swaps, args.draft_lr, device, h_in_floor=args.draft_h_in_floor,
-                        group_p=args.draft_group_p)
+                        group_p=args.draft_group_p, base=args.draft_base, base_ent=args.draft_base_ent)
                 for _ in range(K)]
     targs = SimpleNamespace(**{**PPO, "ent": args.ent, "epochs": args.epochs, "micro_batch": args.micro_batch,
                                "aux": args.aux, "distill": args.distill, "anchor_w": args.anchor_w,

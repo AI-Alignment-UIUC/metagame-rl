@@ -35,6 +35,9 @@ rather than assume. A round is about an hour of work at most; the supervisor end
    if its record still stands.
 2. **Live runs (§9).** At each look reached, apply the record's kill rules on the run's own readout; a run that is
    decided, futile, harmful or inert stops now: `loop.py stop <id>`. Log any look that decides something.
+   `state.md` lists each live run's iterations with game errors. A lone game error is a warning: read its traceback in
+   the run's `stdout.log` and log it. A record's errors kill fires when errors recur: a second iteration with errors,
+   or 3 or more in one (Evan, log #232).
 3. **Free slots (§6 order).** Evan's ideas first (state.md, "Evan's open requests"). For a new candidate, first get
    proposals from a fresh `lean-lead` subagent. Its brief points only at `hypotheses.md` lines 1-42, §4-§5 and §7,
    the do-not-repeat lists of the families involved, and Evan's open rows, not at the recent log entries (recent
@@ -53,9 +56,10 @@ rather than assume. A round is about an hour of work at most; the supervisor end
    `--progress` is needed when the chain trains in another folder than the run id's; `--looks` when the record names
    snapshot iterations; `--look-wait 30` when the run's own watcher reads each look (its readings land about 25
    minutes after the snapshot). If it refuses, change the design. Never start training or a probe another way, and never
-   work around a refusal. New code paths get a tiny smoke run before a launch uses them.
+   work around a refusal. New code paths get a tiny smoke run before a launch uses them. GPU audits and smokes are
+   launches too (`--kind probe`; `--gpu-gb 0` for a CPU-only one).
 5. **Machine.** CLAUDE.md's limits (80% of GPU memory and compute, at most 16 threads) and #175's: at most one
-   probing trainer beside a metagame screen. `loop.py launch` checks slots and free RAM.
+   probing trainer beside a metagame screen. `loop.py launch` checks slots, free RAM and GPU memory.
 6. **Integrity.** Before a log entry announces a new best, a milestone or an adoption into R0, a fresh `lean-reader`
    given only the diff, the record and the chain checks for: human lists entering training (§2), edits to the
    frozen files, readouts that could be gamed. Its verdict goes in the entry.
@@ -71,7 +75,9 @@ rather than assume. A round is about an hour of work at most; the supervisor end
 - Asking questions: nobody answers. Decide, log the reason, carry on (§11).
 - `cd`, or waiting in a sleep loop. Paths are relative to `metagame-rl`. Long work runs detached through
   `loop.py launch`; the supervisor starts the next round at the next look or end.
-- Retrying a command the permissions denied. Note it in the handoff instead.
+- Retrying a command the permissions denied, in any form. Note it in the handoff instead.
+- Switching the loop: `loop.py pause`, `resume`, `disable`, `enable`, `round` and `rehash` are Evan's (log #232);
+  `loop.py` refuses them in a round.
 
 ## 4. Dry runs
 If the prompt says DRY RUN: read and decide as in §1-§2, but change nothing outside `runs/loop/`, and launch, stop

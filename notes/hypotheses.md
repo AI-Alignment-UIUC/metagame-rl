@@ -1,7 +1,7 @@
 # Hypotheses: the mechanism-level index
 
 **What this file is.** The single index of what metagame-rl has tried, by causal node (N1-N13) and mechanism. It holds
-69 families of past tests (H01-H69), the standing facts (S01-S36) and anomalies (A1-A9) they rest on, the effort map, 44
+69 families of past tests (H01-H69), the standing facts (S01-S37) and anomalies (A1-A9) they rest on, the effort map, 44
 new hypotheses from this session (H70-H113; H98 tested in #153, H82's stage 1 in #156, H99 in #157, the rest untested) and the first cycle's queue. The progress log stays the full
 record; this file indexes it and adds no claim the log lacks. Every family was verified against the log: verification
 changed 50 of 69 statuses, and 7 of 29 refutations did not survive.
@@ -21,7 +21,7 @@ means a number recomputed from run files while the ledger was rebuilt. That numb
 4. In the experiment's record, cite the H ids it is distinct from, its 3 nearest past tests, and the factor that was never
    varied before. Untested variants listed under a family are the cheapest way into that cell.
 5. A result outside every live band, or against a standing fact, gets a new A id. New families and hypotheses take the
-   next free numbers (H119 and C50 are next; H118/C49 soft search targets, #169; H114/C45 the clocked pilot, #161; H115/C46 the curriculum, #163; H116/C47 the loop under the rule, #164; H117/C48 the curriculum under the rule, #167). The Q1 rival set (E game, I inputs, P pilot, J judge, S selection,
+   next free numbers (H120 and C67 are next; C63-C65 name the proposals in `runs/loop/proposals-20261024-0755.md` (#229: C63 is H110's Nf.R test, launched #230, and takes no H id; C64 dropped with P, #227; C65, the Trainer-card audit, waits); C66 is H43's seasons with `--select`, #230, and takes no H id; C54, C55, C57 and C58 name unlaunched proposals in `runs/loop/proposals-20261024-0403.md` and `-0524.md`, and C60-C62 in `-0620.md` (#217; C62 dropped with P, #227); C59 is the lists' Trainer-value row on the current pilots, H07's, #215, and takes no H id; C56 is H89's first test, the Energy price probe, #211, and takes no H id; C53 is H20's frozen strong judge, #204, and takes no H id; C52 is H110's Nf cell, #195, and takes no new H id; C51 is H119's ungated test, #187, and takes no H id; H119/C50 the loop from wide decks with the warm rule pilot, #181; H118/C49 soft search targets, #169; H114/C45 the clocked pilot, #161; H115/C46 the curriculum, #163; H116/C47 the loop under the rule, #164; H117/C48 the curriculum under the rule, #167). The Q1 rival set (E game, I inputs, P pilot, J judge, S selection,
    X exploration, 0 other) and the grading rules (A, B, C) are defined in `notes/method.md` sections 4-5.
 
 **Status vocabulary** (family headers read `### H27 · N6 · supported (moderate) · name`, giving id, nodes, status, then the
@@ -139,6 +139,28 @@ gets an A id.
   (#147's probe) 0.026 and 0.076. Pairwise per-iteration distance RMS 2.45-3.28, inside S04's 2.0-4.8. An arm against
   one control needs about 2√2·SD (3.0 cards, 12.7 wall-core decks, 0.074 verdict) at the point SD. Greedy judge probes
   replay exactly (`gate479_rerun.json`).
+- **S37** · medium (4 runs, one start) · #203, #204, #206 · **Selection pays Energy against the proposals.** From fresh wide
+  decks under the round rule with the learning pilot from C45-R at 199 (C51 seeds 1-3, C52), accepted minus proposed
+  Energy is positive in every 10-iteration window read (+0.21 to +0.61 a move, within-run SE 0.08-0.12, between-run SD
+  about 0.2 on 0-9), under both base measures, and Trainers negative in 4 of 5 (−0.01 to −0.31). It is there in
+  iterations 0-2 (+0.25 over 11 iterations of 4 runs; iteration 0 alone +0.12), before the pilot has co-adapted with the
+  population and while the decks carry 20-25 Energy, above the lists' 18. C52's 20-29 adds a fifth window (Energy
+  +0.29, Trainers −0.20 a move, SE 0.06 and 0.05 over iterations; #206), where the median shed Trainers 29 -> 24.
+  **Extended (#209, `notes/scripts/select_lean.py`):** untimed too: in the 8 untimed escape screens from 479 (scr-ctl479,
+  -league, -vs, -lamv, -gate seeds 1/3/4, -gatevs) 13 of 16 windows are positive (−0.03 to +0.51), so the round rule is
+  not needed for the lean; under the rule or a turn limit from 479 (7 screens) the first window is at or below 0 in 6
+  and the second positive in 6. Under C53's frozen C49-sd judge on C51 seed 1's start: +0.42 on 0-9 (one seed).
+  **Extended (#213-#214):** at two seeds the frozen, stronger C49-sd judge leans the same as the learning judge on paired
+  starts (C53 − C51 on 0-9: +0.20 and −0.19, mean +0.005; seed 1's 10-19 +0.05), and offline a basic Energy beats an
+  average random Trainer of a fresh wide deck by +0.016 to +0.033 a 3-card swap under C49-sd and C45-R alike (paired
+  −0.008, SE 0.008), against fresh, drafted and list fields, with or without the clock (paired −0.002, SE 0.005). The
+  lean is what these pilots' games pay for the Trainers the head proposes; whether they also underprice the lists'
+  chosen Trainers is C59's question. **#218:** they do: under C49-sd with the rule the lists' search, disrupt and tempo
+  groups score 0.41-0.47 against basic Energy (draw 0.59), so the lean sits upstream of selection. **#221:** the clocked
+  C45-R prices them the same (primary 0.432 against 0.429), and untimed they are worth less (0.395; the whole suites
+  0.456, with 57% deck-out endings). **#225:** from C49-sd at 199 on seed 3's start, the uniform-base control leans
+  +0.39 (0.13) on 0-9 beside the Nf arm's +0.26 (0.09): a second learner start, under both bases. **#228:** the Nf arm
+  (C52 seed 3) +0.30 (0.09) on 10-19 and +0.53 (0.12) on 20-29, Trainers −0.20 and −0.15: positive in all 3 windows.
 
 ## 3. Anomalies
 
@@ -389,6 +411,7 @@ Nodes: N1 Game definition (H01, H02, H03, H04); N2 Pilot tactical competence (H0
   - #103: Distilled one-turn search, weight 1.0, 8 options, 4 lines: -78.6 Elo; search favours immediate plays (refuted (distillation))
   - #105: Weight 0.3, 2 lines: -56.1 Elo; 570-655 of ~1,000 targets differed from the move played, noise-like (refuted (distillation))
   - #106: Two-turn targets, 4 lines, margin 0.15, weight 0.3: -36.6 Elo; lethal-only exact targets too rare (refuted (distillation))
+  - #227 (C59 stage 2): one-turn psearch k4 dets4 on both seats, C49-sd at 199, the rule: the lists' search / disrupt / tempo Trainers against Energy copies 0.391 against greedy 0.416 (paired −0.025, SE 0.021); deck-outs 16% -> 3% (search does not raise the lists' Trainer value)
 - **Do not repeat:**
   - Flat MC over the heuristic with 4 rollouts, 2-turn or to-end (#13)
   - psearch k4 dets4 vs SimpleBot on the 24 lists (#50)
@@ -472,8 +495,32 @@ Nodes: N1 Game definition (H01, H02, H03, H04); N2 Pilot tactical competence (H0
   - --explore 0.1 mostly-greedy collection for Trainer timing (#81, #82)
   - nodraw:15 on the human side vs the walls (#141)
   - SimpleBot as a judge of Trainer value (#68, #92)
+- **C59 (#215, queued):** the scorecard's first Pilot row on the current loop's pilots: `trainer_value.py` on the 24
+  lists under C49-sd and C45-R at 199 with the round rule (greedy stage), then C49-sd searched. Distinct from #92's
+  do-not-repeat line by judge (human-free, rule-paid pilots, never measured on this row) and game (the rule); the
+  searched stage is the verdict's open "search-strength pilot" test. Splits "the pilots are right and random Trainers are
+  weak" (each group above 0.55) from "the pilots underprice Trainers" (search, disrupt and tempo at most 0.50, as #92).
+- **C59 stage 1, T49 (#218):** R-under. Under C49-sd with the rule (64 games a pair, 7,616 games) the lists score all
+  0.558, draw 0.589, search 0.412, disrupt 0.466, tempo 0.410 against their Energy copies; primary 0.429 (SE 0.009), LR
+  above 10^6 over R-right. As for every player #92 read (a4-tok 0.41-0.50, SimpleBot 0.33-0.40), so not specific to the
+  human-free lineage. T45 and T49u pending. Stage 2 (#219, `runs/probe/C59-search/`): G16 against S16 (`--search 4:4`) on
+  the three groups, same deals; P if S16 − G16 at least +0.06, not-P within ±0.03.
+- **C59 stage 1 complete (#221):** T45 (C45-R, the rule) primary 0.432 (search 0.398, disrupt 0.482, tempo 0.416; all
+  0.543, draw 0.560): no strength part (T49 − T45 −0.003, SE about 0.012; LR about 42 against +0.03), though C49-sd is 57
+  Elo stronger. T49u (C49-sd, untimed) primary 0.395, all 0.456, draw 0.398, with 57% of games ending in deck-outs: the
+  rule part is +0.034 on the primary (2.3 SE), +0.19 on draw. Under the rule only 4-6% of these games end by taking all
+  Prizes. Do not repeat: `trainer_value.py --decks archived` greedy on C49-sd or C45-R at 199, 64 games a pair, with or
+  without the rule.
+- **C59 stage 2 (#227):** not-P (A for the probe: 71 pairs on the same deals, paired SE 0.021). C49-sd with one-turn
+  search on both seats (`--search 4:4`, 49.7% of decisions moved off the pilot's best) against greedy, the rule, 16 games
+  a pair: search +0.008, disrupt −0.020, tempo −0.064; primary S16 − G16 −0.025 (0.391 against 0.416); LR about 2 × 10^5
+  for not-P over P. Search cut deck-outs 184 -> 32 of 1,136, but 83% of searched games end on time. The pilot's greedy
+  move choice is not why it underprices Trainers; left: its value (search scores lines with it), inputs (H77), the
+  engine's handling of these cards, the self-mirror readout under the clock. C62 drops (gated on P). Do not repeat: the
+  stage-2 command (`--groups search disrupt tempo --games 16 --seed 91 --round-turns 20-45`, C49-sd at 199, greedy or
+  `--search 4:4`).
 - **Untested variants:**
-  - trainer_value.py / card_ablation.py among the human lists under psearch, for search/disrupt/tempo groups. *Distinct:* Only greedy/sampled pilots and SimpleBot were used; search is what fixes those groups (#96); adds little for draw cards. *Cost:* low
+  - ~~trainer_value.py among the human lists under psearch, for search/disrupt/tempo groups~~ (done: C59 stage 2, #227, not-P at one-turn k4 dets4 with the pilot's own value at the leaves). Open: card_ablation.py per card under search; search whose leaf value is not the pilot's own (H05's frozen-leaf variant).
   - Energy->Trainer swap on the walls judged vs the human lists under psearch on both seats, with/without a 50-60-turn draw limit or the STS clock. *Distinct:* Tests whether a Trainer-heavier wall wins once both sides play at search strength. *Cost:* low-medium
   - Draft-time search judging (--judge-search, #148, uncommitted) while tracking whether accepted moves still cut Trainers. *Distinct:* Tests the mechanism at the drafting step rather than in evaluation. *Cost:* medium (1 screen, 20-40 iterations)
 - **New hypotheses (section 6):** H80, H88, H89
@@ -835,6 +882,27 @@ Nodes: N1 Game definition (H01, H02, H03, H04); N2 Pilot tactical competence (H0
   - Frozen more-general population pilot (scr-anchor or scr-resetent) as judge in a screen. *Distinct:* Static judge already 0.69-0.73 (#147), so predicted to fail; untested as a screen. *Cost:* medium (low value)
   - PFSP-style pool of several frozen past pilots as judges. *Distinct:* Averages over several pilots' biases; dropped from the #138 design, never run. *Cost:* medium
   - [outside research] Building a strong independent evaluator without human data. *Distinct:* No in-system judge is both strong and unbiased; beyond the #144 coverage. *Cost:* deep research
+- **C53 (#204, queued; the first untested variant):** C51's recipe (uniform base, the round rule) with the learner and a
+  frozen `--judge-pilot` from C49-sd at 199 (`--judge-share 1.0`: 1,500 of 2,000 judging games), seeds 1 and 3 paired
+  with C51's (`runs/screens/C53-h20.fju-c49sd199-s1/record.md`). Primary: the 0-9 Energy lean (S37) minus C51's. Bands:
+  the judge decides (at most −0.25), fixed preference (±0.15), more Energy (at least +0.25). Prior: fixed preference.
+  Not with Nf: that stacks 3 components as rounds count them (#204). Seed 1 launched 04:50 on 2026-10-24 (#207, no
+  reading); seed 3 waits for C49-s3's slot.
+- **C53 seed 1 at looks 3, 5, 10 (#209):** manipulation check passed (`judged2` 1,468-1,531, moved 37 on 0-2, 0
+  errors). Energy lean on 0-9 +0.42 (SE 0.11) against C51 seed 1's +0.22: +0.20, between fixed preference and more
+  Energy (LR 1.4 at one seed). Iteration 0, same decks and proposals: Energy +0.67 against +0.06. Best-12 distance
+  16.3 against 11.5 over 5-9; median 24 / 20 / 15 at 9 (C51 21 / 23 / 15); 99 types. Seed 3 launched 05:29 (#210).
+- **C53 seed 1 at 19 (ended) and seed 3 at look 10 (#213):** fixed preference supported (B: two seeds against paired,
+  not concurrent, references). 0-9: seed 1 +0.20, seed 3 −0.19 (+0.42 against C51 seed 3's +0.61), mean +0.005; LR 7.9
+  over "the judge decides" and 6.9 over "more Energy"; with seed 1's 10-19 (+0.05) about 114 and 26. The lean is not the
+  learning judge's co-adaptation and does not grow with strength. Seed 1's best 12 slid further from the lists (distance
+  27.0 against 15.5 over 15-19; 29.0 / 14.6 / 16.4 at 19), seed 3 no gap through 8 (17.0 against 16.2). Seed 3 runs to 20
+  for its deck readouts.
+- **C53 closed (#220, B, horizon 20 at both seeds):** fixed preference. Seed 3's 10-19 Energy lean +0.62 (0.09), as seed
+  1's +0.62 (C51 seed 1 +0.57; C51 seed 3 has no 10-19). Both seeds ended as Pokémon piles: median 30-31 / 16-17 / 13 at
+  19, best-12 distance 24.4 and 27.0 over 15-19 against the learning judge's 15.5 (C51 seed 1, one reference seed): the
+  frozen, stronger judge does not hold the decks nearer the lists. Do not repeat: C53's command (frozen C49-sd judge at
+  share 1.0, uniform base, the rule, prevention start) at seeds 1 or 3 without a new reason.
 - **New hypotheses (section 6):** H76, H86, H90, H100, H107, H108
 
 ### H21 · N4 · refuted (moderate) · Greedy judging fixes the shape
@@ -1019,6 +1087,11 @@ Nodes: N1 Game definition (H01, H02, H03, H04); N2 Pilot tactical competence (H0
   - #131: scr-reset median Pokemon 8->17 by 468; scr-v2 (frozen pilot-v2, wide decks, --select) 15->18->20->23 in 4 iterations (supported)
   - #132: scr-scratch (gamma 0.995): Pokemon 12->25, deck-outs 61%->85% in 4 iterations (supported (confounded with non-attacking pilot))
   - #140: Gate at 2.08 nats: accepted moves +0.7-2.5 Pokemon, -0.2-1.9 Trainers, close to proposals (pull survives selection via judge)
+  - #188: C51 (fresh head, wide decks, warm C45-R pilot, the round rule, ungated --select, one seed): proposals +5.6 -> +1.8 Pokemon over iterations 0-9, accepted minus proposed mean -0.11; median 12 -> 21 Pokemon while the best 12 by z rose only +2.3 (supported: the pull reaches the population through near-coin-flip acceptance, not through the judge's ranking)
+  - #191: C51 seed 1 to 20: proposals fell to +1.15 Pokemon at 8, then rose back to +2.2-2.7 at 12-19 as h_in climbed 4.45 -> 5.50; accepted minus proposed mean -0.23 over 0-19; median 29 / 19 / 12 at 18 (supported: the learning head does not unlearn the prior by itself at this recipe; one seed)
+  - #193: C51 seed 3 to 10: head near uniform throughout (h_in 5.62 -> 5.51), proposals +5.8 -> +3.2 Pokemon, accepted minus proposed -0.31 over 0-8, median 10 -> 26 Pokemon at 3.8-4.5 per 100 moves, faster than seed 1 (supported, B at two seeds: the draft-prior band at both)
+  - #200: C52 (C51 seed 1's start and seed, H110's Nf base at 3 nats in place of the uniform): proposals +1.3 Pokemon on the mean of 0-8, accepted minus proposed -0.25, median 10 -> 12 Pokemon over 349 moves (0.57 per 100, C51 2.4-4.5) (supported, B at one seed: changing only the base measure removes most of the slide, the draft-prior band of C52's record)
+  - #203, #206: C52 to 33: median Pokemon 14-15 from 12 to 33 (no slide), but Trainers 29 -> 24 over 18-25 while selection paid Energy +0.29 and cut Trainers −0.20 a move on 20-29 (supported, B at one seed: the base measure removes the Pokemon pull; the Energy-for-Trainers deviation remains, through selection, S37)
   - #109, #112: Main line 10/29/20 -> 33/8/20 in 13 iterations at 0.09-0.32 nats, Snorlax 0.9999; sister fork did not drift (counterexample: second route)
   - DATA (scratchpad ledger only): Distance by head entropy: 18.1 at >=2.5 nats, 13.4 at 1.5-2.5, 16.3 at 0.5-1.5, 25.8 below 0.5 (not applicable (confounded, measures distance not Pokemon drift))
 - **Do not repeat:**
@@ -1482,6 +1555,13 @@ Nodes: N1 Game definition (H01, H02, H03, H04); N2 Pilot tactical competence (H0
   - Seasons matched on draft steps (more candidates per season, or a control drafting every K iterations without practice). *Distinct:* Separates practice from drafting less often, the main confound of 008a/008b. *Cost:* medium
   - Mertan-style equal-adaptation counterfactual: fine-tune equal pilot copies on a wall and on a human list, then replay the match. *Distinct:* Tests the premise (judging bias from unequal practice) directly as a diagnostic; not in the log. *Cost:* low
   - Seasons on the current loop (deck-free pilot, entropy floor, group changes, from 460 or 479) with a matched control and a second seed. *Distinct:* The only tests ran in the pre-290 era with a collapsed head; this changes the setting, not the mechanism. *Cost:* medium-high
+- **C66, seasons with --select on R1 (#229-#230, running; Evan row 5):** C63's control command (R1, the rule, C49-sd-s3
+  at 199, seed 5) plus `--season 2` (the deck and one candidate played for 2 iterations, the pilot training on both, the
+  best kept at the season's end), turnover and protection counted in moves, 60 iterations (30 moves a deck); concurrent
+  control `C63-ctl-R1-c49sds3199-s5`. Readout: arm minus control, accepted minus proposed Trainers and Energy a move over
+  the first 15 moves: practice (Trainers at least +0.25, Energy at most −0.25) against null (within ±0.15); prior null.
+  Confounds: twice the games a candidate before selection, half the moves an iteration. Smoke passed (#229). Launched
+  08:04 on 2026-10-24.
 - **New hypotheses (section 6):** H86, H108
 
 ### H44 · N8 · refuted (moderate) · Closed-loop co-adaptation of one pilot and drafted decks rediscovers the meta
@@ -1560,7 +1640,7 @@ Nodes: N1 Game definition (H01, H02, H03, H04); N2 Pilot tactical competence (H0
   - Frozen pilot-v2 drafting a new population of wide decks (scr-v2: --init-from pilot-v2 --freeze-pilot --init-wide) with a fresh REINFORCE head
   - Fresh draft heads (league or exploiters) with uniform incoming choice rewarded only against a strong head 0 (#125)
 - **Untested variants:**
-  - Remedy (a) from #124: fresh pilot self-plays on random undrafted decks (plain result, deck-out wins 1) until deck-outs fall and prize wins rise, then drafting starts. *Distinct:* Breaks the co-adaptation in which a non-attacking pilot rewards deck-out piles; #71 shows the pilot stage works on fixed decks. *Cost:* medium
+  - Remedy (a) from #124 (testing under the round rule as C50, H119, #181): fresh pilot self-plays on random undrafted decks (plain result, deck-out wins 1) until deck-outs fall and prize wins rise, then drafting starts. *Distinct:* Breaks the co-adaptation in which a non-attacking pilot rewards deck-out piles; #71 shows the pilot stage works on fixed decks. *Cost:* medium
   - Remedy (b) from #124: prize margin (the game's end score) in the pilot's reward, as in the draft reward. *Distinct:* Gives a reason to take prizes when nothing can be shaped. Caveat from H45: the margin is 0 in a no-Energy pile, and non-fading shaping cost -31.4 Elo on the main line (#106). *Cost:* low
   - Kind-balanced or exposure-balanced incoming proposal for an untrained head (e.g. kind first, like coevolve's deckgen 'flat' Dirichlet split). *Distinct:* Targets the 81%-Pokémon proposal prior (#124, #121, #125), not the pilot; untested in the metagame loop. *Cost:* low-medium
   - 016 run to 160 iterations or with a second seed, only after (a) and/or (b). *Distinct:* A replicate of a fixed recipe, not a new mechanism; running the unchanged recipe longer is not worth it given the steady collapse. *Cost:* high
@@ -3214,7 +3294,7 @@ parked with its reason. The full designs are in `notes/data/cycle1/candidates.js
 - **Cost:** 2.5-3 h of code and 1-2 h of GPU at RL_GPU_SHARE 0.15 with 4-6 workers beside 3 screens. Check first that
   base-cont it39 and pilot-v2 load under the current token bounds.
 
-### H89 · N4, N5, N1 · untested · Acceptance audit: would a powered searched verdict, a clone-invariant panel or a Prize-decided cut reverse what selection accepts?
+### H89 · N4, N5, N1 · untested under search (C56's greedy stage, #214: the Energy lean is a real greedy payoff) · Acceptance audit: would a powered searched verdict, a clone-invariant panel or a Prize-decided cut reverse what selection accepts?
 
 - **C id:** C20, diagnostic. **Plan:** parked. It needs H72's search and maxTurns pass-through and H95's aligned builder
   (about a day with them), and it gates H107; cycle 2.
@@ -3256,6 +3336,19 @@ parked with its reason. The full designs are in `notes/data/cycle1/candidates.js
 - **Cost:** about 1 day of code with the builders. Searched games take 1.7-3.3 s each (measured in `scr-jsearch479` at
   485-498), so about 2-3.5 h at the stated deals and 4-7 h with the doubled deals the power fix needs. It runs with at most
   2 screens live, or overnight.
+- **C56 (#211-#212, its first test, recast):** the price of Energy against Trainers on fresh wide decks under the round
+  rule (`runs/probe/C56-etprice/record.md`, `notes/scripts/et_variants.py`): 24 parents, +3 Energy / −3 Trainers against
+  −3 Energy / +3 Trainers by supertype, Delta_ET over fields U (16 fresh wide), S (C52's best 12 at 29), L (the lists,
+  evaluation only), players C49-sd and C45-R at 199 greedy (stage 1), C49-sd searched (stage 2). Bands: S-noise or J1
+  (|Delta| ≤ 0.015 on U), field (U ≥ +0.03, S and L ≤ 0), fixed (≥ +0.03 everywhere, C49-sd ≥ C45-R + 0.03), P
+  (searched ≤ greedy − 0.04). Smoke passed (#211: 13.4 games a second; 1 game a pair Delta +0.018, SE 0.017). Stage 1
+  launched 05:41 on 2026-10-24 (#212).
+- **C56 stage 1 (#214):** Delta_ET G49-U +0.025 (SE 0.009), G45-U +0.033 (0.008), G49-S +0.027 (0.009), G49-L +0.016
+  (0.005), G49-U0 +0.023 (0.009); paired G49-U − G45-U −0.008 (0.008), G49-U0 − G49-U −0.002 (0.005). S-noise or J1
+  excluded (LR about 1,100 at G45-U), field excluded (LR about 10^5 and 1,700 at S and L), fixed's strength and clock
+  parts excluded (LR about 10^7 each); fixed's main clause holds (within 1 SE of +0.03 in 3 of 4 cells, L 2.7 SE below).
+  Grade A for the exclusions (probe, SE stated, 24 parents; one parent draw). The variants cut random Trainers, so this
+  prices an average pool Trainer, not the lists' choices. P (stage 2, searched) open.
 
 ### H90 · N4, N5 · untested · Judge-variance audit: does a deck's score spread across rule-compliant judges single out the walls?
 
@@ -4069,7 +4162,7 @@ parked with its reason. The full designs are in `notes/data/cycle1/candidates.js
 - **Distinct from:** #51 and the 10-09 rule settled only human lists, bots and the deck-out-0 reward. No ruling exists on
   kind-aware proposals or the generator. Relevant families: H27, H45.
 
-### H110 · N9, N6, N8 · untested · Proposal base measure from scratch: a factorial of base measure × pilot start × start decks
+### H110 · N9, N6, N8 · provisional R1 (B, #231: one concurrent control, seed 3 at 1.35 outside its 1.3 band; q0 puts 0.85-0.93 of its mass on cards already in the deck; until a second concurrent pair; before, #226 read it as A: two seeds hold the slide off, seed 3 beside a concurrent control, LR 20, #225; R1 = R0 + Nf at 3 nats for wide prevention starts with a warm pilot under the rule; before: B, C52 seed 1 closed at 33 with no Pokémon slide but Trainers 29 -> 24, #200, #203, #206; Nf built #195; audit: weak pull, #196; dose audit: 2 nats removes the Energy drain, #199) · Proposal base measure from scratch: a factorial of base measure × pilot start × start decks
 
 - **C id:** C41, intervention. **Plan:** parked. It needs H109's ruling, H99's W and H92; cycle 2, or the one-day fallback
   diagnostic.
@@ -4091,7 +4184,7 @@ parked with its reason. The full designs are in `notes/data/cycle1/candidates.js
   - **Cells:**
     - Nk.R.wide;
     - Nf.R.wide, on scr-scratch's exact recipe;
-    - U.W.wide;
+    - U.W.wide (testing under the round rule as C50, H119, #181);
     - Nk.W.wide, in two seeds;
     - U.W.flat and Nk.W.flat;
     - the anchor Nk.frozen-pilot-v2, read against scr-v2;
@@ -4115,6 +4208,71 @@ parked with its reason. The full designs are in `notes/data/cycle1/candidates.js
   - Other cells: as in the candidate (never before iteration 4; median Pokémon of at least 35 or deck-outs of at least 90%
     for 2 iterations).
 - **Distinct from:** H27, H31, H32 and H34 (the amount of flattening, never its target); H45 and H46.
+- **Nf built (#195, C52):** `rl/draft.py` base="features" (`rl.metagame --draft-base features --draft-base-ent 3`),
+  q0 from cos(E_c, E_j) of the pilot's readings, tau per view; the floor under a base is a KL budget (log(legal) −
+  floor), which equals the entropy floor under U; the bonus is −KL(q || q0). Unit-tested on CPU, not yet used by a run.
+  Next: the offline audit (`runs/probe/C52-nf-audit/record.md`; bar ±0.15 Pokémon and Trainers a draw), a smoke, then
+  Nf.W.wide on C51's start (C51's two seeds are its U control, #191, #193).
+- **Nf's audit (#196, probe, no games):** weak pull, the band written. Fresh heads on C51's start: uniform +5.61 / −1.93
+  / −3.67 a draw, Nf +1.61 / +0.63 / −2.23; on C51 seed 3's iteration-9 decks: uniform +3.40 / −1.21 / −2.18, Nf
+  +0.67 / +0.32 / −0.99. H110's ±0.15 bar is not met at 3 nats: Energy's in share stays 0.15-0.18 whatever its out share
+  (10 Energy cards against 225 Pokémon in a base of about 20 effective cards). The audit reproduces the runs' logged
+  proposals within 0.4.
+- **Nf's dose audit (#199, probe, no games):** dose works. Fresh Nf heads on the wide start at 3 / 2.5 / 2 / 1.5 nats:
+  Energy −2.24 / −1.21 / −0.07 / +0.19 a draw, Pokémon +1.61 / +0.35 / −0.43 / −0.49, Trainers +0.63 / +0.86 / +0.50 /
+  +0.30; on C52's iteration-4 decks at 2 nats −0.26 / +0.43 / −0.17. No dose meets the ±0.15 bar on all three kinds
+  (Trainers stay positive); fewer cross-kind swaps at low doses. Untested in games: a 2-nat cell.
+- **C52, Nf.W.wide at 3 nats (#200, B, one seed, controls C51 seeds 1 and 3 not concurrent):** draft prior + (median 10
+  -> 12 Pokémon over 349 moves through 8, 0.57 per 100 against C51's 2.4-4.5; proposals +1.31, accepted minus proposed
+  −0.25 on the mean of 0-8; Trainers 27 -> 28), results pull −, relearned prior − (proposals +0.83 at 9); LR 12.8 for
+  the draft prior over C51's mean at s 1.2. Median 12 / 27 / 19 at 9; the best 12 by z still 3.6-6.4 Energy above the
+  lists' 18 at 4-8 (21.3 at 9). Running to 15, then 30 if the band holds.
+- **C52 at 15 and 20 (#203, B, one seed):** draft prior + through 19 (median 10 -> 14 Pokémon over 841 moves, 0.48 per
+  100; proposals +0.94 and accepted minus proposed −0.10 on the mean of 0-14). Median 14 / 28 / 18 at 12-14, 0.5-2.5
+  cards off the lists over 10-19; 92-99 types in 99 decks. Selection against the proposals on 10-19: Pokémon +0.10,
+  Trainers −0.31, Energy +0.21 a move (SE 0.08-0.10); best-12 Energy 19.5-21.7 at 14-19. Running to 30.
+- **C52 closed at its look 30 (#206, B, one seed, horizon reached):** no Pokémon slide (median Pokémon 14-15 through 33),
+  but the median shed Trainers, 29 -> 24 over 18-25, and held 14 / 24 / 19-20; best 12 at 29 17.6 / 19.0 / 23.4
+  (Trainers and Energy outside 5 of the lists); 94 types, the largest 2. Selection on 20-29: Energy +0.29, Trainers
+  −0.20 a move against the proposals (S37); the proposals cut Trainers from 25 on while `kl_in` fell (0.43 -> 0.32-0.37).
+  The stop rule fired at one look (6.0 at 29); stopped as the record directs (no look past 30). Do not repeat: C52's
+  command past 30 iterations without a new reason. Open: its second seed and the 2-nat cell (behind the §8 floor), Nf.R.
+- **C52 seed 3 (#217, running):** the second seed, from C49-sd at 199 (the §8 floor refuses C45-R; C56 prices Energy the
+  same under both, #214), seed 3's start decks (C51 and C53 seed 3), 30 iterations, C52's bands
+  (`runs/screens/C52-h110.nf-c49sd199-s3/record.md`). Launched 06:25:46 on 2026-10-24.
+- **C52 seed 3 at looks 3, 5, 10 (#222, B):** draft prior + at a second seed and start: median 9 -> 14 Pokémon over 371
+  moves through 8 (1.35 per 100, 0.05 above the band's edge), proposals +1.48 and accepted minus proposed −0.12 on the
+  mean of 0-8, Trainers 27 -> 27; results pull −, relearned prior −. LR about 45 at two seeds over C51's centre (no
+  concurrent control). C53 seed 3, from the same start with the uniform base, slid at 4.0 per 100 (#220). Median 14 / 28 /
+  17 at 9; best 12 12.2 / 25.0 / 22.8 (Energy 4.8 above the lists); Energy lean +0.26 on 0-9 (seed 1 +0.25). Runs to 15.
+- **C52's concurrent control (#223, running):** seed 3's command without `--draft-base features`, from 07:00
+  (`runs/screens/C52-ctl-unif-c49sd199-s3/record.md`): Nf needed if the control slides at least 2.2 per 100 through 8,
+  the start holds it if at most 1.3. The cheapest test before adopting Nf into R0 (method §6, §10).
+- **Nf's integrity check (#224):** clean (a fresh lean-reader on the code, record and chain: no human data, no frozen
+  files, counts taken from the decks). Under Nf the logged `h_in` includes the base measure and the h_in floor is a KL
+  budget from the base, so `h_in` compares only between Nf runs (corrects #222).
+- **C52's concurrent control ended (#225):** Nf needed + (LR 20 at the pair): from seed 3's exact start, code and seed
+  the uniform base slid 10 -> 22 Pokémon over 307 moves through 8 (3.9 per 100; proposals +4.49 on 0-8) against the
+  arm's 1.35 (arm minus control −2.56); in band at looks 3, 5 and 10; stopped at 13 as decided. Every uniform-base start
+  of the night slid (C51 s1, s3, C53 s1, s3, this control: 2.4-4.5); both Nf seeds held (0.57, 1.35). Selection's Energy
+  lean against the proposals is there under both bases (control +0.39, arm +0.26 on 0-9): Nf does not touch S37.
+- **Provisional R1 (#231, Evan row 50):** #226's A does not hold (seed 1's control not concurrent; seed 3's 1.35
+  is outside its own 1.3 band; LR 20 is control-only, §9's arm minus control gives 3-10). Nf slows the slide to
+  about a third but does not stop it (0.4-0.9 per 100 moves after 8), and q0 puts 0.85-0.93 of its mass on extra
+  copies of cards already in the deck (CPU probe, three pilots), so it may hold the slide by proposing fewer new
+  cards. R1 stays the recipe for wide prevention starts until a second concurrent Nf-vs-uniform pair decides it.
+- **Adopted as R1 (#226, now provisional):** act-test-drop p about 0.95 (5 of 5 uniform starts slid, 2 of 2 Nf starts held); §5's A met
+  except that seed 1's control (C51 seed 1) is not concurrent (decision for Evan; revert by listing `draft-base` as a
+  component). Screens on R1 stack at most 2 more levers. Untested under R1: escape starts, Nf.R, the 2-nat dose.
+- **C52 seed 3 closed at 30 (#228, B):** draft prior + through 29 (median 14 -> 16 Pokémon over 840 moves of 9-28);
+  median 16 / 25 / 18 at 29, best 12 13.8 / 24.7 / 21.6 (within 5 of the lists on each count at that look only); the
+  Trainer trade recurs (median 28 -> 25 from 19), and selection's Energy lean rises to +0.53 a move on 20-29. 92 types,
+  the largest 2. One game error at 25.
+- **C63, Nf.R (#229-#230, running):** R1 from a random-init pilot (C49-sd-s3's architecture), seed 5, against R1 from
+  C49-sd-s3 at 199 (`runs/screens/C63-h110.nfR-fresh-s5/`, `C63-ctl-R1-c49sds3199-s5/`), 30 iterations. Gate passed
+  narrowly: a fresh Nf head under the near-random encoder pulls +2.38 Pokémon a draw (bar +2.5; uniform +5.43, warm
+  +1.61). Decided on accepted minus proposed Pokémon on 0-8: arrival within ±0.3 against bootstrap at least +0.3.
+  Launched 08:04 on 2026-10-24. The control is also R1's third pilot seed and C66's concurrent control.
 - **Cost:** 0.75-1 day of code. Machine time is about 4.5 slot-hours, plus 0.4 h for the anchor and about 2.6 slot-hours for
   the R cells' 30-iteration runs. The W cells depend on H99.
 - **Evan:** whether Nk and the wide generator may enter the method is his ruling (H109). Until then those cells are
@@ -4267,7 +4425,7 @@ parked with its reason. The full designs are in `notes/data/cycle1/candidates.js
   13 / 28 / 17 in 5 iterations (human medians 13.5 / 28 / 18; nothing in it reads a deck's shape). Transfer unread.
   Open variant: with the round rule (C48).
 
-### H116 · N1, N4, N5 · tested, 2 seeds (C47, #167, #170, #173): shape replicates, type split · The 2000 round rule in every game of the loop breaks the wall type
+### H116 · N1, N4, N5 · tested, 2 seeds (C47, #167, #170, #173, #178): shape replicates, type split · The 2000 round rule in every game of the loop breaks the wall type
 
 - **Mechanism:** the walls win late by deck-out (median 56-61 turns); under the rule (Evan's D1, row 41; T 20-45 per
   C02's R-unknown) those games are cut and decided on Prizes, a slow win pays 2/3 of a point and a Prize tie 1/3 each.
@@ -4280,6 +4438,9 @@ parked with its reason. The full designs are in `notes/data/cycle1/candidates.js
   wall-core 53 / 47 / 57 / 69 (seed 5, Shape only) and 47 / 44 / 51 / 53 (seed 6, Type), pooled +12.7 [−7.0, +32.4]
   fewer than gated. Seed 5's pilot: level with pilot-v2 on the lists under the rule (+1.6 [−16, +19]); walls' event
   share 0.504 under the rule, 0.668 untimed. Open: a third seed; the rule plus a searched or distilled judge.
+  Seed 6's pilot (#178): −35.7 [−53.5, −18.0] against pilot-v2 on the lists under the rule; the walls' event share 0.549
+  under the rule, 0.686 untimed (the judge band of at most 0.50 is met by neither seed). Seed 7 died before training
+  at 03:03 on 2026-10-23 (#179) and is queued.
 
 ### H117 · N3, N1, N10 · stopped (C48, #169): practice collapsed to bench-outs · The learned curriculum under the round rule transfers to the lists better than the rule alone
 
@@ -4292,13 +4453,98 @@ parked with its reason. The full designs are in `notes/data/cycle1/candidates.js
   against C45-R; walls' event share 0.611. The positive value loss scales with the reward, and the rule's ±1/3 time
   results make early bench-outs score highest. Do not repeat: the unnormalised score under the rule.
 
-### H118 · N2, N10, N1 · testing (C49, #169) · Soft, CRN-paired search targets at a moderate all-rows dose move search's play into the pilot
+### H118 · N2, N10, N1 · supported (B, two seeds, no concurrent control: no harm to transfer, Not transferable out at LR 81; +57 and +22 at 199, the two-seed +50 bar missed; C49 #183, C49-s3 #208) · Soft, CRN-paired search targets at a moderate all-rows dose move search's play into the pilot
 
 - **Mechanism:** one-turn search gains 0.16-0.17 on the lists' seat (#156, #159); hard targets failed (#103-#106).
 - **Test:** C49 (`runs/pilot/C49/record.md`): C45-R's command plus `--search-distill 20 --probe-p 0.05`, against C45-R.
 - **Bands:** absorb (+50 at 199 and +25 at 179 under the rule), not transferable (at most −20), style only (agreement
   up 0.10, Elo within ±25). Kill: entropy 0.15 above C45-R's.
 - **Distinct:** H11's hard-target runs; C37's frozen leaf is not built (the live pilot's value scores the lines).
+- **So far:** C49 − C45-R under the rule +54.8 (139), −11.1 (159), +25.1 (179, rule half only; #172, #174, #179).
+  Entropy 0.39-0.41 against C45-R's 0.48-0.49; sd_agree +0.036 by 184. C49b (weight 60) paused at 129 (#175).
+- **Result (#183):** Absorb met at one seed: C49 − C45-R under the rule +25.1 at 179 and +57.1 at 199 (untimed +8.1,
+  +56.9; held-out +8.8, +22.3); LR 7.7 over neutral at 199 (s 28). Entropy 0.418 against 0.481; sd_agree +0.059. The
+  stronger pilot rates the walls higher: event share under the rule 0.641 against 0.528, untimed 0.686 against 0.527
+  (Matrix: C49, P −, one seed). Open: a second seed (replication); the dose arm C49b.
+- **Replication (#194):** C49-s3 (`runs/pilot/C49-s3/record.md`), C49's command at `--seed 3` from W2's 119, launched
+  02:54 on 2026-10-24; C49's bands against C45-R (seed 2, not concurrent); prior: between 0 and +50 at 199. C49b at 179
+  (#193): −176.9 under the rule, +13.5 over C45-R, −11.6 under C49, flat since 139.
+- **C49b ended (#197, B, one seed):** at 199 under the rule −153.0, +40.0 over C45-R and −17.1 under C49: dose-response
+  − (LR 14.7 for saturation over it, s 28), overdose −, saturation nearest (its +50 bar missed by 10). Untimed it fell
+  to −357.5 (−78 from 179; −40 under C45-R); entropy 0.354 against C49's 0.418. Do not repeat: weight 60 from W2's 119
+  under the rule (C49b's command) without a new reason; the dose lever is closed at this seed.
+- **C49-s3 at 139 (#201):** untimed lists −265.3 (+60.1 over C45-R, −11.6 under C49), held-out +60.0 (+27.8, +0.9);
+  the lists h2h under the rule crashed once in the watcher (TypeError in `nn.Embedding.forward`, unchanged code) and
+  reruns as a probe. Decides nothing (bands at 179 and 199).
+- **C49-s3 at 139 (rerun) and 159 (#202):** the crash was transient (rerun exit 0, 0 errors). Under the rule −149.6 at
+  139 (+67.4 over C45-R, +12.6 over C49) and −161.8 at 159 (+28.6, +39.7); untimed −226.2 at 159 (+83.4: the pair rule
+  passes). JF1 untimed 0.563 -> 0.630. Entropy 0.43 against C45-R's 0.48-0.50. Decides nothing (179, 199).
+- **C49-s3 at 179 (#205):** under the rule −166.5, +23.9 over C45-R (Absorb bar +25; C49 +25.1); untimed +26.9;
+  held-out −0.5. Walls' event share under the rule 0.621 against C45-R's 0.521; sd_agree +0.069 by 195. 199 decides.
+- **C49-s3 ended (#208, B):** at 199 under the rule −170.9, +22.1 over C45-R (Absorb +50 not met; Not transferable
+  not met; Style only not met, sd_agree +0.052); untimed −1.3, held-out +31.1. Two seeds: mean +39.6, under the +50
+  bar; LR 6.4 for Absorb over neutral, 81 for Absorb over Not transferable. Walls' event share under the rule 0.601
+  (C49 0.641) against 0.528: the stronger pilot rates the walls higher at both seeds. Untimed gain fades late in 2 of 3
+  soft-target runs. Not adopted. Do not repeat: C49's command at seed 3.
+
+### H119 · N9, N6, N1 · weakened (moderate; C51 seeds 1 and 3 both in the draft-prior band, bootstrap out, B, #191, #193; seed 2 no reading, #190-#191; C50 stopped as futile, grade C, #181, #184, #186) · A warm, human-free pilot trained under the round rule keeps a fresh wide population from sliding into Pokémon piles
+- **Mechanism:** from scratch the loop always drifted into deck-out Pokémon piles (#124, #131, #132); H45/H46 never
+  separated a pilot that does not attack (bootstrap) from the untrained head's Pokémon-heavy incoming draw (draft
+  prior). C45-R at 199 (W2's lineage, #157, under the rule, #161) attacks, and the rule removes deck-out's pay.
+- **Test:** C50 (`runs/screens/C50-h119.uww-c45r199-s1/record.md`): C47's command with `--init-from
+  runs/pilot/C45-R/model_it00199.pt --init-wide` in place of the 479 fork; fresh draft head; 40 iterations; one seed,
+  no concurrent control (bands on change from its own iteration 0). The first prevention-start screen since C30.
+- **Bands:** draft prior (best-12 Pokémon at least +10 by 10), bootstrap was the cause (within ±3 at 10 and 15, KO
+  endings at least 10%), J (shape holds, then the largest type above 50 by 20-30), E (no type above 50 through 30, the
+  distance at least 5 lower). Prior: draft prior. Kills: +10 at two looks; KO endings under 10% at two looks; J decided.
+- **Distinct:** H46's untested remedy (a) and H110's U.W.wide cell, under the rule; not scr-v2 (frozen pilot-v2),
+  scr-scratch or 016 (random pilots).
+- **Proposed with it (lean-lead, 2026-10-24; not numbered yet):** H110's Nk cell on C50's start (a kind-neutral base
+  measure; a build of 2-3 h, and a ruling on card-kind labels, H109 Q3, or its Nf form), and seasons with `--select`
+  (H43's gap, N8), read at matched draft steps, both with C50 as their control.
+- **So far (#184, iteration 14):** best-12 Pokémon 11.0 -> 12.6 (9) -> 13.2 (14), inside the bootstrap band (8.0-14.0),
+  KO endings 0.63, 97 types of 99 decks; draft prior (at least 21.0 by 10) not met, so excluded at one seed with no
+  concurrent control (B). Population median 10 / 27 / 24 -> 14 / 27 / 19; best 12 by z 13.2 / 22.4 / 24.3. Confound: the
+  warm pilot and the rule came in together (scr-v2, #131, attacking but untimed, drifted +8 in 4). J and E unread
+  (looks 20, 30).
+- **Correction (#186):** the gate moved 6-16 decks an iteration (148 by 14) against 62-77 in scr-v2, and per 100 moves
+  the median's Pokémon rose about as fast (+2.7-2.9 against +2.8-3.7), so the iteration bands could not show a slide and
+  the draft-prior exclusion is withdrawn; J and E cannot separate by 30 at that pace either. Stopped as futile during
+  17, ended after 18 (#187; best 12 15.8 / 20.1 / 24.2, still drifting; grade C). Surviving difference: C50's drift traded Energy (24 -> 19) for Pokémon with Trainers held at 26-27, where
+  scr-v2 lost Trainers 25 -> 21. Do not repeat: C50's design with the gate and bands in iterations. Open: the same start
+  without the gate, read per move.
+- **C51 (#187):** that test, C50's command without `--select-z` (`runs/screens/C51-h119.ung-c45r199-s1/record.md`);
+  bands: slide (best-12 Pokémon at least +10 by 10, median at least 2.5 per 100 moves) against bootstrap holds (within
+  ±3 at 10 and 15, at most 1.0 per 100 moves). Prior: slide.
+- **Proposed with it (a fresh lean-lead, 2026-10-24 01:00; not numbered):** (1) seasons with `--select` (H43's untested
+  variant, `--season 4` at matched draft steps; K>1 with `--select` has never run, so a smoke first); (2) C50 untimed
+  (`--round-turns` dropped; the rule's necessity half, a diagnostic oracle removal); (3) a frozen human-free judge in
+  the loop (`--judge-pilot runs/pilot/C45-R/model_it00199.pt --judge-share 1.0`; J1, a new cell; a smoke first). All
+  three kept C50's gate; ungated they are the next cells after C51 (the untimed arm first if C51 holds).
+- **C51's looks 3-10 (#188, one seed):** manipulation check passed (39-40 moves at 1-3, KO 0.51-0.57, 0 errors). Best-12
+  Pokémon 14.9 -> 12.9 / 17.2 / 17.2 at looks 3 / 5 / 10 (+2.3 at 10: inside the bootstrap band), while the median went
+  12 -> 21 / 23 / 15 (2.2-2.8 Pokémon per 100 moves: beside the slide band). Accepted minus proposed Pokémon −0.48 to
+  +0.60 (mean −0.11): selection passes the head's proposals through (S −); the proposals start at +5.6 Pokémon (H27's
+  prior) and fall to +1.8 by 9 as the head learns. KO endings 0.65 -> 0.40 as time endings rise 707 -> 1,187 of 2,000.
+  Reading so far: draft prior + on the median, bootstrap + on the judge's best 12. Seed 2 launched (#189,
+  `runs/screens/C51-h119.ung-c45r199-s2/record.md`) and stopped in iteration 0 for GPU memory (#190; grade C, no
+  reading); the replicate reruns as seed 3 when C49b ends. Next cell: H110's Nf base measure (label-free) on this start.
+- **C51 seed 1's looks 15 and 20 (#191, one seed, B):** best-12 Pokémon +5.3 at 15 and +6.7 at 20 (14.9 -> 21.6):
+  bootstrap holds out at 15 and 20, the slide's +10 by 10 out; the pre-written between band. Median 12 -> 29 Pokémon by
+  18 (2.3-2.4 per 100 moves, out of the hold band at 10-20), Trainers 25 -> 19, Energy 22 -> 13; best 12 at 19 21.6 /
+  21.1 / 17.3. Accepted minus proposed Pokémon mean −0.23 over 0-19 (S − again); proposals +1.15 at 8, back to +2.2-2.7
+  at 12-19 as h_in rose 4.45 -> 5.50. KO endings 0.65 -> 0.29; 94 types at 19 (largest 3). Stopped at 20 by Evan's rule
+  (both primary bands out, J and E out of reach, the median moving away from the ground truth). So the warm pilot and
+  the rule are not sufficient against the slide at this pace (one seed, no concurrent control). Seed 2 ended after
+  iteration 1 (no reading, #191). Seed 3 (`runs/screens/C51-h119.ung-c45r199-s3/record.md`, seed 2's bands, stops at
+  its look 15) launched in seed 1's slot (#192). Do not repeat: C51's ungated design past seed 3 without a change to
+  the proposals.
+- **C51 seed 3 (#193, the replicate; B with seed 1: two seeds, no concurrent control):** stopped at look 10 as decided,
+  ended after 10. Draft prior band in at looks 3, 5 and 10 (median 10 -> 23 Pokémon by 8 at 4.0-4.5 per 100 moves;
+  accepted minus proposed −0.31 over 0-8); selection drives and bootstrap holds out. Best-12 Pokémon +7.2 at 10. Its head
+  stayed near uniform (h_in 5.62 -> 5.51) and its proposals Pokémon-heavy (+5.8 -> +3.2), and it slid faster than seed 1.
+  Median at 10: 26 / 20 / 15. Reading at two seeds: draft prior +, bootstrap −, S −. Do not repeat: C51's design at a
+  third seed. Next cell: H110's Nf base measure on this start.
 
 ## 7. The queue (first cycle, the cheaper spend Evan chose)
 

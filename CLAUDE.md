@@ -79,12 +79,12 @@ keep training and eval jobs at about **80% of the machine at most**. `rl/limits.
 
 `notes/scripts/loop.py` (log #176) runs the method while nobody is here. The `metagame-loop` scheduled task keeps a
 supervisor alive that keeps the PC awake and starts a fresh, short `claude -p` round (`notes/round.md`) when a run
-ends or reaches a look, a slot frees, RAM runs low, or 4 hours pass, at most 12 rounds a day.
+ends or reaches a look, a slot frees, RAM runs low, or 4 hours pass, at most 20 rounds a day (log #232).
 
 - Every run starts through `loop.py launch`, in interactive sessions too: it applies the method's launch rules and
   detaches the run, so it outlives the session that started it.
 - An interactive session pauses the rounds by itself (a hook touches `runs/loop/seen`; no round starts within 45
-  minutes of it). `loop.py pause [hours]`, `resume`, `disable` and `enable` switch it by hand; `loop.py state` shows
-  what it sees.
+  minutes of it). `loop.py pause [hours]`, `resume`, `disable` and `enable` switch it by hand, never from a round;
+  `loop.py state` shows what it sees.
 - Rounds may launch and stop runs and edit notes and `rl/`; they never commit, push, delete run data or change the
   training rules.
