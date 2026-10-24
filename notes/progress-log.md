@@ -6577,3 +6577,50 @@ Entry format:
 - **Found:** #233's interface faults sit in X1's layer (the prompt answers), so the order-free picks fix and X1
   overlap: the fixed engine should be the baseline for both, and for the loop.
 - **Next:** Evan's decisions on #233's fixes and on the loop's design (README Next); the unattended rounds stay paused.
+
+### #235 · 2026-10-24 · A5 · #233's Trainer faults fixed in the engine and the env, and each fix verified against the audit's own failing tests: Potion, Digger, Challenge!, Maintenance, PlusPower into Defender, Item Finder, Clefairy Doll and Mysterious Fossil, picks in any order, 2-card mulligans
+- **Done:** Evan's row 54 ("Yea do it": #233's fixes, then the 5-minute loop, then the commit).
+  - Engine, `ryuu-play` `e04c27e` on `sts-2000-pool`, pushed; pin bumped here:
+    - Potion BS: the handler was named `potion`, so it never ran; now `reduceEffect`.
+    - Digger TR: whoever flips tails damages their own Active.
+    - Challenge! TR: a decline only draws 2; the opponent's picks are capped by the opponent's free Bench slots.
+    - Maintenance BS: the 2 cards are shuffled in, then 1 is drawn; an empty deck is allowed.
+    - PlusPower BS: tests `PutDamageEffect.baseDamage`, the damage after W/R before Defender changes it.
+    - Item Finder BS: the cost goes to the discard first, so a Trainer discarded can come back (Nov 16 2000 ruling);
+      no cancel once paid; Item Finder is discarded last.
+    - `Rules.mulliganDrawCards` (default 1); `env/engine.js` sets 2 (Feb 17 and Mar 2 2000 rulings).
+    - Ditto FO copying Clefairy Doll or Mysterious Fossil: knocked out, it goes to the discard pile with no Prize
+      (6-29-00 ruling). The copied card's handler used to run on Ditto's slot and duplicate the Doll (61 cards).
+  - Env: `env/legal.js` `isTargetedTrainer` matches the compiled `instanceof common_1.TrainerEffect`, so Doll and Fossil
+    are offered as `trainer|<card>|E`; `multiSpace` takes picks in any order (memo and `setKey` by the set picked);
+    every evolution is also tried in the engine (Aerodactyl's Prehistoric Power, reachable once a Fossil is
+    playable). `env/oracle.js` walks each set of picks once.
+  - Not changed: Energy Retrieval. Its trade-first change followed the Feb 24 2000 ruling, which the Mar 2 2000
+    ruling overruled before the event ("only ... the Energy in your discard pile, not the card you traded"), so the
+    original code was right and was restored.
+- **Evidence:**
+  - Engine specs 694 and common specs 250, 0 failures; rulings 23/23; 24/24 archived decks build and start;
+    `test_env` PASS; `verify_enumerator --games 300`: 0 main-phase mismatches, 11,503 prompts with 0 missing and
+    0 invalid; `bench_env` 62.5 games/s/core (64.7 before the evolve check).
+  - An 8-agent verification workflow (read-only, CPU): re-ran the audit's failing scripts and wrote fresh tests per
+    fix. Potion and Digger: 173,250 and 189,082 plays in 40,000 random games all as printed; Digger hits the tails
+    flipper at 0.670 (2/3 expected). Challenge!: 20 scenarios and 12,000 random games, 0 violations. Maintenance
+    redrew a returned card 900 times against 883.6 expected; Item Finder 47,906 plays as the rules. PlusPower: 60
+    damage, W/R and Defender combinations all max(0, d + 10n − 20), with Invisible Wall, Scrunch, Harden and the
+    other damage readers unchanged. Picks: the live pilot's forced shortfalls are now 0 (Nightly Garbage Run 0 of
+    71 later picks, Super Energy Removal 0 of 37, Energy Retrieval 0 of 28; before 18, 2 and 1); `decision()` at most
+    0.5 ms on the largest prompts. Mulligans: 47 engine checks, and every offer over 3,000 deals of the lists drew 2.
+  - After the Aerodactyl and Ditto fixes: 150 games of a deck with 2 Doll, 2 Fossil, Kabuto and Aerodactyl, 0
+    errors (3 before), Doll and Fossil offered at every legal chance (2,934 and 3,057); Aerodactyl blocks
+    evolutions on either side and not while Asleep. A full-pool fuzz of 866 games, decks holding all 42 Trainers:
+    0 errors; its 123 main-phase mismatches are only Transform and Clairvoyance options that `game.js`'s
+    dead-end filter drops and the oracle does not model.
+- **Found:**
+  - Left as they are, logged: Potion can't be played on an undamaged Pokémon (the Aug 17 2000 ruling allows it; no
+    value lost); during an accepted Challenge! the second chooser sees the first's face-down Pokémon as SLOT tokens
+    (`env/tokens.js` ignores `isPublic`); Here Comes Team Rocket! is still blank to the pilot; Lass's revealed hand is
+    still never shown to the model; Clairvoyance is an activated power rather than the printed always-on rule; a KO
+    on the last Prize asks for a new Active before the game ends.
+  - Every result before this entry was measured on the old engine and env: Trainer values, screens and pilots are
+    comparable among themselves, not with what comes next.
+- **Next:** C67, C59's T49 cell on the fixed build (11 minutes); then the 5-minute loop's calibration (#236).

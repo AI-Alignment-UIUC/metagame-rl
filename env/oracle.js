@@ -128,10 +128,15 @@ function turnOracle(state) {
 // All complete answers the enumerator can produce: walk the picks. Returns [{key, raw}].
 function enumeratedAnswers(space, limit = 20000) {
   const out = [];
+  const seen = new Set();   // picks come in any order (log #233): walk each set of picks once
   const walk = picks => {
     if (out.length >= limit) return;
     for (const o of space.options(picks)) {
-      if (o.pick !== undefined) walk(picks.concat(o.pick));
+      if (o.pick !== undefined) {
+        const next = picks.concat(o.pick);
+        const k = space.setKey ? space.setKey(next) : next.join(',');
+        if (!seen.has(k)) { seen.add(k); walk(next); }
+      }
       else out.push({ key: (picks.length ? picks.join(',') + '/' : '') + o.key, raw: o.raw, picks, opt: o });
     }
   };

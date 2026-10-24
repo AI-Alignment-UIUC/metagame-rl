@@ -35,7 +35,7 @@ const { checkState } = require(path.join(DIST, 'effect-reducers', 'check-effect.
 
 const FORMAT = 'Base Sets';
 // 2000 rules: Mysterious Fossil is a Trainer in hand at setup, not a starting Pokemon.
-const RULES = new C.Rules({ fossilsAsStarters: false });
+const RULES = new C.Rules({ fossilsAsStarters: false, mulliganDrawCards: 2 });
 const cm = C.CardManager.getInstance();
 if (!cm.getAllFormats().some(f => f.name === FORMAT)) {
   const sets = [S.baseSets.setBase, S.baseSets.setJungle, S.baseSets.setFossil, S.baseSets.setTeamRocket];

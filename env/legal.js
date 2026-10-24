@@ -68,8 +68,9 @@ function isTargetedTrainer(card) {
   let v = targetedCache.get(card.fullName);
   if (v === undefined) {
     const src = card.reduceEffect.toString();
-    const at = src.indexOf('instanceof TrainerEffect');
-    const next = at === -1 ? -1 : src.indexOf('instanceof', at + 25);
+    const m = /instanceof (?:\w+\.)?TrainerEffect\b/.exec(src);   // compiled: `instanceof common_1.TrainerEffect`
+    const at = m ? m.index : -1;
+    const next = at === -1 ? -1 : src.indexOf('instanceof', at + m[0].length);
     const branch = at === -1 ? '' : src.slice(at, next === -1 ? undefined : next);
     v = /effect\.target\b/.test(branch);
     targetedCache.set(card.fullName, v);
@@ -111,7 +112,9 @@ function turnOptions(state, store) {
         for (const s of myOccupied) {
           const top = s.slot.getPokemonCard();
           if (top && top.stage < card.stage && top.name === card.evolvesFrom && s.slot.pokemonPlayedTurn < turn) {
-            out.push({ key: `evolve|${name}|${s.code}`, action: new PlayCardAction(id, h, s.target) });
+            const action = new PlayCardAction(id, h, s.target);
+            // card code can block an evolution (Aerodactyl's Prehistoric Power, log #235)
+            if (accepts(state, action)) out.push({ key: `evolve|${name}|${s.code}`, action });
           }
         }
       }
@@ -252,15 +255,17 @@ function safeValidate(prompt, raw, state) {
 }
 
 // A multi-pick space: items[i] = {key, n (copies available)}; encode(picks) -> raw result.
-// `ordered` = the first pick is free and the rest canonical (the setup prompt: first = Active).
+// Picks come in any order (log #233: a canonical order hid answers behind the prompt's card order, which the pilot
+// can't see). Validity depends on the set picked, except that when `ordered` the first pick is special (the setup
+// prompt: first = Active).
 function multiSpace({ items, encode, max, valid, relaxedValid, ordered = false, allowCancel, rawCancel = null }) {
   const memo = new Map();
   const counts = picks => { const c = new Array(items.length).fill(0); for (const p of picks) c[p]++; return c; };
-  // Canonical order: picks are non-decreasing, except that when `ordered` the first pick is
-  // free and only the picks after it are non-decreasing.
-  const nextStart = picks => (picks.length === 0 || (ordered && picks.length === 1)) ? 0 : picks[picks.length - 1];
+  const nextStart = () => 0;
+  const setKey = picks => (ordered ? picks.slice(0, 1).concat(picks.slice(1).sort((a, b) => a - b))
+    : picks.slice().sort((a, b) => a - b)).join(',');
   function extendable(picks) {
-    const k = picks.join(',');
+    const k = setKey(picks);
     let v = memo.get(k);
     if (v !== undefined) return v;
     v = valid(picks);
@@ -277,6 +282,7 @@ function multiSpace({ items, encode, max, valid, relaxedValid, ordered = false, 
   }
   return {
     multi: true,
+    setKey,
     // Is there any answer other than cancel? Stops at the first one found.
     hasAnswer() {
       if (valid([])) return true;
