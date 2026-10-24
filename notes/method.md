@@ -12,7 +12,7 @@ rivals side by side, runs able to exclude one, readouts matched to the link, nea
 ## 1. Session start
 1. Read this file, the head of `notes/hypotheses.md` (rivals, Matrix, coverage, Queue), README status, the last 3 log
    entries and new rows of `notes/evan-requests.md`; give each new message from Evan its row now (§11).
-2. Machine: `screen.py list`, `nvidia-smi`, free RAM; at most 3 screens, about 80% of the machine, no orphan processes,
+2. Machine: `loop.py state` (live, ended and unregistered runs, RAM, GPU, the floor), `nvidia-smi`; at most 3 screens, about 80% of the machine, no orphan processes,
    nothing resumable by accident; a run that died in a sleep or shutdown is "killed by machine" (take Evan's cause).
 3. Clear log debt (§13); apply each live run's looks and kill rule, stopping what fails them then and there (§9).
 4. Score new results (§4-§6); check the triggers (§12), the floor (§8) and whether a periodic review is due (§15).
@@ -179,8 +179,11 @@ leading ones, plus Evan's requests, untested variants, gaps, outside output → 
 - **Stacking cap:** a screen is a registry recipe plus at most 2 unadopted components; a component joins R0 (as R1,
   ...) only on an A-grade pass on its node's readout and leaves when it shows no effect beyond A/A (Occam). R0 moves
   decks by forced draws (#127's ratchet), so screens add an acceptance rule; the gate (#140, one seed) is unadopted.
-- **Launch:** `screen.py` takes a candidate id and a recipe and refuses a launch without them or with a repeated flag
-  (`scr-gate479` passed `--turnover-every` twice); until it does, the record is written by hand first. Code defaults
+- **Launch:** every run starts through `notes/scripts/loop.py launch` (log #176), which takes the candidate id, the
+  record and the start, and refuses a launch without them, with a flag passed twice (`scr-gate479`'s
+  `--turnover-every`), past the slots, free RAM, lineage cap or prevention floor of §8, with more than 2 unadopted
+  components, or repeating a registered configuration without `--replicate-of` and a new seed. Unattended rounds
+  follow `notes/round.md`. Code defaults
   equal R0 or say otherwise in their help strings; hand-launched smokes and evaluations pass the recipe in full.
 - **Names:** candidates `Cnn`, never reused; runs `runs/screens/C07-h23.2-479-s1` (candidate, family variant, start,
   seed), `C07-ctl-R0-479-s1`, `C08-aa-R0-479-s3`, `runs/probe/C07-<what>/`; old `scr-*` names stay.

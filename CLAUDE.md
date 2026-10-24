@@ -74,3 +74,17 @@ keep training and eval jobs at about **80% of the machine at most**. `rl/limits.
   admin shell, so ask Evan to run it.
 - **CPU:** use at most 16 of the 20 threads for rollout workers and `torch.set_num_threads`.
 - Check `nvidia-smi` early in each long run and back off if it sits at 100%.
+
+## Unattended loop
+
+`notes/scripts/loop.py` (log #176) runs the method while nobody is here. The `metagame-loop` scheduled task keeps a
+supervisor alive that keeps the PC awake and starts a fresh, short `claude -p` round (`notes/round.md`) when a run
+ends or reaches a look, a slot frees, RAM runs low, or 4 hours pass, at most 12 rounds a day.
+
+- Every run starts through `loop.py launch`, in interactive sessions too: it applies the method's launch rules and
+  detaches the run, so it outlives the session that started it.
+- An interactive session pauses the rounds by itself (a hook touches `runs/loop/seen`; no round starts within 45
+  minutes of it). `loop.py pause [hours]`, `resume`, `disable` and `enable` switch it by hand; `loop.py state` shows
+  what it sees.
+- Rounds may launch and stop runs and edit notes and `rl/`; they never commit, push, delete run data or change the
+  training rules.

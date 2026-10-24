@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/evanc/Desktop/333/metagame-rl/.venv/Scripts/python.exe -I -S C:/Users/evanc/Desktop/333/metagame-rl/notes/scripts/loop.py seen",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/evanc/Desktop/333/metagame-rl/.venv/Scripts/python.exe -I -S C:/Users/evanc/Desktop/333/metagame-rl/notes/scripts/loop.py seen",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

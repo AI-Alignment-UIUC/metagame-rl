@@ -4667,3 +4667,103 @@ Entry format:
   beside a probe and the desktop's own programs come within 4 GB of the 31 GB machine. Limit: at most one probing
   trainer beside a metagame screen.
 - **Next:** C49's last looks; C47 seed 7; C49b resumed when C49's slot frees, if RAM allows.
+
+### #176 · 2026-10-23 · A5 · The unattended loop: a supervisor outside Claude, the method's launch rules as code, one dry round
+- **Done:** Evan's rows 43-47 (his "Sure" to the defaults: rounds may launch and stop runs and edit notes and `rl/`,
+  never commit, push, delete run data or change training rules; a checkpoint commit first; the PC kept awake; at most
+  12 rounds a day).
+  - Checkpoint commit `c736f4b`, local and not pushed: the work of #128-#175 (19 changed files, 42 new), so the
+    loop's edits have a rollback.
+  - `notes/scripts/loop.py`:
+    - **Supervisor** (`daemon`): ticks every 10 minutes and holds the machine out of idle sleep. Each tick checks the
+      runs in `runs/loop/registry.json` (alive by pid and creation time), their looks (method §9 offsets from the
+      first iteration, or the record's iterations, delayed by `--look-wait` for runs whose watcher reads them), free
+      RAM, and the sha256 of the frozen files (`rl/answer_key.py`, the 2000 California lists).
+    - **Rounds:** it starts a fresh `claude -p` round on `notes/round.md` (Opus, `dontAsk` permissions, an allow-list
+      of read tools, the venv's Python, node, read-only git; edits only under `runs/loop/` in a dry round) when a run
+      ends or reaches a look, free RAM drops under 5 GB, a slot is free (at most every 2 h), or 4 h pass without a
+      round. It starts none while paused, disabled or alerted, within 45 minutes of an interactive session, or past 12
+      rounds a day; it ends a round at 120 minutes. Two ticks under 3 GB free write the newest trainer's STOP file.
+    - **`launch`:** the method's limits as code. It needs a candidate id and a record naming bands and a kill (§10).
+      It refuses past 3 slots or without free RAM for the run's footprint plus 3 GB (pilot 8, screen 5, probe 3.5 GB;
+      #161, #175), with more than 2 unadopted components, with a flag passed twice, or repeating a registered
+      configuration without `--replicate-of` and a new seed. For screens it applies the §8 floor: at most 2 live and 5
+      of the last 10 from one state, and a prevention start in every 4; Evan's rows are exempt. It detaches the run,
+      so the run outlives the session that started it.
+    - `state` writes `runs/loop/state.md`, the summary each round starts from; `seed` registered the 31 past screens
+      from their `config.json` as legacy, so the floor counts the real history; `selftest`; `install`.
+  - `notes/round.md`: one round's checklist (read; log debt; live runs' looks; free slots, with proposals from a
+    fresh lean-lead that sees the ledger and not the recent log; launch only through `loop.py`; an integrity reader
+    before any new best), Evan's limits for unattended rounds, the dry-run mode and the handoff.
+  - The pause hook: `.claude/settings.json` here and in `Desktop/333` runs `loop.py seen` on every prompt and tool call
+    of an interactive session (117 ms); rounds skip it by an environment variable.
+  - `notes/method.md` §1 step 2 and §10 (Launch) now point at `loop.py`; `CLAUDE.md` has an "Unattended loop"
+    section.
+  - Not done: the scheduled task (`loop.py install`). Claude Code's auto-mode classifier refused to register it, so
+    Evan runs it. The loop stays paused (`runs/loop/PAUSE`) until then.
+- **Evidence:**
+  - `loop.py selftest`: all 18 checks pass (candidate and record, slots, RAM by kind, stacking, a repeated flag, the
+    prevention floor, half of 10, the lineage cap, Evan's exemption, duplicates and replications).
+  - Smoke tests: a 25-second job launched through `launch` (pid 42952) was registered, read as alive, and reported
+    as ended at the next tick. A fake log at iterations 480-494 gave looks 482 / 484 / 489 / 494 / 499 / 509 and woke
+    the looks at 489 and then 494.
+  - The real history under the floor: every one of the last 12 screens forked `scr-resetcap/population_it0479.pt`,
+    all escape starts. So `launch` refuses another escape screen from 479 (10 of the last 10) and requires the next
+    screen to be a prevention start. The queued `runs/screens/C47-s7-chain.sh` passes `--turnover-every` twice (10,
+    then 5) and would be refused as written.
+  - Dry round 20261023-234317, started by hand at 23:43: 8.2 minutes, 51 turns, 2.88 USD at API prices, no error. It
+    wrote `runs/loop/dry-plan.md` and `handoff.md` and changed nothing else (`git status` lists only this build).
+    - It found what `state.md` did not show: C47 seed 6's final-pilot verdicts unlogged; C49's trainer ended at
+      iteration 184 during its 179 look with no end line, and C47 seed 7's waiter ended, both at 03:03.
+    - It planned C49's resume to 199 through `loop.py launch`, and held C49b and seed 7 back because 15.2 GB free fits
+      one trainer.
+    - 3 commands were denied: a PowerShell `Get-CimInstance` / `Get-WinEvent` query, a Bash command with `echo`, and
+      a `grep | paste | sed` pipe.
+  - Changed after the dry round: RAM by kind (it had asked 8 GB of every run, which also let a pilot trainer start
+    with no headroom), `--look-wait` (a watcher's readings land about 25 minutes after the look's snapshot), and the
+    allow-list (`echo`, `paste`, `cut`, `sort`, `uniq`, `tr`, PowerShell `Get-*`).
+  - The machine last booted 2026-10-14 11:12 (LastBootUpTime), so the 03:03 ends were not a restart. The jobs had
+    been started from a Claude session's background shell and ended together, which fits that session ending (not
+    verified).
+- **Found:** Ledger: none (infrastructure, the method's own node N12).
+  - (1) Applied to the real history, §8 blocks the incumbent's lineage at once: no escape screen from 479 until
+    prevention starts fill the last 10.
+  - (2) Free RAM, not slots, sets how many runs fit. With the desktop's own programs about 15 GB is free: one
+    soft-target trainer and one probe.
+  - (3) A round costs about 3 USD at API prices on Opus, so the cap of 12 a day bounds the loop near 35 USD a day.
+- **Next:** Evan runs `loop.py install` and `loop.py resume`. The first real round writes #177-#179 from
+  `dry-plan.md`, re-checking each number, and resumes C49 through `loop.py launch`. Then a prevention-start screen
+  from a lean-lead's proposals. Decision for Evan: commit `loop.py`, `round.md` and `.claude/` (uncommitted).
+
+### #177 · 2026-10-24 · A5 · The loop started: committed and pushed, the ground truth in every round's state, rounds on Evan's plan
+- **Done:** Evan's row 48.
+  - `loop.py`: `state.md` gains a Ground truth table, for each live screen and the last 3 finished ones. It gives the
+    12 best decks' mean Pokémon / Trainers / Energy and its L1 distance from 13.5 / 28 / 18 (the last row, and the
+    mean of 5 rows, as `screen_watch.py` reads it), the population's median and the deck-out share. Rounds start with
+    `ANTHROPIC_API_KEY` and `ANTHROPIC_AUTH_TOKEN` removed from their environment, so they run on Evan's Claude plan
+    login.
+  - `notes/round.md` §0 states the goal: the ground truth, Evan's "try to avoid getting in local minima. Remember the
+    ground truth again.", and "just use the GPU rather than API" (GPU runs, short rounds, subagents only where §2
+    asks, no outside round without a trigger). The lean-lead brief now asks for at least one prevention start and one
+    candidate from a coverage gap or untested family.
+  - `loop.py install` registered the task `metagame-loop`: every 10 minutes from 00:03 and at logon, one instance, no
+    time limit. Claude Code had refused it before Evan's go-ahead (#176). `loop.py resume` lifted the pause.
+  - Committed with #176's files and pushed `main` to origin, the checkpoint `c736f4b` included.
+- **Evidence:**
+  - No API key is set in the process, user or machine environment, and a Claude login is present
+    (`~/.claude/.credentials.json`), so the dry round's 2.88 USD (#176) was a notional API price.
+  - `loop.py selftest`: all 18 checks pass.
+  - The Ground truth table at 00:00:
+
+    | Screen | Best 12 P / T / E | Distance, last row | Mean of 5 rows |
+    |---|---|---|---|
+    | scr-round479 | 12.2 / 28.1 / 19.8 | 3.2 | 4.9 |
+    | scr-round479-s6 | 13.2 / 26.0 / 20.8 | 5.2 | 5.7 |
+    | scr-gate479-s4 | 12.8 / 22.2 / 25.1 | 13.7 | 12.3 |
+
+  - Supervisor: its first start at 00:03:06 exited with code 1, because `sys.stdout` is None under pythonw and `main()` called `reconfigure` on it (now guarded, and checked with `sys.stdout = None`); started again at 00:03:47 (pid 20752), its first tick held rounds back for Evan's active session.
+- **Found:** On this readout the two round-rule seeds' best decks sit within 2 of the human Pokémon and Trainer medians
+  and 1.8-2.8 Energy above them. The gated recipe untimed is 5.8 Trainers short and 7.1 Energy over, the
+  Energy-over-Trainers deviation the ground truth flags.
+- **Next:** The first round, started right after this commit: log debt from `runs/loop/dry-plan.md` as #178 on
+  (re-checked), then C49's resume.
