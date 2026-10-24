@@ -3351,3 +3351,1319 @@ Entry format:
 - **Next:** The human-practice diagnostic at 470 (do the human lists rise against the population once its pilot practises
   them?); smoke-test `--practice-games`, release `020-meta-select-practice`, and restart the lab before 490; the 019 cards at
   490; `017-meta-league3-m` at 480.
+
+### #128 · 2026-10-20 · A5 · Screens outside the lab, decks judged by greedy play; every run killed twice by the machine
+- **Done:** At Evan's standing instruction to keep trying ideas against the local minimum and stop stalled runs at once
+  (rows 14–15 of `notes/evan-requests.md`, now also in `Desktop/333/CLAUDE.md` with the ground truth stated: the human
+  lists are optimal, consistent deviations such as Energy counts mean a suboptimal part of the process). Built, not
+  committed: `rl/metagame.py --judge-explore e` with `env/remote_worker.js` `judgeExplore` (the games not recorded for PPO
+  are played at the pilot's top option, sampling a share e of decisions, and only they judge decks: the draft reward,
+  `--select`, turnover and the best decks; PPO's games stay sampled, since sampled play erases most of a Trainer's value,
+  log #79–80); `notes/scripts/screen.py` (screens: metagame runs outside the lab's one-job schedule, each on its own GPU and
+  CPU share, the lab's main-line recipe plus their own flags, stopped by a STOP file) and `notes/scripts/screen_watch.py`
+  (per iteration the median shape, the 12 best decks' shape and L1 distance from the human medians 13.5 / 28 / 18, the
+  incoming entropy, decks moved by `--select`, deck-outs). Three screens forked from `runs/lab/main/seg_0460.pt` to 490 at
+  share 0.26 and 5 threads each: `scr-select` (`--select --candidates 3`), `scr-judge` (`--judge-explore 0`) and
+  `scr-judge-select` (both); and `runs/probe/judge_probe.sh` (the main line's best decks at 360 and 460 under its pilot at
+  460, greedy against sampled, and the 460 decks sampled against the human lists). Committed before (fa32895):
+  `rl/metagame.py --init-wide` (a new population of wide decks), `--turnover-wide` (turnover draws wide decks) and
+  `--protect N` (a deck younger than N iterations is not turned over), and a pilot per group in `probe_matchups.py`.
+- **Evidence:** Smoke `runs/smoke/judge` (2 iterations from 460, 160 games): 0 errors, 117 and 114 games judged (the
+  unrecorded ones), `--select` moved 63 decks a time. The screens first started at 23:26 and died at 23:27; the lab, its
+  segments, `runs/diag-human-practice` (at 452 of 460) and its queue `runs/probe/after_diag.sh` died at 23:05:50. Neither was
+  the session ending, as first assumed: the System log has event 1073 at 23:05:54 (a restart or shutdown by the user that
+  failed after closing programs) and event 42 at 23:27:19 (entering sleep); the screens' node workers then failed with
+  EPIPE and the probe's forks with 0xC000026B (DLL init failed on logoff). A child started with `CREATE_BREAKAWAY_FROM_JOB`
+  is in no job (checked with `IsProcessInJob`), and the machine is a desktop with idle sleep off on AC. The lab's card
+  errors at 23:05 (`017-meta-league3-m` at 453, both 019 cards, main to 470) are these kills, not failures of the cards.
+- **Found:** Runs die when the computer is shut down or put to sleep, so a night's loop needs it left on (Evan told).
+- **Next:** Relaunched at 23:45: the three screens from 460 (the dead ones kept in `runs/screens/_killed-2327/`) and the
+  probe; 8.3 GB of 16.3 in use. Watch the screens' best-deck distance and Energy each few iterations and stop any that
+  stalls; meanwhile the next escape ideas against the two traps of #127.
+
+### #129 · 2026-10-21 · A5 · Greedy judging changes no verdict; a cap on any one deck type
+- **Done:** Read `runs/probe/judge_probe.sh` (the main line's pilot at 460, 3 best decks of its 360 and 460 populations,
+  64 games a pair; the 460 decks against the 24 human lists, 32 a pair). Stopped `scr-judge` and `scr-judge-select` by
+  their STOP files after 461 on that reading. Started `scr-practice` (the held card 020's flags as a screen from 460 to 490:
+  `--select --candidates 3 --draft-h-in-floor 3.0 --draft-group-p 0.3 --practice-games 250 --turnover-wide --protect 20`)
+  and resumed `runs/diag-human-practice` from 452 to 470 (side budget). Built `rl/metagame.py --type-cap C` with
+  `deck_kinds` (decks grouped into types as `rl/lab.py deck_types` groups them: best first, a type per founding deck, joined
+  at half its Pokémon by `pokemon_overlap`): at a turnover, a type holding more than C of the population has its worst
+  decks replaced first (still `--turnover` of the population a time, the young spared), with mutants from the other
+  types' best quarter; each turnover logs the 8 largest type sizes (`types`). Started screen `scr-typecap` from 460 to 500
+  (`--select --candidates 3 --type-cap 0.5 --turnover-wide --protect 20 --turnover-every 5`, share 0.2, 4 threads).
+- **Evidence:** Probe, under the main line's pilot at 460, the 360 decks' score against the 460 decks: greedy 0.496, sampled
+  0.492 (per deck 0.435-0.542 and 0.451-0.531); the 460 decks against the human lists sampled 0.832 (0.811-0.848; greedy
+  0.78-0.83 in #127); 0 errors. The two judging screens over 460-461: best-deck distance 37.2 -> 36.5 and 37.3 -> 37.3
+  (`scr-select` 36.0 -> 36.0 over the same two). `deck_kinds` on the 24 human lists: types of 9, 7 and 4 and four of one
+  (at a 0.4 link 10, 9, 2); on the main line at 460: one of 87 and 12 of one at links 0.4-0.5. Smoke `runs/smoke/typecap`
+  (from 460, 2 iterations of 160 games, a turnover every iteration): 0 errors; types 87 -> 73 after the first turnover,
+  which replaced 15 of the main type's worst (scores 0-0.25), and types of 4, 2 and 2 at the second; PPO fell back to
+  micro-batch 128 at share 0.12 (#122's fallback).
+- **Found:** Under this pilot greedy play does not judge decks differently from sampled play, so the judging mode is not
+  what holds the decks on Energy; the pilot is. Fitness sharing (a result over its type's size), the first design, fails
+  on paper: every fresh deck is a type of one, so it would have replaced the main type's decks until fresh decks that never
+  win held most of the places; the cap keeps raw results and only stops one type from taking every place.
+- **Next:** `scr-select`, `scr-practice` and `scr-typecap` read every few iterations (best-deck distance from the human
+  medians, Energy, type sizes), each stopped once stalled; the diagnostic at 470.
+
+### #130 · 2026-10-21 · A5 · The draft head pulls every deck into one type; drafting changes, not practice, move the shape
+- **Done:** Stopped `scr-select` at 466 (stalled; also over the RAM cap: 4.1 GB free with four jobs), `scr-typecap` at 469
+  and `scr-draft` at 465 by their STOP files. `scr-draft` was an ablation of `scr-practice` (from 460: `--select
+  --candidates 3 --draft-h-in-floor 3.0 --draft-group-p 0.3`; no practice games, wide turnover or protection). Built
+  `rl/metagame.py --draft-reset` (a fork's draft heads start new, with uniform choices, instead of loading the source's).
+  Started screen `scr-reset` from 460 to 500: `scr-practice`'s flags plus `--draft-reset`.
+- **Evidence:** Best-deck distance from the human medians (`screen_watch.py`, 12 best decks): `scr-select` 36.0, 36.0, 36.0,
+  35.8, 38.5, 37.2, 37.3 over 460-466. `scr-typecap` 36.8-35.0 over 460-469; the type sizes before its turnovers at 464
+  and 469 were both 94 + five of one, so the 15 decks each turnover brought in (wide decks and mutants of the other types,
+  replacing main-type decks that scored 0.43-0.58) had joined the main type within 5 iterations. `scr-draft` 31.0, 33.2,
+  30.2, 27.0, 26.0, 29.0 over 460-465 against `scr-practice` 33.2, 32.0, 29.2, 29.5, 28.2, 28.3. `scr-practice` to 478:
+  25.8-29.2 over 466-472, then 24.5, 24.8, 20.5, 24.2, 24.2, 23.8 (median 10 / 20 / 29 at 478, from 8 / 16 / 36 at 460),
+  deck-outs 27% of games at 460 and 44-49% over 473-478, 174 -> 208 steps a game. Its best decks at 467 were still
+  Chansey / Snorlax with 4 each of Bill, Oak, Computer Search, Gambler and Energy Removal (9-10 / 18-20 / 31). Smoke
+  `runs/smoke/reset` (from 460, 80 games): 0 errors, the new head's incoming entropy 5.60 nats (the old one's 0.07-0.18).
+- **Found:** (1) The cap holds no other type: the one shared draft head, whose incoming choice sits at 0.05-0.2 nats
+  whatever the deck, drafts any new deck into Chansey / Snorlax within a few iterations, so diversity has to come from the
+  head itself, not only the population. (2) The shape moves through the drafting changes (the 3-nat floor and group
+  changes), not through practice games, at least over the first 5 iterations. (3) `scr-practice` trades Energy for draw
+  Trainers inside the same type while its games turn into deck-outs, nearly half of them by 478: a stall deck with
+  Energy Removal and draw closer to the human counts but not to the human types, which attack fast.
+- **Next:** `scr-reset` (does a new head find other types?); `scr-practice` to 490 and on while its distance falls, with an
+  eye on the deck-outs; the diagnostic at 470, then the from-scratch practice check.
+
+### #131 · 2026-10-21 · A5 · A pilot that practises the human lists rates them only a little higher; a new draft head moves fastest
+- **Done:** `runs/diag-human-practice` finished at 469 (main line at 450, the 24 human lists on one side of 30% of the games,
+  diagnosis only). Probe `notes/scripts/probe_matchups.py` under its final pilot (`runs/probe/diag470_A_vs_B.json`: the
+  main line's 3 best decks at 450 and the two hand-made variants of #127 against the 24 human lists and the 3 main decks,
+  32 games a pair). Started screen `scr-v2`: a new population of wide decks under pilot-v2 frozen (`--init-from
+  runs/pilot-v2/model_it00349.pt --freeze-pilot --init-wide`, with selection, the 3-nat floor, group changes, wide
+  turnover and protection; to 60). Built `rl/metagame.py --gamma` (the discount per decision of a player in GAE, 1 until
+  now, hardcoded); queued screen `scr-gamma` (`scr-reset`'s flags plus `--gamma 0.995`) for `scr-practice`'s place at 490.
+  `notes/scripts/screen_types.py`: a checkpoint's population by deck type (as `deck_kinds`), each type's size, result,
+  shape and its best deck's Pokémon.
+- **Evidence:** The human lists' score against the population: 0.253-0.260 over 450-454, 0.247-0.285 over 454-459,
+  0.287-0.339 over 460-469 (0.313 at 469; per list 0.0-0.78, two lists at 0.67 and 0.78). Probe under the diagnostic's
+  pilot (4,320 games, 0 errors): main decks against the human lists 0.749-0.761 (Haymaker 0.65-0.70, Wigglytuff
+  0.76-0.79), against 0.784-0.826 under the main line's pilot at 450 (#127); the Hitmonchan variant 0.538 (0.553), the
+  Hitmonchan / Electabuzz one 0.346 (0.355); 35% of the games ended in deck-outs (1,519), 46% by prizes. `scr-reset`
+  (best-deck distance from the human medians): 31.2, 29.8, 32.3, 29.5, 29.5, 26.0, 24.8, 23.0, 19.3 over 460-468; the
+  head's incoming entropy 5.60 -> 3.35 nats; deck-outs 12-19%, 148-160 steps a game; median 17 / 17 / 26 at 468; its 81
+  types are mostly one-deck noise (single random Pokémon added), the largest 12 decks of Snorlax / Chansey / Cool Porygon
+  and 4 of Snorlax / Tauros. `scr-practice` 18.8-23.7 over 482-488 (median 9 / 22 / 28, deck-outs 40-48%). `scr-v2` over
+  its first 4 iterations: median Pokémon 15 -> 18 -> 20 -> 23, distance 16.2, 12.8, 14.0, 19.7. `advantages` with gamma
+  0.995: returns 0.99 / 0.995 / 1 for a win 3 decisions away.
+- **Found:** (1) Twenty iterations of practising the human lists raise them only from 0.25 to 0.31 against the population and
+  leave the main decks at 0.75 against them, so the pilot's skill with other deck types grows slowly even under direct
+  practice. (2) A third of the probe's games end in deck-outs, which real play rarely does: the pilot does not close games,
+  and the game's objective as trained (gamma 1, no prize shaping after 100) gives it no reason to, which favours tanks and
+  stall over the human tempo decks. (3) Resetting the draft head moves the shape faster than any other screen so far and
+  keeps the games short, though inside the same core Pokémon. (4) A frozen pilot-v2 heads for Pokémon piles from wide decks,
+  as the from-scratch runs did.
+- **Next:** `scr-reset` and `scr-gamma` to 500; `scr-v2` while its Pokémon count settles or stopped if it keeps rising.
+
+### #132 · 2026-10-21 · A5 · A new draft head reaches 11-14 cards off the human shape, but its decks win only under its own pilot
+- **Done:** `scr-reset` stopped at 491 on its plateau (state kept as `runs/screens/scr-reset/final_491.pt`). Probes of its 3
+  best decks at 491 against the 24 human lists and the main line's 3 best decks at 450 (`runs/probe/b.json`), 32 games a
+  pair, under its own pilot (`runs/probe/reset491_own.json`) and under pilot-v2 (`reset491_v2.json`). Screen `scr-scratch`
+  (from scratch: random pilot with `deck_mode cross`, 50 wide decks, 1,000 games, the screens' recipe, `--gamma 0.995`)
+  stopped at 5. Screen `scr-resetcap` (`scr-reset`'s flags plus `--type-cap 0.5 --turnover-every 5`) and `scr-gamma` run
+  on. Built `rl/metagame.py --judge-pilot P --judge-share s`: a frozen second pilot plays both seats of a share s of the
+  games not recorded for PPO (model slot 1; `env/remote_worker.js` records only the recorded jobs' seats), and their
+  results judge decks like the rest. Started screen `scr-judge2`: `scr-reset`'s flags plus `--judge-pilot
+  runs/pilot-v2/model_it00349.pt --judge-share 0.5`, from 460 to 500.
+- **Evidence:** `scr-reset`'s best-deck distance 12.3, 13.8, 14.8, 11.7, 13.5, 13.7, 14.3, 12.7, 13.2, 14.2, 12.8, 10.7,
+  12.8 over 478-490 (median 12 / 24 / 24 at 490; deck-outs 22% at 478, 30-36% over 483-490; the head's incoming entropy
+  1.02 -> 0.24 nats); 45 types at 483, the largest 48 decks of Chansey / Snorlax, its best decks 4 Chansey, 4 Snorlax with
+  Energy Removal, Energy Retrieval, Gambler, Oak, Bill and special Energy (12 / 20 / 28 and 11 / 25 / 24). Its 3 best decks
+  under its own pilot: against the human lists 0.761, 0.803, 0.713 (Haymaker 0.67-0.70, Wigglytuff 0.74-0.85), against
+  the main decks 0.16-0.50; under pilot-v2: against the human lists 0.204, 0.316, 0.207 (Haymaker 0.09-0.17), against the
+  main decks 0.47-0.81; deck-outs 19% and 39% of the games (2,592 each, 0 errors). `scr-gamma` 14.5-22.2 over 477-484
+  with deck-outs 13-19% (`scr-reset` 20-35% over the same iterations); `scr-resetcap` 14.0 at 478, its types at the
+  turnovers 24 + 4 + 3 + ... (464) and 9 + 6 + 6 + ... (469), so the cap never bound. `scr-scratch` over 0-4: median
+  Pokémon 12 -> 25, deck-outs 61% -> 85%, distance 13.0 -> 26.0. Smoke `runs/smoke/judge2` (from 460, 160 games): 0
+  errors, 63 games judged by pilot-v2 (half the 120 unrecorded), 3,799 transitions recorded from the 40 recorded games.
+- **Found:** (1) A new draft head with selection, the entropy floor and group changes takes the main line's population from
+  36 to 11-14 cards off the human medians in 20-30 iterations, replicated in three screens (`scr-reset`, `scr-gamma`,
+  `scr-resetcap`), but inside the Chansey / Snorlax type. (2) The two pilots disagree completely: under the population's
+  pilot its decks beat the human lists 0.71-0.80; under pilot-v2, which never played the population, the human lists beat
+  them 0.68-0.80 and Haymaker 0.83-0.91, as the ground truth says they should. The population's pilot is a judge that
+  rates whatever it has learned to play. (3) From scratch the discount alone does not stop the collapse into Pokémon piles
+  that win by deck-out. (4) A discount of 0.995 keeps deck-outs near half of `scr-reset`'s at the same shape.
+- **Next:** `scr-judge2` (do decks judged also by pilot-v2 move toward the human types?); `scr-gamma` and `scr-resetcap` to
+  500.
+
+### #133 · 2026-10-21 · A5 · Every pilot trained in the population rates its decks above the human lists, practice or not
+- **Done:** `scr-gamma` finished at 499. Probes of the same decks as #127 and #131 (the main line's 3 best at 450 and the
+  two hand-made variants against the 24 human lists and the 3 main decks, 32 games a pair) under `scr-practice`'s pilot at
+  490 (`runs/probe/practice490_A_vs_B.json`; 250 practice games an iteration between wide random decks for 30 iterations)
+  and under `scr-reset`'s at 491 (`reset491_A_vs_B.json`; the same practice). Started the pilot head-to-head on the human
+  lists that #127's queue lost to the shutdown (`rl.lab h2h --a pilot-v2 --b runs/lab/main/seg_0460.pt --panel archived`).
+- **Evidence:** The main decks against the human lists: under the main line's pilot at 450 0.784-0.826 (#127), the
+  diagnostic's pilot 0.749-0.761 (#131), `scr-practice`'s 0.789-0.820 (Haymaker 0.70-0.79), `scr-reset`'s 0.749-0.775
+  (0.65-0.71), against 0.253-0.263 under pilot-v2 (#127). The Hitmonchan variant: 0.553, 0.538, 0.628, 0.572; the
+  Hitmonchan / Electabuzz one 0.355, 0.346, 0.383, 0.350. Deck-outs 35%, 25% and 16% of each probe's 4,320 games, 0
+  errors. `scr-gamma` over 490-498: distance 17.8-21.2, deck-outs 30-44%, the head's incoming entropy 0.49 -> 0.28.
+- **Found:** Practice games between wide random decks (a third of PPO's data for 30 iterations) leave the pilot's verdict
+  where it was: every pilot trained inside the population, with practice, with the human lists, or with a new draft head,
+  rates the main decks 0.75-0.83 against the human lists, and only pilot-v2 rates them 0.26. Whether pilot-v2 is the fairer
+  judge or simply plays the population's decks badly is what the head-to-head on the human lists asks (log #114 read it as
+  each pilot rating best the decks it trained on; not tested).
+- **Next:** The head-to-head; `scr-judge2` and `scr-resetcap` to 500.
+
+### #134 · 2026-10-21 · A5 · The population's pilots play the human lists 27-45 Elo worse than pilot-v2, their starting point
+- **Done:** `rl.lab h2h --panel archived --fixed` (the two pilots play the 24 human lists against each other on the same
+  deals, seats swapped; sequential test 0 against 20 Elo) of pilot-v2 against four pilots grown in the population: the
+  main line at 460, `scr-practice` at 490, `scr-reset` at 491 and `runs/diag-human-practice` at 469
+  (`runs/probe/h2h_v2_vs_*_archived.json`). Stopped `scr-judge2` at 478 (stalled). Started screen `scr-resetent`
+  (`scr-resetcap`'s flags plus `--draft-ent 0.05`, 5 times the usual entropy bonus on the new head), from 460 to 500.
+- **Evidence:** pilot-v2's score and Elo against each, 1,104 games, 0 errors, all H1: main line 460 0.557, +39.8 [20.6,
+  59.3]; `scr-practice` 0.539, +27.1 [8.1, 46.3]; `scr-reset` 0.564, +44.6 [25.9, 63.6]; the diagnostic 0.563, +44.3
+  [24.5, 64.4]. `scr-judge2` over 470-478: distance 23.7-29.3, median 16-19 / 15-16 / 25-27, deck-outs 25% -> 48%.
+  `scr-resetcap` over 479-494: distance 12.5, 10.0, 9.0, 10.3, 10.0, 9.8, 8.7, 8.8, 7.5, 9.2, 11.0, 12.3, 14.2, 18.2,
+  15.7, 15.0 (median 10 / 28 / 22 over 479-481, 14 / 25 / 21 at 487; the human medians 13.5 / 28 / 18); its largest type
+  at the turnovers 9, 9, 18, 19, 44, 72 (469-494) while the head's incoming entropy went 3.1 -> 2.6 -> 3.0 -> 1.1 nats.
+- **Found:** (1) #114's inference is now tested: the pilot that has played one deck type since 160 plays the human lists
+  about 40 Elo worse than pilot-v2, from which it started, so its verdict that its own decks beat the human lists comes
+  from playing the human lists badly, and pilot-v2's opposite verdict is the fairer one, as the ground truth says.
+  Twenty iterations of practising the human lists did not recover it (+44 for pilot-v2 afterwards), and practice games
+  between wide random decks only perhaps slowed it (+27, the intervals overlapping). (2) The closest shapes of the night
+  (`scr-resetcap`, 7.5-10 cards off) came while the new head was undecided and the population split into small types;
+  as the head's choice narrowed the main type re-formed (72 decks at 494) and the distance rose to 15, the swing #109
+  warned about, so shape gains are to be read over windows, not single iterations. (3) Pilot-v2 as a second judge pulled
+  the decks toward many Pokémon and long games, not toward the human types.
+- **Next:** `scr-resetent` (does a stronger entropy bonus on a new head hold the split, human-like phase?);
+  `scr-resetcap` to 500. For Evan: keeping the pilot general looks like the lever (it forgets the human types while the
+  drafting cannot escape them), for instance a KL anchor toward pilot-v2 on the practice games (pilot-v2 learned on wide
+  random decks only, so it is human-free), which needs the practice games' decisions marked in the rollouts (not built).
+
+### #135 · 2026-10-21 · A5 · A KL anchor toward pilot-v2 on the practice games; entropy and practice doses
+- **Done:** `scr-resetcap` finished at 499. Built `rl/metagame.py --anchor P --anchor-w w` with `rl/train.py ppo_update`:
+  practice games are played under model slot 2 (the same pilot, served as slot 0 is, so the rollouts mark their
+  decisions), and PPO adds w times KL(P || pilot) over those decisions, P frozen (pilot-v2, which learned on wide random
+  decks only). Started screens from 460 to 500, each `--select --candidates 3 --draft-h-in-floor 3.0 --draft-group-p 0.3
+  --turnover-wide --protect 20 --draft-reset --type-cap 0.5 --turnover-every 5` plus: `scr-resetent` `--draft-ent 0.05
+  --practice-games 250` (started in #134), `scr-resetent10` `--draft-ent 0.1 --practice-games 250`, `scr-practice1k`
+  `--draft-ent 0.05 --practice-games 1000`, `scr-anchor` `--draft-ent 0.05 --practice-games 250 --anchor
+  runs/pilot-v2/model_it00349.pt --anchor-w 0.1`.
+- **Evidence:** `scr-resetcap` over 494-499: distance 15.0, 19.2, 18.0, 20.0, 20.7, 18.5 (from 7.5 at 487), incoming entropy
+  1.11 -> 0.56 nats. Smoke `runs/smoke/anchor` (from 460, 80 games and 40 practice games): 0 errors, 6,505 transitions,
+  `anchor_kl` 0.823 nats on the practice decisions (pilot-v2 against the main line's pilot at 460), PPO's KL 0.005.
+  A first smoke failed: the anchor's network sat in the PPO settings written to `config.json`; it is now passed only to
+  `ppo_update`.
+- **Found:** On random wide decks the main line's pilot and pilot-v2 choose very differently (0.82 nats a decision), the
+  forgetting of #134 seen move by move.
+- **Next:** The four screens' shapes and types; at their end the head-to-head on the human lists against pilot-v2 for
+  `scr-anchor` and `scr-practice1k` (does the anchor or more practice keep the pilot general?).
+
+### #136 · 2026-10-21 · A5 · Four screens were too many for the machine; two stopped
+- **Done:** With four screens running (`scr-resetent`, `scr-resetent10`, `scr-practice1k`, `scr-anchor`), Claude Code
+  stopped the session's background watcher for critically low system memory. Stopped `scr-resetent10` and `scr-practice1k`
+  at once (STOP files and their process trees ended; each keeps its last saved state), so `scr-anchor` and its matched
+  control `scr-resetent` run on to 500, where they end by themselves.
+- **Evidence:** Before: 3.7 GB of RAM free (python 10.7 GB in 8 processes, node 4.9 GB in 11) and 15.6 GB of 16.3 GB GPU
+  memory in use; after: 11.6 GB free and 8.4 GB. `scr-resetent` over 460-466: distance 35.2 -> 26.7, its head's incoming
+  entropy held at 5.57-5.60 nats by the bonus, median Pokémon 8 -> 20.
+- **Found:** Each screen with 250 practice games takes about 2.7 GB of RAM and 3.5 GB of GPU memory, so three is the most
+  this machine holds under its 80% cap, and a 1,000-practice-game screen counts for more than one.
+- **Next:** At 500: `scr-anchor` against `scr-resetent` (shape, types) and the head-to-head on the human lists against
+  pilot-v2 for both (`rl.lab h2h --panel archived`), against the +40-45 Elo of the unanchored pilots (#134).
+
+### #137 · 2026-10-21 · A5 · A varied field keeps the pilot general; the walls win under their own pilot, whoever pilots the human lists
+- **Done:** Evan back at 08:22. `scr-anchor` had crashed at 464 (06:33) with `TypeError: 'float' object is not callable`
+  inside the pilot's embedding call while collecting games, a path the anchor does not touch; resumed from its 463 state
+  at 08:27 and past 464 since (one-off, not reproduced). Stopped `scr-resetent` at 496 (stalled). Head-to-heads on the
+  human lists against pilot-v2 (`rl.lab h2h --panel archived --fixed`, #134's settings, seed 1, and seed 0 as a check) for
+  `scr-resetent` at 496 (`final.pt`) and `scr-resetcap` at 499. `notes/scripts/probe_matchups.py` now counts each ending by
+  the winning side (`endings_by_winner`). With it, `scr-resetcap`'s 3 best decks at 499 against the 24 human lists, 32
+  games a pair, in the four pairings of its own pilot and pilot-v2 on the two sides
+  (`runs/probe/resetcap499_{own,v2}_vs_{own,v2}.json`, walls' pilot first). Started a design workflow for the next
+  experiments (5 lenses, an adversarial review each).
+- **Evidence:** `scr-resetent` over 465-495 every 5: distance 26.8, 24.2, 26.8, 25.7, 26.7, 32.0, 28.5, median 19 / 13 / 28
+  at 495; the head's incoming entropy 5.58 -> 4.09; its largest type at the turnovers 31, 6, 1, 2, 3, 12, 23 decks
+  (464-494; `scr-resetcap` 24, 9, 9, 18, 19, 44, 72, 76 over 464-499); deck-outs 15% -> 26%. Pilot-v2's Elo, 1,104 games
+  each, 0 errors: `scr-resetcap` -22.7 [-41.9, -3.6] H0 (seed 0: -18.9 [-37.1, -0.8] H0), `scr-resetent` +2.8 [-16.2,
+  21.9] no verdict (seed 0: +13.5 [-4.9, 32.1]), against #134's +27.1 to +44.6. The walls' mean score against the human
+  lists, by pilots (walls / human lists): own / own 0.720, own / pilot-v2 0.761, pilot-v2 / pilot-v2 0.237, pilot-v2 / own
+  0.233. Endings as [walls' wins, human lists' wins]: own / own prizes 941 / 375, deck-out 601 / 109, no Pokémon 113 / 158;
+  own / pilot-v2 prizes 1,402 / 326, deck-out 228 / 61; pilot-v2 / pilot-v2 prizes 211 / 1,072, deck-out 254 / 406. The
+  walls (#829, #796, #809): 12 / 14 / 12 Pokémon, 20 / 15 / 18 Trainers, 16 / 21 / 22 basic and 12 / 10 / 8 special
+  Energy (Chansey and Snorlax 3-4 each, Energy Removal 4, Potion Energy 4, Full Heal Energy 4, Oak, Gambler, Bill);
+  the human lists run 0-10 special Energy. Their best human-list opponents under `scr-resetcap`'s pilot: Clefable 0.46-0.49,
+  Haymaker 0.52-0.78, Wigglytuff and Rain Dance 0.53-0.99.
+- **Found:** (1) #134's forgetting is not inevitable. The two screens whose turnover is capped by type and comes every 5
+  iterations, breeding replacements from the other types so the field stays varied, grew pilots that play the human lists
+  as well as pilot-v2 (`scr-resetent`) or about 20 Elo better (`scr-resetcap`, whose field re-formed one type only after
+  489). The screens whose field stayed one type lost 27-45 Elo. So a varied field keeps the pilot general, and the anchor's
+  control now sits near 0 Elo, not +40. (2) The verdict gap of #127 and #134 is the walls' pilot, not the human lists'.
+  The walls score 0.72-0.76 under `scr-resetcap`'s pilot and 0.23-0.24 under pilot-v2, whoever plays the human lists. So
+  even under the best pilot of the human lists we have, these walls beat them, by prizes as well as deck-outs. Under the
+  ground truth, every pilot we have still plays the human lists far below human level (the main line's Trainer competence
+  has stayed at 0.43-0.48 since 160, #116), and a stronger pilot of the human lists is needed even to diagnose this. (3) A stronger entropy
+  bonus keeps the head undecided but does not bring Trainers (13-16 against 28).
+- **Next:** The workflow's picks; `scr-anchor` at 500 against a control near 0 Elo; a diagnosis of whether stronger play
+  of the human lists flips the walls' matchups (play-time search on the human side of the probe, evaluation only).
+
+### #138 · 2026-10-21 · A5 · The anchor makes the pilot about 65 Elo better on the human lists; a significance gate on --select, screened from 479
+- **Done:** Read the design workflow (five lenses, each with an adversarial review; the synthesis ranked a gate on --select
+  first, a judge-only win discount, a Bayesian swap critic and a challenger niche after it, and dropped a PFSP pool of past
+  pilots). Stopped `scr-anchor` at 472 (its shape had stalled with its control's) and played its head-to-head against
+  pilot-v2, and the control's at matched iterations (`scr-resetent` `population_it0469.pt`, `_0479.pt`; #134's settings,
+  seed 1). Built `rl/metagame.py --select-z Z`: a deck moves to its best candidate only if that candidate's mean beats the
+  deck's own by more than Z standard errors of the difference (binomial, the rate held within 0.15-0.85); the select log
+  row gains `held_back` and the mean change in Pokémon / Trainers / Energy over the moves taken (`acc`) and over every
+  candidate drawn (`prop`). A fork may now start from a population snapshot (no optimizer or random state: Adam starts
+  fresh, `--reseed` required). Smoke `runs/smoke/gate` (from `scr-resetcap/population_it0479.pt`, 2 iterations of 160
+  games): starts at 480, 0 errors, the new fields logged. Started two screens from that snapshot to 500, both with
+  `--reseed 2` and `scr-resetcap`'s recipe without `--draft-reset` (the 479 head carries on): `scr-gate479` `--candidates 1
+  --select-z 1.0` and `scr-ctl479` `--candidates 3` (no gate, the control and a replicate of `scr-resetcap`'s relapse).
+- **Evidence:** Pilot-v2's Elo on the human lists, 1,104 games each, 0 errors: `scr-anchor` at 472 -41.7 [-60.8, -22.9] H0;
+  `scr-resetent` at 469 +30.0 [10.5, 49.7] H1, at 479 +25.2 [5.5, 45.1] H1 (at 496 +2.8, #137). `anchor_kl` on the
+  practice decisions 0.512 -> 0.254 nats over 460-472. `scr-anchor`'s shape over 465-472: distance 28.7, 24.8, 25.3,
+  median 19 / 16 / 25 at 472, as its control's. The gate pair over 480-485: `scr-gate479` moved 16, 21, 24, 14, 13, 20 decks
+  and held back 24-41, at 20.2 games a candidate; `scr-ctl479` moved 74, 78, 75, 77, 71, 65 at 10.1; distance 8.5, 9.7
+  against 11.8, 8.0 (480, 485); the largest type at 484 15 against 33; deck-outs 21-24% against 23-35%. The 479 head's
+  draws (`prop`) add 0.15-1.04 Trainers and take off 0.49-1.39 Energy on average.
+- **Found:** (1) The anchor works on what it was built for: against its control at the same iterations it plays the human
+  lists about 65-70 Elo better within 12 iterations, and better than pilot-v2 itself. It did not move the decks, which
+  follow the drafting (its control's entropy bonus, #137), and #137 found the walls' verdict depends on their own pilot,
+  not on the pilot of the human lists, so a more general pilot alone will not free the decks. (2) At 479 the head proposes
+  Trainer-adding, Energy-cutting changes; whether the games accept them is what the gate pair reads (`acc`).
+- **Next:** The gate pair to 500 (relapse or not; kill rules: the gate moving over 40 or under 5 decks for 3 iterations, or
+  both arms at a largest type of 60 or more and distance 15 or more at 494); the wall-diagnosis workflow (the engine's
+  rules for the walls' cards, play-time search on the human side); then the anchor stacked with the gate and the varied
+  field from 460, without the entropy bonus.
+
+### #139 · 2026-10-21 · A5 · The walls' cards are right; the walls win on long games, and lose under the 2000 clock to search-strength play
+- **Done:** A workflow audited the engine for every card and end-of-game rule the walls of #137 rely on (code read line by
+  line against the printed text cached in `notes/data/cache/tcgdata`, 37 engine checks in a scratch script; each claimed
+  discrepancy then checked by an adversarial verifier with its own reproduction), and measured the walls against the human
+  lists with play-time search on the human side: `notes/scripts/export_pilot_onnx.py` (the pilot to ONNX, with dynamic
+  token length; Node against PyTorch on 200 real states: max logit difference 8.1e-6, argmax agreement 1.000),
+  `notes/scripts/walls_vs_humans.js` (the walls always under `--a-agent`, the human lists under `--b-agent`, #137's deals,
+  one JSONL row per game with turns and Prizes left) and `walls_vs_humans_report.py`. Then I re-scored those games under
+  the 2000 Super Trainer Showdown's round rule (the archived STS page quoted by the verifier: 20-minute Swiss rounds; a
+  game unfinished at time goes to the player who took more Prizes for 2 points instead of 3, a Prize tie is a draw at 1
+  point each), at a cut of 30-60 engine turns, with the Prizes left at the game's end standing in for those at the cut.
+- **Evidence:** Cards as printed: Chansey BS (Scrunch, Double-edge, Defender on the recoil per the 2000 ruling), Snorlax JU
+  (Thick Skinned, Body Slam), Potion Energy and Full Heal Energy (once, only when played from hand), one Energy card a turn,
+  DCE, Energy Removal, Super Energy Removal, Gambler, Energy Retrieval, Recycle, Oak, Bill, Weakness and Resistance. Real but
+  minor: Confusion follows the 2003 rule (30 self-damage with no Weakness, free retreat); Maintenance draws before it
+  shuffles; Thick Skinned cures the new Active after a blocked power ends (needs Muk FO or Goop Gas Attack, the latter in 3
+  of 24 human lists); a simultaneous win is a draw (no Sudden Death; at most 0.3% of games); `env/game.js` labels a
+  no-Pokémon win against an empty deck as a deck-out (so pilot-v2's `--deckout-win 0` training paid 0 for some of those).
+  There is no clock: games end only at a 5,000-decision cap. The walls' deck-out wins took 43-80 engine turns (median 61),
+  the human lists' Prize wins 34-41. Walls (greedy `scr-resetcap` 499) against one human list per archetype, 8 games a
+  pair, 192 games each on identical deals: the human lists greedy 0.706 [0.617, 0.786 by pair], under psearch k 4 dets 4
+  0.578 [0.484, 0.677]; paired difference -0.128 [-0.214, -0.042]. Under psearch, in games not ended by deck-out the
+  walls score 0.277 (greedy 0.648), and 51% of games end by deck-out (31% greedy), 85 of the walls' 111 wins. All 24 lists
+  greedy: 0.702 [0.651, 0.751] (#137's GPU probe 0.720). By archetype under psearch: Wigglytuff 0.25, Clefable 0.38,
+  Articuno / Hitmonchan 0.46, Haymaker 0.54, Hitmonchan / Magmar 0.54, Rain Dance 0.67, Electabuzz / Mr. Mime 0.83, Sponge
+  0.96. Walls' share of STS points: human lists greedy 0.625-0.658 at cuts of 40-60 turns (all 24: 0.641-0.675); under
+  psearch 0.400 (40), 0.426 (50), 0.486 (60), with 55-72% of games unfinished at 40-50 turns.
+- **Found:** (1) No card is wrong; the walls rest on long games. Better play of the human lists (one-turn search) wins
+  the prize race against them (0.28 in games not ended by deck-out) but decks itself out more, so their remaining edge is
+  deck-out after about 60 turns. (2) The human lists were built under a 20-minute clock that paid a slow win 2/3 and a
+  Prize tie 1/3. Under that rule and search-strength play of the human lists, the walls lose (0.40-0.49 of the points),
+  as the ground truth says; with the greedy pilot they still win (0.63-0.68). So two parts of the process favour the walls:
+  the environment has no clock, and no pilot we have manages its deck size against stall. The first is a tournament
+  rule of the event the lists come from, not shaping, but it changes the game the agents learn, so it is Evan's call.
+  The second is general, and search over a longer horizon or one that counts the deck is the evaluation-side test.
+  (3) Caveats: the Prize count at the cut is approximated by the count at the end; how many engine turns 20 minutes
+  allowed is unknown (our pilots' games run long: 72-89% pass 30-40 turns); 8 games a pair.
+- **Next:** Evan: the STS round rule in the environment (an optional clock with Prize decision and 1 / 2/3 / 1/3 / 0
+  payoffs), and which turn count stands for 20 minutes. The gate pair at 494 and 500. The Confusion, Maintenance, Thick
+  Skinned and ending-label fixes in the engine (a submodule commit, so with Evan's go-ahead).
+
+### #140 · 2026-10-21 · A5 · The significance gate holds the human shape but not the type; a turn limit for draws, swept
+- **Done:** The gate pair of #138 ran to 499. Evan, asked whether training should use the 2000 round rule: "Maybe have
+  some turn limit for draw if there is a problem where games are not terminating", and on the limit: "Try a variety going
+  up to a large amount and see whether that helps". Built an optional turn limit at which a game is a plain draw (no Prize
+  tiebreak): `env/game.js` `maxTurns` (a game unfinished when turn maxTurns + 1 begins, both players' turns counted, ends
+  there with winner 0 and ending `time`; clones keep it), passed by `env/env.js reset`, `env/runner.js` (`maxTurns`, new
+  deals) and `env/remote_worker.js` (`games` and `tsearch` take `maxTurns`), and `rl/metagame.py --max-turns T` (every
+  population and practice game; a draw scores 0.5 to each deck and 0 to the pilot). Engine check (20 random games each,
+  scratch script): no limit 0 draws; limit 10: 15 `time` draws, each ending exactly at turn 11; limit 30: 14. Smoke
+  `runs/smoke/maxturns` (from `scr-resetcap/population_it0479.pt`, limit 40, 2 iterations of 160 games and 20 practice
+  games): 0 errors, 67 and 87 of 160 games ended `time`. Started the sweep from that snapshot to 500 with `scr-ctl479`'s
+  flags and `--reseed 2`, so `scr-ctl479` is the matched control: `scr-turns40`, `scr-turns70`, `scr-turns120`.
+- **Evidence:** The gate pair at 499 (`scr-gate479` / `scr-ctl479`): top-12 distance over 490-499 10.2, 8.0, 10.0, 6.0,
+  9.7, 10.8, 8.8, 8.2, 11.5, 12.3 (mean 9.5) against 13.3-17.3 (mean 15.7; `scr-resetcap` over the same iterations from
+  its own run, mean 17.2); median 13 / 25 / 21 against 13 / 20 / 27; the largest type at the turnovers 15, 12, 26, 23
+  (484-499) against 33, 48, 74, 74; the head's incoming entropy 2.08 against 0.50 nats; moved 13-28 decks an iteration
+  (held back 23-41) against 65-83; deck-outs 35% against 24% at 499. The moves the gate took added 0.7-2.5 Pokémon and
+  took off 0.2-1.9 Trainers each over 486-499 (`acc`), close to what the head proposed (`prop`). Decks holding both
+  Chansey BS and Snorlax JU at 499: 73 of 99 against 79. The gate's best 3: 13 / 23 / 24, 9 / 24 / 27, 10 / 27 / 23
+  (Pokémon / Trainers / Energy), each Chansey and Snorlax with Energy Removal, Oak or Bill, Gambler or Digger.
+- **Found:** (1) Gating the moves on significance holds the decks near the human shape (the best half of the night's
+  windows, 6-12 cards off) and keeps the field split into small types, where the ungated rule relapses within 10
+  iterations, as `scr-resetcap` did. But it only slows the drift: what the games accept still adds Pokémon and cuts
+  Trainers, and the decks remain Chansey / Snorlax walls with more Trainers, so the Pokémon-overlap type count
+  understates how alike they are. (2) The shape is held, the type is not. Under #139 the type is what the missing
+  limit on game length and the pilots' deck management pay for, which is what the turn-limit sweep tests.
+- **Next:** The sweep at 484, 489, 494 and 499 against `scr-ctl479` (distance, Chansey and Snorlax count, `time` and
+  deck-out shares, types); kill a limit whose decks pile into one type faster than the control. Then the best limit with
+  the gate from 460, and probes of its best decks against the human lists.
+
+### #141 · 2026-10-21 · A5 · The human lists do not lose to the walls by drawing themselves out but by slow prize races; challenger practice built
+- **Done:** Evan: "Refer back to Claude.MD", then "Loop on getting out of the local minimum" (a self-paced loop on the
+  CLAUDE.md directive, started). Read as: the human lists are optimal, so the walls' wins point at the process, which is
+  where the work goes, not the game's rules. Checked that the pilot sees its deck size (`env/tokens.js:156`, global
+  feature deck/48). Built `rl/metagame.py --practice-vs s`: in a share s of the practice games the second deck is one of
+  the population's best quarter, played by the same pilot under model slot 3, whose decisions are dropped after the
+  advantages (per player, so unchanged) and before PPO's transition cap (which now counts the kept rows); the log's
+  practice row gives `vs` and `vs_score` (the challengers'). Smoke `runs/smoke/vs` (from the 479 snapshot, 40 practice
+  games, s 0.5): iteration 480 ran with 0 errors, 20 challenger games, PPO on the rest; 481 hit CUDA out of memory at the
+  smoke's 1.6 GB share beside three screens (not the code). Added a diagnosis agent to
+  `notes/scripts/walls_vs_humans.js`: `nodraw:N:<spec>` hides Professor Oak, Bill and Gambler from the deciding player
+  while its deck holds N cards or fewer. Ran the walls (greedy `scr-resetcap` 499) against all 24 human lists with
+  `nodraw:15` on the human side, #139's 576 deals.
+- **Evidence:** Challengers' score in the smoke: 0.0 (20 wide decks against the best walls). Walls' score: greedy
+  human side 0.702 [0.651, 0.751], `nodraw:15` 0.701 [0.650, 0.751]; paired -0.002 [-0.009, +0.005], 571 of 576 games
+  the same. Walls' wins by ending: deck-out 148 -> 113, prizes 233 -> 266. In the 148 deck-out wins the walls were ahead on
+  prizes in 109, even in 21, behind in 18. Walls' score in games of 40 turns or fewer 0.360 (n 111), over 40 0.784 (n 465);
+  turn quartiles 44 / 53 / 62. Haymaker lists against the walls: 0.35 (walls 0.65, n 168), though Chansey and Snorlax take
+  double from Fighting.
+- **Found:** (1) The pilot's drawing is not what loses: barred from its big draw cards on a thin deck, the human lists
+  lose the same games by prizes instead. The walls win long games because they are ahead on prizes by then; the human
+  lists win only fast games, and our pilot rarely plays them fast. With #139 (one-turn search on the human side wins the
+  prize race, 0.28 for the walls in games not ended by deck-out), the deficit is tactical play in the prize race, the
+  competence the lab never moved (#116). (2) Wide random challengers never beat the best walls, so challenger practice
+  needs stronger challengers to give PPO a signal. (3) A turn limit that pays a slow win nothing is a direct incentive
+  for fast prize races, which is the turn-limit sweep's mechanism on the pilot's side.
+- **Next:** The sweep at 489 and 499 against `scr-ctl479`; then the best limit with the gate from 460. For the prize race:
+  challenger practice with challengers drafted to beat the incumbents (the population's best decks against the walls, or
+  exploiter heads' draws), and search inside training.
+
+### #142 · 2026-10-21 · A5 · A 40-turn limit makes almost every game a draw; challenger practice from the population started
+- **Done:** Read the turn-limit sweep (#140) at 489-491 and stopped `scr-turns40` at 492: its games ended at the limit more
+  and more often, so its decks' results and the pilot's rewards carried almost no signal. Added `--practice-vs-from pop`
+  (`rl/metagame.py`): the challenger in a `--practice-vs` game is a population deck from outside the best quarter instead
+  of a wide deck. Smoke `runs/smoke/vspop` (from the 479 snapshot, 160 games, 60 practice games, s 0.5): 0 errors, 36
+  challenger games. Started `scr-vs479` from the 479 snapshot to 500 with `scr-ctl479`'s flags and `--reseed 2` plus
+  `--practice-games 250 --practice-vs 0.5 --practice-vs-from pop`, so `scr-ctl479` is its matched control.
+- **Evidence:** `scr-turns40` over 480-491: games ending at the limit 43%, 48%, 58%, 65%, 67%, 69%, 78%, 84%, 91%, 94%,
+  86%, 92% (1,856 of 2,000 at 492), by prizes 3-5%; distance 11.7, 5.5, 8.3, 7.7 (480, 485, 490, 491), median 19 / 26 / 15
+  at 491, the largest type 15 and 24 (484, 489). `scr-turns70`: at the limit 6% -> 25% (489), by prizes 17% -> 43%, by
+  deck-out 17-29%; distance 13.0, 8.5, 10.7 (480, 485, 490); median 15 / 24 / 22 at 490; the largest type 18 and 36.
+  `scr-turns120`: at the limit 0-1%, deck-outs 23-40%; distance 11.8, 7.5, 14.7 (480, 485, 489); the largest type 25 and
+  27. The control `scr-ctl479`: by prizes 19% -> 54% over 480-489 too, deck-outs 23-35%; distance 11.8, 8.0, 13.3; the
+  largest type 33 and 48. Challengers' score in the smoke: 0.361 (36 games; wide challengers 0.0 in #141).
+- **Found:** (1) A 40-turn limit is shorter than the pilots need to win a game (#139: the human lists' prize wins took
+  34-41 turns): the share of draws grew each iteration as the decks shifted toward more Pokémon and less Energy (15), and a
+  run judged on draws is not evidence for its shape. (2) At 70 and 120 turns the decks track the control so far; the rise
+  of prize endings is the control's too. (3) Population challengers win a third of their games against the best quarter,
+  enough signal for PPO.
+- **Next:** `scr-turns70` and `scr-turns120` at 494 and 499 against `scr-ctl479`; `scr-vs479` at 484-499 against the
+  same control (distance, types, the Chansey and Snorlax count, the challengers' score), then the head-to-head of its pilot
+  and probes of its walls against the human lists.
+
+### #143 · 2026-10-21 · A5 · Turn limits of 70 and 120 relapse like the control; an exploiter league and the gate with challenger practice started
+- **Done:** Stopped `scr-turns70` at 496 and `scr-turns120` at 495 (relapsing as the control did), which closes Evan's
+  sweep of turn limits (#140, #142). Smoke `runs/smoke/league` (from the 479 snapshot, 160 games, `--draft-heads 2
+  --draft-heads-init copy --draft-exploit`): 0 errors, both heads logged. Started from the 479 snapshot to 500, each with
+  `scr-ctl479`'s recipe and `--reseed 2`: `scr-league479` (2 draft heads, the second an exploiter that starts as a copy of
+  the first and whose decks are judged and selected only on their games against head 0's decks, as in #123-125;
+  `--candidates 3`, 250 practice games; control `scr-ctl479`) and `scr-gatevs479` (`--candidates 1 --select-z 1.0` with
+  `--practice-vs 0.5 --practice-vs-from pop`; control `scr-gate479`).
+- **Evidence:** `scr-turns70` at 494-495: distance 17.3 (495), median 14 / 21 / 24, the largest type 18, 36, 42 (484,
+  489, 494), the head's incoming entropy 1.01, games at the limit 20-25%. `scr-turns120` at 494: distance 15.0, median 13 /
+  22 / 23, the largest type 25, 27, 51, entropy 0.53, at the limit about 1%. The control at 494-495: 17.0 and 13.7, the
+  largest type 74. League smoke at 480: head 0 50 decks, z 0.478; the exploiter 49 decks, z 0.573, 0.595 against head 0.
+- **Found:** No turn limit helped. At 40 turns most games are draws (#142); at 70 and 120 the decks relapse into one type
+  within 15 iterations as the control's do, a little less concentrated at 70 (42 against 74 decks). The turn limit stays
+  available as a safety net for games that do not end (Evan's condition), not as a lever.
+- **Next:** `scr-vs479`, `scr-league479` and `scr-gatevs479` to 500 against their controls: distance, the type sizes, the
+  Chansey and Snorlax count (offline from the population snapshots, since `types` logs only the last head when there are
+  two), the challengers' score and the exploiter's score against head 0.
+
+### #144 · 2026-10-21 · A5 · Literature review: a biased judge drives the wall collapse; search-strength judging ranked first
+- **Done:** Evan: "Go do a deep research into RL literature about the problems you are having". A deep-research workflow
+  (five researchers in parallel, then a report writer) covered population training and game theory, deck-building and
+  card-game AI, design-controller co-optimisation, search and credit assignment, and quality-diversity, each mapped onto
+  the failure modes F1-F6 of #127-143 and checked against this log. Notes in `research_notes/RL literature on metagame
+  collapse/` (five files); the report at `reports/RL literature on metagame collapse.md` (5,525 words).
+- **Evidence:** The report's main analogues: robot co-design's first-mover advantage (a controller adapted to the incumbent
+  body undervalues every new body; Cheney et al. 2016/2018: protecting new bodies 21.7 -> 32.0, protecting controller
+  innovations 22.0, no better than none; Mertan & Cheney 2024-25: co-optimisation found a near-optimal body in 13-22 of
+  100 runs); weight-sharing architecture search (Kendall tau -0.004 and 0.195 between shared-weight and true rankings,
+  Yu et al. 2020; 0.74 with strict fairness, FairNAS); Lanctot et al. 2017's joint-policy correlation (up to 71.7% of
+  return lost against strangers; the walls' 0.74 -> 0.235 is about 0.68 by that formula); NEAT without speciation draining
+  diversity within 10 generations; the optimizer's curse and uncertain QD for best-of-noisy-candidates; PGA-ME's global
+  variation operator collapsing offspring (descriptor-conditioned DCG-ME +82% QD-score); AlphaStar's exploiter rules
+  (freeze at 70%, reset, older-snapshot curriculum under 20%; main agent 1540 -> 1693 -> 1824) and its 149 Elo without
+  human data. For F4: Danihelka et al. 2022 (AlphaZero targets fail to improve the policy at few simulations; Gumbel
+  MuZero learns with 2), Grill et al. 2020, Muesli's bounded targets, SPARTA's deviation threshold, KataGo's budget split;
+  DouZero's Monte Carlo value targets, PerfectDou's hidden-information critic, KataGo's auxiliary outcome heads.
+- **Found:** (1) The literature reads F1-F3 as one failure: the shared pilot, trained on the population's own decks,
+  judges every edit and favours what it already plays well; global max-average selection and best-of-noisy-candidates then
+  drain every niche. Every fix tried here (type cap, turnover, entropy, anchor, gate, a frozen pilot-v2 judge) matches a
+  remedy the literature calls partial on its own, and each gave the predicted result, the shape held, the type not.
+  (2) The three expert-iteration failures (#103-104) match the documented failure of hard argmax targets from a few noisy
+  simulations, with published fixes that fit the existing search. (3) Untried here: search-strength judging, soft and
+  gated search targets, Monte Carlo value targets (`--lam-value` exists in `rl/train.py`, not in `rl/metagame.py`), a
+  hidden-information critic, auxiliary outcome heads, pooled re-evaluation, a niche-conditioned draft head, AlphaStar's
+  exploiter rules, payoff-row (DPP) diversity. (4) A turn limit with draws is not potential-based and flattens payoffs,
+  consistent with #142-143.
+- **Next:** The report's first wave, one screen each beside the running ones as slots free: (1) search-strength judging
+  (selection games played with one-turn search on both seats, a candidate scored by the minimum of its greedy and searched
+  results); (2) expert iteration v4 (Gumbel-sampled options, soft clipped targets gated at 2 standard errors over the
+  policy's move, lines scored by a frozen value); (3) `--lam-value 1` in the metagame loop, then auxiliary outcome heads.
+
+### #145 · 2026-10-21 · A5 · Challenger practice relapses faster than its control; Monte Carlo value targets started
+- **Done:** Stopped `scr-vs479` at 495 (challenger practice from the population, #142). Wired the value's own GAE lambda
+  into the loop, `rl/metagame.py --lam-value L` (the policy's advantages keep `--lam`; `rl/train.py` has had it since
+  #77, where it was not run; #76's lambda 1 was for the advantages). Smoke `runs/smoke/lamv` (from the 479 snapshot, 160
+  games, `--lam-value 1`): 0 errors, value loss 0.572 (the main line's runs about 0.09), policy KL 0.027. Started
+  `scr-lamv479` from the 479 snapshot to 500 with `scr-ctl479`'s flags, `--reseed 2` and `--lam-value 1` (control
+  `scr-ctl479`). Started an evaluation of the review's first step on CPU: the walls against one human list per archetype
+  with one-turn search on both sides (`psearch` k 4, 4 determinizations; #139's deals).
+- **Evidence:** `scr-vs479` against `scr-ctl479`: distance 11.7, 7.3, 14.0, 17.8 (480, 485, 490, 494) against 11.8,
+  8.0, 13.3, 17.0; the largest type 11, 60, 72 (484, 489, 494) against 33, 48, 74; median 16 / 19 / 25 at 494 against 13 /
+  21 / 24; the challengers' score 0.24-0.36 an iteration. `scr-league479` at 491: distance 11.2, median 15 / 23 / 21.
+  `scr-gatevs479` at 491: 7.7, median 13 / 26 / 21, moved 14-27.
+- **Found:** Training the pilot from the challengers' side against the best quarter did not slow the relapse; its field
+  re-formed one type sooner than the control's (60 decks at 489 against 48). As the review predicts (#144), changing what
+  the pilot trains on leaves the judge's preference in place.
+- **Next:** The both-sides search evaluation (does a searching judge rank the human lists above the walls?), then build
+  search-strength judging if it does; `scr-lamv479`, `scr-league479` and `scr-gatevs479` to 500.
+
+### #146 · 2026-10-21 · A5 · The exploiter league and the gate with challenger practice add nothing; a searching judge still ranks the walls first
+- **Done:** `scr-league479` and `scr-gatevs479` ran to 499. Read them against their controls (mean top-12 distance over
+  490-499; decks holding Chansey BS and Snorlax JU in the 499 population). The CPU evaluation of #145 (the walls against
+  one human list per archetype, one-turn search on both sides) read at 152 of 192 games, against #139's runs on the same
+  deals. The search-judging build was planned (a read-only plan: a top-k reply in `rl/remote.py`, a second Runner for
+  searched games in `env/remote_worker.js`, batched search in `env/agents.js`, scoring by the minimum of greedy and searched
+  means in `rl/metagame.py`; +25-45% an iteration at 100 searched games) and held on this evaluation.
+- **Evidence:** Mean distance over 490-499: league 14.0, its control `scr-ctl479` 15.7; gate with challenger practice
+  9.7, the gate alone 9.5. Chansey and Snorlax decks at 499: 75 against 79; 70 against 73. League at 499: median 11 / 22 /
+  26 (head 0) and 13 / 20 / 27 (exploiter), the exploiter's score against head 0 0.508, 0.452, 0.541 (480, 489, 499),
+  distance 19.0 at 499. Walls' score against the human lists on the same 152 deals: greedy both sides 0.734, search on
+  the human side 0.572, search on both sides 0.592.
+- **Found:** (1) An exploiter head drafting only against the main head's decks stayed at even terms with them and drafted
+  the same walls (as #125's exploiters did), and challenger practice added nothing to the gate. (2) A judge that searches
+  one turn on both sides narrows the walls' margin over the human lists (0.73 -> 0.59) but still ranks them first, so
+  search-strength judging at this depth would not change the verdict; it is not built. Whether deeper search keeps
+  moving the verdict toward the human lists, which would say pilot strength is the lever, is the next measurement.
+- **Next:** A deeper search on both sides (a two-turn horizon, more determinizations) on the same deals; `scr-lamv479` to
+  500; expert iteration v4 (soft, gated targets) if stronger play is the lever.
+
+### #147 · 2026-10-21 · A5 · No pilot change moved the judge; search-strength play plus a 50-60 turn draw limit puts the walls below the human lists
+- **Done:** Stopped `scr-lamv479` at 495 (relapsing). Finished the CPU evaluation of #145-146 (one-turn search on both
+  sides, 192 games). Added a `horizon` to `env/agents.js PolicySearchAgent` (lines stop once the game turn has advanced
+  `horizon` turns; default 1, unchanged; `psearch:<onnx>:k:dets:horizon` in `notes/scripts/walls_vs_humans.js`, maxSteps 40
+  per turn of horizon) and started a two-turn run on both sides (70 of 96 games at writing). Measured every pilot from
+  today's screens as a judge: each plays the same 3 walls (`scr-resetcap` 499's best) against the 24 human lists on both
+  sides, 16 games a pair, identical deals (`runs/probe/judge/*.json`). Re-scored the walls' games with games longer than T
+  turns counted as draws (exact for a draw at T, as play before T is unchanged; pilots trained under a limit might play
+  differently).
+- **Evidence:** Walls' score as judged by each pilot (1,152 games each, standard error about 0.013): `scr-resetcap` 499
+  0.722, `scr-gate479` 0.680, `scr-ctl479` 0.714, `scr-vs479` 0.746, `scr-gatevs479` 0.676, `scr-league479` 0.718,
+  `scr-turns70` 0.735, `scr-anchor` 472 0.694, `scr-resetent` 496 0.734, `scr-lamv479` 0.712, pilot-v2 0.264. Walls' wins
+  by deck-out / prizes: population pilots 196-382 / 398-555; pilot-v2 146 / 104 (the human lists' prize wins 495). One-turn
+  search on both sides: 0.573 [0.469, 0.677] (greedy 0.706 on the same deals, paired -0.133 [-0.227, -0.047]); endings
+  walls / human lists: prizes 19 / 33, no Pokémon 8 / 25, deck-out 83 / 24; walls 0.222 in games of 40 turns or fewer,
+  0.680 over 40; median turns of the walls' deck-out wins 66. Two-turn at 49 games: 0.571 against one-turn 0.531 on the
+  same deals. With draws at T turns: greedy 0.469 / 0.500 / 0.604 / 0.654 / 0.703 (T 40 / 50 / 60 / 70 / 100); one-turn
+  search on the human side 0.401 / 0.417 / 0.464 / 0.510 / 0.578; on both sides 0.435 / 0.440 / 0.458 / 0.500 / 0.573.
+- **Found:** (1) None of today's pilot-side changes (anchor, value targets, challenger practice, turn limit, league) moved
+  the judge: every population pilot rates the walls 0.68-0.75 against the human lists. pilot-v2 rates them 0.26 because it
+  was trained with deck-out wins paid 0 (#48) and so never learned the walls' stall-to-deck-out plan. (2) Under
+  search-strength play on both sides the walls lose the prize race and the knockouts and win only by outlasting the human
+  lists' decks after about 60 turns (83 of their 110 wins). (3) So neither search nor a draw limit alone flips the verdict,
+  and together they do: with search on both sides and draws at 50-60 turns the walls score 0.44-0.46 against the human
+  lists. The greedy judge with a 60-turn limit still rates them 0.60, which is why `scr-turns70` relapsed. Deeper (two-turn)
+  search has not helped so far.
+- **Next:** Build search-strength judging (the plan of #146) and screen it together with `--max-turns 60` (Evan's turn
+  limit for draws) and the significance gate, from the 479 state.
+
+### #148 · 2026-10-21 · A5 · Search-strength judging built; the gate with a 60-turn limit holds the shape, not the type
+- **Done:** Built search-strength judging (#146's plan, the review's first step, #144); uncommitted. `rl/metagame.py
+  --judge-search S`: the first S games an iteration not recorded for PPO (nor played by `--judge-pilot`) are played with
+  one-turn policy-guided search on both seats (`--judge-search-k` 4 moves, `--judge-search-dets` 4 re-dealt copies,
+  `--judge-search-steps` 40, `--judge-search-conc`) and counted apart (`ssum` / `sn`). `judged()` scores a deck or a
+  candidate for `--select`, turnover and the best quarter: with `--judge-score min` (default) its greedy mean, lowered
+  only where the searched mean, shrunk toward it by `--judge-search-prior` 4 games, plus `--judge-search-z` 1.5 standard
+  errors is lower still (`search`: the shrunk mean alone); `--select-z` takes each score's own games; it requires
+  `--judge-explore` and a pilot without memory. A `judge_search` log row gives the searched games, endings, searches, the
+  share moved off the pilot's top option, lines, line errors, capped lines, seconds, and the `--select` choices the
+  searched games changed beside the same count with their results redrawn at the greedy rate (`null_searched`, 20
+  redraws). Checkpoints keep each deck's `judged` score, which `recent_score` prefers (used by `rl/evaluate_agents.py`,
+  `rl/lab.py deck_types`, `notes/scripts/probe_matchups.py` and `screen_types.py`). `rl/remote.py`: a request with
+  `topk` K also gets each row's K most likely legal options, and a search's batches over 2,048 rows go in chunks.
+  `env/remote_worker.js`: `RemotePilot` and a second Runner for the searched jobs, never recorded, results marked
+  `search`. `env/agents.js PolicySearchAgent`: every decision of a batch searched in one lockstep, forced moves played
+  without the pilot. (The uncommitted `env/runner.js` hunk is #140's `maxTurns`, `horizon` in `env/agents.js` is #147's.)
+  Tests: `rl/tests.py check_judged`, `check_topk`; new `env/tools/test_search.js`. Smoke `runs/smoke/jsearch_t80`.
+  `scr-t60gate479` (started 15:39 from `scr-resetcap` 479, `--reseed 2`: the gate `--candidates 1 --select-z 1.0`,
+  `--judge-explore 0`, `--max-turns 60`, `--type-cap 0.5`, 250 practice games) ran 480-498 and ended at 17:33 with a node
+  worker's EPIPE (`env/framing.js:15` from `env/remote_worker.js:94`; no Python traceback; cause unknown). Started
+  `scr-jsearch479` at 18:04 with the same flags plus `--judge-search 200`, matched control `scr-t60gate479`.
+- **Evidence:** On CPU: `check_judged` and `check_topk` pass (with search exactly as strong as greedy, a plain min lowers a
+  score by 0.055 on noise alone, z 1.5 by 0.004); `node env/tools/test_search.js` passes in 11.3 s (k 1 replays the greedy
+  pilot's games exactly, 6/6; k 4 with 4 copies finishes 4 games with 0 line errors; a 12-turn limit ends games as draws
+  at turn 13). The full `rl.tests` suite was not run (one check starts a CUDA process). Smoke (one iteration from 479,
+  160 games, 80 searched, before `--judge-search-z` existed): 0 errors; 53.3% of searched decisions off the pilot's top
+  option; the searched Runner 251.2 s; the plain min changed 39 of 59 moves. `scr-jsearch479` at 480: 200 searched
+  games, 0 errors, 53.4% off the top, searched Runner 319.3 s of a 319.5 s play phase, iteration 392.7 s against the
+  baseline's 305.2 s (4 workers against 2, so not a clean cost measure). `scr-t60gate479` (`screen_watch.py`): top-12
+  distance 10.3 at 480, 5.8-7.8 over 490-497, 10.7 at 498, mean 7.24 over 490-498 (`scr-gate479` 9.24, `scr-ctl479`
+  15.59 over the same iterations); median 10/28/22 -> 12/27/20; incoming entropy 2.75 -> 3.03 (490) -> 1.59; deck-outs
+  0.09 -> 0.21; draws at the limit 254 -> 555 of 2,000. Largest type (`screen_types.py`) 12, 25, 35 at 484, 489, 494,
+  each led by a Chansey BS / Snorlax JU deck; decks holding both 53 at 479, then 53, 58, 70 and 80 at 498.
+- **Found:** (1) The gate with a 60-turn limit held the shape better than the gate alone and the control (7.2 against 9.2
+  and 15.6 over 490-498) but not the type: the walls reached more decks than under the gate alone (80 of 99 at 498
+  against 73 at 499), as #147 predicted from the greedy judge, which still rates the walls 0.60 against the human lists
+  at a 60-turn limit. (2) Search moves off the pilot's top option at 53% of searched decisions in real games, so the
+  searched games are a different judge, not greedy play with noise.
+- **Next:** Read `scr-jsearch479` against `scr-t60gate479` over 480-498 (#149).
+
+### #149 · 2026-10-21 · A5 · Search judging under the min rule changes nothing; within the human field the trained judges look human
+- **Done:** Stopped `scr-jsearch479` (STOP at 20:40; it ended after 498). Played the 24 human lists against each other
+  under two pilots with `rl/gpu_matrix.py` (32 games a pair, greedy, no turn limit): `runs/probe/jf2_human24_v2.json`
+  (pilot-v2 it349) and `runs/probe/jf2_human24_resetcap499.json` (`scr-resetcap`'s pilot at 499). New
+  `notes/scripts/judge_fidelity.py`: each judge's equilibrium over the 24 lists against the real field's archetype shares
+  (Nash with a 200-draw binomial bootstrap; the logit equilibrium at temperatures 1/5 to 1/80; total-variation distance),
+  with SimpleBot's matrix of #17 (100 games a pair) for comparison; report `runs/probe/jf2_report.txt`. Evaluation only.
+- **Evidence:** `scr-jsearch479` over 480-498: the searched games moved 50-54% of their decisions off the pilot's top
+  option but changed 0-2 `--select` choices an iteration, 6 in all, against 15.5 when their results are redrawn at the
+  greedy rate (`select_flips_null`); 2.02 searched games a candidate. By `judged()` (prior 4, z 1.5) a wall at greedy 0.72
+  over 30 games and searched 0.57 keeps 0.72 with 2 searched games (shrunk mean 0.67, bar 0.836) and with 10 (bar about
+  0.79), and a minimum never raises a deck. Against `scr-t60gate479`: distance 10.5, 9.3, 8.5, 8.0, 6.3 (480, 485, 490,
+  495, 497) against 10.3, 9.8, 7.0, 7.8; largest type 8, 22, 37 against 12, 25, 35 (484, 489, 494), each led by a
+  Chansey BS / Snorlax JU deck; decks holding both 53, 66, 76 and 89 at 498 against 53, 58, 70 and 80. Matrices: 8,832
+  games each, 0 errors (490 s and 690 s); deck-outs ended 2,373 (27%) of pilot-v2's games and 3,104 (35%) of the
+  population pilot's. Logit equilibrium against the field (Wigglytuff 0.417, Haymaker 0.292): pilot-v2 TV 0.103, 0.143,
+  0.165, 0.265, 0.395 at lambda 5, 10, 20, 40, 80 (the two together 0.69-0.90); the population pilot 0.098, 0.164, 0.204,
+  0.237, 0.250 (0.71-0.84); SimpleBot 0.148, 0.319, 0.474, 0.533, 0.517 (0.33-0.58, Sponge-led). Nash (unstable at 32
+  games a pair): bootstrap median TV 0.458 [0.249, 0.708] for pilot-v2, 0.374 [0.250, 0.612] for the population pilot,
+  0.500 [0.458, 0.671] for SimpleBot. Pairwise win rates correlate 0.64 between the two pilots, 0.42-0.54 with SimpleBot.
+- **Found:** (1) Under the min rule the searched games are inert: they flipped fewer choices than noise would, so
+  `scr-jsearch479` could not test search-strength judging, and it remains untested at adequate power (a searched verdict
+  with paired greedy games as a control variate, or pooled at the type level, is the next form; #150). (2) Within the
+  human field both trained pilots reproduce its structure, Wigglytuff and Haymaker on top, as SimpleBot does not. So the
+  judge is not non-human everywhere: its error is specific to invaders from outside the field (the walls) and to long
+  games. (3) Our pilots deck out a quarter to a third of human-list mirror games, so they play the fast tempo decks
+  slowly, which is the prize-race deficit of #141 seen on the human field alone.
+- **Next:** The evidence ledger, the broad research and the method (#150).
+
+### #150 · 2026-10-21 · A5 · The 2000 round rule scored exactly: the walls' edge grows with the time cut, and searched play does not replay
+- **Done:** `notes/scripts/walls_vs_humans.js` records each game's Prizes left at the start of every turn (`prizeTrace`),
+  and `notes/scripts/walls_vs_humans_report.py sts_points()` scores the 2000 STS round rule exactly at any cut: a game
+  over by turn T keeps its result (3 / 0, a draw 1 / 1), an unfinished one gives 2 / 0 to the side ahead on Prizes when
+  turn T + 1 begins, 1 / 1 on a Prize tie. `runs/probe/sts_exact_chain.sh` replayed #139/#147's deals (seed 11, stride
+  32, games 0-7) with the `scr-resetcap` 499 walls (`resetcap499_dyn.onnx`) against the 24 human lists: greedy on both
+  seats over all 24 (576 games), one-turn search k 4 dets 4 on the human side over the 8-list subset (192), and search on
+  both seats over the subset (166 of 192; the run died with the session at 23:00). Evaluation only.
+- **Evidence:** The greedy replay matches #147's stored games 576/576 (result, turns and ending). Walls' plain score
+  0.702 ± 0.037. Walls' exact share of STS points (95% CI by pair) at T 20 / 30 / 40 / 50 / 60 / 70 / 80: 0.482 [0.447,
+  0.523], 0.543, 0.553 [0.524, 0.616], 0.620 [0.586, 0.681], 0.665 [0.616, 0.714], 0.685, 0.696, with 93 / 89 / 81 / 57
+  / 28 / 10 / 3% of games unfinished; #139's end-of-game proxy on the same games gave 0.641-0.675 at 40-60. Greedy on the
+  subset alone: 0.459 / 0.524 / 0.591 / 0.643 at T 20 / 40 / 50 / 60. Search on the human side (subset): plain 0.536 ±
+  0.071 (#139's run 0.578), 54.4% of searched decisions off the pilot's top option; STS share 0.332 / 0.350 / 0.385 /
+  0.446 / 0.497 at T 20 / 40 / 50 / 60 / 70. Search on both seats (subset, 166 games): plain 0.648; STS share 0.329 /
+  0.413 / 0.446 / 0.506 / 0.551 at T 20 / 40 / 50 / 60 / 70. On the same 166 deals #147's run scored 0.590: paired
+  +0.057 ± 0.042, and 50 of the 166 results differ. #147's two-turn search on both seats finished at 0.583 ± 0.099 over
+  96 games (games 0-3); one-turn on the same 96 deals 0.562, paired +0.021 ± 0.059.
+- **Found:** (1) #139's proxy overstated the walls under the clock: scored exactly, the greedy walls take 0.48-0.55 of the
+  points at cuts of 20-40 turns, not 0.64-0.66, and their share rises with every later cut, so under greedy play the turn
+  count alone decides the verdict. (2) With search on the human side the walls stay below half the points at every cut up
+  to 70 turns on the subset, and with search on both seats up to 50. (3) Searched play does not replay exactly on the
+  same deals (50 of 166 results differ), so searched comparisons need pairing within one run or common random numbers
+  (C03 in #151). (4) A two-turn horizon adds nothing measurable over one turn.
+- **Next:** Log the ledger, the method and the first-cycle plan (#151).
+
+### #151 · 2026-10-22 · A5 · A mechanism-level ledger, an iterative method and a first-cycle plan; the second literature review
+- **Done:** Evan rows 30-33, 35-37. Three workflows. (1) An evidence ledger: every hypothesis tested in #1-#147 grouped
+  into 69 mechanism-level families, each checked by an adversarial verifier against the log and the run data. (2) Broad
+  research on 11 angles beyond the first review: 79 ideas, every claim fact-checked. (3) The method design (run
+  `wf_bfb8d181-ccc`): the families normalised into final entries; 6 lenses proposed 56 crucial experiments, merged to 44
+  (C01-C44); three drafts of the method were scored by three judges and synthesised. That run stopped with the session at
+  23:00:15 after 42 of 132 reviews. Evan chose the cheaper continuation (`wf_66908cc0-74d`, 34 agents): one combined
+  reviewer per remaining candidate (C13, C15-C44), then the plan, the ledger file and the report. Installed:
+  `notes/method.md` (258 lines; unapproved, Evan's decision 7, so `notes/plan-lab.md` and `notes/plan-rediscovery.md`
+  are unchanged); `notes/hypotheses.md` (families H01-H69, standing facts S01-S35, anomalies A1-A9, effort by node, the
+  44 candidates as untested hypotheses H70-H113 with H(69+n) = Cn, and the queue); `notes/plan-cycle1.md`;
+  `notes/data/cycle1/candidates.json` (the 44 candidates with every review) and `method-drafts/`;
+  `reports/RL methodology for self-discovered metagames.md` (7,898 words; the harness refused the writer's file write,
+  so it was saved from the text it returned); `notes/scripts/hodge_audit.py` and `notes/scripts/meta_lens/*.py`, copied
+  from the session scratchpad because C16, C24, C31 and C44 cite them. Wrote `runs/screens/scr-t60gate479/STOP` (it died
+  at 498, #148). `runs/lab/STOP`, written 10-21 20:55 by the previous session, now cites this entry.
+- **Evidence:** Ledger: the verifier corrected the status of 50 of the 69 families; final statuses 17 refuted, 13
+  inconclusive, 12 weakened, 12 partly supported, 5 supported, 5 adopted, 2 established, 2 untested, 1 underpowered.
+  Research: 357 claims checked, 254 verified, 92 partly, 9 wrong, 2 unverified. Method drafts by judges' totals: archive
+  142 (base), inference 138, portfolio 122.5. Reviews of the 44 candidates (13 by three dedicated reviewers, 31 by one
+  combined reviewer): repetition 42 approve / 2 revise, diagnosticity 2 approve / 42 revise, feasibility 11 approve / 33
+  revise, no reject on any angle, so all 44 pass the survival rule. The plan: 16 portfolio items (Tier A items 1-10 about
+  35 desktop-hours: C09, C07, C13, C33+C40, C29, C30, C14, C02, C24, C08; Tier B C03, C10, C35, C28; conditional C25,
+  C17), 10 decisions for Evan, 8 outside-research questions (C02), 11 declutter actions, 27 candidates parked for cost or
+  prerequisites. `rl/tests.py` not run (docs and copies only).
+- **Found:** (1) The review filtered nothing: no reviewer rejected a candidate, and 42 of 44 needed changes to their
+  statistics, so it acted as a revision pass and the plan's ranking (information per desktop-hour, upstream links first,
+  an exploration floor) did the selecting. The combined reviewer was not compared against the dedicated ones. (2) The
+  research loop collapsed like the population: 25 of 27 screens since #127 forked from two wall states (main 460,
+  `scr-resetcap` 479), so they tested escape, never prevention; the plan puts a from-scratch pilot warm-up (C30) among
+  the first four screens. (3) The leading hypothesis, that a clock and search-strength play together reverse the walls
+  (#147), rests on 192 games at about ±0.10 and on play that does not replay exactly (#150), so its replication on all
+  24 lists with new wall sets (C13) comes first. (4) The report's thesis: every diversity method acts on the judge's
+  payoff matrix, so selection and diversity machinery (C27, C42, C43, C39) waits until some judge shows non-wall types
+  that are not dominated.
+- **Next:** Tier A of `notes/plan-cycle1.md`, in its lanes: C29 (A/A reseeds 3 and 4 of `scr-gate479`, 2 screens), C09
+  and C07 (GPU probes), C13 stage 1 (CPU), then C30's warm-up; one decision message to Evan (C33 + C40); the rest of the
+  declutter list (lab and screen indexes, `notes/recipes.md`).
+
+### #152 · 2026-10-22 · A5 C33 · Evan approves the method for now; the old plans are superseded
+- **Done:** Evan, asked where the method is and then whether he approves it: "Approved for now". Marked
+  `notes/method.md` approved (a status line under the title; the §3 Judge row JF1-JF4 changed from "not yet approved" to
+  approved with the method). Put superseded banners on `notes/plan-lab.md` (the lab main line stays stopped under
+  `runs/lab/STOP`) and `notes/plan-rediscovery.md` (its approved targets live on in the method's §3). Marked decision 7
+  decided in `notes/plan-cycle1.md` §4. `notes/evan-requests.md` rows 38 (where the method is, answered) and 39 (the
+  approval, rule).
+- **Evidence:** Edits to five notes files only; no code or run changed. Decision 8 (retire the lab main line formally) is
+  taken as covered by the approval, since the method replaces the lab plan; this is written into row 39 for Evan to
+  overrule.
+- **Found:** The method now governs launches: each run needs a written record with rivals and pre-written bands (§10),
+  and no launch while a finished run is unlogged (§13). C29's two runs finished at 05:00 unlogged, so they are read and
+  logged before any new launch.
+- **Next:** Read and log C29; then C30 (two screen slots), C09 and C07 (GPU probes), C13 stage 1 (CPU); the decision
+  message to Evan (C33 + C40) now carries plan decisions 1-6 and 9-10.
+
+### #153 · 2026-10-22 · A5 C29 · Three seeds of the gate recipe: the shape effect replicates, the walls stay, and the 479 arms' nulls were too weak to call
+- **Done:** C29 (H98): `scr-gate479-s3` and `scr-gate479-s4` ran from `scr-resetcap/population_it0479.pt` to 499 (launched
+  03:15 with `scr-gate479`'s command, changing only run, stop file and `--reseed` 3 / 4; finished 04:55 and 04:59, 0
+  errors). Config check: against `scr-gate479`'s `config.json` only run, reseed and stop_file differ, plus options added
+  since, all at their off defaults (judge_search 0, max_turns 0, practice_vs 0, lam_value None, judge_score min). New
+  `notes/scripts/aa_window.py`: per-run window readouts from `log.jsonl` and the snapshots, pairwise per-iteration RMS,
+  a pooled within-recipe SD (gated group 3 runs, ungated `scr-ctl479` / `scr-resetcap` 2 runs, 3 df) with its one-sided
+  95% upper bound, Welch CIs between the groups, and arm-minus-control differences over the iterations both reached
+  (output `runs/probe/c29_aa.txt`). Walls verdicts under the two new final pilots (`probe_matchups.py`, the 3
+  `walls_resetcap499.json` walls against the 24 lists, 16 games a pair, both seats by the pilot, #147's deals:
+  `runs/probe/judge/gate479s3.json`, `gate479s4.json`) and a rerun of `scr-gate479`'s (`gate479_rerun.json`) as a
+  determinism check.
+- **Evidence:** Window 490-499 top-12 distance / largest type at 484, 489, 494, 499 / decks holding Chansey BS and
+  Snorlax JU at the same snapshots / decks moved / incoming entropy / median at 499 / walls verdict:
+  - gated, seed 2 (`scr-gate479`): 9.55 / 15, 12, 26, 23 / 54, 63, 66, 73 / 21.0 / 2.60 / 13-25-21 / 0.680;
+  - gated, seed 3: 10.60 / 13, 18, 21, 20 / 53, 57, 67, 67 / 21.0 / 2.87 (1.78 at 499) / 13-25-22 / 0.743;
+  - gated, seed 4: 11.70 / 19, 33, 27, 50 / 58, 73, 78, 75 / 20.4 / 1.80 (1.20 at 499) / 14-22-23 / 0.718;
+  - ungated `scr-ctl479`: 15.72 / 33, 48, 74, 74 / 78, 85, 84, 79 / 73.4 / 1.02 / 13-20-27 / 0.714 (#147);
+  - ungated `scr-resetcap`: 17.17 / 19, 44, 72, 76 / 90 (489), 81 (499) / 72.9 / 1.16 / 12-20-28 / 0.722 (#147).
+
+  Pairwise per-iteration RMS over 480-499, gated pairs against the ungated pair: distance 2.64, 2.45, 3.28 against 2.58;
+  moved 6.1, 5.8, 5.4 against 5.7; entropy 0.39, 0.63, 0.88 against 0.38; largest type at the turnovers 4.3, 17.2, 17.3
+  against 7.4; wall-core decks 4.3, 8.1, 10.8 against 3.8 (2 snapshots). Pooled within-recipe SD of the window readouts
+  (3 df), point and one-sided 95% upper bound: distance 1.06 and 3.09 cards; largest type 6.8 and 19.7; wall-core 4.5
+  and 13.1 decks; moved 0.35 and 1.02; entropy 0.46 and 1.34; walls verdict 0.026 and 0.076. Welch 95% CI, gated minus
+  ungated: distance -5.8 [-9.4, -2.3]; largest type -31.9 [-49.0, -14.8]; wall-core -18.2 [-29.6, -6.8]; moved -52.4
+  [-53.6, -51.1]; entropy +1.33 [+0.03, +2.64]. All three gated seeds drift the same way over 480-499: median 10-28-22
+  to 13-25-21, 13-25-22 and 14-22-23, entropy peaking near 489 and then falling. The 479 arms against their controls
+  over the iterations both reached (distance / largest type / wall-core), with point bars 2√2·SD of 3.0 / 19.1 / 12.7
+  and upper bars 8.7 / 55.7 / 37.1: `scr-vs479` +1.4 / -4.0 / -2.3; `scr-league479` -1.7 / -36.2 / -4.5; `scr-lamv479`
+  +6.2 / -13.3 / -1.0; `scr-turns40` (to 492) -5.5 / -21.0 / -3.0; `scr-turns70` -1.0 / -19.7 / -0.7; `scr-turns120`
+  -2.2 / -17.3 / -4.0; `scr-gatevs479` +0.1 / +11.8 / +2.8; `scr-t60gate479` -2.0 / +9.0 / -0.7; `scr-jsearch479`
+  against `scr-t60gate479` +0.7 / -3.7 / +4.7. The rerun of `scr-gate479`'s verdict matched it exactly (0.6801, the
+  same endings), so greedy probes replay. Walls' deck-out wins under the three gated pilots: 196, 424 and 332 of
+  1,152 games.
+- **Found:** Ledger: H98 untested -> tested (A, pre-registered bands): H-noise +, H-attractor -; gate real not met as
+  registered (the largest-type CI excludes 0 but its bound nearer zero is 14.8 decks below, short of 20), gate luck -.
+  H25: the shape half replicates over three seeds (reseed confound removed; candidate count and games a candidate still
+  confounded), the type half still fails (wall-core 67-75 of 99 at 499 in every seed). New S36 (the gated recipe's seed
+  noise at 479, above). (1) By the registered rule the noise band holds: with 3 df the upper bound is 2.9 times the
+  point SD, so the point SDs (1.06 cards, 4.5 decks) sit at the attractor's edge while their bounds pass the noise
+  thresholds; a fourth seed narrows it. (2) No 479 arm moved the wall-core count past even the point bar (every
+  difference within ±4.7 decks), and against the upper bars every arm is inside on every readout, so the 479 nulls stand
+  as "not supported as tested", not as refutations. Past the point bars only: `scr-lamv479` worse in distance (+6.2),
+  `scr-turns40` better (-5.5, largest type -21, to 492 only), and `scr-league479` and `scr-turns70` smaller largest types
+  with wall-core unchanged, which is the overlap-type count understating likeness (#140). (3) The walls verdict under
+  the gated pilots spans 0.68-0.74 with seed SD 0.026, so the population pilots' 0.676-0.746 spread in #147 is seed
+  noise: no pilot change there moved the judge. (4) The gate slows the relapse; it does not stop it: seed 4's largest
+  type reached 50 and its entropy 1.20 by 499.
+- **Next:** C30 (the pilot-first warm-up, a prevention start) in two slots; C13 stage 1 (CPU); C09 and C07 (GPU probes);
+  the decision message to Evan (C33 + C40). The gate stays the escape regime's base recipe, unadopted into R0 (no
+  concurrent ungated control; H25's confounds stand).
+
+### #154 · 2026-10-22 · A5 C30 · The pilot-first warm-up is built and seed 1 is training from random weights
+- **Done:** C30 (H99), the first prevention start since #127. `notes/scripts/pilot_decks.py` takes `--pool full
+  --builder wide` (`rl.decks.wide_deck` over the 277-card pool; the old field-pool default unchanged) and `--decks-out`.
+  `rl/train.py` takes an opt-in `--stop-file` (checked after each iteration's checkpoint; default off). New
+  `notes/scripts/ending_monitor.py` applies the pre-registered stop rule by writing the run's STOP. Decks:
+  `runs/pilot/C30/matchups.json` (512 decks, 2,048 pairs, seed 5) and 64 held-out decks (`heldout_decks.json`, seed 6).
+  Record `runs/pilot/C30/record.md` written before launch (rivals, bands, kill rule). Launched `runs/pilot/C30/chain.sh`
+  at 11:05 (detached): seed 1 now, seed 2 after it, each `rl.train` from random init with R0's flags in full (`--model
+  tokens --d 256 --tok-layers 4 --heads 8 --deck-mode cross --lr 2e-4 --epochs 2 --ent 0.01 --lam 0.95 --gamma 1
+  --shaping 0.1 --shaping-iters 100 --deckout-win 1`), 8 workers × concurrency 108 (about 864 games an iteration, the
+  scale of #71 and `runs/abl`), `RL_GPU_SHARE=0.5`, cap 90 iterations, snapshots every 10.
+- **Evidence:** Smoke `runs/smoke/c30` (4 workers × 48, 3 iterations then a resumed one with STOP present): 0 errors,
+  about 200 games an iteration, endings at init 53% no Pokémon, 45% deck-out, 2% Prizes; the run stopped after
+  iteration 3 on the stop file, and the monitor (check at 2, fail 0) wrote its STOP at deck-outs 0.43. Training decks
+  median 8 / 28 / 24 (Pokémon / Trainers / Energy, special Energy included), 271 distinct cards, all legal; held-out
+  median 10 / 29 / 22, 197 cards. The PPO step fell back from micro-batch 1024 to 512 on GPU memory at share 0.5.
+- **Found:** Seeds run one after the other, not side by side, so the GPU keeps room for the C09 and C07 probes (0.5 +
+  0.15) and the CPU for C13 (10 + 4 threads). Count features stay off, so S32's bug is out of this pilot.
+- **Next:** Read seed 1's endings at its looks (iterations 3, 5, 10, 15, 20, 30) against the bands; JF1 and the
+  pilot-v2 head-to-head at it19 and it39; C13 stage 1 beside it.
+
+### #155 · 2026-10-22 · A5 C13 · Stage 1 of the condition-matched ground truth is running on the CPU
+- **Done:** C13 (H82), stage 1. Extracted the blind wall sets by the population's own judged score (`recent_score`, as
+  `probe_matchups.py best:`): B `runs/probe/walls_gate479_499.json` (`scr-gate479` 499: #409 13 / 23 / 24, #631 9 / 24 /
+  27, #101 10 / 27 / 23) and C `runs/probe/walls_main460.json` (main `seg_0460`, iteration 459: #559 8 / 16 / 36, #536 8
+  / 15 / 37, #663 8 / 18 / 34), all holding Chansey BS and Snorlax JU; the same rule on `scr-resetcap` 499 reproduces set
+  A (`walls_resetcap499.json`) exactly. `notes/scripts/walls_vs_humans.js` takes `--skip FILE` (leave out games already
+  in an earlier output). Record `runs/probe/C13-stage1/record.md` written before launch. Launched
+  `runs/probe/C13-stage1/chain.sh` at 11:07 (detached, 4 workers): the 26 missing both-seat subset games, greedy B and
+  C on all 24 lists (576 each), J2 on the 16 lists outside the subset (384), the walls-only seat (576), set A's games
+  8-15 (576).
+- **Evidence:** `--skip` found 166 of the 192 subset games already played and queued the other 26. No results yet.
+- **Found:** Set C's walls carry 34-37 Energy against set B's 23-27, so B against C is the Energy axis of the record.
+- **Next:** Score each step as it lands (T50 per judge and set, W(J, T) curves); apply the two interval kill rules at
+  192 games; C09 and C07 code for the GPU lane.
+
+### #156 · 2026-10-22 · A5 C13 · Stage 1 scored: search plus a clock still puts the walls below the human lists on all 24, search alone does not, and only the lists gain from search
+- **Done:** C13 (H82) stage 1. The chain finished at 13:52, every step with 0 errors: the 26 missing J2 subset games,
+  J1 (greedy) on wall sets B and C over all 24 lists (576 each), J2 (one-turn search k 4 dets 4, both seats) on set A
+  against the 16 lists outside the subset (384), the walls-only cell (J2 on the walls, J1 on the lists, 576), and set
+  A's games 8-15 under J1 (576). New `notes/scripts/c13_score.py`, output in `runs/probe/C13-stage1/score.txt`. For
+  each cell it gives the plain score and the walls' exact share of 2000 STS round points W(T) at every cut from 10 to
+  120 (`sts_points`), with equal weight per list. It also gives Π (the mean over T 20-45), the break-even turn T50 and
+  90% intervals from 4,000 bootstraps over wall-list pairs, plus paired gains on identical deals. Evaluation only.
+  The two kill rules were not checked at 192 games as registered, because the session was idle. The walls-only cell ran
+  to 576 games, and its final upper bound (+0.016) is under the 0.05 bar, so most of its CPU time went past where the
+  rule would likely have stopped it.
+- **Evidence:** Set A's J1 games 0-7 reproduce #150. Per-list weighted, W at T 20 / 40 / 60 / 80 is 0.483 / 0.554 /
+  0.664 / 0.697; #150's pooled values were 0.482 / 0.553 / 0.665 / 0.696.
+
+  | Cell | Games | Plain [90%] | W(Π) [90%] | T50 [90%] | W(T 50-60) [90%] |
+  |---|---|---|---|---|---|
+  | J1, A, g0-15 | 1,152 | 0.699 [0.670, 0.728] | 0.542 [0.517, 0.566] | 22.0 [16.9, 25.9] | 0.641 [0.614, 0.668] |
+  | J1, B | 576 | 0.720 [0.683, 0.756] | 0.563 [0.533, 0.597] | 15.5 [9.5, 25.3] | 0.669 [0.632, 0.706] |
+  | J1, C | 576 | 0.774 [0.741, 0.808] | 0.635 [0.603, 0.666] | 13.1 [10.4, 17.3] | 0.728 [0.691, 0.763] |
+  | J2, A, all 24 | 576 | 0.607 [0.568, 0.645] | 0.393 [0.362, 0.426] | 55.9 [49.3, 63.6] | 0.492 [0.455, 0.531] |
+  | Walls-only, A | 576 | 0.687 [0.653, 0.720] | 0.485 [0.459, 0.513] | 35.4 [30.5, 41.4] | 0.602 [0.570, 0.634] |
+  | Human-side, A, subset (#150) | 192 | 0.536 [0.464, 0.607] | 0.345 [0.276, 0.411] | 69.6 [54.6, none in 20%] | 0.418 [0.337, 0.495] |
+
+  Set A's J1 games 8-15 (new deals): plain 0.696, Π 0.545. Paired plain gains over J1 on identical deals: walls-only
+  -0.016 [-0.049, +0.016] (157 of 576 results differ); human-side -0.169 [-0.234, -0.107] (subset); J2 on both seats
+  -0.095 [-0.138, -0.053] over all 24 and -0.083 [-0.150, -0.016] on the subset. Wall wins by deck-out / prizes / no
+  Pokémon: J2 251 / 91 / 7 of 349; J1 on A 293 / 457 / 54 of 804 (1,152 games); J1 on C 141 / 270 / 32. Bands (B and C
+  blind): E (W(J1, Π) ≤ 0.55) holds for A (0.542) and misses for B (0.563) and C (0.635). ExP's J1 clause (≥ 0.58)
+  holds only for C, where J2 was not run, so ExP is open for C and does not hold for A. P (J2 clockless < 0.50) is
+  refuted at 0.607. E+P replicates (J2 at T 50-60 ≤ 0.50, 90% bound < 0.55) at 0.492 [0.455, 0.531]. Plateau (W(J2, Π)
+  ≥ 0.52) is refuted at 0.393. Imbalance (walls-only gain ≤ 0.02, human-side ≥ 0.10) holds at -0.016 and 0.169.
+- **Found:** (1) The leading rival survived its first real attack. Over all 24 lists, with one-turn search on both seats,
+  the walls drop below half the round points at a cut of about 56 turns. Without a clock they still score 0.607, 72% of
+  their wins by deck-out, so neither the clock nor search alone flips the verdict, while both together do. (2) Under
+  greedy play the clock is not enough: all three wall sets break even by turns 13-22, earlier than any real round. The
+  Energy-heavy walls of main 460 (8 / 16 / 36 and similar; human medians 13.5 / 28 / 18) are the strongest of the three,
+  so the greedy judge's favourite is the Energy-heavy minimum itself. (3) Search adds nothing on the walls' seat
+  (-0.016) and takes 0.169 from them on the lists' seat. The greedy pilot plays the walls near their ceiling and the
+  human lists well below theirs, so any greedy judge overrates walls against tempo decks. This is the
+  report's "judged with mediocre partners" mechanism, now measured on all 24 lists.
+- **Next:** J2 on set C (the Energy-heavy walls) to decide ExP and whether E+P holds beyond set A. On the CPU path that
+  is about 2.3 h for 576 games (J2 ran at about 4.2 games a minute here), so it need not wait for C03. Then the round
+  rule question to Evan (C33, D1), which this result puts on the critical path.
+
+### #157 · 2026-10-22 · A5 C30 · The pilot-first warm-up from random weights: no stall, pilot-v2's level on wide decks in 19 iterations, far below it on the human lists
+- **Done:** C30 (H99). Both seeds of `runs/pilot/C30/chain.sh` ran in sequence. Seed 1 ran 11:05-11:33, iterations
+  0-18, and seed 2 ran 11:33-12:05, iterations 0-19. Each was stopped by `ending_monitor.py`: the criterion was met at
+  iteration 8 (seed 1) and 9 (seed 2), and 10 more iterations followed. Then `runs/pilot/C30/eval/chain.sh` ran
+  17:36-17:42. It played JF1 at it9 and at the end of each seed: the 3 `walls_resetcap499` walls against the 24 lists,
+  the pilot on both seats, seed 11 and 32 games a pair. That matches `resetcap499_own` / `resetcap499_v2` (the record
+  said 16 a pair; 32 gives the same deals as the comparators). It also played `rl.lab h2h` against pilot-v2 it349: the
+  24 lists (all 276 pairs, 1,104 games) and the 64 held-out wide decks (500 pairs, 2,000 games), at seed 0, fixed.
+  `rl/lab.py h2h --panel` now also takes a JSON file of decks. Evaluation only. The prior JF1 on the `runs/abl`
+  checkpoints, which H99 listed, was not run.
+- **Evidence:** Training endings (deck-out / prizes / no Pokémon, share of games) were 0.457 / 0.019 / 0.519 at
+  iteration 0 and 0.074 / 0.103 / 0.815 at 18 in seed 1. Seed 2 went from 0.451 / 0.013 / 0.531 at 0 to 0.098 / 0.110
+  / 0.786 at 19. Games per iteration were 1,100-1,415 and 0 errors.
+
+  | Pilot | JF1 [90%] | Walls' wins by deck-out / prizes / no Pokémon | Decisions a game | h2h vs pilot-v2, lists | h2h vs pilot-v2, held-out wide |
+  |---|---|---|---|---|---|
+  | W1 it9 | 0.614 [0.590, 0.639] | 18 / 511 / 864 | 64.5 | | |
+  | W1 it18 | 0.594 [0.566, 0.621] | 32 / 837 / 482 | 107.4 | 0.057, -489 Elo [-541, -447] | 0.475, -17.7 [-31.3, -4.3] |
+  | W2 it9 | 0.611 [0.586, 0.637] | 129 / 962 / 312 | 125.9 | | |
+  | W2 it19 | 0.592 [0.568, 0.615] | 31 / 975 / 346 | 116.4 | 0.070, -449 Elo [-492, -413] | 0.473, -19.1 [-32.7, -5.6] |
+  | pilot-v2 it349 | 0.237 [0.204, 0.270] | | 184.4 | | |
+  | `scr-resetcap` 499 | 0.720 [0.696, 0.743] | | 213.0 | | |
+
+  Bands: Ok (criterion by iteration 40 in both seeds) holds at 8 and 9, which excludes Stall. H5 and H1 cannot be read:
+  W is within about 30 Elo of pilot-v2 on held-out wide decks but 450-490 Elo below it on the lists, where the rule
+  requires about 30.
+- **Found:** (1) From random weights, with deck-out wins paid 1, the pilot does not learn the stall. Deck-outs fall from
+  45% to 7-10% of games in both seeds, so the prevention start clears its bootstrap. As flagged at #154, though, the
+  criterion counts benching out as decisive: 79-82% of games end that way on these 8-Pokémon wide decks, and Prize
+  endings reach only 10-11%. (2) Nineteen iterations bring W level with pilot-v2 (350 iterations) on full-pool wide
+  decks but leave it about 450-490 Elo below on the human lists, so the stop criterion measured endings on the training
+  decks, not competence on the field. (3) This wall-naive, weak-on-lists pilot still rates the walls 0.59, and the walls
+  beat the lists by Prizes and benching, not by deck-out (31-32 of about 1,350 wins). So the walls' high verdict
+  appears under two pilots for two different reasons: the population pilots' stall to deck-out, and a pilot too weak to
+  play the human lists. That fits #156's imbalance, where search helps only the lists' seat. JF1 fell from 0.61 to 0.59
+  between iteration 9 and the end in both seeds, inside overlapping intervals.
+- **Next:** Continue W2 (the better seed on the lists) on the same decks, with JF1 and both head-to-heads every 20
+  iterations, until it comes within about 30 Elo of pilot-v2 on the lists, where H5 and H1 can be read, or stops
+  closing the gap. Record and bands to be written before launch.
+
+### #158 · 2026-10-22 · A5 C13 C30 · Two follow-ups launched: J2 on the Energy-heavy walls, and W2 trained on toward competence on the lists
+- **Done:** Records written before launch, then both chains launched detached at 17:45.
+  - `runs/probe/C13-stage1b/record.md` and `chain.sh`: J2 on set C (main 460's walls) against all 24 lists, in two
+    chunks (games 0-2, then 3-7). `notes/scripts/c13_score.py --check` sits between them and stops the cell if the 90%
+    interval of W(J2, T 50-60) lies wholly above 0.55 or below 0.45. `c13_score.py` scores the cell once its files
+    exist.
+  - `runs/pilot/C30/record-cont.md` and `chain-cont.sh`: W2 resumed from iteration 19 (`--resume`, every training flag
+    unchanged, `config_it19.json` kept), cap 120. New `notes/scripts/c30_cont_watch.py` runs the looks at 39, 59, 79,
+    99 and 119: JF1 at 32 a pair, plus h2h against pilot-v2 on the lists and on the held-out wide decks. It writes
+    `STOP-cont` when the pilot reaches -30 Elo or better on the lists (competent), when the gain from -449 is under 100
+    at 79 (no transfer), or when training deck-outs reach 0.30 (stall).
+- **Evidence:** `c13_score.py --check` on the stored cells: J2 on A's 16 lists [0.460, 0.546], exit 0; J1 on C [0.691,
+  0.763], exit 2. The continuation started with `[limits] --workers 8 -> 6 (load cap)` beside the CPU probe, so its
+  iterations play fewer games than #157's. `RL_CPU_THREADS` is 8 instead of 10.
+- **Found:** Stage 1b's registered prior is that E+P fails on set C: set A's search drop of 0.15 applied to C's 0.728
+  gives about 0.58.
+- **Next:** Read stage 1b (about 2.3 h) and W2's looks; the C09 and C07 code for the GPU lane; the C33 + C40 message
+  to Evan.
+
+### #159 · 2026-10-22 · A5 C13 · Stage 1b: search plus the clock puts the Energy-heavy walls below the lists only for cuts under about 45 turns
+- **Done:** `runs/probe/C13-stage1b/chain.sh` ran 17:45-20:17: J2 (`psearch:runs/probe/resetcap499_dyn.onnx:4:4`) on
+  both seats, set C (`runs/probe/walls_main460.json`) against all 24 lists, seed 11. Games 0-2 (216 games, 57.6 min),
+  then the interval check, then games 3-7 (360 games, 94.2 min); 0 errors. The check gave W(J2, T 50-60) 90% [0.538,
+  0.630], which lies across 0.55, so the chain went on as registered. Scored by `notes/scripts/c13_score.py` (now with
+  the cell "J2 C all24") into `runs/probe/C13-stage1b/score.txt`. The run finished at 20:17 and was read at about
+  21:50: the machine sat idle about 1.5 h again.
+- **Evidence:**
+
+  | Cell | Plain [90%] | W(Π 20-45) [90%] | T50 [90%] | W(T 50-60) [90%] |
+  |---|---|---|---|---|
+  | J1 C (#156) | 0.774 | 0.635 | 13.1 | 0.728 [0.691, 0.763] |
+  | J2 C, all 24 (576 games) | 0.618 [0.585, 0.651] | 0.447 [0.420, 0.477] | 44.6 [37.2, 49.7] | 0.562 [0.529, 0.596] |
+  | J2 A, all 24 (#156) | 0.607 [0.568, 0.645] | 0.393 [0.362, 0.426] | 55.9 [49.3, 63.6] | 0.492 [0.455, 0.531] |
+
+  W(J2 C, T): 0.394 at 20, 0.434 at 30, 0.477 at 40, 0.505 at 45, 0.534 at 50, 0.584 at 60, 0.617 at 80. Paired on
+  the same deals, J2 − J1 on set C is −0.156 [−0.193, −0.118] (176 of 576 results differ), against −0.095 on set A.
+  The walls' wins: 219 by deck-out, 119 by Prizes, 17 by no Pokémon; the lists' wins: 64 / 71 / 84. Median game length
+  56 engine turns. Search overruled the pilot at 52-53% of searched decisions, mean 864-874 ms a search.
+  Bands: E+P fails on C (W(T 50-60) 0.562, at least 0.55), as the registered prior (about 0.58) said; ExP holds on C
+  (W(J2, Π) 0.447, at most 0.45, by 0.003); Plateau is refuted (0.447, below 0.52); P is refuted (clockless 0.618).
+- **Found:** (1) Search costs the Energy-heavy walls more than set A's (−0.156 against −0.095), but they start higher,
+  so the clock decides: with search on both seats they take under half the points only when the round is cut before
+  about turn 45 (T50 44.6, against 55.9 for set A). (2) Across both sets the verdict is now a function of T alone: for
+  T in 20-45 both wall sets lose to the field under J2, and at 60 both win. So the round's real length (C02) is the
+  open fact the verdict waits on, not more games. (3) The walls still win mostly by deck-out under search (219 of
+  355), in games of median 56 turns, which is why every cut before that hurts them.
+- **Next:** C02 (outside research on how many engine turns a 20-minute round allowed) to fix T; the round rule in
+  training and judging (Evan approved it, row 41).
+
+### #160 · 2026-10-22 · A5 C30 · W2 trained on to 119: the lists gap closes by 175 Elo but stays 274; it practises a game of benching out
+- **Done:** `runs/pilot/C30/chain-cont.sh` resumed W2 from 19 at 17:45 and trained to the cap, 119 (exit 0 at 19:31);
+  `notes/scripts/c30_cont_watch.py` ran the five looks (18:06-19:42) and wrote no stop. Read at about 21:50.
+- **Evidence:** Looks (`runs/pilot/C30/eval-cont/looks.jsonl`; JF1 32 a pair on the resetcap-499 walls; h2h against
+  pilot-v2 it349, untimed):
+
+  | Iteration | JF1 | Walls' wins deck-out / prizes / no Pokémon | Lists Elo [90%] | Held-out wide Elo [90%] |
+  |---|---|---|---|---|
+  | 19 (#157) | 0.592 | 31 / 975 / 346 | −448.8 [−492, −413] | −19.1 |
+  | 39 | 0.547 | 98 / 1,003 / 157 | −344.6 [−380.0, −314.0] | +10.6 [−1.7, 22.9] |
+  | 59 | 0.520 | 272 / 822 / 99 | −306.4 [−337.5, −278.9] | +22.4 [10.4, 34.5] |
+  | 79 | 0.552 | 281 / 886 / 102 | −320.0 [−351.2, −292.5] | +36.8 [24.6, 49.1] |
+  | 99 | 0.574 | 128 / 1,085 / 104 | −326.1 [−360.7, −295.9] | +30.8 [18.4, 43.4] |
+  | 119 | 0.544 | 389 / 814 / 49 | −274.5 [−303.3, −248.6] | +46.1 [34.0, 58.3] |
+
+  Training endings (`log.jsonl`, every tenth iteration from 29 to 119): no Pokémon 644-752 of 846-940 games an
+  iteration (76-81%), Prizes 117-192 (12-20%), deck-out 29-89 (3-10%). Bands: Closing holds (gain 128.8 at 79, at
+  least 100, short of −30); Competent, No transfer and Stall do not. JF1 stays 0.52-0.57 at every look where the lists
+  Elo had risen at least 100, so neither H5 (at least 0.65 with 20% deck-out wins) nor H1 (at most 0.45) is read.
+  Held-out Elo rose by 65, so W2 is not forgetting its own decks.
+- **Found:** (1) Training on helps the lists slowly: 175 Elo in 100 iterations, about 100 of it in the first 20 (−449
+  to −345) and then about 70 over 80 iterations, so the remaining 274 would take several hundred iterations at that
+  rate. (2) The practice is a different game from the lists'. Four in five of W2's training games end with a side
+  benched out on these 8-Pokémon wide decks, and one in six by Prizes, while the lists' games are Prize races. W2 is
+  46 Elo above pilot-v2 on its own kind of deck and 274 below on the lists. (3) JF1 does not track this skill: 175 Elo
+  of competence on the lists left it inside 0.52-0.57, with the walls' deck-out wins drifting up to 31%.
+- **Next:** The round rule as the pilot's reward (C45: a fork pair from 119 with and without the rule); a practice
+  distribution chosen by what the pilot can learn from rather than by hand (a learned deck curriculum); search
+  distillation once C03 makes search cheap.
+
+### #161 · 2026-10-22 · A5 C02 C45 · The 2000 round rule built into the game (Evan, row 41), the round-length research started, a clocked pilot fork pair launched
+- **Done:** Evan's row 41 logged: D1 option (a), the round rule in training and judging; C03's cost approved; and the
+  question of how the pilot can learn to play the lists.
+  - `env/game.js`: `roundTurns` (opt-in, default 0). A game unfinished when game turn T + 1 begins ends there, ending
+    `time`: fewer Prizes left wins, a tie is a draw. `reward(seat, deckoutWin)` pays +1 / −1 / 0 as before, and under
+    the rule the event's points scaled to [−1, 1]: a win +1, a win on time +1/3, a draw −1/3 each, a loss −1. Clones
+    keep the rule. `env/env.js` passes it.
+  - `env/runner.js`: `roundTurns` T or [a, b] (T drawn per deal from a..b by its seed), rewards from `Game.reward`,
+    results with `roundT`. `env/agents.js` PolicySearchAgent scores a finished line by `Game.reward`.
+    `env/remote_worker.js` passes `roundTurns` in collect and games (both runners).
+  - `rl/train.py` `--round-turns` ("T" or "A-B"), `round_turns()` and `round_score()`. `rl/metagame.py`
+    `--round-turns`: games, PPO rewards and deck scores under the rule (a win 1, a win on time 2/3, a draw 1/3 to each
+    deck, a loss 0), exclusive with `--max-turns`. `rl/gpu_matrix.py` `play(round_turns=)`, `rl/lab.py h2h
+    --round-turns`, `notes/scripts/probe_matchups.py --round-turns` (adds "sts", the A decks' share of the points with
+    equal weight per B deck).
+  - New `env/tools/test_round.js`.
+  - C02: `reports/C02-round-length/record.md` (the formula T = (R − O) / s, and how its range replaces the prior)
+    written before any reading. Then one research agent was launched in the background (Q1 the STS round rule, Q2 the
+    pace of 2000 play, Q3 if time remains); it writes `reports/C02-round-length/findings.md`.
+  - C45: `runs/pilot/C45/record.md`, then `chain.sh` launched at 22:01. Two forks of W2's iteration-119 checkpoint
+    (model and Adam) train side by side to 199 with W2's flags and seed 2: R under `--round-turns 20-45` (the
+    registered prior Π, since C02 has not reported), P without. `notes/scripts/pilot_watch.py` (from
+    `c30_cont_watch.py`) runs looks at 139/159/179/199, one at a time, untimed and under the rule, with a pair kill
+    (R − P at most −80 at 159). The watchers crashed at start on the forks' missing `log.jsonl`; fixed and restarted
+    at 22:02.
+- **Evidence:** `node env/tools/test_round.js --games 120`: all passed. Of 120 seeded random game pairs, 78 were cut at
+  time (15 won on Prizes, 63 drawn) and 42 finished first. The timed games match the untimed ones move for move up to
+  the cut, and the time winner, ending and rewards are right. Untimed rewards equal the old formula. The Runner's cuts
+  fall in 21-45 and repeat by seed, and its recorded rewards equal the points. `env/tools/trace_hash.js --games 300`
+  with HEAD's `game.js` and with the new one (rule off): all identical. Smoke runs: `rl.train --round-turns 20-45`, 2
+  iterations from random weights, endings `{time: 44, no-pokemon: 31}` and `{time: 43, no-pokemon: 28, deck-out: 1}`;
+  `probe_matchups.py --round-turns 20-45` with W2 it119 at 2 a pair: 113 of 144 wall-list games were cut at time. C45
+  started with 4 workers a fork (load cap), GPU 65%, 6.8 GB.
+- **Found:** Under the rule an untrained pilot's games mostly end at time, and so do W2's wall-list games, so the rule
+  binds where the walls' wins come from. A process slip: C45 was launched before #159 and #160 were written, against
+  method §13's order, by about 10 minutes; nothing read from C45 depends on them.
+- **Next:** C02's findings, which set T for the metagame runs under the rule (the D1 test in the loop, beside C03);
+  C45's looks; C03 (search on the GPU).
+
+### #162 · 2026-10-22 · A5 C03 · Search served by the GPU learner from the evaluation tools, with common random numbers; unit-tested, GPU checks queued
+- **Done:** C03's plumbing (plan item 11; cost approved by Evan, row 41).
+  - `env/agents.js` PolicySearchAgent `crn` (default off): one set of `dets` re-deal seeds per decision, shared by
+    every candidate, so options are compared on the same hidden cards and coin flips; off, the seeds are drawn as
+    before. `env/remote_worker.js` judgeSearch passes `crn`.
+  - `rl/gpu_matrix.py` `play(search={k, dets, maxSteps, concurrency, crn})`: every game searched on both seats over
+    its deck's model slot (judgeSearch, #148), the summed searchStats in `last["search"]`.
+    `notes/scripts/probe_matchups.py --search K:DETS[:crn]` and `rl/lab.py h2h --search` use it.
+  - `env/tools/test_search.js` gained check 5 (CRN).
+  - New `notes/scripts/c03_check.py`: (1) k = 1 against greedy deal by deal on the GPU path, (2) the cost of J2 (k 4,
+    dets 4) with and without CRN, (3) a gross check of J2 on the resetcap-499 walls against the 24 lists against the
+    CPU path's 0.607. Steps 1-2 were launched at 22:26 behind C45's look lock (`runs/probe/C03/check12.log`).
+- **Evidence:** `node env/tools/test_search.js --games 6 --search-games 3`: PASS. k = 1 equals greedy in 6/6 games;
+  k = 4 finished 3 games with 0 line errors (moved off the best 17.4%); a batch equals one by one at horizons 1 and 2
+  (12/12); copies show the decider the real observation (96/96). New: with CRN each search dealt its copies from 3
+  seeds shared by all candidates, without CRN from 3 per candidate (12/12 searches each), and a CRN batch equals one
+  by one (12/12).
+- **Found:** Search on the GPU path already existed for the loop's judge (#148); what C03 adds is a way to run it from
+  the evaluation tools and the CRN option. Whether the GPU path judges like the CPU path is still open.
+- **Next:** Read steps 1-2 (identity, cost), then step 3 and, if the cost allows, J2 judging under the round rule in
+  the loop.
+
+### #163 · 2026-10-22 · A5 C46 · A learned practice curriculum for the pilot built; its fork of W2 queued behind C45-R
+- **Done:** New `rl/curriculum.py` and `rl.train --curriculum` (`--cur-rho 0.5 --cur-beta 0.3 --cur-stale 0.3
+  --cur-edits 4 --cur-matchups 512`). This is prioritized level replay with ACCEL's edits, with decks as the levels.
+  - The buffer is the matchups' decks. A deck's score is the mean of max(advantage, 0) over the learner's decisions
+    with it in an iteration.
+  - Each deck of a matchup is a replay draw with rho, over the scored decks only, by rank (temperature beta) mixed
+    with staleness. Otherwise it is a new deck: first the start decks not yet played, then 1-4 random one-copy
+    replacements (`rl.draft.random_changes`) of a replay draw.
+  - A new deck replaces the lowest-scored one when it scores higher. The state is saved as `curriculum.json` each
+    iteration and loaded on `--resume`.
+  - `env/runner.js` results carry the game's `id`, and `remote_worker.js` collect passes it. `rl.train` uses it to tie
+    each transition to the learner's deck.
+  - `runs/pilot/C46/record.md` was written first. `runs/pilot/C46/chain.sh` forks W2's iteration-119 checkpoint to 199
+    with W2's flags and seed 2, no round rule, with C45-P as the control. A waiter launched at 22:41 starts it when C45-R
+    finishes training.
+- **Evidence:**
+  - First 3-iteration smoke: admitted 0 new decks, and never-played decks were ranked by their list position. Both
+    were fixed: replay draws come only from scored decks, and first visits go through the new-deck branch.
+  - Offline buffer run, 14 iterations at 256 matchups with random scores: 64-109 decks admitted an iteration, and the
+    start decks in the buffer fell from 512 to 22.
+  - Second smoke, 2 iterations and then a resume to 3: 93 / 129 / 174 decks scored, so the resume kept the state.
+    Median score 0.13-0.15. The 10th percentile is 0.0: decks whose games gave no positive advantage.
+- **Found:** Nothing on the pilot yet. Prioritized level replay's known risk applies here: a score built on surprise
+  can favour decks whose games are mostly luck. The buffer's shape and the Prize-ending share are logged so that
+  drift can be seen.
+- **Next:** C46's looks against C45-P's; C02's T; C03's checks.
+
+### #164 · 2026-10-22 · A5 C02 C47 · The round length researched: 20 minutes and the procedure documented, the turn count not, so T stays 20-45; the loop under the rule queued
+- **Done:** C02's research agent reported at 22:45 (Q1-Q3 inside the box, about 55 minutes). It could not write files,
+  so its text was saved as `reports/C02-round-length/findings.md`. The second agent's quote check in C02's design was
+  not run. Under the record's mapping (R-unknown) T stays the per-deal draw from 20..45, which C45-R already uses.
+  - C47 (`runs/screens/C47-record.md`, H116): `scr-gate479`'s command from 479 with `--round-turns 20-45` and
+    `--reseed 5`, then the final pilot's verdicts (untimed and under the rule) and its lists h2h under the rule. Chain
+    `runs/screens/C47-chain.sh`. A 1-iteration `rl.metagame --round-turns 20-45` smoke (60 games) gave endings
+    `{time: 31, no-pokemon: 27, prizes: 2}`, 0 errors.
+  - Queue: Evan's rule goes first, so C47 waits for C45-R's slot. C46's waiter was stopped (taskkill) and re-queued
+    behind C45-P (both at 22:46).
+- **Evidence:** From `findings.md`:
+  - **R = 1,200 s:** four WotC documents and three players at Long Beach. The East Coast STS's 25 minutes is another
+    format.
+  - **At time:** the turn in progress is finished (DCI §216; the Long Beach judge "Time is up . . . at the end of this
+    turn"), then more Prizes taken wins for 2 points. A Prize tie is a draw at 1 point each, one game a round, 8 Swiss
+    rounds. The finals were played to a result (one source).
+  - **s (seconds a player-turn):** no primary source; two one-source upper bounds of about 55-85 s. So T = (1,200 −
+    O) / s spans 17-57 under the priors, which is R-unknown.
+  - **How often time was reached:** about 5-9% of Swiss games in the younger divisions and 15-16% in 15+, from the
+    final standings (totals not divisible by 3), with four player reports.
+  - **Fast human decks:** six Prizes in about 7 own turns, about 13-14 engine turns, in two independent reports.
+  - **Stall decks:** they were played. One source calls them weak because of the 20 minutes.
+- **Found:** (1) The engine's rule matches the documented 2000 procedure (finish the turn, Prizes decide, a tie is a
+  draw, 3 / 2 / 1 / 0), so nothing in #161's build changes. (2) The turn count is the one fact the record could not get,
+  and C13's verdicts flip inside the prior (set C at 44.6, set A at 55.9), so the uncertainty in T remains a live
+  rival (E), not settled. (3) H-pilot-slow holds: humans finished Prize races in about 13-14 engine turns, while our
+  pilots' lists take 34-41. That is a target for the pilot independent of the clock, and a reason the clock binds
+  much harder on our pilots than it did on 2000 players, who reached time in 1 game in 6 to 1 in 20.
+- **Next:** C47 and C46 as their slots free; C45's looks; C03's checks.
+
+### #165 · 2026-10-23 · A5 C03 · GPU-served search: k = 1 replays greedy exactly, J2 runs 2.7x the CPU path's games a second, CRN cuts the overrule rate from 53% to 46%
+- **Done:** `notes/scripts/c03_check.py --steps 1,2` (launched 22:26, behind C45's look lock; read 00:08), pilot
+  `runs/screens/scr-resetcap/checkpoint.pt`, the 3 `walls_resetcap499` walls against the 24 lists, 4 workers, 16
+  searched games at once a worker, RL_GPU_SHARE 0.15, beside 3 screens (C45-P, C46, C47). Output
+  `runs/probe/C03/check.json`. Step 3 (the gross check against the CPU path's 0.607) is not run yet.
+- **Evidence:**
+  - Identity, 2 games a pair (144 games): k = 1, dets 1 against greedy on the same deals, 0 differ in winner, ending,
+    turns or steps. 17,640 searches, 0 moved off the pilot's best, 0 line errors, 2 lines capped.
+  - Cost, J2 (k 4, dets 4, maxSteps 40), 1 game a pair (72 games), on the same deals:
+    - without CRN: 424.1 s, 0.170 games/s, 9,836 searches (5,175 moved off the best, 52.6%), 147,085 lines, 0 line
+      errors, 43.1 ms a searched decision (wall);
+    - with CRN: 417.1 s, 0.173 games/s, 9,536 searches (4,374 moved, 45.9%), 143,785 lines, 3 capped, 43.7 ms.
+  - The CPU path (#159): 0.0625-0.064 games/s with 4 workers x 8 games, 864-874 ms a search per game, moved off the
+    best 52-53%.
+- **Found:** (1) The GPU path plays exactly the greedy games at k = 1. Its unCRN overrule rate (52.6%) is the CPU
+  path's, which is a first sign that it searches the same way; step 3 tests the verdict. (2) The GPU path is about 2.7x
+  faster in games a second beside three screens. Searching all 2,000 judged games of a loop iteration would still take
+  about 3.3 h, so searched judging in the loop has to be partial, or wait for a free GPU and fewer copies. (3) CRN
+  changes nothing in cost and cuts the overrule rate by 6.7 points. That is consistent with part of the unCRN switches
+  being re-deal noise (C03's re-deal rival), though this does not measure decision agreement.
+- **Next:** Step 3 when the GPU frees up; the CRN self-agreement check on human-free positions (C03's gate for CRN in
+  judging and in EI targets).
+
+### #166 · 2026-10-23 · A5 C46 · The learned curriculum moves practice to human-shaped decks in five iterations, and without a clock its longer games end by deck-out: stopped by the stall rule
+- **Done:** C46 (`runs/pilot/C46/record.md`, H115) started at 23:54 when C45-P finished and ran 120-125. The watcher's
+  stall rule (deck-outs at least 0.30, mean of 3 iterations) wrote STOP at 00:05 (0.431 over 122-124). The run
+  stopped after 125 (00:07), so no look was reached. Read at 00:56: the slot sat idle about 50 minutes.
+- **Evidence:** `runs/pilot/C46-cur/log.jsonl`, per iteration:
+
+  | Iteration | Games | Endings no Pokémon / prizes / deck-out | Decisions a game | Admitted | Score q10/q50/q90 | Buffer median P/T/E | Start decks left |
+  |---|---|---|---|---|---|---|---|
+  | 120 | 575 | 425 / 108 / 40 | 116 | 185 | 0.118 / 0.224 / 0.498 | 9 / 28 / 23 | 326 |
+  | 121 | 654 | 529 / 77 / 45 | 95 | 133 | 0.133 / 0.242 / 0.493 | 8 / 28 / 24 | 236 |
+  | 122 | 488 | 124 / 174 / 188 | 227 | 123 | 0.163 / 0.258 / 0.515 | 9 / 28 / 23 | 172 |
+  | 123 | 470 | 95 / 169 / 206 | 243 | 95 | 0.184 / 0.264 / 0.509 | 10 / 28 / 21 | 138 |
+  | 124 | 464 | 73 / 173 / 218 | 237 | 102 | 0.199 / 0.274 / 0.503 | 11 / 28 / 19 | 107 |
+  | 125 | 456 | 52 / 154 / 250 | 242 | 78 | 0.202 / 0.274 / 0.479 | 13 / 28 / 17 | 87 |
+
+  For comparison, C45-P over the same iterations from the same checkpoint: no Pokémon about 78%, prizes 17%, deck-out
+  5%. The human lists' medians are 13.5 / 28 / 18 (evaluation only).
+  Bands: Transfer / Neutral / Hurts are unread (no look). Drift: the Prize-ending share reached 33-37% (at least 30%),
+  so the curriculum moved practice toward Prize races. The kill (stall) fired as registered.
+- **Found:** (1) Replay by the pilot's own positive value loss turned the practice over within 2 iterations once
+  replay began (121 → 122). Bench-out games fell from 81% to 11%, and games doubled in length. In 5 iterations the
+  buffer's median deck went from 8 / 28 / 24 to 13 / 28 / 17, the human lists' shape, though nothing in the
+  curriculum reads a deck's shape. Card edits and replay alone made those decks the most informative practice. (2)
+  Without a clock those longer games end by deck-out, the stall regime, so practice drifted toward the game the walls
+  win. (3) The stall rule cannot tell a stall the pilot has learned from long games that the decks themselves cause.
+  Here it is probably the second: deck-outs rose with game length and with Pokémon count, the same iteration
+  bench-outs vanished. The next arm pairs the curriculum with the round rule, where a game cannot last past T.
+- **Next:** C48: the curriculum under the round rule, from W2 at 119 (record first); C47's reseed.
+
+### #167 · 2026-10-23 · A5 C47 C48 · The loop under the round rule ends closest to the human shape yet, walls still most decks; its replication and the curriculum under the rule launched
+- **Done:** C47 seed 5 (`runs/screens/scr-round479`) ran 480-499, 23:25-00:55, exit 0. It was scored by
+  `notes/scripts/aa_window.py` against the gated and ungated groups of #153 (`runs/probe/c47_aa.txt`). Its final pilot's
+  verdicts (untimed and under the rule) and the lists h2h under the rule wait in the chain for the look lock.
+  Launched at about 01:00, after their records:
+  - C48 (`runs/pilot/C48/record.md`, H117): the curriculum plus `--round-turns 20-45` from W2 at 119 to 199, against
+    C45-R and C45-P.
+  - C47's replication, seed 6 (`runs/screens/scr-round479-s6`; addendum to `runs/screens/C47-record.md`).
+- **Evidence:**
+  - Window 490-499: top-12 distance from the human medians **6.27** (gated seeds 9.55 / 10.60 / 11.70; ungated 15.72
+    / 17.17); arm − `scr-gate479` −3.3, past the 3.0 point bar.
+  - Wall-core decks at 484 / 489 / 494 / 499: 53 / 47 / 57 / 69, mean 56.5 (gated means 64.0 / 61.0 / 71.0); −7.5
+    against `scr-gate479`, inside the 12.7 bar.
+  - Largest type 19 / 24 / 15 / 23. Decks moved 13.9 an iteration (gated about 21). Incoming entropy 2.35. Median at
+    499: 11 / 28 / 19, against 10 / 28 / 22 at 480 and the gated seeds' 13-14 / 22-25 / 21-23.
+  - Endings of the 2,000 judged and practice games: time 1,093 at 480, 1,442 at 499 (55% to 72%); no Pokémon 847 to
+    322; deck-out 30 to 206 (before the cut); prizes 22-37. Draws ("cut") 266-376 an iteration. About 5 min an
+    iteration.
+  - Bands: Type needs at most 58 at both 494 and 499; 499 has 69, so Type is not met, though 489 and 494 were inside
+    it. Shape only holds: wall-core 69 at 499 is inside 59-85, and the distance is 4.3 below the gated mean of 10.6.
+- **Found:** (1) With every game played and paid under the 2000 rule, the loop's decks came closest to the human shape
+  of any run: distance 6.3 against 9.6-11.7 for the same recipe untimed, and a median of 19 Energy against the human
+  18. Most decks are still Chansey / Snorlax walls (47-69 of 99), and the count rose again at the last snapshot. (2)
+  Most games now end at time (72% at 499), so the population is judged mainly on Prize leads at turn 20-45: slow wins
+  pay 2/3 and ties 1/3, which compresses the scores and halves the decks moved (14 against 21). (3) This is one seed,
+  and its distance clears the point bar by 0.3 cards, so it is replicated before anything builds on it.
+- **Next:** C47's verdicts and seed 6; C45-R's last look; C48.
+
+### #168 · 2026-10-23 · A5 C45 · The round rule as the pilot's reward: +54 Elo on the lists under the rule, −65 untimed; it plays for the lead at time rather than faster
+- **Done:** C45 (`runs/pilot/C45/record.md`, H114). R trained 120-199, 22:01-23:24, and P to 23:53, both exit 0.
+  The watchers ran all 8 looks, the last at 01:16. The pair rule at 159 read −78.2, short of −80, so it did not stop R.
+  Outputs: `runs/pilot/C45/eval-R/looks.jsonl` and `eval-P/looks.jsonl`.
+- **Evidence:** Lists Elo against pilot-v2 it349 [90%] (276 pairs, 1,104 games), untimed and under the rule (T 20..45);
+  JF1 (walls against the lists, both seats by the pilot) untimed and as the walls' share of the event points:
+
+  | Iteration | R untimed | P untimed | R − P | R rule | P rule | R − P | JF1 R / P | Event share R / P | Held-out R / P |
+  |---|---|---|---|---|---|---|---|---|---|
+  | 139 | −325.4 [−357, −298] | −256.8 [−283, −233] | −68.6 | −217.0 [−238, −198] | −235.3 [−258, −214] | +18.3 | 0.514 / 0.628 | 0.498 / 0.550 | +32 / +48 |
+  | 159 | −309.6 | −231.4 | −78.2 | −190.4 | −230.5 | +40.1 | 0.518 / 0.577 | 0.549 / 0.529 | +53 / +49 |
+  | 179 | −307.1 | −239.2 | −67.9 | −190.4 | −233.3 | +42.9 | 0.529 / 0.648 | 0.521 / 0.582 | +55 / +59 |
+  | 199 | −317.4 [−348, −290] | −252.7 [−278, −229] | −64.7 | −193.0 [−215, −173] | −247.1 [−272, −224] | +54.1 | 0.527 / 0.668 | 0.528 / 0.546 | +51 / +64 |
+
+  - Training endings at 199: R 69% no Pokémon, 26% time, 4% prizes, 0.3% deck-out (85 decisions a game); P 76%, 19%
+    prizes, 5% deck-out (113 decisions). R's Prize endings were 17% before the fork. R's entropy 0.47-0.55 against
+    P's 0.60-0.65.
+  - The walls' deck-out share of their untimed JF1 wins: R 62-69%; P 34% at 139, then 50-52%.
+  - Bands: the primary (untimed) is **Hurts** (−64.7 at 199, at most −50). The secondary holds: the gain is specific
+    to timed play (+54.1 at least +50 at 199; +42.9 at 179). The judge by-product is not met (R's event share 0.528,
+    0.018 below P's). P's trend: −252.7 at 199, short of −200.
+- **Found:** (1) Paid the event's points, the pilot gets better at the game as the 2000 rule defines it: +54 Elo on the
+  human lists, past the band. It does so by playing for a Prize lead at the cut, not by finishing faster: Prize endings
+  in its training fell from 17% to 3-5% and its games got shorter only because they are cut. H114's mechanism (tempo)
+  is not what it learned. (2) The cost is play past turn 45, which it never sees: −65 Elo untimed, and in untimed games
+  the walls deck it out (two-thirds of their wins). (3) As a judge under the rule it still gives the walls about half
+  the points (0.52-0.55), like the plain pilot, so the clock in the reward alone does not fix the judge. (4) The plain
+  pilot gained only 22 Elo on the lists over 80 more iterations. As it improved, its JF1 rose from 0.58 to 0.67 and
+  its walls' deck-out wins from 34% to 52%: the walls' stall became more valuable to it as it grew stronger (H5 / H51's
+  direction, read on C30-cont's bands).
+- **Next:** C48 (the curriculum under the rule), whose control under the rule is R. Under the rule R is now the best
+  human-free pilot on the lists (−193), so it is the pilot to build on if C48 does not beat it.
+
+### #169 · 2026-10-23 · A5 C48 C49 · Under the round rule the curriculum's score turns practice into bench-outs (stopped); soft search targets built and launched in its slot
+- **Done:**
+  - C48 (`runs/pilot/C48/record.md`, H117) ran 120-149 from 00:58 and was stopped by hand at 01:25, under CLAUDE.md's
+    no-progress rule rather than a registered kill. Its watcher looks at the 139 snapshot when the lock frees.
+  - Soft search targets were built for `rl.train` (C49, H118):
+    - `env/agents.js` PolicySearchAgent `keepLines`: each answer carries the moves searched and each copy's score;
+    - `env/remote_worker.js` collect `probe`: at a share p of the learner's recorded main-phase decisions with two or
+      more options, a copy of the game, searched after the games with CRN copies in batches of 32;
+    - `rl/train.py` `--search-distill W --probe-p --probe-k --probe-dets --distill-tau --distill-clip`: the target
+      pi x exp(clip((q − mean q) / tau)) over the searched moves (pi detached and restricted to them), and W x KL(target
+      || pi restricted) averaged over all the minibatch's rows. Logged as `search_distill` (probes, q spread) and
+      `sd_kl` / `sd_agree`.
+  - `notes/scripts/pilot_watch.py --entropy-ref / --entropy-kill`: the stop file when the run's entropy over its last 5
+    shared iterations is at least the kill above the control's.
+  - C49: `runs/pilot/C49/record.md` written, then `chain.sh` started at 01:26 in C48's slot. It is C45-R's command plus
+    `--search-distill 20 --probe-p 0.05` (k 4, dets 4, tau 0.1, clip 1), against C45-R.
+- **Evidence:**
+  - C48's training games, iterations 140-149: no Pokémon 311-754 of about 600-800 an iteration, rising to 95% by 149;
+    prizes 2-17; time 41-259; decisions a game 85 down to 49. Buffer median 7-11 / 27-35 / 17-21, scores q50
+    0.45-0.51. Over 120-139 (in the C48 record's logs): prizes 0-8 a iteration, decks from the start 336 → 3.
+  - `node env/tools/test_search.js --games 4 --search-games 2`: PASS. New check 6: 12/12 answers carry candidates and
+    per-copy scores whose means give their choice and value.
+  - The soft-target smoke (W2 it119 weights, 1 worker, `--round-turns 20-45 --search-distill 1 --probe-p 0.05`):
+    iteration 0 had 120 probes, q spread median 0.074, sd_kl 0.025, sd_agree 0.44 and 48.3 s collect. Iteration 1 ran
+    out of the test's 1.59 GB GPU allowance in serving the search lines (64 probes x 16 lines a batch), so the batch
+    went to 32.
+- **Found:**
+  - (1) The curriculum's score depends on the reward's scale. Under the rule a win on time pays ±1/3 against ±1 for a
+    finished game, so the positive value loss is largest where games end decisively early, which here means benching
+    out. Untimed, the same score found human-shaped decks and Prize races (#166). Under the rule it found 8-Pokémon
+    decks and bench-outs, so the score is not game-agnostic across reward scales as it stands. Normalising it per
+    outcome scale would be the next form.
+  - (2) At weight 1 over all rows the search term is about 0.05% of the loss, so C49 registers weight 20, about 8% of
+    the policy gradient.
+- **Next:** C49's looks against C45-R; C47 seed 5's verdicts and seed 6; C48's 139 look.
+
+### #170 · 2026-10-23 · A5 C47 · Seed 5's pilot under the round rule: level with pilot-v2 on the human lists, and the walls about even with the field as it judges
+- **Done:** C47-chain's evaluations of `runs/screens/scr-round479/checkpoint.pt` (iteration 499) ran behind the look
+  lock 01:16-01:28:
+  - `probe_matchups.py` on the 3 resetcap-499 walls against the 24 lists, 32 a pair, seed 11, both seats by the pilot,
+    untimed (`runs/probe/judge/round479_r0.json`) and under the rule (`round479_r20-45.json`);
+  - `rl.lab h2h` against pilot-v2 it349 on the lists under the rule (`round479_h2h_rule.json`, 276 pairs).
+- **Evidence:**
+  - Untimed JF1: 0.668. The walls' wins came 1,068 by deck-out, 326 by Prizes and 144 by no Pokémon; the lists' wins
+    275 / 281 / 208. The gated seeds' pilots read 0.680 / 0.743 / 0.718 (#153).
+  - Under the rule: plain 0.505, walls' share of the event points 0.504. Time endings 686 won by the walls, 679 by the
+    lists and 361 drawn; Prizes 22 / 61; deck-out 150 / 35; no Pokémon 126 / 184.
+  - Lists h2h under the rule against pilot-v2: score 0.502, +1.6 Elo [−16.0, +19.2], 1,104 games, 0 errors.
+  - Band (reported): the walls' event share is 0.504, just above the 0.50 line.
+- **Found:**
+  - (1) The pilot the loop grew under the rule plays the human lists as well as pilot-v2 under the same rule (+1.6
+    [−16, +19]). It started from 479, a pilot-v2 descendant. For comparison, C45-R from W2 is −193 and every
+    population pilot was 27-45 Elo below pilot-v2 untimed (#131-#136).
+  - (2) As a judge it still favours the walls untimed (0.668, the gated pilots' level). Under the rule it gives them
+    half the points (0.504), the lowest event-share reading of any trained population pilot on the walls. With the
+    rule the judge stops overrating the walls against the human field. The loop's own decks still hold the walls (47-69
+    of 99 decks), because they compete against each other, not against the human lists.
+  - (3) Most of the walls' remaining untimed edge is deck-out wins (1,068 of 1,538), which the rule removes.
+- **Next:** Seed 6 (about 02:45); the walls against the loop's own non-wall decks under the rule, to see why selection
+  keeps them.
+
+### #171 · 2026-10-23 · A5 C48 · C48's one look (139): level with the clocked pilot under the rule, and a judge that rates the walls higher
+- **Done:** C48's watcher looked at the 139 snapshot (01:26-01:45) and exited, since the run had stopped at 149 (#169).
+- **Evidence:** Lists Elo against pilot-v2 untimed −271.8 [−297.9, −248.0], under the rule −222.1 [−245.0, −200.7];
+  held-out +46.5. JF1 0.656 untimed; walls' event share under the rule 0.611. At 139 C45-R read −325.4 / −217.0 /
+  0.498 and C45-P −256.8 / −235.3 / 0.550. So C48 − C45-R was +53.6 untimed and −5.1 under the rule.
+- **Found:** Twenty iterations of the curriculum under the rule left the pilot level with the rule alone on the
+  lists under the rule (−5) and better untimed (+54, inside two looks' noise of C45-P). As a judge it gave the walls
+  more of the event points than either C45 fork (0.611), so practice on bench-out decks did not make a better judge.
+  The stop lost no registered reading that could have changed the conclusion.
+- **Next:** C49's looks; C47 seed 6.
+
+### #172 · 2026-10-23 · A5 C49 · Soft search targets, first look (139): +55 Elo over the clocked pilot on the lists under the rule, +72 untimed; a dose arm queued
+- **Done:** C49's look at 139 (01:54-02:15). C49b (`runs/pilot/C49b/record.md`; weight 60, otherwise C49) was
+  written before C49's 159 look. It is queued to start when C47 seed 6's training ends.
+- **Evidence:** C49 at 139, against pilot-v2 it349:
+  - lists under the rule −162.2 [−182.1, −143.3] (C45-R −217.0, C45-P −235.3);
+  - lists untimed −253.7 [−279.0, −230.5] (C45-R −325.4, C45-P −256.8);
+  - held-out +59.1 (+32.2 / +48.3).
+  - JF1 0.622 untimed; walls' event share under the rule 0.543 (0.498 / 0.550). The walls' untimed wins are 1,132 by
+    deck-out of 1,432.
+  - Training 120-153: 1,212-1,399 probes an iteration; agreement between the pilot's top move and the search's best
+    among the searched moves 0.43-0.54 (0.49 over 120-124, 0.53 over 149-153); KL 0.010-0.036 (C45-R about 0.007).
+    Entropy 0.43-0.59, against C45-R's 0.44-0.55 at the same iterations, so the entropy kill is far off.
+  - Collect 35-40 s against 13-19 s.
+- **Found:** At the first look the soft targets put the pilot 55 Elo above the rule alone under the rule and 72 above
+  it untimed, about 2 SE each. They also reverse most of the rule's untimed cost: C49 is level with C45-P untimed. One
+  look is not the registered reading (179 and 199). The policy moves about twice as far an update as without the
+  targets, with no entropy rise, unlike the hard targets of #103-#106 (+0.27-0.29).
+- **Next:** C49's 159-199 looks; C49b; C47 seed 6.
+
+### #173 · 2026-10-23 · A5 C47 · The loop under the round rule, seed 6: the shape effect replicates (6.8 against 9.6-11.7), the walls fall in one seed and not the other
+- **Done:** C47 seed 6 (`runs/screens/scr-round479-s6`, `--reseed 6`, otherwise seed 5's command) ran 480-499,
+  00:58-02:37, exit 0. Both rule seeds were scored against the three gated seeds by `notes/scripts/aa_window.py`
+  (`runs/probe/c47_s6_aa.txt`). Seed 6's final-pilot verdicts wait in its chain for the look lock. C49b started in its
+  slot at 02:37.
+- **Evidence:**
+
+  | Run | Window distance | Largest type 484/489/494/499 | Wall-core 484/489/494/499 | Moved | h_in | Median at 499 |
+  |---|---|---|---|---|---|---|
+  | round seed 5 | 6.27 | 19 / 24 / 15 / 23 | 53 / 47 / 57 / 69 | 13.9 | 2.35 | 11 / 28 / 19 |
+  | round seed 6 | 6.77 | 17 / 18 / 15 / 9 | 47 / 44 / 51 / 53 | 11.6 | 4.12 | 13 / 26 / 22 |
+  | gated seeds 2 / 3 / 4 | 9.55 / 10.60 / 11.70 | means 19.0 / 18.0 / 32.2 | means 64.0 / 61.0 / 71.0 | 20.4-21.0 | 1.80-2.87 | 13-14 / 22-25 / 21-23 |
+
+  Pairwise RMS between the rule seeds: distance 1.92, wall-core 9.2. Pooled within-recipe SD (3 df): distance 0.90,
+  wall-core 5.25. Welch 95% CI, gated minus rule: distance +4.10 [+1.75, +6.45], wall-core +12.7 [−7.0, +32.4],
+  largest type +5.6 [−11.7, +22.8], moved +8.1 [−4.9, +21.0]. Seed 6's judged games: draws 224-255 an iteration over
+  496-499.
+  Bands per seed: seed 5 Shape only (69 wall-core at 499); seed 6 **Type** (51 and 53 at 494 and 499, at most 58).
+- **Found:**
+  - (1) The shape effect of the round rule replicates. Both seeds end 4.1 cards (1.8-6.5) closer to the human
+    medians than the same recipe untimed, the closest of any recipe.
+  - (2) The walls are fewer on average (52.6 against 65.3 wall-core decks at the snapshots). The two seeds disagree,
+    though: seed 6 held them at 44-53 throughout, while seed 5 rose to 69 at the end. So the type effect is likely but
+    not established at two seeds (the CI includes 0).
+  - (3) Seed 6's draft head kept more entropy (h_in 4.12 against 1.80-2.87), and its largest type shrank to 9 decks at
+    499, the most diverse end of any 479 fork.
+- **Next:** Seed 6's verdicts; a third seed of the rule, or the rule with C49's pilot change in the loop, once C49
+  reads.
+
+### #174 · 2026-10-23 · A5 C49 C47 · C49's second look gives back the first's gain (−11 under the rule at 159); the soft targets ported to the loop (untested); a third rule seed queued
+- **Done:**
+  - C49's look at 159 (02:24-02:43). C49b (weight 60) started at 02:37.
+  - The soft search targets were ported to the loop, written but **not yet smoke-tested**:
+    - `rl/train.py` `probe_targets()` (shared);
+    - `env/remote_worker.js` `probeCatch()` (shared by collect and games; games probes only the recorded decisions);
+    - `rl/metagame.py` `--search-distill --probe-p --probe-k --probe-dets --distill-tau --distill-clip` (the PPO
+      batch gets `probe_c` / `probe_q`; the log row gets `search_distill`; exclusive with `--distill`).
+    - `node --check env/remote_worker.js` passes, and both Python files parse.
+  - C47 seed 7 (addendum to its record) is queued for C49's slot.
+- **Evidence:**
+  - C49 at 159: lists under the rule −201.5 [−223.2, −181.1] (C45-R −190.4), untimed −299.6 [−328.7, −273.6] (C45-R
+    −309.6; pair rule +10.0, no stop), held-out +51.8. JF1 0.631; walls' event share under the rule 0.569.
+  - C49 − C45-R over the two looks: under the rule +54.8 then −11.1 (mean +21.9); untimed +71.7 then +10.0.
+  - C49b at 120-123: KL 0.061-0.075 and clip fraction 0.20-0.22 an update, against C49's 0.010-0.028 and 0.11, with
+    entropy 0.54-0.56 (C45-R 0.52-0.55).
+  - C49's collect rose to 125 s at 170, with two probing runs and a look sharing the GPU.
+- **Found:** C49's first-look gain was mostly noise or a transient: at 159 it is level with C45-R under the rule. One
+  look's difference has an SE of about 28, and C45-R's own looks wander by ±15 under the rule. The registered
+  readings at 179 and 199 decide. The triple dose moves the policy 3-5x as far an update without, so far, an entropy
+  rise.
+- **Next:** C49's 179 and 199 looks; C49b's; C47 seed 7; a smoke test of the loop's `--search-distill` before any
+  launch that uses it.
+
+### #175 · 2026-10-23 · A5 C49b · RAM nearly full: the dose arm paused at 129
+- **Done:** At 02:51 Claude Code stopped one of its own background waits because the machine was critically low on
+  memory. Free RAM was 4.0 of 31.4 GB. The two soft-target trainers (C49, C49b) held about 8 GB of private memory each,
+  C47 seed 6's lists h2h 3.3 GB, Chrome 4.8 GB and the node workers 4.4 GB. C49b was paused at 02:52 with its stop
+  file and ended after iteration 129 (exit 0). Free RAM then read 10.1 GB. Its watcher exited with no look reached
+  (no 139 snapshot yet). Resume: delete `runs/pilot/C49-sd60/STOP`, then run `runs/pilot/C49b/chain.sh` (`--resume`
+  from its checkpoint, with a new watcher). C47 seed 7's waiter (behind C49) is still alive.
+- **Evidence:** C49b's iterations 120-129: KL 0.061-0.075, clip fraction 0.17-0.22, entropy 0.42-0.56 (C45-R
+  0.50-0.55 there).
+- **Found:** A soft-target trainer holds about 8 GB of RAM against about 5 GB for a plain fork (#161). Two of them
+  beside a probe and the desktop's own programs come within 4 GB of the 31 GB machine. Limit: at most one probing
+  trainer beside a metagame screen.
+- **Next:** C49's last looks; C47 seed 7; C49b resumed when C49's slot frees, if RAM allows.

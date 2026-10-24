@@ -21,6 +21,9 @@
   save_atomic keeps the old file when a save fails; ppo_update's stats equal their closed forms on one step
   (grad_norm the pre-clip norm, kl_last the last epoch's kl), and two seeded calls give identical parameters;
   out of GPU memory mid-minibatch, it redoes the minibatch in micro-batches half the size, with the same step
+- search-strength judging (log #148): rl/metagame.py judged_mean, its noise baseline and recent_score (check_judged),
+  and rl/remote.py's top-k reply on a fake pool: plain replies unchanged, each row's top K legal options best first,
+  chunked forwards alike (check_topk)
 """
 import argparse
 import contextlib
@@ -772,6 +775,165 @@ def check_lam_turn(failures):
     print("lam_turn: lambda 1 inside a turn, lam across turns, interleaved trajectories; None = ordinary GAE")
 
 
+def check_judged(failures):
+    """rl/metagame.py judged / judged_mean (--judge-search, log #148): without searched games it is exactly (sum / n, n)
+    (the score without --judge-search) in both modes, with none at all the default, with searched games only their
+    mean and count; the searched mean is shrunk toward the greedy one by `prior` games (prior 0: unshrunk) and
+    approaches its own mean as its games grow; 'min' at z 0 is the plain min of the two, and at z > 0 the greedy mean
+    lowered only to the shrunk mean plus z of its errors (never above the greedy mean, never below the plain min, the
+    greedy mean when search agrees), monotone in searched wins, with the shrunk mean's games behind a lowered score; on
+    noise alone (search as strong as greedy) z 1.5 lowers scores by under 0.01 where the plain min lowers them ~0.05
+    (the #148 review); null_searched redraws only scores with both kinds of game; recent_score prefers 'judged'."""
+    from rl.metagame import judged, judged_mean, null_searched, recent_score
+    rng = np.random.default_rng(5)
+    bad = []
+    for _ in range(200):
+        n, sn = int(rng.integers(1, 30)), int(rng.integers(1, 30))
+        x = {"sum": float(rng.integers(0, 2 * n + 1)) / 2, "n": n, "ssum": float(rng.integers(0, 2 * sn + 1)) / 2, "sn": sn}
+        g, s = x["sum"] / n, x["ssum"] / sn
+        prior = float(rng.choice([0.0, 1.0, 4.0, 16.0]))
+        z = float(rng.choice([1.0, 1.5, 2.0]))
+        m0, m, q = judged_mean(x, "min", prior, z=0.0), judged_mean(x, "min", prior, z=z), judged_mean(x, "search", prior)
+        shrunk = (x["ssum"] + prior * g) / (sn + prior)
+        if not (np.isclose(q, shrunk) and np.isclose(m0, min(g, shrunk)) and min(g, s) - 1e-12 <= q <= max(g, s) + 1e-12):
+            bad.append(("bounds", x, prior, m0, q))
+        p = min(0.85, max(0.15, (x["sum"] + x["ssum"]) / (n + sn)))
+        u = shrunk + z * sn / (sn + prior) * (p * (1 - p) * (1 / sn + 1 / n)) ** 0.5
+        if not (np.isclose(m, min(g, u)) and m0 - 1e-12 <= m <= g + 1e-12):
+            bad.append(("z: min(greedy, shrunk + z errors)", x, prior, z, m))
+        ns = (sn + prior) ** 2 / (sn + prior ** 2 / n)
+        if not np.isclose(judged(x, "min", prior, z)[1], n if g <= u else ns) or not np.isclose(judged(x, "search", prior)[1], ns):
+            bad.append(("games behind the score", x, prior, z))
+        if s >= g and not (m == g and m0 == g):
+            bad.append(("min = greedy when the searched mean is as high", x, m))
+        if prior == 0 and not (np.isclose(q, s) and np.isclose(ns, sn)):
+            bad.append(("prior 0", x, q))
+        more = {**x, "ssum": x["ssum"] + 1, "sn": sn + 1}
+        if (judged_mean(more, "search", prior) < q - 1e-12 or judged_mean(more, "min", prior, z=0.0) < m0 - 1e-12
+                or judged_mean(more, "min", prior, z=z) < m - 1e-12):
+            bad.append(("a searched win lowers the score", x, prior, z))
+        plain = {"sum": x["sum"], "n": n}
+        if not (judged_mean(plain, "min", prior) == x["sum"] / n == judged_mean({**plain, "ssum": 0.0, "sn": 0}, "search", prior)
+                and judged(plain, "min", prior)[1] == n):
+            bad.append(("no searched games", x))
+        y = null_searched(x, rng)
+        if not (y["sn"] == sn and y["n"] == n and y["sum"] == x["sum"] and 0 <= y["ssum"] <= sn and y["ssum"] == int(y["ssum"])):
+            bad.append(("null_searched", x, y))
+    if null_searched(plain, rng) is not plain or null_searched({"sum": 0.0, "n": 0, "ssum": 2.0, "sn": 3}, rng)["ssum"] != 2.0:
+        bad.append(("null_searched: no redraw without both kinds of game",))
+    if judged_mean({"sum": 0.0, "n": 0}, "min", 4.0, -1.0) != -1.0 or judged_mean({"sum": 0.0, "n": 0, "ssum": 0.0, "sn": 0}, "search", 4.0, 0.5) != 0.5:
+        bad.append(("no games: the default",))
+    if judged({"sum": 0.0, "n": 0, "ssum": 3.0, "sn": 4}, "min", 4.0) != (0.75, 4):
+        bad.append(("searched only: their mean",))
+    if judged_mean({"sum": 10.0, "n": 10, "ssum": 0.0, "sn": 4}, "min", 4.0, z=0.0) != 0.5:      # (0 + 4 x 1) / (4 + 4)
+        bad.append(("shrinkage by the prior's games",))
+    big = judged_mean({"sum": 6.0, "n": 10, "ssum": 2000.0, "sn": 10000}, "search", 4.0)
+    if abs(big - 0.2) > 1e-3:
+        bad.append(("many searched games: their own mean", big))
+    bias = {}                                            # search exactly as strong as greedy: what noise alone costs
+    for z in (0.0, 1.5):
+        d = []
+        for _ in range(4000):
+            x = {"sum": float(rng.binomial(24, 0.5)), "n": 24, "ssum": float(rng.binomial(8, 0.5)), "sn": 8}
+            d.append(judged_mean(x, "min", 4.0, z=z) - x["sum"] / 24)
+        bias[z] = float(np.mean(d))
+    if not (bias[0.0] < -0.03 and bias[1.5] > -0.01):
+        bad.append(("noise alone", bias))
+    a = {"sum": 3.0, "n": 4, "last": 0.2}
+    if not (recent_score(a) == 0.75 and recent_score({**a, "judged": 0.6}) == 0.6 and recent_score({**a, "judged": None}) == 0.75
+            and recent_score({"sum": 0.0, "n": 0, "last": 0.2, "judged": None}) == 0.2 and recent_score({"sum": 0.0, "n": 0}, 0.5) == 0.5):
+        bad.append(("recent_score",))
+    if bad:
+        failures.append(f"judged_mean: {len(bad)} failures, first {bad[0]}")
+    print(f"judged_mean: sum / n without searched games; shrinkage by the prior; min lowered only past z errors, "
+          f"monotone in searched wins; noise alone {bias[0.0]:+.3f} at z 0, {bias[1.5]:+.3f} at z 1.5; recent_score")
+
+
+def check_topk(failures, m, rng):
+    """rl/remote.py's top-k reply (log #148), on a fake pool (no workers): a plain request gets exactly the reply it got
+    before (no k, no top) and the same actions whoever shares its batch; a request with topk K gets each row's K most
+    likely legal options, best first (the first its action), -1 past its legal ones; topk 0 marks a search's request
+    without a top; and a search's batch forwarded in chunks answers as in one pass."""
+    from rl import remote
+    m = copy.deepcopy(m)                                 # its score head starts at zero (every logit tied): perturb it
+    gen = torch.Generator().manual_seed(7)
+    with torch.no_grad():
+        for p in m.parameters():
+            p.add_(0.05 * torch.randn(p.shape, generator=gen))
+    B_M = m.max_cand
+    n_cards = m.card_feats.shape[0]
+
+    def req(rid, n, topk=None):
+        T = m.max_tok
+        L = rng.integers(20, T, size=n)
+        kind = np.zeros((n, T), np.uint8)
+        for b in range(n):
+            kind[b, :L[b]] = rng.integers(1, 14, size=L[b])
+        card = (rng.integers(0, n_cards, size=(n, T)) * (kind > 0)).astype(np.int16)
+        aux = (rng.integers(0, 30, size=(n, T)) * (kind > 0)).astype(np.uint8)
+        cand = np.stack([rng.integers(0, 32, size=(n, B_M)), rng.integers(0, n_cards, size=(n, B_M)),
+                         rng.integers(0, 16, size=(n, B_M)), rng.integers(0, 16, size=(n, B_M)),
+                         rng.integers(0, 9, size=(n, B_M)), rng.integers(0, 64, size=(n, B_M))], -1).reshape(n, B_M * 6).astype(np.int16)
+        n_cand = rng.integers(1, B_M + 1, size=n).astype(np.int32)
+        legal = [np.sort(rng.choice(int(c), int(rng.integers(1, min(int(c), 6) + 1)), replace=False)).astype(np.int32) for c in n_cand]
+        offsets = np.concatenate([[0], np.cumsum([len(x) for x in legal])]).astype(np.int32)
+        a = {"tok_card": card.ravel(), "tok_kind": kind.ravel(), "tok_aux": aux.ravel(),
+             "glob": rng.integers(0, 49, size=n * m.glob_f).astype(np.uint8),
+             "slots": rng.integers(0, 49, size=n * 12 * m.slot_f).astype(np.uint8), "cand": cand.ravel(), "n_cand": n_cand,
+             "legal_offsets": offsets, "legal_ids": np.concatenate(legal), "keys": np.zeros(n, np.int32), "drop": np.zeros(0, np.int32)}
+        h = {"id": rid, "slot": 0, "n": n, "encoding": "tokens", "greedy": True, **({"topk": topk} if topk is not None else {})}
+        return (0, h, a), legal
+
+    def serve(requests):
+        pool = remote.RemotePool.__new__(remote.RemotePool)
+        pool.mem, pool.pace, sent = {}, 0.0, {}
+        pool._send = lambda i, kind, payload: sent.__setitem__(remote.unpack_arrays(payload)[0]["id"], remote.unpack_arrays(payload))
+        pool._serve_batches([r for r, _ in requests], {0: m}, "cpu")
+        return sent
+
+    plain, top3, line = req(1, 7), req(2, 9, 3), req(3, 5, 0)
+    alone = serve([plain])[1]
+    mixed = serve([plain, top3, line])
+    bad = []
+    hp, ap = mixed[1]
+    if set(hp) != {"id", "n", "arrays"} or [x["name"] for x in hp["arrays"]] != ["action", "logp", "value", "sampled"]:
+        bad.append(("plain reply's fields", hp))
+    if not (np.array_equal(ap["action"], alone[1]["action"]) and np.allclose(ap["value"], alone[1]["value"], atol=1e-5)):
+        bad.append(("plain answers change with a top-k request in the batch",))
+    hl, al = mixed[3]
+    if "k" in hl or "top" in al:
+        bad.append(("topk 0 got a top", hl))
+    ht, at = mixed[2]
+    (_, _, a2), legal2 = top3
+    with torch.no_grad():
+        x = [torch.from_numpy(a2[k].copy()).view(9, -1) if k != "n_cand" else torch.from_numpy(a2[k].copy()) for k in remote.TOKEN_INPUTS]
+        logits = m(*x)[0].float().numpy()
+    top = at.get("top")
+    if ht.get("k") != 3 or top is None or len(top) != 27:
+        bad.append(("top-k reply's shape", ht))
+    else:
+        top = top.reshape(9, 3)
+        for r, lg in enumerate(legal2):
+            want = sorted(lg.tolist(), key=lambda c: -logits[r, c])[:3]
+            got = [int(c) for c in top[r] if c >= 0]
+            if got != want or int(top[r][0]) != int(at["action"][r]) or list(top[r][len(want):]) != [-1] * (3 - len(want)):
+                bad.append(("top row", r, got, want, int(at["action"][r])))
+    old, remote.CHUNK = remote.CHUNK, 4                 # a search's batch of 21 rows in chunks of 4
+    try:
+        chunked = serve([plain, top3, line])
+    finally:
+        remote.CHUNK = old
+    for rid in (1, 2, 3):
+        if not (np.array_equal(chunked[rid][1]["action"], mixed[rid][1]["action"])
+                and np.allclose(chunked[rid][1]["value"], mixed[rid][1]["value"], atol=1e-5)
+                and np.array_equal(chunked[rid][1].get("top", np.zeros(0)), mixed[rid][1].get("top", np.zeros(0)))):
+            bad.append(("chunked forward differs", rid))
+    if bad:
+        failures.append(f"top-k reply: {len(bad)} failures, first {bad[0]}")
+    print("top-k reply: plain replies unchanged (fields and answers); each row's top K legal options best first, -1 past "
+          "the legal ones; topk 0 gets none; chunked forward answers alike")
+
+
 def check_lab_loop(failures):
     """rl/lab.py's loop with fake runs (an iteration count per run). (1) A STOP in the middle of a branch's segment, then
     a restart: every card is decided once, at the right iteration, including one that finished before the stop. (2) A
@@ -887,6 +1049,8 @@ def main():
     check_lab(failures, table, text, np.random.default_rng(2))
     check_lab_loop(failures)
     check_lam_turn(failures)
+    check_judged(failures)
+    check_topk(failures, tiny_pilot(table, text), np.random.default_rng(3))
     for f in failures[:20]:
         print("FAIL", f)
     print("FAIL" if failures else "PASS")

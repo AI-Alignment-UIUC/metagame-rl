@@ -53,23 +53,9 @@ gives a biased or blind builder, so pilot strength is the bottleneck.
 ## Status
 
 <!-- status:start -->
-*Updated 2026-10-20.*
+*Updated 2026-10-23.*
 
-**Where things stand.** A0, A1 and A3 are done; A2 has its ladder and the SimpleBot matchup matrix. Trained pilots beat
-SimpleBot (a human-free pilot plateaus near 83%), but every deck search, tournament and learned drafting loop has ended
-in decks unlike the human field, first traced to the pilot (it does not set up before attacking, so most Trainers are
-worth less than an Energy to it) and in log #127 to two traps that have held the lab's main line on one deck type since
-160: the drafting moves every deck to a draw of forced changes whatever its results, so whichever card the collapsed draft
-head favours piles up (basic Energy, 36.5 at 440 against the human median 18), and the pilot is so specialised in that
-type that the same decks swap verdicts with the judge (they beat the human lists 0.80 under it and 0.26 under pilot-v2,
-while a Hitmonchan variant loses to them under it and beats them 0.72–0.91 under pilot-v2). In the lab (`rl/lab.py`),
-working the approved three-stage plan with Evan's ideas first, the main line adopted his deck-free board encoder and a
-larger learning rate, but none of 16 pilot changes moved Trainer competence (0.43–0.48), and the league of draft heads
-Evan chose when the stall rule fired shares the specialised pilot, so its heads drafted the main type or lost. Under test
-now: selection of draws on real results, group changes and practice games between wide random decks (lab cards to 490
-and later), and a diagnostic fork whose pilot practises the human lists. From scratch the recipe collapses within 40
-iterations into Pokémon piles that never attack (the main line escaped only through pilot-v2's non-general start), and
-Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
+**Where things stand.** A0, A1 and A3 are done, A2 has its ladder and the SimpleBot matchup matrix, and Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards. Every learned drafting loop has ended in Chansey / Snorlax walls with more Energy and fewer Trainers than the human lists; draft and selection changes move their shape but never their type, and with the 2000 round rule now part of the game (Evan's decision) the loop came closest to the human shape of any run (19 Energy against the human 18) while walls still held most decks. The cause sits in the judge: pilots grown with the walls rate them 0.68-0.75 against the human lists, and the walls lose to the human field only when both seats search and the round is cut early, at a turn count no outside source documents. Human-free pilots still trail pilot-v2 on the human lists by 190-320 Elo: paid the round's points, a pilot gains under the rule by playing for the lead at the cut rather than by playing faster, and a learned practice curriculum finds human-shaped decks and Prize races by itself. The curriculum under the rule and a replication of the loop under the rule are running, under the method (`notes/method.md`), whose first cycle has 4 of its 10 core items done (with C03 started).
 
 **Earlier work:**
 
@@ -100,31 +86,46 @@ Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards.
   10.5 Energy above them at 400 in a deck-out meta), so when the plan's stall rule fired Evan chose a league of three
   draft heads sharing one pilot; lab bookkeeping faults that silently changed or risked decisions recurred throughout and
   were each fixed as found.
+- **Log #121–128 (A5).** The league's heads drafted Pokémon piles and then the main type, from random decks the recipe
+  fell within 40 iterations into Pokémon piles that never attack, and by 440 the main type held 36.5 Energy; #127 traced
+  the one deck type to a drafting ratchet (every deck moves each iteration to a draw of 6 forced changes whatever its
+  results, so the collapsed head's favourite card piles up, and basic Energy, the one card without a copy limit, piles up
+  through Energy-for-Energy null swaps) and to a pilot so specialised that no other type can win a place (the main decks
+  beat the human lists 0.80 under it and 0.26 under pilot-v2), which is also why the league failed. Built against the two
+  traps: selection of draws on real results, group changes, practice games and turnover from wide random decks, decks
+  judged by greedy rather than sampled play, and screens that run such ideas in parallel outside the lab. A shutdown and
+  a sleep of the machine (23:05 and 23:27) killed every run, the lab's cards included, and the screens were relaunched
+  from 460.
+- **Log #129–136 (A5).** In screens beside the lab from the main line at 460, greedy judging, selection alone, a cap on
+  any one deck type (the shared draft head, its choice collapsed, drafted every new deck back into Chansey / Snorlax),
+  pilot-v2 frozen as the only or a second judge, and the method from scratch with a discount all failed to move the decks
+  toward the human types, while a new, uniform draft head with selection, an entropy floor and group changes brought the
+  best decks from 36 to 8-14 cards off the human medians in three screens (a median of 28 Trainers for a while), inside
+  the same type and swinging back as the head's choice narrowed. Head-to-heads on the human lists showed why the type does
+  not change: every pilot grown in the population, one that practised the human lists for 20 iterations included, plays
+  them 27-45 Elo worse than pilot-v2, its starting point, so it rates its own decks above the human lists (0.71-0.83)
+  where pilot-v2 rates them far below (0.20-0.32), as the ground truth says. A KL anchor toward pilot-v2 on the practice
+  games was built to keep the pilot general and runs against a matched control, two screens being what the machine holds
+  after four ran it out of memory.
+- **Log #137–144 (A5).** A varied population (turnover capped by type, every 5 iterations) kept the shared pilot general, and a KL anchor toward pilot-v2 made it about 65 Elo better on the human lists, yet the decks stayed Chansey / Snorlax walls: their verdict depends on who pilots them, every card they use is implemented as printed, and they win long games on prizes that one-turn search on the human side wins back, so the pilot's tactical play is the deficit. A significance gate on deck moves held the human shape (9.5 cards off over 490-499 against 15.7) but not the type, and Evan's turn limit for draws (40, 70, 120 turns), challenger practice and an exploiter league were screened or started from the 479 state. A literature review then read all of this as one failure, a shared pilot judging the decks it already plays well under global, noisy selection, and ranked search-strength judging, soft gated search targets and Monte Carlo value targets first, ahead of more diversity machinery.
 
-**Recent (log #121–127).** The league's fresh draft heads drafted Pokémon piles and then the main type (PPO now halves
-its chunks when out of GPU memory), from random decks the recipe fell within 40 iterations into Pokémon piles that never
-attack, and by 440 the main type held 36.5 Energy as its games moved from deck-outs to Knock Outs. At Evan's request to get
-out of the local minimum, #127 found that the drafting is a ratchet (each deck moves every iteration to a draw of 6 forced
-changes whatever its results, the head's incoming choice sits on one card at a time, and basic Energy, the only card
-without a copy limit, piles up through Energy-for-Energy null swaps) and that the pilot has specialised so far that no
-other deck type can win a place (the main decks beat the human lists 0.80 under it and 0.26 under pilot-v2), which is
-also why the league failed. Selection on real results (a deck moves only to a draw that beat it), group changes, practice
-games between wide random decks and a gate on the human lists were built; two selection cards run to 490, a combined card
-waits on its smoke test, three league cards were stopped, and a fork whose pilot practises the human lists (diagnosis
-only) asks whether they win once played well.
+- **Log #145–152 (A5).** Challenger practice, an exploiter league, Monte Carlo value targets and search judging under a min rule (inert: 6 selection changes against 15.5 from noise) all left the walls in place, every pilot grown in the population rates them 0.68-0.75 against the human lists (pilot-v2 0.26), and within the human field alone the trained pilots judge like the real field, so the judge's error is specific to the walls and long games. Scored exactly under the 2000 round rule, the greedy walls take 0.48-0.55 of the points at cuts of 20-40 turns and more at every later cut, one-turn search on both seats with a 50-60-turn draw puts them at 0.44-0.46, and searched play does not replay exactly on the same deals, so that leading result needs replicating. A ledger of 69 verified mechanism-level families (`notes/hypotheses.md`), research on 11 angles and an iterative method (`notes/method.md`, approved by Evan for now) turned the research loop's own collapse (25 of 27 screens forked from two wall states) into written rules for rival explanations, pre-written bands and an exploration floor, with a first-cycle plan of 16 items (`notes/plan-cycle1.md`) that puts cheap judge, input and noise-floor probes and a from-scratch warm-up first.
+
+- **Log #153–160 (A5).** Two more seeds of the significance gate replicated its shape effect but not the type (walls fill 67-75 of 99 decks), and on all 24 human lists under the exact 2000 round rule the walls take under half the points only when both seats search and the round is cut early (break-even near turn 56 for the 479 walls, 45 for the Energy-heavy 460 walls, which greedy play rates highest), while search helps only the lists' seat. A pilot trained from random weights on rules-generated wide decks never learned the stall and matches pilot-v2 on such decks, but trained on to 119 it still plays the human lists 274 Elo worse after a 175-Elo gain and rates the walls 0.52-0.57, because four in five of its practice games end by benching out rather than in a Prize race. Both lines point at the same missing pieces: where the round ends, a stronger player of human-like decks, and practice games that look like theirs; twice in the day finished runs sat unread for hours.
+
+- **Log #161–168 (A5).** Evan approved the 2000 round rule for training and judging and the cost of GPU search, so the rule became an opt-in part of the game (an unfinished game goes to the side with more Prizes taken, scored 3 / 2 / 1 / 0); outside research confirmed the 20-minute round and its procedure but not how many turns it allowed, leaving the cut a per-game draw from 20-45 turns, and found that 2000 players finished Prize races in about 13-14 engine turns against our pilots' 34-41. Paid the event's points, the from-scratch pilot became 54 Elo better on the human lists under the rule but 65 worse untimed, playing for a Prize lead at the cut rather than finishing faster, while the plain pilot barely improved and rated the walls ever higher; a learned practice curriculum (replay by the pilot's positive value loss, with card edits) moved practice from bench-outs to Prize races and its median deck to 13 / 28 / 17 in five iterations, but untimed its longer games ended by deck-out and the stall rule stopped it. The loop under the rule ended closest to the human shape of any run (distance 6.3 against 9.6-11.7 for the same recipe) with walls still 47-69 of 99 decks, and GPU-served search replays greedy exactly at one candidate and runs 2.7 times the CPU path's games a second, still too slow to search every judged game; finished runs sat unread for up to 50 minutes at a time.
+
+**Recent (log #169–175).** Under the round rule the curriculum's score turned practice into bench-outs, because a win on time pays a third of a finished one, so that run was stopped; its slot went to soft search targets for the pilot (the pilot's top moves searched on shared re-dealt cards, and the policy pulled toward the moves that scored best), now training against the clocked pilot. The pilot the loop grew under the rule (from the 479 state) plays the human lists level with pilot-v2 under the rule (+1.6 Elo) and, judging under the rule, gives the walls half the points against the human field (0.504, against 0.67 untimed), so with the rule the judge stops overrating the walls, yet the loop's own decks stay mostly walls. The soft search targets put the pilot 55 Elo above the clocked pilot on the human lists under the rule at their first look but level with it at the second (−11), so their effect waits on the last two looks and a three-times-dose arm, paused at 129 when RAM ran down to 4 of 31 GB. A second seed of the loop under the rule replicated its shape (6.8 cards from the human medians against 9.6-11.7 for the same recipe untimed) and held the walls at 44-53 of 99 decks, though the first seed's walls rose to 69, so fewer walls under the rule is likely but not yet established.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. The human-practice diagnostic (`runs/diag-human-practice`, to 470): whether the human lists rise against the
-   population once its pilot practises them, and the human lists against its best decks under its own pilot.
-2. Smoke-test `--practice-games`, release `020-meta-select-practice` (selection, a 3-nat floor, group changes, 250
-   practice games; gate on the human lists; held on passing), and restart the lab before 490 for the new rule fields.
-3. `019-meta-select` and `019-meta-select-floor` at 490: the best decks' shape 16 cards closer to the human median.
-4. `017-meta-league3-m` at 480, and the 480 milestone (Energy, deck types).
-5. With Evan: a general bootstrap for a pilot from scratch, now with practice on wide random decks as option (a); then
-   the from-scratch check again. Phase B in parallel.
+1. The curriculum's score normalised per outcome scale, so it works under the rule (C48 collapsed to bench-outs).
+2. C47: seed 6's verdicts; a third seed, or the rule with C49's pilot change inside the loop once C49 reads.
+3. C03's gross check, then searched judging under the rule in the loop on part of the judged games.
+4. C49's looks at 179 and 199 (soft search targets against the clocked pilot alone); C49b resumed when RAM allows.
+5. C09 and C07 on the GPU lane; the rest of the C33 + C40 message (commit, engine fixes, the Stage 3 bootstrap).
 <!-- status:end -->
 
 ---

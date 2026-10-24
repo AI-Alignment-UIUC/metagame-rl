@@ -315,8 +315,9 @@ def deck_types(ckpt: Path, top: int = 12, link: float = 0.5) -> int:
     lists, read the same way in placing order, make 3 types: 7 Haymaker-like, 9 Wigglytuff and 4 mixed."""
     import torch
     from rl.decks import Pool, pokemon_overlap
+    from rl.metagame import recent_score
     pool, st = Pool(), torch.load(ckpt, map_location="cpu", weights_only=False)
-    score = [a["sum"] / a["n"] if a.get("n") else a.get("last", 0.0) for a in st["population"]]
+    score = [recent_score(a, 0.0) for a in st["population"]]   # the judged score with --judge-search (log #148)
     best = sorted(range(len(score)), key=lambda i: -score[i])[:top]
     founders, size = [], []
     for i in best:
@@ -429,6 +430,8 @@ def h2h_main(args):
     if args.panel == "archived":
         pool = Pool()
         decks = [{"name": nm, "cards": pool.names(v)} for nm, v in archived_decks(pool)]
+    elif args.panel.endswith(".json"):          # a file of [{name, cards}] (log #156: held-out wide decks)
+        decks = json.load(open(ROOT / args.panel, encoding="utf-8"))
     else:                                       # both populations, so neither pilot plays only its own decks
         decks = ([{"name": f"a{x['id']}", "cards": x["deck"]} for x in sa["population"]]
                  + [{"name": f"b{x['id']}", "cards": x["deck"]} for x in sb["population"]])
@@ -453,7 +456,9 @@ def h2h_main(args):
             ps = [(x, n + y) for x, y in chunk] + [(n + x, y) for x, y in chunk]
             keys = list(range(k, k + len(chunk))) * 2              # both halves of a deck pair get the same deals
             W, G, _ = gm.play(decks + decks, 2, args.seed, pairs=ps, slots=[0] * n + [1] * n, models=models,
-                              pair_keys=keys)
+                              pair_keys=keys, round_turns=args.round_turns,
+                              search=({"k": int(args.search.split(":")[0]), "dets": int(args.search.split(":")[1]), "maxSteps": 40,
+                                       "concurrency": 16, "crn": args.search.endswith(":crn")} if args.search else None))
             errors += gm.last["errors"]
             scores += pair_scores(W, G, chunk, n)
             r = llr(scores, args.elo0, args.elo1)
@@ -742,7 +747,7 @@ def main(argv=None):
     ap.add_argument("cmd", choices=["run", "start", "status", "h2h"], nargs="?", default="run")
     ap.add_argument("--a")
     ap.add_argument("--b")
-    ap.add_argument("--panel", choices=["drafted", "archived"], default="drafted")
+    ap.add_argument("--panel", default="drafted", help="drafted, archived or a JSON file of [{name, cards}]")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--elo0", type=float, default=0.0)
     ap.add_argument("--elo1", type=float, default=15.0)
@@ -751,6 +756,9 @@ def main(argv=None):
     ap.add_argument("--alpha", type=float, default=0.05)
     ap.add_argument("--beta", type=float, default=0.05)
     ap.add_argument("--fixed", action="store_true", help="play every pair, no early stop")
+    ap.add_argument("--search", default="", help='h2h: both pilots searched on the GPU, "K:DETS[:crn]" (C03, log #162)')
+    ap.add_argument("--round-turns", type=lambda t: __import__("rl.train", fromlist=["round_turns"]).round_turns(t), default=0,
+                    help='h2h: the 2000 round rule in every game, "T" or "A-B" (log #160); a win on Prizes at time is a win')
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--out")
     args = ap.parse_args(argv)

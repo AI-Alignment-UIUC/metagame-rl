@@ -1,5 +1,8 @@
 # Plan: rediscovering the human metagame (2026-10-19, for Evan's review)
 
+> **Superseded 2026-10-22 by `notes/method.md`** (approved by Evan, `notes/evan-requests.md` row 39, log #152). Kept as
+> history; its approved targets (Evan, row 10) live on in the method's scorecard (§3).
+
 The goal: from random decks, with nothing human in training, the method drafts and plays a metagame that matches the
 2000 STS human field. Then the same method, unchanged, does the same for Worlds 2005 (held out) and later Magic.
 Evan's comments are in `notes/evan-requests.md`; the evidence is in the progress log (#1–94); every change is tested in

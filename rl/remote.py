@@ -23,6 +23,7 @@ ROOT = Path(__file__).resolve().parent.parent
 JSON_FRAME, REQUEST, RESPONSE = 1, 2, 3
 DT = {"uint8": np.uint8, "int16": np.int16, "int32": np.int32, "float32": np.float32}
 TOKEN_INPUTS = ("tok_card", "tok_kind", "tok_aux", "glob", "slots", "cand", "n_cand")
+CHUNK = 2048                # rows a forward pass at most, in a batch with a search's requests (log #148)
 
 
 def pack_arrays(header: dict, arrays: list) -> bytes:
@@ -142,6 +143,8 @@ class RemotePool:
             model = models[slot]
             ns = [h["n"] for _, h, _ in group]
             B = sum(ns)
+            searched = any("topk" in h for _, h, _ in group)     # PolicySearchAgent's requests (log #148)
+            K = max(int(h.get("topk") or 0) for _, h, _ in group)   # with K > 0 they want the top K options too
 
             def cat(k):
                 return torch.from_numpy(np.concatenate([a[k] for _, _, a in group])).to(device)
@@ -161,6 +164,9 @@ class RemotePool:
                     logits, value, states = model(*inputs, mem_states=[self.mem.get(k) for k in keys])
                     for k, st in zip(keys, states):
                         self.mem[k] = st
+                elif searched and B > CHUNK:   # a search's line batches can be large: forward in chunks (log #148)
+                    parts = [model(*[x[c:c + CHUNK] for x in inputs]) for c in range(0, B, CHUNK)]
+                    logits, value = torch.cat([p[0] for p in parts]), torch.cat([p[1] for p in parts])
                 else:
                     logits, value = model(*inputs)
             else:
@@ -188,12 +194,19 @@ class RemotePool:
             logp = logp_all.gather(1, action[:, None]).squeeze(1)
             action, sampled = action.int().cpu().numpy(), sampled.cpu().numpy().astype(np.uint8)
             logp, value = logp.cpu().numpy(), value.float().cpu().numpy()
+            top = None
+            if K:                              # each row's K most likely legal options, best first; -1 past its legal ones
+                tv, ti = logp_all.topk(min(K, logp_all.shape[1]), -1)
+                ti = torch.where(tv > -1e8, ti, torch.full_like(ti, -1))
+                top = np.full((B, K), -1, dtype=np.int32)
+                top[:, :ti.shape[1]] = ti.int().cpu().numpy()
             start = 0
             for (i, h, _), n in zip(group, ns):
                 sl = slice(start, start + n)
-                self._send(i, RESPONSE, pack_arrays({"id": h["id"], "n": n},
+                extra = [("top", top[sl].reshape(-1))] if h.get("topk") else []
+                self._send(i, RESPONSE, pack_arrays({"id": h["id"], "n": n, **({"k": K} if extra else {})},
                                                     [("action", action[sl]), ("logp", logp[sl]), ("value", value[sl]),
-                                                     ("sampled", sampled[sl])]))
+                                                     ("sampled", sampled[sl])] + extra))
                 start += n
 
     def close(self):

@@ -113,6 +113,48 @@ def explained_variance(batch: dict):
     return ev(np.ones(T, bool)), ev(early)
 
 
+def probe_targets(replies: list, rolls: list, K: int):
+    """Soft search targets (--search-distill, C49, log #169): from the workers' probes, per transition of the
+    concatenated rollouts the searched moves (-1 none) and their mean copy scores, plus a log row."""
+    T = sum(len(ro["action"]) for ro in rolls)
+    pc = np.full((T, K), -1, dtype=np.int64)
+    pq = np.zeros((T, K), dtype=np.float32)
+    base, spread, n_pr = 0, [], 0
+    for rep, ro in zip(replies, rolls):
+        for p in rep.get("probes") or []:
+            if "cands" not in p:
+                continue
+            qs = [[x for x in sc if x is not None] for sc in p["scores"]]
+            cands = [(c, float(np.mean(q))) for c, q in zip(p["cands"], qs) if q]
+            if len(cands) < 2:
+                continue
+            row = base + int(p["k"])
+            for i, (c, q) in enumerate(cands[:K]):
+                pc[row, i], pq[row, i] = c, q
+            spread.append(max(q for _, q in cands) - min(q for _, q in cands))
+            n_pr += 1
+        base += len(ro["action"])
+    return pc, pq, {"probes": n_pr, "q_spread_median": round(float(np.median(spread)), 4) if spread else None}
+
+
+def round_turns(text: str):
+    """--round-turns: "T" (every game cut at T) or "A-B" (T drawn per deal from A..B), for the 2000 round rule (env/game.js,
+    log #160); "0" or "" for none."""
+    if not text or text == "0":
+        return 0
+    a, _, b = str(text).partition("-")
+    return [int(a), int(b)] if b else int(a)
+
+
+def round_score(r: dict, seat: int, rule) -> float:
+    """A seat's score for one game result: 1 a win, 0 a loss, 0.5 a draw; under the round rule (rule set) the event's
+    points over 3: a win 1, a win on Prizes at time 2/3, a draw 1/3 to each seat, a loss 0 (env/game.js reward)."""
+    w = r["winner"]
+    if not rule:
+        return 1.0 if w == seat else 0.0 if w in (1, 2) else 0.5
+    return (2 / 3 if r.get("ending") == "time" else 1.0) if w == seat else 0.0 if w in (1, 2) else 1 / 3
+
+
 def ending_kinds(games: list) -> dict:
     """Game results by deck pair kind: RR if both decks are rules-only random ones (names "rnd..."), PR if one
     is, else PP. cut = games with no ending and no error (cut off)."""
@@ -249,6 +291,22 @@ def ppo_update(model, opt, batch, args, device):
         s_t = torch.from_numpy(batch["search_target"].astype(np.int64)).to(device)
         stats["distill"] = 0.0
         stats["distill_agree"] = 0.0
+    # Anchor (log #135): at the decisions marked anchor_row (rl/metagame.py --anchor: the practice games'), KL(anchor ||
+    # policy) toward a frozen pilot's choices, at weight args.anchor_w, averaged over the minibatch's marked decisions.
+    anc = getattr(args, "anchor", None) if "anchor_row" in batch else None
+    anc_w = getattr(args, "anchor_w", 0.0) if anc is not None else 0.0
+    if anc_w:
+        a_row = torch.from_numpy(batch["anchor_row"].astype(bool)).to(device)
+        stats["anchor_kl"] = 0.0
+    # Soft search targets (C49, log #169; --search-distill): at a probed decision, over the moves the search scored,
+    # target = pi * exp(clip((q - mean q) / tau)) renormalised (pi detached, restricted to those moves), and the loss
+    # KL(target || pi restricted) at weight args.search_distill, averaged over all the minibatch's rows.
+    sd_w = getattr(args, "search_distill", 0.0) if "probe_c" in batch else 0.0
+    if sd_w:
+        p_c = torch.from_numpy(batch["probe_c"]).to(device)
+        p_q = torch.from_numpy(batch["probe_q"]).to(device)
+        stats["sd_kl"] = 0.0
+        stats["sd_agree"] = 0.0
     n = 0
     grad_norm, kl_last, n_last = 0.0, 0.0, 0      # pre-clip norm per step; kl over the last epoch only
     tok_len = None
@@ -290,6 +348,8 @@ def ppo_update(model, opt, batch, args, device):
         mb_stats = {k: 0.0 for k in stats}
         M = float(sum(pol[j].sum() for j, _ in micros))      # the minibatch's decisions that train the policy
         S = float(sum((s_t[j] >= 0).sum() for j, _ in micros)) if dist_w else 0.0   # ... that a search scored
+        A = float(sum(a_row[j].sum() for j, _ in micros)) if anc_w else 0.0        # ... that the anchor reads
+        P = float(sum((p_c[j][:, 0] >= 0).sum() for j, _ in micros)) if sd_w else 0.0   # ... that were probed
         for j, mem_lens in micros:
             w = len(j) / rows
             pm = pol[j]
@@ -337,6 +397,35 @@ def ppo_update(model, opt, batch, args, device):
                     with torch.no_grad():
                         mb_stats["distill"] += ce.sum().item() / S
                         mb_stats["distill_agree"] += (logp_all[srow].argmax(1) == s_t[j][srow]).float().sum().item() / S
+            if anc_w and A > 0:
+                arow = a_row[j]
+                if arow.any():
+                    with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16, enabled=args.amp and device == "cuda"):
+                        a_logits = anc(*[x[arow] for x in xs])[0]
+                    am = mask[arow]
+                    a_logp = F.log_softmax(a_logits.float().masked_fill(~am, -1e9), dim=-1)
+                    kl = (a_logp.exp() * (a_logp - logp_all[arow])).masked_fill(~am, 0.0).sum(-1)
+                    loss = loss + anc_w * kl.sum() / A
+                    with torch.no_grad():
+                        mb_stats["anchor_kl"] += kl.sum().item() / A
+            if sd_w and P > 0:
+                prow = p_c[j][:, 0] >= 0
+                if prow.any():
+                    c, q = p_c[j][prow], p_q[j][prow]
+                    ok = c >= 0
+                    lp = logp_all[prow].gather(1, c.clamp(min=0)).masked_fill(~ok, -1e9)
+                    lpc = lp - torch.logsumexp(lp, 1, keepdim=True)          # pi restricted to the searched moves
+                    qm = q.masked_fill(~ok, 0.0).sum(1, keepdim=True) / ok.sum(1, keepdim=True).clamp(min=1)
+                    a_hat = ((q - qm) / args.distill_tau).clamp(-args.distill_clip, args.distill_clip).masked_fill(~ok, 0.0)
+                    with torch.no_grad():
+                        lt = (lpc + a_hat).masked_fill(~ok, -1e9)
+                        lt = lt - torch.logsumexp(lt, 1, keepdim=True)
+                    kl = (lt.exp() * (lt - lpc)).masked_fill(~ok, 0.0).sum(1)
+                    loss = loss + sd_w * kl.sum() / rows
+                    with torch.no_grad():
+                        mb_stats["sd_kl"] += kl.sum().item() / P
+                        best_q = q.masked_fill(~ok, -1e9).argmax(1)
+                        mb_stats["sd_agree"] += (lpc.argmax(1) == best_q).float().sum().item() / P
             loss.backward()
             pace.tick()                   # per micro-batch: the same share of rest, in finer slices
             with torch.no_grad():
@@ -531,6 +620,24 @@ def main(argv=None):
     ap.add_argument("--gpu-mem-fraction", type=float, default=0.8,
                     help="cap this process's GPU memory (at most 0.8, rl/limits.py)")
     ap.add_argument("--amp", action="store_true", help="bfloat16 autocast for the forward pass on the GPU")
+    ap.add_argument("--search-distill", type=float, default=0.0,
+                    help="soft search targets (C49, log #169): weight of KL(target || policy) over the searched moves, "
+                         "averaged over all rows (0 off)")
+    ap.add_argument("--probe-p", type=float, default=0.05, help="--search-distill: share of main-phase decisions searched")
+    ap.add_argument("--probe-k", type=int, default=4, help="--search-distill: the pilot's most likely moves searched")
+    ap.add_argument("--probe-dets", type=int, default=4, help="--search-distill: re-dealt copies shared by the moves (CRN)")
+    ap.add_argument("--distill-tau", type=float, default=0.1, help="--search-distill: target pi * exp(clip((q - mean q) / tau))")
+    ap.add_argument("--distill-clip", type=float, default=1.0, help="--search-distill: the clip of (q - mean q) / tau")
+    ap.add_argument("--curriculum", action="store_true",
+                    help="a learned practice distribution over the matchups' decks (rl/curriculum.py, C46, log #163)")
+    ap.add_argument("--cur-rho", type=float, default=0.5, help="curriculum: share of decks replayed from the buffer")
+    ap.add_argument("--cur-beta", type=float, default=0.3, help="curriculum: rank temperature of the score")
+    ap.add_argument("--cur-stale", type=float, default=0.3, help="curriculum: weight of staleness in replay")
+    ap.add_argument("--cur-edits", type=int, default=4, help="curriculum: a new deck has 1 to this many card changes")
+    ap.add_argument("--cur-matchups", type=int, default=512, help="curriculum: matchups drawn each iteration")
+    ap.add_argument("--round-turns", type=round_turns, default=0,
+                    help='the 2000 round rule (log #160): "T" cuts every game at turn T, "A-B" draws T per deal from A..B; '
+                         'an unfinished game goes to the player with more Prizes taken, rewards are the event points')
     ap.add_argument("--deckout-win", type=float, default=1.0,
                     help="reward for a win by deck-out (prizes or knockout: 1), to pay less for stalling")
     ap.add_argument("--gamma", type=float, default=1.0)
@@ -559,6 +666,7 @@ def main(argv=None):
     ap.add_argument("--bot-opponents", default="", help='fixed bots to play too, e.g. "heuristic=0.1"')
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--resume", action="store_true")
+    ap.add_argument("--stop-file", default="", help="stop after the iteration in which this file exists (log #154)")
     ap.add_argument("--init-from", help="start from this checkpoint's weights (e.g. to pilot new decks)")
     ap.add_argument("--eval-every", type=int, default=0, help="evaluate against --eval-opponents every N iterations")
     ap.add_argument("--eval-opponents", default="simplebot,heuristic")
@@ -617,6 +725,16 @@ def main(argv=None):
         opt.load_state_dict(state["opt"])
         start = state["iteration"] + 1
         snapshots = state.get("snapshots", [])
+    cur = None
+    if args.curriculum:
+        from rl.curriculum import Curriculum
+        seen = {}
+        for a, b in matchups:
+            for d in (a, b):
+                seen.setdefault(d["name"], d)
+        cur = Curriculum(list(seen.values()), args.cur_rho, args.cur_beta, args.cur_stale, args.cur_edits, args.seed)
+        if args.resume and (run / "curriculum.json").exists():
+            cur.load(json.loads((run / "curriculum.json").read_text()))
     (run / "config.json").write_text(json.dumps({**vars(args), "matchups": matchups, "model_config": model.config(),
                                                  "device": device}, indent=1))
     log = open(run / "log.jsonl", "a")
@@ -655,16 +773,31 @@ def main(argv=None):
                     opponents = [{"spec": "self", "weight": args.self_weight}] + [
                         {"spec": "onnx:" + s, "weight": (1 - args.self_weight) / len(league)} for s in league]
             opponents += bots
+            it_matchups = cur.matchups(args.cur_matchups) if cur is not None else matchups
             msgs = [{"cmd": "collect", "encoding": args.model, "transitions": args.transitions,
                      "concurrency": args.concurrency, "deckoutWin": args.deckout_win, "seed": args.seed * 1_000_003 + it * 1009 + w,
-                     "matchups": matchups, "opponents": opponents, "out": str(run / f"rollout_w{w}.bin"),
+                     **({"roundTurns": args.round_turns} if getattr(args, "round_turns", 0) else {}),
+                     **({"probe": {"p": args.probe_p, "k": args.probe_k, "dets": args.probe_dets, "maxSteps": 40,
+                                   "seed": args.seed * 7919 + it}} if getattr(args, "search_distill", 0) else {}),
+                     "matchups": it_matchups, "opponents": opponents, "out": str(run / f"rollout_w{w}.bin"),
                      "history": getattr(args, "history", 0),
                      **({"explore": args.explore} if args.explore is not None else {}),
                      **({"model": str(policy)} if args.inference == "onnx" else {})} for w in range(args.workers)]
             replies = pool.collect(msgs, models, device) if args.inference == "gpu" else pool.ask_all(msgs)
             model.train()
             t1 = time.time()
-            batch = concat([read_rollout(r["out"]) for r in replies])
+            rolls = [read_rollout(r["out"]) for r in replies]
+            batch = concat(rolls)
+            probe_row = None
+            if getattr(args, "search_distill", 0):          # soft search targets: each probe's moves and mean scores
+                batch["probe_c"], batch["probe_q"], probe_row = probe_targets(replies, rolls, args.probe_k)
+            if cur is not None:                    # each transition's deck: the learner's seat's deck in its game
+                labels = []
+                for rep, ro in zip(replies, rolls):
+                    games_by_id = {g["id"]: g for g in rep["results"]}
+                    tj = ro["traj"].astype(np.int64)
+                    labels += [games_by_id[int(t) // 2]["decks"][int(t) % 2] for t in tj]
+                deck_of = np.array(labels, dtype=object)
             if args.policy_share is not None:      # the control for --explore (log #82): only a random share trains the policy
                 keep = np.random.default_rng(args.seed * 7919 + it).random(len(batch["action"])) < args.policy_share
                 batch["sampled"] = (batch.get("sampled", np.ones(len(keep), np.uint8)) * keep).astype(np.uint8)
@@ -675,6 +808,17 @@ def main(argv=None):
             if getattr(args, "lam_value", None) is not None and args.lam_value != args.lam:
                 ret = advantages(batch, args.gamma, args.lam_value)[1]
             batch["adv"], batch["ret"] = adv, ret
+            cur_row = None
+            if cur is not None:                    # positive value loss per deck (rl/curriculum.py)
+                pos = np.maximum(np.asarray(adv, dtype=np.float64), 0.0)
+                acc = {}
+                for name, x in zip(deck_of, pos):
+                    s = acc.setdefault(name, [0.0, 0]); s[0] += x; s[1] += 1
+                cur_row = cur.update({k: v[0] / v[1] for k, v in acc.items()})
+                save_atomic_json = run / "curriculum.json"
+                tmp = save_atomic_json.with_suffix(".tmp")
+                tmp.write_text(json.dumps(cur.state(), default=lambda o: o.tolist() if hasattr(o, "tolist") else int(o)))
+                os.replace(tmp, save_atomic_json)
             batch["inputs"] = model_inputs(batch, args.model)
             stats = ppo_update(model, opt, batch, args, device)
             t2 = time.time()
@@ -698,7 +842,9 @@ def main(argv=None):
                    "win_vs": {k: round(float(np.mean(v)), 4) for k, v in vs.items()},
                    "shaping": round(lam_shape, 5), "collect_s": round(t1 - t0, 1), "train_s": round(t2 - t1, 1), **{k: round(v, 5) for k, v in stats.items()},
                    "ev_mc": ev_mc, "ev_open": ev_open, "lr": opt.param_groups[0]["lr"],
-                   **({"sampled": round(float(batch["sampled"].mean()), 4)} if "sampled" in batch else {})}
+                   **({"sampled": round(float(batch["sampled"].mean()), 4)} if "sampled" in batch else {}),
+                   **({"curriculum": cur_row} if cur_row is not None else {}),
+                   **({"search_distill": probe_row} if probe_row is not None else {})}
             log.write(json.dumps(row) + "\n")
             log.flush()
             print(f"it {it:4d}  T={row['transitions']:6d} games={row['games']:4d} len={row['steps_per_game']:.0f} "
@@ -730,6 +876,9 @@ def main(argv=None):
                         model.to(device)
             save_atomic({"model": model.state_dict(), "opt": opt.state_dict(), "iteration": it, "snapshots": snapshots,
                          "config": model.config()}, ckpt)
+            if args.stop_file and Path(args.stop_file).exists():
+                print(f"stop file {args.stop_file} after iteration {it}", flush=True)
+                break
             if args.inference == "onnx":
                 for old in (run / "policies").glob("it*.onnx"):
                     if str(old) not in snapshots and int(old.stem[2:]) < it - 2:

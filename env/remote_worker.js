@@ -12,10 +12,17 @@
 //     (mostly greedy collection, log #81); each recorded decision says which it did ("sampled")
 //   { "cmd": "games", "encoding": "tokens", "decks": [{ name, cards }], "greedy": true, "concurrency": 64,
 //     "jobs": [{ "i": 0, "j": 1, "iSeat": 1, "seed": 7, "rec": true }], "slots": [0, 3, ...], "out": "<file>",
-//     "deckoutWin": 1 }
+//     "deckoutWin": 1, "judgeExplore": null, "maxTurns": 0 }
 //     each listed game once: deck i is piloted by model slot slots[i] (slot 0 in both seats without
 //     "slots"); with "out", every decision of both seats of the jobs with "rec" is recorded there
-//     (rl/metagame.py training games)
+//     (rl/metagame.py training games); with judgeExplore = e the seats of the unrecorded jobs play their top option
+//     except at a share e of decisions, which they sample (0: greedy; the games that judge decks, log #128); with
+//     maxTurns = T > 0 a game unfinished at turn T is a draw (env/game.js, log #140; also in tsearch); roundTurns = T or
+//     [a, b] plays every game under the 2000 round rule cut at T (drawn per deal from a..b; env/game.js, log #160), its
+//     rewards the event's points, its results with roundT (also in collect)
+//     with "judgeSearch": { k, dets, maxSteps, concurrency, seed, crn } (rl/metagame.py --judge-search, log #148) the jobs
+//     with "search" are played in a second Runner beside the plain one, both seats by env/agents.js PolicySearchAgent
+//     over the learner (RemotePilot below), never recorded; their results carry search: true and the reply searchStats
 //   { "cmd": "qprobe", "decks", "jobs", "out", "probeP": 0.1, "maxProbes": 4, "maxOptions": 8, "rollouts": 8,
 //     "seed", "concurrency", "deckoutWin", "redeal": false, "history": 0, "focus": null, "greedyLines": false }
 //     the jobs' games recorded (both seats), plus Monte Carlo values of the options at sampled decisions (qprobe below)
@@ -27,7 +34,7 @@ const { Encoder } = require('./encode.js');
 const { TokenEncoder, PRIZE_GLOB } = require('./tokens.js');
 const { Runner, packRollout } = require('./runner.js');
 const { archivedDecks } = require('./decks.js');
-const { RandomAgent, FirstAgent, HeuristicAgent, SimpleBotAgent } = require('./agents.js');
+const { RandomAgent, FirstAgent, HeuristicAgent, SimpleBotAgent, PolicySearchAgent } = require('./agents.js');
 const { Rng } = require('./rng.js');
 const F = require('./framing.js');
 
@@ -48,9 +55,12 @@ let nextId = 1;
 let nextGameUid = 1;
 let drops = [];
 
+// topk = k (log #148; null: not sent, as before): the request is a search's (rl/remote.py forwards such batches in chunks),
+// and with k > 0 asks for each row's k most likely legal options too, returned as `top` (best first, by logit), for
+// PolicySearchAgent's candidates.
 class RemoteAgent {
-  constructor(slot, encoding, greedy = false, explore = null) {
-    this.slot = slot; this.encoding = encoding; this.greedy = greedy; this.explore = explore;
+  constructor(slot, encoding, greedy = false, explore = null, topk = null) {
+    this.slot = slot; this.encoding = encoding; this.greedy = greedy; this.explore = explore; this.topk = topk;
   }
 
   forget(game) { if (game.uid) { drops.push(game.uid); game.uid = 0; } }
@@ -90,9 +100,57 @@ class RemoteAgent {
     arrays.push(['legal_offsets', offsets], ['legal_ids', ids], ['keys', keys], ['drop', Int32Array.from(drops)]);
     drops = [];
     F.writeFrame(process.stdout, F.REQUEST, F.packArrays({ id, slot: this.slot, n, encoding: this.encoding, greedy: this.greedy,
-      ...(this.explore != null ? { explore: this.explore } : {}) }, arrays));
+      ...(this.explore != null ? { explore: this.explore } : {}), ...(this.topk != null ? { topk: this.topk } : {}) }, arrays));
     return new Promise(resolve => pending.set(id, resolve));
   }
+}
+
+// A model slot as env/agents.js PolicySearchAgent's pilot (log #148): evaluate(batch, k) -> [{ order, best, value }], best
+// the slot's top option (greedy), order best and then the rest of its k most likely options (k = 0: best alone, for the
+// search lines, which need only the move and the value). Items need env (RemoteAgent keys rows by game).
+class RemotePilot {
+  constructor(slot, k) { this.slot = slot; this.k = k; this.agents = new Map(); }
+
+  evaluate(batch, k = this.k) {
+    if (!this.agents.has(k)) this.agents.set(k, new RemoteAgent(this.slot, 'tokens', true, null, k));
+    return this.agents.get(k).act(batch).then(out => out.map(o => ({
+      order: [o.action, ...(o.top || []).filter(a => a !== o.action)], best: o.action, value: o.value })));
+  }
+}
+
+// Soft search targets (C49, log #169; rl/train.py and rl/metagame.py --search-distill): cmd.probe = { p, k, dets,
+// maxSteps, seed }. onDecision takes, at a share p of the recorded decisions in the main phase with two or more options,
+// a copy of the game; search() then searches every copy (PolicySearchAgent over the learner, its k most likely moves in
+// dets re-dealt copies shared by all of them, CRN, lines greedy to the end of the turn), in batches of 32, and returns
+// per copy the decision's transition index, the moves searched and each copy's score (undefined without cmd.probe).
+function probeCatch(cmd, enc) {
+  const probe = cmd.probe || null;
+  if (!probe) return { onDecision: null, search: async () => undefined };
+  const prng = new Rng((cmd.seed ^ 0x2545f491) >>> 0);
+  const caught = [];
+  const onDecision = (s, answer, k) => {
+    if (k < 0 || s.t.legal.length < 2) return;
+    const g = s.env.game;
+    if (g.decision().prompt || prng.float() >= probe.p) return;
+    caught.push({ k, game: g.clone(), decklists: s.env.decklists, show: s.env.showOpponentDecklist });
+  };
+  const search = async () => {
+    if (!caught.length) return [];
+    const { Env } = require('./env.js');
+    const items = caught.map(c => {
+      const env = new Env(enc, { showOpponentDecklist: c.show });
+      env.game = c.game;
+      env.decklists = c.decklists;
+      const t = env.observe();
+      return { obs: t.obs, legal: t.legal, env };
+    });
+    const S = new PolicySearchAgent(new RemotePilot(0, probe.k || 4), enc, { k: probe.k || 4, dets: probe.dets || 4,
+      maxSteps: probe.maxSteps || 40, seed: (probe.seed || 0) ^ cmd.seed, crn: true, keepLines: true });
+    const res = [];
+    for (let i = 0; i < items.length; i += 32) res.push(...await S.act(items.slice(i, i + 32)));
+    return caught.map((c, i) => ({ k: c.k, cands: res[i].cands || null, scores: res[i].scores || null })).filter(p => p.cands);
+  };
+  return { onDecision, search };
 }
 
 async function collect(cmd) {
@@ -127,11 +185,16 @@ async function collect(cmd) {
     const [deckA, deckB] = learnerSeat === 1 ? [da, db] : [db, da];
     return { deckA: deckA.cards, deckB: deckB.cards, deckName: deckA.name, deckBName: deckB.name, seed: cmd.seed * 100003 + n++, seats };
   };
-  const runner = new Runner(enc, { concurrency: cmd.concurrency || 64, deckoutWin: cmd.deckoutWin ?? 1 });
-  const out = await runner.run(nextJob, agents, { record: new Set(['learner']) });
+  const runner = new Runner(enc, { concurrency: cmd.concurrency || 64, deckoutWin: cmd.deckoutWin ?? 1, roundTurns: cmd.roundTurns || 0 });
+  // probe (C49, log #169): copies of a share of the learner's recorded decisions, searched after the games (probeCatch).
+  const pc = probeCatch(cmd, enc);
+  const out = await runner.run(nextJob, agents, { record: new Set(['learner']), onDecision: pc.onDecision });
+  const probes = await pc.search();
   fs.writeFileSync(cmd.out, packRollout(out.rec, enc.obsSize || 0, { encoding, actionSize: enc.actionSize || enc.MAX_CAND }));
-  const results = out.results.map(r => ({ winner: r.winner, ending: r.ending, seats: r.seats, decks: r.decks, steps: r.steps, error: r.error }));
-  return { ok: true, out: cmd.out, transitions: out.rec.action.length, games: out.stats.games, seconds: (Date.now() - t0) / 1000, results };
+  const results = out.results.map(r => ({ id: r.id, winner: r.winner, ending: r.ending, seats: r.seats, decks: r.decks, steps: r.steps, error: r.error,
+                                          ...(cmd.roundTurns ? { turns: r.turns, roundT: r.roundT } : {}) }));
+  return { ok: true, out: cmd.out, transitions: out.rec.action.length, games: out.stats.games, seconds: (Date.now() - t0) / 1000, results,
+           ...(probes ? { probes } : {}) };
 }
 
 // Plays the listed games and reports each one's result (rl/gpu_matrix.py, rl/metagame.py). Deck i is
@@ -143,20 +206,28 @@ async function games(cmd, onDecision = null) {
   const enc = encoding === 'tokens' ? tokens : identity;
   const agents = {};
   // A recorded seat plays as 'r<slot>', an unrecorded one as 'o<slot>': the same model slot, but only the
-  // 'r' names are recorded.
+  // 'r' names are recorded. With judgeExplore = e (rl/metagame.py --judge-explore, log #128) the unrecorded seats
+  // sample a decision with probability e and otherwise play the top option (0: greedy).
+  const judge = cmd.judgeExplore ?? null;
   const pilot = (i, rec) => {
     const slot = cmd.slots ? cmd.slots[i] : 0;
     const name = (rec ? 'r' : 'o') + slot;
-    if (!agents[name]) agents[name] = new RemoteAgent(slot, encoding, !!cmd.greedy);
+    if (!agents[name]) {
+      agents[name] = rec || judge == null ? new RemoteAgent(slot, encoding, !!cmd.greedy)
+        : new RemoteAgent(slot, encoding, judge === 0, judge > 0 ? judge : null);
+    }
     return name;
   };
   let k = 0;
+  // judgeSearch (log #148): the jobs with "search" go to their own Runner below, the rest to the plain one as before.
+  const js = cmd.judgeSearch || null;
+  const plainJobs = js ? cmd.jobs.filter(j => !j.search) : cmd.jobs;
   // A job with bot: "simplebot" has deck j played by SimpleBot instead of a model (pilots with memory, which have no
   // ONNX export, against SimpleBot; log #76).
   const bots = { simplebot: () => new SimpleBotAgent() };
   const nextJob = () => {
-    if (k >= cmd.jobs.length) return null;
-    const job = cmd.jobs[k++];
+    if (k >= plainJobs.length) return null;
+    const job = plainJobs[k++];
     const [ia, ib] = job.iSeat === 1 ? [job.i, job.j] : [job.j, job.i];
     const [a, b] = [cmd.decks[ia], cmd.decks[ib]];
     const rec = !!cmd.out && job.rec !== false;
@@ -170,17 +241,63 @@ async function games(cmd, onDecision = null) {
   };
   const recorded = new Set();
   for (const s of new Set(cmd.slots || [0])) recorded.add(pilot(cmd.slots ? cmd.slots.indexOf(s) : 0, true));
-  const runner = new Runner(enc, { concurrency: cmd.concurrency || 64, valueAtTurn: cmd.valueAtTurn || 0, deckoutWin: cmd.deckoutWin ?? 1 });
-  const out = await runner.run(nextJob, agents, { record: cmd.out ? recorded : new Set(), onDecision });
+  const runner = new Runner(enc, { concurrency: cmd.concurrency || 64, valueAtTurn: cmd.valueAtTurn || 0, deckoutWin: cmd.deckoutWin ?? 1,
+                                   maxTurns: cmd.maxTurns || 0, roundTurns: cmd.roundTurns || 0 });
+  // Searched games (log #148): both seats of deck i's model slot played by PolicySearchAgent (k candidates from the slot's
+  // top k, dets re-dealt copies each, lines greedy to the end of the turn, scored by the slot's value), in a second Runner
+  // run alongside the plain one (a Runner waits for every agent's answer each step, so a search's many line requests
+  // would hold up the plain games), under the same turn limit, never recorded.
+  const searchJobs = js ? cmd.jobs.filter(j => j.search) : [];
+  let sOut = null, sSeconds = 0;
+  const searchers = {};
+  const searchRun = async () => {
+    if (encoding !== 'tokens') throw new Error('judgeSearch needs the token encoding');
+    const s0 = Date.now();
+    let q = 0;
+    const nextSearch = () => {
+      if (q >= searchJobs.length) return null;
+      const job = searchJobs[q++];
+      const [ia, ib] = job.iSeat === 1 ? [job.i, job.j] : [job.j, job.i];
+      const [a, b] = [cmd.decks[ia], cmd.decks[ib]];
+      const seat = i => {
+        const slot = cmd.slots ? cmd.slots[i] : 0;
+        if (!searchers['s' + slot]) {
+          searchers['s' + slot] = new PolicySearchAgent(new RemotePilot(slot, js.k || 4), tokens,
+            { k: js.k || 4, dets: js.dets || 4, maxSteps: js.maxSteps || 40, seed: (js.seed || 0) + slot, crn: !!js.crn });
+        }
+        return 's' + slot;
+      };
+      return { deckA: a.cards, deckB: b.cards, deckName: a.name, deckBName: b.name, seed: job.seed, seats: { 1: seat(ia), 2: seat(ib) } };
+    };
+    const sRunner = new Runner(enc, { concurrency: js.concurrency || cmd.concurrency || 64, valueAtTurn: cmd.valueAtTurn || 0,
+                                      deckoutWin: cmd.deckoutWin ?? 1, maxTurns: cmd.maxTurns || 0, roundTurns: cmd.roundTurns || 0 });
+    const o = await sRunner.run(nextSearch, searchers, { record: new Set() });
+    sSeconds = (Date.now() - s0) / 1000;
+    return o;
+  };
+  let out;
+  const pc = probeCatch(cmd, enc);                     // soft search targets on the recorded decisions (log #169)
+  const onDec = pc.onDecision && onDecision ? (x, y, z) => { onDecision(x, y, z); pc.onDecision(x, y, z); }
+    : pc.onDecision || onDecision;
+  if (searchJobs.length) [out, sOut] = await Promise.all([runner.run(nextJob, agents, { record: cmd.out ? recorded : new Set(), onDecision: onDec }), searchRun()]);
+  else out = await runner.run(nextJob, agents, { record: cmd.out ? recorded : new Set(), onDecision: onDec });
+  const probes = cmd.out ? await pc.search() : undefined;
   if (cmd.out) fs.writeFileSync(cmd.out, packRollout(out.rec, 0, { encoding, actionSize: enc.MAX_CAND }));
   const bySeed = new Map(cmd.jobs.map(j => [j.seed, j]));
-  const results = out.results.map(r => {
+  const row = (r, extra) => {
     const job = bySeed.get(r.seed);
     return { i: job.i, j: job.j, iSeat: job.iSeat, seed: job.seed, winner: r.winner, ending: r.ending, turns: r.turns, valueAt: r.valueAt,
-             prizesLeft: r.prizesLeft, steps: r.steps, error: r.error };
-  });
+             prizesLeft: r.prizesLeft, steps: r.steps, error: r.error, ...(r.roundT !== undefined ? { roundT: r.roundT } : {}), ...extra };
+  };
+  const results = out.results.map(r => row(r, {}));
+  if (sOut) results.push(...sOut.results.map(r => row(r, { search: true })));
+  const searchStats = js ? Object.values(searchers).reduce((a, s) => {
+    for (const q of Object.keys(a)) if (q !== 'seconds') a[q] += s.stats[q];
+    return a;
+  }, { searches: 0, changed: 0, lines: 0, lineErrors: 0, capped: 0, seconds: sSeconds }) : null;
   return { ok: true, games: results.length, seconds: (Date.now() - t0) / 1000, results,
-           ...(cmd.out ? { out: cmd.out, transitions: out.rec.action.length } : {}) };
+           ...(cmd.out ? { out: cmd.out, transitions: out.rec.action.length } : {}), ...(js ? { searchStats } : {}),
+           ...(probes ? { probes } : {}) };
 }
 
 // Turn-level search for expert iteration (rl/metagame.py --distill, log #96). Phase 1 is `games` (the same jobs,
@@ -292,7 +409,7 @@ async function qprobe(cmd) {
     probes.push({ k: idx, game: copy, decklists: s.env.decklists, player: s.t.playerId, turn: s.env.game.state.turn, v: ans.value,
                   steps: s.env.game.steps, keys: d.options.map(o => o.key), chosen: ans.action, gameSeed: s.job.seed });
   };
-  const runner = new Runner(tokens, { concurrency: cmd.concurrency || 64, deckoutWin });
+  const runner = new Runner(tokens, { concurrency: cmd.concurrency || 64, deckoutWin, maxTurns: cmd.maxTurns || 0 });
   const base = await runner.run(nextGame, agents, { record: new Set(['r0']), onDecision });
   fs.writeFileSync(cmd.out, packRollout(base.rec, 0, { encoding: 'tokens', actionSize: tokens.MAX_CAND }));
 
@@ -364,8 +481,10 @@ F.readFrames(process.stdin, (type, payload) => {
     const { header, arrays } = F.unpackArrays(payload);
     const resolve = pending.get(header.id);
     pending.delete(header.id);
+    const K = header.k || 0;                     // a top-k reply (log #148): K options a row, -1 past its legal ones
     resolve(Array.from({ length: header.n }, (_, i) => ({ action: arrays.action[i], logp: arrays.logp[i], value: arrays.value[i],
-                                                          sampled: arrays.sampled ? arrays.sampled[i] : 1 })));
+                                                          sampled: arrays.sampled ? arrays.sampled[i] : 1,
+                                                          ...(K && arrays.top ? { top: Array.from(arrays.top.subarray(i * K, (i + 1) * K)).filter(a => a >= 0) } : {}) })));
     return;
   }
   if (type !== F.JSON_FRAME) return;

@@ -314,6 +314,9 @@ function score(game, me) {
 
 module.exports.SearchAgent = SearchAgent;
 module.exports.heuristicIndex = heuristicIndex;
+module.exports.turnScore = turnScore;           // env/tools/test_search.js's stub pilot (log #148)
+module.exports.promptScore = promptScore;
+module.exports.searchScore = score;
 
 // Flat policy-guided search over the token pilot (log #47), a first step toward ISMCTS. At a
 // main-phase decision with several options it takes the pilot's `k` most likely moves; for each,
@@ -322,73 +325,122 @@ module.exports.heuristicIndex = heuristicIndex;
 // until the turn changes or the game ends. The line is scored by the result, or the pilot's value
 // read from the deciding player's side; the move with the best mean wins. Prompts and single-option
 // decisions are left to the pilot. Rollouts of one decision run in lockstep, one batch per step.
+// horizon (log #147): a line stops once the game turn has advanced `horizon` turns (1: the end of the deciding
+// player's turn; 2: after the opponent's reply, played by the same pilot).
+// Batched (log #148, search-strength judging): every decision of a batch is searched at once, all their lines in one
+// lockstep, so the pilot (the GPU learner through env/remote_worker.js RemotePilot) gets one request a step instead of
+// one per decision; the copies' seeds are drawn decision by decision in the batch's order, as one by one, so a batch
+// searches exactly as its decisions would singly. A line's items carry its env (a remote pilot keys its rows by game),
+// and a line's forced moves (one option, inside the horizon) are played without asking the pilot, whose best of one
+// option is that option; they still count toward maxSteps, so every line ends as it did. pilot.evaluate(batch, k) gets
+// k = 0 for the lines' states, which need only the best option and the value. stats: decisions searched, how many the
+// search moved off the pilot's best, lines, lines ended by an engine error, lines cut at maxSteps.
+// keepLines (C49, log #169): each answer also carries cands (the options searched) and scores (per candidate, the
+// score of each copy r = 0..dets-1, null where the move did not exist in that copy), paired across candidates under crn.
+// crn (C03, log #162): common random numbers, the same dets re-deal seeds for every candidate of a decision, so options
+// are compared on the same hidden cards and coin flips; off, every (candidate, copy) draws its own seed as before.
 class PolicySearchAgent {
-  constructor(pilot, enc, { k = 4, dets = 4, maxSteps = 40, seed = 0 } = {}) {
+  constructor(pilot, enc, { k = 4, dets = 4, maxSteps = 40, seed = 0, horizon = 1, crn = false, keepLines = false } = {}) {
     this.pilot = pilot;
+    this.horizon = horizon;
+    this.crn = crn;
+    this.keepLines = keepLines;
     this.enc = enc;
     this.k = k; this.dets = dets; this.maxSteps = maxSteps;
     this.rng = new Rng(seed);
+    this.stats = { searches: 0, changed: 0, lines: 0, lineErrors: 0, capped: 0 };
   }
 
   async act(batch) {
-    const base = await this.pilot.evaluate(batch);
-    const out = [];
+    const base = await this.pilot.evaluate(batch, this.k);
+    const out = new Array(batch.length), todo = [];
     for (let i = 0; i < batch.length; i++) {
       const b = batch[i], e = base[i];
       const d = b.env.game.decision();
-      if (d.prompt || b.legal.length < 2) { out.push({ action: e.best, logp: 0, value: e.value }); continue; }
-      out.push(await this.search(b, e));
+      if (d.prompt || b.legal.length < 2) { out[i] = { action: e.best, logp: 0, value: e.value }; continue; }
+      todo.push(i);
+    }
+    if (todo.length) {
+      const res = await this.searchAll(todo.map(i => ({ b: batch[i], e: base[i] })));
+      todo.forEach((i, q) => { out[i] = res[q]; });
     }
     return out;
   }
 
-  async search(b, e) {
+  async search(b, e) { return (await this.searchAll([{ b, e }]))[0]; }
+
+  async searchAll(items) {
     const { Env } = require('./env.js');
-    const me = b.env.current.playerId;
-    const cands = e.order.slice(0, this.k);
-    const startTurn = b.env.game.state.turn;
     const lines = [];
-    // Moves are matched by key, not position: re-dealing the hidden cards can change which moves
-    // exist (a search card with nothing left to find), so a copy may lack one or order them
-    // differently. A move missing from a copy gets no line there.
-    const keyOf = a => b.env.current.options[a].key;
-    for (const a of cands) {
-      for (let r = 0; r < this.dets; r++) {
-        const env = new Env(this.enc, { showOpponentDecklist: b.env.showOpponentDecklist, u8: b.env.u8 });
-        env.game = b.env.game.clone(new Rng(this.rng.u32()), me);
-        env.decklists = b.env.decklists;
-        const t0 = env.observe();
-        const j = env.current.options.findIndex(o => o.key === keyOf(a));
-        if (j === -1 || !t0.legal.includes(j)) continue;
-        lines.push({ a, env, t: env.step(j), score: null });
+    const probs = items.map(({ b, e }, pi) => {
+      const me = b.env.current.playerId;
+      const cands = e.order.slice(0, this.k);
+      const startTurn = b.env.game.state.turn;
+      // Moves are matched by key, not position: re-dealing the hidden cards can change which moves
+      // exist (a search card with nothing left to find), so a copy may lack one or order them
+      // differently. A move missing from a copy gets no line there.
+      const keyOf = a => b.env.current.options[a].key;
+      const seeds = this.crn ? Array.from({ length: this.dets }, () => this.rng.u32()) : null;
+      for (const a of cands) {
+        for (let r = 0; r < this.dets; r++) {
+          const env = new Env(this.enc, { showOpponentDecklist: b.env.showOpponentDecklist, u8: b.env.u8 });
+          env.game = b.env.game.clone(new Rng(this.crn ? seeds[r] : this.rng.u32()), me);
+          env.decklists = b.env.decklists;
+          const t0 = env.observe();
+          const j = env.current.options.findIndex(o => o.key === keyOf(a));
+          if (j === -1 || !t0.legal.includes(j)) continue;
+          lines.push({ pi, a, r, env, t: env.step(j), score: null, n: 0 });
+        }
       }
-    }
-    for (let step = 0; step < this.maxSteps; step++) {
-      const live = [];
+      return { me, cands, startTurn, best: e.best };
+    });
+    this.stats.searches += items.length;
+    this.stats.lines += lines.length;
+    const turned = l => l.env.game.state.turn - probs[l.pi].startTurn >= this.horizon;
+    for (;;) {
+      const ask = [];
       for (const l of lines) {
         if (l.score !== null) continue;
-        if (l.t.done) { l.score = l.t.winner === me ? 1 : (l.t.winner === 1 || l.t.winner === 2) ? -1 : 0; continue; }
-        live.push(l);
+        while (l.n < this.maxSteps && !l.t.done && l.t.legal.length === 1 && !turned(l)) { l.t = l.env.step(l.t.legal[0]); l.n++; }
+        if (l.n >= this.maxSteps) { l.score = 0; this.stats.capped++; continue; }   // still in the turn after maxSteps
+        if (l.t.done) {
+          const me = probs[l.pi].me;
+          if (l.t.error) this.stats.lineErrors++;
+          l.score = l.env.game.reward(me);        // +1 / -1 / 0, or the round rule's points (env/game.js, log #160)
+          continue;
+        }
+        ask.push(l);
       }
-      if (!live.length) break;
-      const ev = await this.pilot.evaluate(live.map(l => ({ obs: l.t.obs, legal: l.t.legal })));
-      live.forEach((l, i) => {
-        if (l.env.game.state.turn !== startTurn) {
-          l.score = l.t.playerId === me ? ev[i].value : -ev[i].value;
+      if (!ask.length) break;
+      const ev = await this.pilot.evaluate(ask.map(l => ({ obs: l.t.obs, legal: l.t.legal, env: l.env })), 0);
+      ask.forEach((l, i) => {
+        if (turned(l)) {
+          l.score = l.t.playerId === probs[l.pi].me ? ev[i].value : -ev[i].value;
         } else {
           l.t = l.env.step(ev[i].best);
+          l.n++;
         }
       });
     }
-    for (const l of lines) if (l.score === null) l.score = 0;   // still in the turn after maxSteps
-    let best = cands[0], bestMean = -Infinity;
-    for (const a of cands) {
-      const s = lines.filter(l => l.a === a).map(l => l.score);
-      if (!s.length) continue;
-      const m = s.reduce((x, y) => x + y, 0) / s.length;
-      if (m > bestMean) { bestMean = m; best = a; }
-    }
-    return { action: best, logp: 0, value: bestMean };
+    const byProb = probs.map(() => []);
+    for (const l of lines) byProb[l.pi].push(l);
+    return probs.map((p, pi) => {
+      let best = p.cands[0], bestMean = -Infinity;
+      for (const a of p.cands) {
+        const s = byProb[pi].filter(l => l.a === a).map(l => l.score);
+        if (!s.length) continue;
+        const m = s.reduce((x, y) => x + y, 0) / s.length;
+        if (m > bestMean) { bestMean = m; best = a; }
+      }
+      if (best !== p.best) this.stats.changed++;
+      if (!this.keepLines) return { action: best, logp: 0, value: bestMean };
+      const scores = p.cands.map(a => {
+        const row = new Array(this.dets).fill(null);
+        for (const l of byProb[pi]) if (l.a === a) row[l.r] = l.score;
+        return row;
+      });
+      return { action: best, logp: 0, value: bestMean, cands: p.cands, scores };
+    });
   }
 }
 module.exports.PolicySearchAgent = PolicySearchAgent;

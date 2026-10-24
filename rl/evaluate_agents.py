@@ -28,6 +28,7 @@ from rl import limits
 from rl.answer_key import label_of
 from rl.decks import Pool, archived_decks, deck_shape, overlap
 from rl.gpu_matrix import GpuMatrix
+from rl.metagame import recent_score
 from rl.nash import solve
 from rl.remote import RemotePool
 from rl.train import export_policy, token_net
@@ -79,8 +80,8 @@ def main(argv=None):
     st = torch.load(ROOT / args.checkpoint, map_location=device, weights_only=False)
     agents = st["agents"]
     if "population" in st:                             # one pilot for every deck: its best decks by recent results
-        def score(a):
-            return a["sum"] / a["n"] if a.get("n") else a.get("last", 0.0)
+        def score(a):                                  # the judged score with --judge-search (log #148)
+            return recent_score(a, 0.0)
         best = sorted(range(len(agents)), key=lambda i: -score(st["population"][i]))[:args.top]
         agents = [{**agents[i], "score": round(score(st["population"][i]), 4)} for i in best]
     N = len(agents)

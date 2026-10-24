@@ -23,8 +23,9 @@ class Env {
   }
 
   // backup: keep the engine's rollback clone (for seats that play engine actions directly).
-  reset(deckA, deckB, seed, { backup = false } = {}) {
-    this.game = new Game(deckA, deckB, seed, { backup });
+  // maxTurns: the turn limit at which the game is a draw; roundTurns: the 2000 round rule's cut (env/game.js; 0 none).
+  reset(deckA, deckB, seed, { backup = false, maxTurns = 0, roundTurns = 0 } = {}) {
+    this.game = new Game(deckA, deckB, seed, { backup, maxTurns, roundTurns });
     this.decklists = { 1: deckA, 2: deckB };
     return this.observe();
   }

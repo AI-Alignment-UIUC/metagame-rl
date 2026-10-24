@@ -1,5 +1,8 @@
 # The lab: keep training, test changes as short branches (2026-10-18)
 
+> **Superseded 2026-10-22 by `notes/method.md`** (approved by Evan, `notes/evan-requests.md` row 39, log #152). Kept as
+> history. The lab main line stays stopped (`runs/lab/STOP`); restarting it would resume the pre-#127 forced-swap recipe.
+
 Why (log #70–82): the pilot screens could not rank anything. They stopped at 40–80 iterations while the
 pilot was still improving (+55 Elo from 40 more iterations, #82), their seed and rerun noise (6–20 and ±15 Elo) was as
 large as every effect (#74), each from-scratch arm spent about 25 iterations learning to end games (#70–71), and the

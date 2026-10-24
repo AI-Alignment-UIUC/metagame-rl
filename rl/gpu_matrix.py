@@ -112,19 +112,28 @@ class GpuMatrix:
         return self
 
     def play(self, decks: list, games: int, seed: int, new: int = 0, pairs: list = None, value_at_turn: int = 0,
-             slots: list = None, models: dict = None, pair_keys: list = None):
+             slots: list = None, models: dict = None, pair_keys: list = None, round_turns=0, search: dict = None):
         """decks: [{name, cards}] -> (wins, games, steps) as [n, n] arrays; mirrors filled with 0.5.
         `pairs` [(i, j)] plays only those pairs instead of all (or all involving the last `new`).
         slots / models (rl/league.py): deck i is piloted by model slot slots[i] of `models` instead of
-        slot 0 = self.model in both seats. pair_keys (one int per pair): deal seeds by key (jobs_for)."""
+        slot 0 = self.model in both seats. pair_keys (one int per pair): deal seeds by key (jobs_for). round_turns: every
+        game under the 2000 round rule (T or [a, b]; env/game.js, log #160), a win on Prizes at time counted as a win.
+        search ({k, dets, maxSteps, concurrency, crn}; C03, log #162): every game with both seats played by
+        env/agents.js PolicySearchAgent over its deck's model slot on the GPU (env/remote_worker.js judgeSearch), the
+        summed searchStats in self.last."""
         n = len(decks)
         jobs = jobs_for(n, games, seed, new, pairs, pair_keys)
+        if search:
+            for j in jobs:
+                j["search"] = True
         t0 = time.time()
         replies = []
         for shards in shards_for(jobs, self.workers, pair_keys is not None):
             msgs = [{"cmd": "games", "encoding": self.encoding, "decks": decks, "jobs": s, "greedy": self.greedy,
+                     **({"judgeSearch": {**search, "seed": (seed * 7919 + len(replies)) * 64 + w}} if search else {}),
                      "concurrency": self.concurrency, "valueAtTurn": value_at_turn, "history": history_of(models or {0: self.model}),
-                     **({"slots": [int(x) for x in slots]} if slots is not None else {})} for s in shards]
+                     **({"slots": [int(x) for x in slots]} if slots is not None else {}),
+                     **({"roundTurns": round_turns} if round_turns else {})} for w, s in enumerate(shards)]
             replies += self.pool.collect(msgs, models or {0: self.model}, self.device)   # fp32, as the ONNX pilot
         self.results = [x for rep in replies for x in rep["results"]]   # per game (with its job's seed), for analyses
         W, G, S = np.zeros((n, n)), np.zeros((n, n)), np.zeros((n, n))
@@ -146,6 +155,9 @@ class GpuMatrix:
         total = len(jobs)
         self.last = {"games": total, "seconds": round(secs, 1), "games_per_s": round(total / max(secs, 1e-9), 1),
                      "errors": errors, "cut": int(cut), "endings": endings, "decisions_per_game": round(float(np.triu(S, 1).sum()) / max(total, 1), 1)}
+        if search:
+            st = [rep["searchStats"] for rep in replies if rep.get("searchStats")]
+            self.last["search"] = {q: round(sum(x[q] for x in st), 1) for q in (st[0] if st else {})}
         return W, G, S
 
     def close(self):

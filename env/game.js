@@ -7,6 +7,14 @@
 //   }
 //   g.winner                           // 1, 2, 0 (draw) or -1 (cut off / broken)
 //
+// maxTurns (log #140; Evan: "some turn limit for draw if there is a problem where games are not terminating"): with
+// maxTurns > 0 a game still unfinished when game turn maxTurns + 1 begins (both players' turns counted) ends there as a
+// draw, ending 'time'. 0 is the untimed game.
+// roundTurns (log #160; Evan, 2026-10-22: "Sure try using that time limit"): the 2000 Super Trainer Showdown's round rule.
+// A game still unfinished when game turn roundTurns + 1 begins ends there, ending 'time': the player who has taken more
+// Prizes wins on time, a Prize tie is a draw. reward() then pays the event's points (a win 3, a win on time 2, a draw 1
+// each, a loss 0) scaled to [-1, 1]. At most one of maxTurns and roundTurns is set.
+//
 // Coin flips, deck shuffles and prize picks (face down, so there is nothing to decide) are
 // answered here from the game's own seeded RNG; everything else is a decision. The same seed
 // and the same choices replay the same game exactly.
@@ -76,8 +84,11 @@ function engineHistoryEntry(state, action) {
 }
 
 class Game {
-  constructor(deckA, deckB, seed, { backup = false } = {}) {
+  constructor(deckA, deckB, seed, { backup = false, maxTurns = 0, roundTurns = 0 } = {}) {
+    if (maxTurns > 0 && roundTurns > 0) throw new Error('set maxTurns or roundTurns, not both');
     this.rng = new Rng(seed);
+    this.maxTurns = maxTurns;
+    this.roundTurns = roundTurns;
     this.store = newStore(newState(), { backup });
     this.steps = 0;
     this.picks = [];         // picks so far in a multi-pick prompt answer
@@ -101,11 +112,23 @@ class Game {
   pickKeys() { return this.pickedKeys.map(k => k.slice(5)); }
 
   get done() {
-    return this.error !== null || this.steps >= MAX_STEPS || this.state.phase === C.GamePhase.FINISHED;
+    return this.error !== null || this.steps >= MAX_STEPS || this.state.phase === C.GamePhase.FINISHED || this.timedOut;
   }
 
-  // 1 or 2 for the winning player id, 0 for a draw, -1 if the game was cut off or broke.
+  // Past the turn limit (maxTurns, a draw) or the round's end (roundTurns, decided by Prizes) with no winner.
+  get timedOut() {
+    const limit = this.maxTurns > 0 ? this.maxTurns : this.roundTurns;
+    return limit > 0 && this.state.phase !== C.GamePhase.FINISHED && this.state.turn > limit;
+  }
+
+  // 1 or 2 for the winning player id, 0 for a draw, -1 if the game was cut off or broke. At the round's end
+  // (roundTurns) the player with fewer Prizes left wins; a tie is a draw.
   get winner() {
+    if (this.error === null && this.timedOut) {
+      if (!(this.roundTurns > 0)) return 0;
+      const [a, b] = this.state.players.map(p => p.prizes.reduce((n, z) => n + z.cards.length, 0));
+      return a < b ? this.state.players[0].id : b < a ? this.state.players[1].id : 0;
+    }
     if (this.error !== null || this.state.phase !== C.GamePhase.FINISHED) return -1;
     switch (this.state.winner) {
       case C.GameWinner.PLAYER_1: return this.state.players[0].id;
@@ -116,8 +139,10 @@ class Game {
   }
 
   // How a won game ended: 'prizes', 'deck-out' (the loser couldn't draw), 'no-pokemon'
-  // (the loser had none in play), or 'other'; null for draws and cut-off games.
+  // (the loser had none in play), or 'other'; 'time' for a game ended by the turn limit or the round's end (a draw or a
+  // win on Prizes at time); null for other draws and cut-off games.
   get ending() {
+    if (this.error === null && this.timedOut) return 'time';
     const w = this.winner;
     if (w !== 1 && w !== 2) return null;
     const win = this.state.players.find(p => p.id === w), lose = this.state.players.find(p => p.id !== w);
@@ -125,6 +150,17 @@ class Game {
     if (lose.deck.cards.length === 0) return 'deck-out';
     if (![lose.active, ...lose.bench].some(s => s.pokemons.cards.length > 0)) return 'no-pokemon';
     return 'other';
+  }
+
+  // A seat's reward for the finished game: +1 a win (deckoutWin for a win by deck-out), -1 a loss, 0 a draw or a cut-off
+  // game. Under the round rule (roundTurns) the event's points scaled to [-1, 1]: a win +1, a win on Prizes at time +1/3,
+  // a draw (a Prize tie at time included) -1/3 to each seat, a loss -1 (on time too).
+  reward(seat, deckoutWin = 1) {
+    const w = this.winner, round = this.roundTurns > 0;
+    if (w === -1) return 0;
+    if (w === seat) return this.ending === 'deck-out' ? deckoutWin : round && this.ending === 'time' ? 1 / 3 : 1;
+    if (w === 0) return round ? -1 / 3 : 0;
+    return -1;
   }
 
   openPrompt() {
@@ -282,7 +318,7 @@ Game.prototype.clone = function (rng, viewer) {
   g.store.cardRanks = this.store.cardRanks;
   g.steps = this.steps;
   g.picks = []; g.pickedKeys = []; g.space = null; g.spaceFor = -1; g.cached = null; g.error = null; g.chain = null; g.deadEnds = [];
-  g.turnMark = { ...this.turnMark }; g.turnCapped = this.turnCapped;
+  g.turnMark = { ...this.turnMark }; g.turnCapped = this.turnCapped; g.maxTurns = this.maxTurns; g.roundTurns = this.roundTurns;
   g.history = this.history.slice();
   if (viewer !== undefined) {
     for (const p of g.state.players) {

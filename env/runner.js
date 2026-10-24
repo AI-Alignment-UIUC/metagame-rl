@@ -19,8 +19,15 @@ class Runner {
   // can be paid less for stalling than for taking prizes. Losses are -1 either way.
   // valueAtTurn: if set, each result also has valueAt { 1, 2 }: the value each seat's agent gave
   // at its first decision on or after that game turn (null if the game ended first).
-  constructor(encoder, { concurrency = 32, showOpponentDecklist = true, deckoutWin = 1, valueAtTurn = 0 } = {}) {
+  // maxTurns: every new deal ends as a draw at that turn limit (env/game.js; 0 none, log #140).
+  // roundTurns: every new deal is played under the 2000 round rule (env/game.js, log #160), cut at T, a number, or at T
+  // drawn per deal from a..b by its seed for [a, b]; rewards are then the event's points (Game.reward) and each result
+  // carries its roundT.
+  constructor(encoder, { concurrency = 32, showOpponentDecklist = true, deckoutWin = 1, valueAtTurn = 0, maxTurns = 0,
+                         roundTurns = 0 } = {}) {
     this.encoder = encoder;
+    this.maxTurns = maxTurns;
+    this.roundTurns = roundTurns;
     this.deckoutWin = deckoutWin;
     this.valueAtTurn = valueAtTurn;
     this.concurrency = concurrency;
@@ -36,6 +43,12 @@ class Runner {
   // tsearch, logs #96, #103): its result has no winner and stopped { player, value }, the deciding player there and the
   // agent's value for it.
   async run(nextJob, agents, { record = new Set(), onDecision = null } = {}) {
+    const rt = this.roundTurns;
+    const roundT = seed => {                // the deal's cut under the round rule: fixed, or drawn from a..b by the seed
+      if (!Array.isArray(rt)) return rt || 0;
+      const h = Math.imul((seed % 0x7fffffff) ^ 0x5bd1e995, 0x9e3779b1) >>> 0;
+      return rt[0] + h % (rt[1] - rt[0] + 1);
+    };
     const enc = this.encoder;
     const rec = { obs: [], action: [], logp: [], value: [], reward: [], done: [], traj: [], legal: [], slot: [], sampled: [] };
     const results = [];
@@ -58,7 +71,7 @@ class Runner {
         }
       } else {
         const usesEngine = [1, 2].some(s => agents[job.seats[s]].engine);
-        t = env.reset(job.deckA, job.deckB, job.seed, { backup: usesEngine });
+        t = env.reset(job.deckA, job.deckB, job.seed, { backup: usesEngine, maxTurns: this.maxTurns, roundTurns: roundT(job.seed) });
       }
       return { job, env, t, id: jobCount++, last: { 1: -1, 2: -1 }, valueAt: { 1: null, 2: null }, turn0, stopped: null };
     };
@@ -70,23 +83,22 @@ class Runner {
       }
     };
     const finish = slot => {
-      const w = slot.t.winner;
-      const win = slot.env.game.ending === 'deck-out' ? this.deckoutWin : 1;
+      const w = slot.stopped ? slot.t.winner : slot.env.game.winner;
       for (const seat of [1, 2]) {
         const i = slot.last[seat];
         if (i === -1) continue;
         rec.done[i] = 1;
-        rec.reward[i] = w === seat ? win : (w === 1 || w === 2) ? -1 : 0;
+        rec.reward[i] = slot.stopped ? 0 : slot.env.game.reward(seat, this.deckoutWin);
       }
       for (const a of Object.values(agents)) if (a.forget) a.forget(slot.env.game);
       const left = seat => {             // prizes a seat still has to take at the end (rl/metagame.py margin)
         const p = slot.env.game.state.players.find(q => q.id === seat);
         return p ? p.prizes.reduce((a, z) => a + z.cards.length, 0) : 0;
       };
-      results.push({ seats: slot.job.seats, decks: [slot.job.deckName, slot.job.deckBName], seed: slot.job.seed,
+      results.push({ id: slot.id, seats: slot.job.seats, decks: [slot.job.deckName, slot.job.deckBName], seed: slot.job.seed,
         winner: w, ending: slot.env.game.ending, turns: slot.env.game.state.turn, prizesLeft: { 1: left(1), 2: left(2) },
         ...(slot.job.tag !== undefined ? { tag: slot.job.tag } : {}), ...(slot.stopped ? { stopped: slot.stopped } : {}),
-        ...(this.valueAtTurn ? { valueAt: slot.valueAt } : {}), steps: slot.t.steps, error: slot.t.error ? String(slot.t.error.message || slot.t.error) : undefined });
+        ...(this.valueAtTurn ? { valueAt: slot.valueAt } : {}), ...(this.roundTurns ? { roundT: slot.env.game.roundTurns } : {}), steps: slot.t.steps, error: slot.t.error ? String(slot.t.error.message || slot.t.error) : undefined });
     };
 
     fill();

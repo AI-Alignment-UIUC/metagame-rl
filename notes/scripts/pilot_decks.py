@@ -6,6 +6,9 @@ deck's Pokémon types 75% of the time, any basic type otherwise), and Trainers u
 for the rest. Matchups are random pairs of these decks (mirrors included) for rl/train.py
 --matchups-file. The card pool is still the field's 56 cards (--pool field), a prior removed later.
 
+--pool full --builder wide (log #154, C30): rl.decks.wide_deck over the whole 277-card pool, the generator the metagame's
+turnover and practice decks use (Stage 2 lines, special Energy among the rest), so no human list enters the pool.
+
 Run: PYTHONPATH=. .venv/Scripts/python notes/scripts/pilot_decks.py --out runs/pilot-scratch/matchups.json
 """
 import argparse
@@ -14,7 +17,7 @@ from pathlib import Path
 
 import numpy as np
 
-from rl.decks import MAX_COPIES, Pool, archived_decks
+from rl.decks import MAX_COPIES, Pool, archived_decks, wide_deck
 
 
 def wide_random_deck(pool: Pool, rng) -> np.ndarray:
@@ -55,15 +58,25 @@ def main(argv=None):
     ap.add_argument("--matchups", type=int, default=2048)
     ap.add_argument("--seed", type=int, default=5)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--pool", choices=["field", "full"], default="field", help="the field's 56 cards or all 277")
+    ap.add_argument("--builder", choices=["log42", "wide"], default="log42",
+                    help="log42: wide_random_deck here; wide: rl.decks.wide_deck")
+    ap.add_argument("--decks-out", help="also write the decks alone as [{name, cards}] (e.g. held-out evaluation decks)")
     args = ap.parse_args(argv)
     rng = np.random.default_rng(args.seed)
     full = Pool()
-    field = sorted({c for _, v in archived_decks(full) for c in full.names(v)})
-    pool = Pool(restrict=field)
-    decks = [{"name": f"rand-{k}", "cards": pool.names(wide_random_deck(pool, rng))} for k in range(args.decks)]
+    if args.pool == "full":
+        pool = full
+    else:
+        field = sorted({c for _, v in archived_decks(full) for c in full.names(v)})
+        pool = Pool(restrict=field)
+    build = wide_deck if args.builder == "wide" else wide_random_deck
+    decks = [{"name": f"rand-{k}", "cards": pool.names(build(pool, rng))} for k in range(args.decks)]
     matchups = [[decks[a], decks[b]] for a, b in rng.integers(len(decks), size=(args.matchups, 2)).tolist()]
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     json.dump(matchups, open(args.out, "w"))
+    if args.decks_out:
+        json.dump(decks, open(args.decks_out, "w"))
     e = [sum(pool.cards[pool.id[c] - 1]["superType"] == 3 for c in d["cards"]) for d in decks]
     print(f"{len(decks)} decks, {len(matchups)} matchups; Energy per deck min {min(e)} median {int(np.median(e))} max {max(e)}")
 
