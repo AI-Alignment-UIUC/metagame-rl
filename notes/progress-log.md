@@ -6481,3 +6481,99 @@ Entry format:
   09:54: C66 with game errors `15:1`, GPU 5.6 of 15.9 GB, 1 of 3 slots busy (the C63 pair has ended, not yet logged).
 - **Next:** The supervisor restarts on the new code. C63's two runs await their log entry. Evan's rows 51-53 (the
   Trainer-card audit, the 5-minute loop) run before new launches.
+
+### #233 · 2026-10-24 · A5 · Every pool Trainer checked in the engine and the env: the staples resolve as printed, but the env makes multi-card picks in an order the pilot cannot see, and Potion, Clefairy Doll, Mysterious Fossil and Here Comes Team Rocket! are blanks
+- **Done:** Evan's row 51. A 17-agent workflow, read-only. 7 auditors covered the 42 Trainers in groups, and 2 more
+  covered the pilot's interface and the global rules. Each card was checked against pool.json's text, its src and the
+  compiled `dist/cjs` that `env/engine.js` loads, the env's options and prompts, and live scenario scripts. A skeptic
+  re-tested every fault with a fresh script, and a critic sourced memory verdicts from the Rulings Compendium (WotC
+  chats, last updated 2003-07-11). Scripts and outputs are in the session scratchpad (`trainer-audit/`). Nothing in the
+  repo was changed.
+- **Evidence:**
+  - 31 of the 42 cards OK by the auditors, 34 by the critic's count; dist matches src for all 42 (dist built
+    2026-10-11, src unchanged since). A fuzz of 1,002 random games, with two decks holding all 42 Trainers and the
+    human lists, made 105k main-phase and 44.9k prompt checks: the only Trainer mismatches were Doll and Fossil, with
+    0 engine errors.
+  - Staples as printed (live tests): Professor Oak (24/24 lists), Computer Search's search, Gust of Wind, Bill,
+    PlusPower, Item Finder's recovery, Energy Removal, Super Energy Removal, Rocket's Sneak Attack, Scoop Up. PlusPower
+    applies after Weakness and Resistance and adds nothing to 0 damage, as the Feb 17 and Mar 2 2000 rulings say.
+  - Engine faults, each confirmed by a skeptic's own script:
+    - Potion BS does nothing: its handler is named `potion`, not `reduceEffect` (`set-base/potion.ts:22`), so it is
+      discarded with no effect yet always offered (3,654 of 3,654 in-hand decisions). 1 list plays 3.
+    - Digger TR damages the wrong player on every play (0/9 scripted flip sequences pass): +3.3 expected damage to the
+      opponent instead of −3.3 to yourself. 0 lists; #140's gated best decks ran "Gambler or Digger".
+    - Challenge! TR: after a decline the player draws 2 and both players still bench Basics (no `return`); the
+      opponent's picks are capped by the challenger's free slots. Stronger than printed; 1 list, 2 copies.
+    - Maintenance BS draws before it shuffles the 2 cards in (stronger: 200/200 redraws of a Pokédex-placed card
+      against 1/22 printed) and refuses an empty deck. 0 lists.
+    - PlusPower adds nothing when the Defending Pokémon has a Defender and the damage after W/R is 10-20: the store
+      runs handlers by fullName, so Defender subtracts first. 1 list plays Defender.
+  - Env faults:
+    - Clefairy Doll and Mysterious Fossil are never offered (0 of 3,674 and 0 of 3,821 legal chances).
+      `isTargetedTrainer` (`env/legal.js:71`) looks for `instanceof TrainerEffect`, but the compiled code reads
+      `instanceof common_1.TrainerEffect`, so it is false for all 42. `verify_enumerator` runs only the 24 lists, which
+      play neither. A regex fixes it (checked on a scratch copy). 0 lists; 72 of 477 drafted decks in `runs/abl/base`
+      carried one.
+    - Multi-card picks follow a hidden order: `env/legal.js:261` lets a later pick come only from an index at or after
+      the last one, in the prompt array's order, which the pilot's tokens don't show. Measured with C49-sd-s3 199
+      (7,704 decisions): Nightly Garbage Run lost 18 picks over 44 plays; Super Energy Removal removed 1 Energy in 2
+      of 27 two-Energy chances; Energy Retrieval 1 of 13; in Computer Search and Item Finder 40.7% of second-pick
+      lists miss a card, and 15% of the pilot's probability falls on cards not offered. The pilot never stopped early
+      by choice. A prototype of order-free picks is in `trainer-audit/search/fixproto/legal_free.js`.
+    - Here Comes Team Rocket! changes nothing the pilot sees or chooses (no Prize tokens; Choose prize is random).
+      1 list, 1 copy.
+    - Lass's revealed hand is never shown to the model (0 of 508 plays; its one-option prompt is auto-played), and
+      Rocket's Sneak Attack shows it only while its prompt is open. The open prompt does not name its Trainer, and the
+      live pilots run history 0 and memory none.
+  - Rules against dated rulings: a mulligan lets the opponent draw 1 extra card where the 2000 rulings allow 2 (Feb 17
+    and Mar 2 2000); Energy Retrieval may not take back the Energy traded as its cost, which the Feb 24 2000 ruling
+    allows; Item Finder may not take back a Trainer discarded as its cost (allowed Nov 16 2000, after the event).
+    Confusion follows the 2003 rule (30 damage, free retreat), already in #139. Turn structure, Prizes, deck-out, no
+    Supporter limit (all 42 are trainerType 0), the step caps (never near 250 a turn) and the RNG match 2000 play.
+  - Representation: 40 of the 42 Trainers share one structured-feature row in `card_feature_matrix`, so the pilot tells
+    them apart only by the id embedding and the frozen text embedding (Potion's nearest: Super Potion, cosine 0.83).
+- **Found:**
+  - The simulator is not broken where the human lists live: of their Trainers only Potion (3 cards in 1 list) is
+    broken in the engine. The one fault that touches several staples is the env's hidden pick order, and each loss is
+    small. The audit judges that these faults alone don't explain decks 10 Trainers short of the lists; that is not
+    measured.
+  - SimpleBot never plays Gust of Wind, PlusPower, Item Finder, Super Energy Removal or Rocket's Sneak Attack (0 plays
+    over 16,186 or more offers each in 400 games): its one-step score gives +2 for holding a Trainer. Its low Trainer
+    prices are by design, not evidence about the simulator, and #92's SimpleBot row should be read that way.
+  - Under the round rule SimpleBot's search, disrupt and tempo groups stay below 0.5 at every T from 20 to 45 (search
+    0.402, disrupt 0.476, tempo 0.390), so the clock is not the cause of their low price for this player either.
+- **Next:** Decision for Evan: fix the confirmed faults (Potion, Digger, Challenge!, Maintenance, the PlusPower order,
+  the Doll/Fossil regex, order-free picks, the 2-card mulligan, the two retrieval rulings) in the submodule and env;
+  re-run the engine specs, the rulings tests and the enumerator check on decks holding all 42 Trainers; then a
+  5-minute A/B of the Trainer readout on the old and the fixed engine with the live pilot.
+
+### #234 · 2026-10-24 · A5 · What to try next: 12 candidate probes judged twice, and a Karpathy-style loop of 5-minute experiments that edits one train.py
+- **Done:** Evan's rows 50, 52 and 53, read-only. Two workflows:
+  - Ideation: 6 proposers from different angles (engine, credit, selection, architecture, ecosystem, and a wildcard
+    that read only the ledger), a merger that checked each proposal against the log, the ledger and `git log`, and 2
+    judges (ground truth, method skeptic). Output: the session scratchpad's `ideation.json`.
+  - Loop design: an agent read karpathy/autoresearch itself (README, program.md, train.py, prepare.py; latest commit
+    2026-03-26) and the estack skill; 3 designers wrote competing designs and 2 judges (Goodhart risk, Occam) scored
+    them. Output: `ar_design.json`; raw copies of Karpathy's files are in `karpathy-ar-raw/`.
+- **Evidence:**
+  - Ideation kept 12 candidates and folded 1 in. Both judges' top three: X1, who answers the prompts inside Trainers
+    (random answers against the pilot's own on C59's cell; never tested, since search and soft targets skip prompts,
+    `env/agents.js:360`, `env/remote_worker.js:134`); X4, pace oracles (must-attack on both seats, and a race with no
+    opponent), since 66-83% of these games end on time and the pilots' lists take 34-41 engine turns to win a Prize
+    race against about 13-14 for humans (#164); X3, the lists' Trainers off the mirror (against the other 23 lists
+    and against the loop's field). Next: X10 (do the pilot's tokens tell Trainers apart) and X5 (an inert filler
+    beside the Energy filler). Each fits in 3-12 minutes.
+  - Karpathy's program.md, as read: one editable train.py; a frozen prepare.py holding the 300 s budget and the
+    metric; commit before each run, keep only if strictly better, else `git reset`; equal with simpler code is kept;
+    one seed, no noise threshold; results.tsv untracked; kill at 10 minutes; never stop and never ask.
+  - Both judges recommend the pilot-only design. `ar/train.py` (about 280 lines, the trainer at C49-sd's recipe) runs
+    each experiment from the same frozen start. `ar/fixed.py` is frozen: the budget, hashes, a scan of train.py for
+    card names, kinds and the lists, and an evaluation in a fresh process that writes the status itself. The metric
+    is the lists against copies with Trainers turned into basic Energy, decisive games only, with a guard against
+    weaker play; keep at the A/A noise or 0.03, confirmed on a second seed. About 8-9 minutes and 6-7 experiments an
+    hour.
+  - Both flag a risk from the record: #221's two pilots 57 Elo apart priced the lists' Trainers within 0.003, so setup
+    first tests whether 5 minutes of training can move the metric at all (a quarantined run on the evaluation decks).
+- **Found:** #233's interface faults sit in X1's layer (the prompt answers), so the order-free picks fix and X1
+  overlap: the fixed engine should be the baseline for both, and for the loop.
+- **Next:** Evan's decisions on #233's fixes and on the loop's design (README Next); the unattended rounds stay paused.

@@ -162,23 +162,30 @@ gives a biased or blind builder, so pilot strength is the bottleneck.
   exceeded, so the loop now checks GPU memory at launch, keeps its switches from rounds, shows game errors and allows 20
   rounds a day; R1 from a random pilot (C63) and Evan's seasons with selection (C66) ran on R1.
 
-**Recent.** Nothing open after log #232.
+**Recent (log #233–234).** An audit of all 42 pool Trainers in the engine and the env (Evan's row 51) found the human
+lists' staples resolving as printed and only Potion (3 cards in 1 list) broken among their Trainers, but the env makes
+multi-card picks in an order the pilot cannot see (Computer Search, Item Finder, Super Energy Removal, Energy Retrieval,
+Nightly Garbage Run lose part of their picks), never offers Clefairy Doll or Mysterious Fossil, leaves Here Comes Team
+Rocket! blank, reverses Digger, over-powers Challenge! and Maintenance, and gives 1 mulligan card where 2000 gave 2;
+SimpleBot's low Trainer prices turned out to be its design (it never plays Gust, PlusPower or Item Finder). The next
+probes and a Karpathy-style loop were designed (one edited `train.py`, 5 minutes a run, one metric, keep or reset),
+with a first check of whether 5 minutes of training can move the metric at all.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. Evan's row 51: the audit of all 42 Trainer cards in the engine and env (a workflow, running). A confirmed fault is
-   fixed and re-tested before any new screen, since every reading of Trainer value rests on the engine.
-2. Evan's rows 52-53: a Karpathy-style loop of 5-minute experiments (one edited file, a fixed budget, one metric, keep
-   or revert), with Occam's razor over the method's steps; Evan approves the design before it runs.
-3. Log C63's pair (ended about 09:45: R1 from a random-init pilot against R1 from C49-sd-s3) and C66's looks; C66 ends
-   at 60 about 11:30 (game errors `15:1`, a warning under #232).
-4. A second concurrent Nf-vs-uniform pair to settle R1 (#231), unless the 5-minute loop replaces the screen format.
-5. C65 (the engine audit of the lists' Trainers) is folded into row 51; H77's input probe (C58) follows from the audit's
-   findings on what the pilot can see.
-6. Decisions for Evan: (a) whether the round rule counts as an unadopted component under §10's cap of 2; (b) whether the
-   unattended rounds keep running the current method while the 5-minute loop is designed.
+1. Decision for Evan: fix #233's confirmed faults in the submodule and env (Potion, Digger, Challenge!, Maintenance,
+   the PlusPower order, the Doll/Fossil regex, order-free picks, the 2-card mulligan, the two retrieval rulings), re-run
+   the specs, rulings tests and enumerator check on decks holding all 42 Trainers, then a 5-minute A/B of the Trainer
+   readout on the old and fixed engine with the live pilot.
+2. Decision for Evan: build the 5-minute loop (#234): pilot-only `ar/train.py`, the lists' Trainers against basic
+   Energy as the metric (name-free, 6 random Trainers), a guard against weaker play, keep at the A/A noise confirmed
+   on a second seed; first the movability check. Local commits in `ar/` only; one log entry a night.
+3. The fast probes from #234 on the fixed engine: X1 (random prompt answers against the pilot's), X4 (pace oracles),
+   X3 (the lists' Trainers off the mirror).
+4. Log C63's pair and C66's end (both ended by 11:58 and wait in `loop.py state`).
+5. The unattended rounds stay paused (`loop.py resume` restarts them) while the engine and the loop change.
 <!-- status:end -->
 
 ---
