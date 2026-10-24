@@ -6624,3 +6624,212 @@ Entry format:
   - Every result before this entry was measured on the old engine and env: Trainer values, screens and pilots are
     comparable among themselves, not with what comes next.
 - **Next:** C67, C59's T49 cell on the fixed build (11 minutes); then the 5-minute loop's calibration (#236).
+
+### #236 · 2026-10-24 · A5 C67 · The fixed engine leaves the lists' Trainer prices where they were (+0.005 on search, disrupt and tempo, paired SE 0.006): the engine faults of #233 were not why the pilots underprice Trainers
+- **Done:** C67 (`runs/probe/C67-fixab/`, record written before launch, Evan's row 54): C59's T49 cell rerun on the
+  build of #235, the same command (`trainer_value.py --decks archived`, C49-sd 199 on both seats, greedy, the round rule
+  20-45, 64 games a pair, seed 91, 2 workers), through `loop.py launch`, 14:15-14:22.
+- **Evidence:** 7,616 games in 410 s, 0 errors (T49: 7,616 in 417 s, 0 errors). Fixed minus old, paired by list
+  (`scratchpad/c67_compare.py`):
+
+  | group | old (T49) | fixed | difference (paired SE) |
+  |---|---|---|---|
+  | all Trainers | 0.558 | 0.553 | −0.005 (0.010) |
+  | draw | 0.589 | 0.574 | −0.014 (0.008) |
+  | search | 0.412 | 0.413 | +0.001 (0.008) |
+  | disrupt | 0.466 | 0.478 | +0.011 (0.009) |
+  | tempo | 0.410 | 0.412 | +0.002 (0.010) |
+
+  Primary (mean of search, disrupt, tempo): 0.429 -> 0.434, +0.005 (per-list paired SE 0.006): R-small (within ±0.03).
+  Endings: time 5,048 (5,020), deck-out 1,048 (1,033), no Pokémon 1,178 (1,235), Prizes 341 (327); cut 1,083.
+- **Found:**
+  - With the faults fixed and the picks freed, the strongest human-free pilot still prices the lists' search,
+    disrupt and tempo Trainers below a basic Energy (0.41-0.48). The fault is in the pilot (its value, inputs or
+    training), not the engine or the env's interface, as #233 judged.
+  - Correction to C67's record: its Readout quotes T49 as search 0.375, disrupt 0.454, tempo 0.344, all 0.456, draw
+    0.398; those are T49u (untimed), the last cell in C59's stdout. T49 is the table's old column. The bands were on the
+    difference and are unaffected. The same untimed numbers went into #234's ideation and loop-design briefs as "under
+    the rule".
+- **Next:** the 5-minute loop (#237) works on exactly that: the pilot's Trainer play, on the fixed engine.
+
+### #237 · 2026-10-24 · A5 C63 · C63's pair ends at 30: under a random-init pilot selection still trims the proposed Pokémon (−0.29 a move on 0-8, arrival's band; bootstrap's starts at +0.3), but the warm control slid at 1.32 per 100 moves, 0.02 over R1's band, so by its record C63 is inconclusive (one seed)
+- **Done:** Read `runs/screens/C63-h110.nfR-fresh-s5/` (arm) and `runs/screens/C63-ctl-R1-c49sds3199-s5/` (control):
+  `log.jsonl` (30 rows each, iterations 0-29), `stdout.log`, `launch.log` ("C63 end 2026-10-24 09:27:58 exit 0",
+  "C63-ctl end 2026-10-24 09:46:21 exit 0", the chains' 30-iteration cap), against both records, with
+  `select_lean.py --window 9` and `--window 10`, `screen_watch.py --every 1` and a scratch script
+  (`scratchpad/c63_c66_readout.py`: the slide rate in #231's convention, the median's Pokémon at 8 minus at 0 over the
+  moves of 0-8, which reproduces C52 s1 0.57, C52 s3 1.35, C52-ctl 3.91 and C51 s1 2.44; the LR of §9), CPU only.
+  Both ran on the engine before #235's Trainer fixes. No round ran after 074405 (`runs/loop/rounds.jsonl`), so no look
+  was read while they ran. No run started or stopped.
+- **Evidence:**
+
+  | Iteration | Median, arm / control | Best 12 (distance), arm / control | Proposed P, arm / control | Accepted − proposed P, arm / control | KO endings, arm / control |
+  |---|---|---|---|---|---|
+  | 0 | 10 / 28 / 22 · 10 / 28 / 22 | 8.2 / 26.2 / 25.5 (14.5) · 11.5 / 22.8 / 25.8 (15.0) | +2.58 · +1.77 | −0.55 · +0.11 | 0.327 · 0.636 |
+  | 2 (look 3) | 12 / 27 / 20 · 11 / 28 / 21 | 9.2 / 26.1 / 24.7 (12.8) · 11.9 / 23.4 / 24.7 (12.8) | +2.46 · +1.71 | −0.54 · −0.47 | 0.345 · 0.617 |
+  | 4 (look 5) | 12 / 28 / 19 · 13 / 28 / 19 | 10.9 / 25.9 / 23.2 (9.8) · 13.4 / 23.1 / 23.5 (10.5) | +1.49 · +1.20 | −0.36 · +0.47 | 0.365 · 0.560 |
+  | 8 | 15 / 28 / 17 · 15 / 27 / 18 | 14.8 / 23.4 / 21.8 (9.7) · 14.2 / 23.8 / 21.9 (8.8) | +0.90 · +1.71 | −0.23 · −0.12 | 0.485 · 0.486 |
+  | 9 (look 10) | 15 / 28 / 17 · 15 / 27 / 18 | 12.9 / 26.3 / 20.8 (5.0) · 15.8 / 24.0 / 20.2 (8.5) | +1.03 · +1.15 | −0.48 · −0.43 | 0.462 · 0.462 |
+  | 14 (look 15) | 16 / 28 / 17 · 16 / 25 / 18 | 15.3 / 22.4 / 22.2 (11.7) · 18.0 / 21.1 / 20.9 (14.3) | +0.07 · +0.94 | +0.20 · −0.14 | 0.555 · 0.451 |
+  | 19 (look 20) | 15 / 26 / 18 · 17 / 23 / 19 | 13.6 / 26.2 / 20.2 (4.0) · 16.4 / 22.9 / 20.7 (10.7) | +0.43 · +0.72 | −0.33 · −0.02 | 0.540 · 0.453 |
+  | 24 | 16 / 26 / 19 · 17 / 23 / 20 | 17.9 / 21.2 / 20.8 (14.0) · 19.3 / 19.2 / 21.5 (18.2) | +0.48 · +0.62 | −0.40 · −0.59 | 0.625 · 0.450 |
+  | 29 (look 30) | 17 / 25 / 19 · 17 / 21 / 20 | 19.2 / 21.0 / 19.8 (14.5) · 20.3 / 17.5 / 22.2 (21.5) | +0.83 · +0.35 | −0.29 · −0.02 | 0.585 · 0.511 |
+
+  - Primary, accepted minus proposed Pokémon a move on the mean of 0-8 (SE over iterations): arm −0.29 (0.10); control
+    −0.15 (0.10); arm minus control −0.15 (0.14), same seed, decks and deals. The arm is inside arrival's band (within
+    ±0.3, by 0.01), below the warm runs' −0.12 to −0.26, on the side away from bootstrap (at least +0.3, centre +0.6;
+    5.9 noise units off). LR arrival over bootstrap 3 × 10^7 at s 0.15, one seed. The record's prior (bootstrap,
+    partly) was wrong.
+  - The control's band (the record's inconclusive clause): accepted minus proposed −0.15, inside ±0.3; slide median
+    10 -> 15 Pokémon over 378 moves of 0-8, 1.32 per 100, above R1's 1.3 by 0.02 (one median card is 0.26 per 100
+    over those moves, so 4 cards would have read 1.06; the band's noise is 1.2). Out of band: C63 is inconclusive by
+    its record.
+  - Secondary: the arm's slide 10 -> 15 over 363 moves, 1.38 per 100, at proposals of +1.75 Pokémon a move on 0-8
+    (control +1.52; 0-2 +2.47 against +1.66). After 8 both rise 15 -> 17 (arm 0.21 per 100 over 933 moves of 9-28,
+    control 0.23 over 873). Selection's Energy lean (S37) on 0-9: arm +0.41 (0.11), control +0.32 (0.11), the record's
+    "fixed process" side (arm at +0.2 or more), not the warm-lineage price (arm at 0 or below); 10-19 +0.44 (0.06)
+    against +0.41 (0.09), 20-29 +0.25 (0.08) against +0.06 (0.05). Trainers, same windows: arm −0.10 / −0.27 / −0.16,
+    control −0.15 / −0.18 / −0.02.
+  - Endings, means of 0-9 / 10-19 / 20-29 (of 2,000 games): KO endings (Prizes plus no Pokémon) arm 0.40 / 0.54 /
+    0.62, control 0.55 / 0.46 / 0.48; Prize endings arm 0.005 / 0.023 / 0.035, control 0.076 / 0.095 / 0.101;
+    deck-outs arm 1-21, control 8-65. Steps a game: arm 104.9 -> 78.8, control 92.7 -> 101.7.
+  - Ground truth at 29: arm median 17 / 25 / 19 against 13.5 / 28 / 18 (+3.5 / −3 / +1), best 12 19.2 / 21.0 / 19.8
+    (+5.7 / −7.0 / +1.8; distance 14.5); control median 17 / 21 / 20 (+3.5 / −7 / +2), best 12 20.3 / 17.5 / 22.2
+    (+6.8 / −10.5 / +4.2; 21.5). Means of 25-29: best 12 arm 17.1 / 22.9 / 19.9 (10.7), control 18.6 / 19.4 / 22.1
+    (17.8). Trend: both medians 10 / 28 / 22 at 0 and 15 Pokémon at 8; median Trainers 27-28 through 18 in the arm,
+    then 23-26 (25 at 29); in the control 27-28 through 10, 25-26 over 11-18, 21-23 over 19-29. Best-12 distance,
+    means of 0-9 / 10-19 / 20-29: arm 10.3 / 7.6 / 11.6 (lowest 3.7 at 10), control 11.3 / 11.4 / 16.4 (lowest 5.8 at
+    13, highest 21.5 at 29).
+  - Kills: manipulation check by 3 passed (moved 39 on the mean of 1-3 in both; the arm's proposed Pokémon +2.47 a draw
+    on the mean of 0-2, bar +3.0; 0 errors). Median Pokémon at most 17 (arm) and 18 (control), kill 35. 0 game errors
+    and 0 practice errors in all 30 iterations of both. §9's from-scratch stop, read at 30 and not applied: the arm's
+    Prize endings 0.050 at 29 (100 of 2,000), under 10% (its KO endings 0.585); the control's 0.112.
+- **Found:** Ledger: H110 C63 closed inconclusive by its record (the control's slide 1.32, over 1.3). The arm's reading
+  alone: arrival +, bootstrap − (LR 3 × 10^7, one seed; grade B had the control held its band). S37 + from a
+  random-init pilot. No new A id.
+  - (1) Under a random-init pilot, selection trims the proposed Pokémon on 0-8 as it does under the warm ones, and no
+    Pokémon pile forms in 30 iterations (median at most 17, deck-outs at most 21 of 2,000; from scratch without Nf or
+    the rule, #124 had 99% deck-outs, as the record cites). The arm's slide follows its proposals, which pull harder
+    than the control's. One seed.
+  - (2) For R1 (#226, #231): the control is R1's third pilot seed (C49-sd-s3 at 199, seed 5). Its 1.32 is outside the
+    band by 0.02, as C52 seed 3's 1.35 was by 0.05; seed 1 read 0.57. All three are below every uniform-base start
+    (2.4-4.5, 5 of 5; C52's concurrent control 3.91), but seed 5 has no uniform control, so this pair gives no LR on Nf.
+    As its record said, it counts against #226's A reading; it fits #231's B: Nf slows the slide to about a third of
+    the uniform rate but does not hold it under 1.3, and the median keeps rising after 8 (15 -> 17-18).
+  - (3) The lists' deviation recurs in both: the median gives up Trainers after the first 10-18 iterations (control
+    28 -> 21, the largest fall of the R1 runs; C52's seeds 29 -> 24 and 28 -> 25), and selection pays Energy against the
+    proposals in every window, from a random pilot as well. The arm ends nearer the lists than its warm control (best
+    12 at 10.7 against 17.8 on 25-29; median Trainers 25 against 21), one seed, while ending 0.1-5% of its games on
+    Prizes against the control's 6-11%.
+  - (4) Both ran on the build before #235: comparable with the earlier screens, not with what follows.
+  - Do not repeat: C63's pair (R1 from a random-init pilot and from C49-sd-s3 199, seed 5) on the old build without a
+    new reason.
+- **Next:** C66's close (#238). Settling H110's Nf.R cell needs a second seed of the pair on the fixed build, with a
+  control inside R1's band; R1's A grade needs a second concurrent uniform pair (#231).
+
+### #238 · 2026-10-24 · A5 C66 · C66 ends at 60: practising each draw for a season before it counts leaves selection's Energy lean unchanged (arm minus control Energy −0.00, Trainers −0.17 a move over the first 15 moves; practice needs +0.25 / −0.25), one seed; a second game error at 52 fired the errors kill, unapplied
+- **Done:** Evan's row 5 (H43's untested variant, seasons with `--select`). Read
+  `runs/screens/C66-h43.ssel-c49sds3199-s5/` (`log.jsonl`, 60 rows, iterations 0-59; `stdout.log`; `launch.log` "C66
+  end 2026-10-24 11:01:57 exit 0", the chain's 60-iteration cap) against its record and its concurrent control
+  `C63-ctl-R1-c49sds3199-s5` (#237), with `select_lean.py --window 15` and `--window 10`, `screen_watch.py --every 1`
+  and the scratch script of #237 (moves matched as the arm's iteration 2k+1 against the control's k, both after k+1
+  moves; the LR), CPU only. Pre-#235 engine. No look was read while it ran (no round after 074405). No run started or
+  stopped.
+- **Evidence:**
+
+  | Move (arm / control iteration) | Median, arm · control | Best 12 (distance), arm · control | KO endings, arm · control |
+  |---|---|---|---|
+  | 3 (5 / 2) | 11 / 27 / 21 · 11 / 28 / 21 | 13.4 / 25.7 / 20.9 (5.3) · 11.9 / 23.4 / 24.7 (12.8) | 0.607 · 0.617 |
+  | 5 (9 / 4) | 13 / 28 / 20 · 13 / 28 / 19 | 15.8 / 21.5 / 22.7 (13.5) · 13.4 / 23.1 / 23.5 (10.5) | 0.589 · 0.560 |
+  | 10 (19 / 9) | 14 / 26 / 19 · 15 / 27 / 18 | 13.8 / 25.5 / 20.8 (5.5) · 15.8 / 24.0 / 20.2 (8.5) | 0.580 · 0.462 |
+  | 15 (29 / 14) | 15 / 27 / 18 · 16 / 25 / 18 | 16.8 / 24.6 / 18.6 (7.3) · 18.0 / 21.1 / 20.9 (14.3) | 0.540 · 0.451 |
+  | 20 (39 / 19) | 15 / 26 / 19 · 17 / 23 / 19 | 15.4 / 25.8 / 18.8 (5.0) · 16.4 / 22.9 / 20.7 (10.7) | 0.534 · 0.453 |
+  | 30 (59 / 29) | 15 / 25 / 19 · 17 / 21 / 20 | 17.1 / 21.2 / 21.7 (14.0) · 20.3 / 17.5 / 22.2 (21.5) | 0.562 · 0.511 |
+
+  - Primary, accepted minus proposed P / T / E a move over the first 15 moves (the arm's 15 season ends, iterations
+    1-29; the control's iterations 0-14; SE over iterations): arm −0.05 (0.05) / −0.29 (0.06) / +0.35 (0.08); control
+    −0.23 (0.07) / −0.12 (0.05) / +0.35 (0.08); arm minus control +0.17 (0.09) / −0.17 (0.08) / −0.00 (0.11).
+    Practice (Trainers at least +0.25 with Energy at most −0.25): out on both, Trainers on the wrong side. Null (both
+    within ±0.15): Energy in; Trainers out by 0.02, on the side away from practice. LR null over practice at s 0.15:
+    210 on Trainers, 14 on Energy (the record's LR is per count, 15 at a centre). One seed; the record's prior was null.
+  - Other windows, arm minus control P / T / E: moves 1-10 (look 10) +0.11 (0.12) / −0.11 (0.08) / +0.01 (0.14); moves
+    16-30 −0.22 (0.11) / +0.06 (0.10) / +0.16 (0.11); all 30 moves −0.02 (0.07) / −0.05 (0.07) / +0.08 (0.08).
+  - Proposals P / T / E a move: first 15 moves arm +1.02 / +0.16 / −1.18, control +1.34 / −0.18 / −1.16; all 30 moves
+    +0.94 / −0.14 / −0.80 against +0.97 / −0.34 / −0.63. Accepted Trainers over 30 moves: arm −0.31, control −0.46 a
+    move. Moved 1,216 (arm) and 1,290 (control) in all.
+  - At matched moves, the arm's median Trainers are within 1 of the control's through move 11 and 0-4 above from move
+    12 (2-4 from move 20, +4 at 30); its median Pokémon 1-3 below from move 9; its best 12 nearer the lists at 5 of the
+    6 looks.
+  - Ground truth at 59 (move 30): median 15 / 25 / 19 against 13.5 / 28 / 18 (+1.5 / −3 / +1; L1 5.5); best 12 17.1 /
+    21.2 / 21.7 (+3.6 / −6.8 / +3.7; distance 14.0). Means of 55-59: median 15.4 / 24.2 / 19.0, best 12 16.9 / 21.9 /
+    21.2 (12.6). Trend: median 9 / 28 / 23 at 0, 13 / 28 / 20 at 9, 15 / 27 / 18 at 29, 16 / 24 / 19 at 51-56,
+    15 / 25 / 19 at 59; best-12 distance, means of 0-19 / 20-39 / 40-59: 10.4 / 7.8 / 9.7. At 52, where the errors
+    kill fired (below): median 16 / 24 / 19, best 12 15.4 / 25.5 / 19.1 (5.5).
+  - Manipulation check by 3 seasons passed: iterations 1, 3 and 5 `counted`, moved 39, 35 and 45, 0 errors,
+    `games_per_candidate` 40.4 at every season end against the control's 20.2 (twice, the named confound). KO endings
+    0.59 / 0.53 / 0.56 on the means of 0-19 / 20-39 / 40-59; deck-outs 8-61 of 2,000.
+  - Kills: median Pokémon at most 16 (kill 35). Harmful: no (the arm's median Trainers never more than 1 below the
+    control's at a matched move). Errors: 1 game error at 15 (1 of 2,000, 1 ending "none"; about 09:00) and 1 at 52
+    (1 of 2,000, 2 endings "none"; about 10:44; both times estimated from the rows' seconds); 0 practice errors; no
+    traceback in `stdout.log` (the log keeps only the count). Under the record's own rule (errors above 0) the kill
+    fired at 15, unapplied (#231). Under #232's rule the error at 15 is a warning and the one at 52 a recurrence (a
+    second iteration with errors), so the errors kill fired at 52; no round ran to apply it, and the run ended at its
+    cap 7 iterations later. The primary window (iterations 0-29) closed before 52.
+- **Found:** Ledger: H43 C66 closed (B: one seed, two named confounds): practice −; null + on Energy, Trainers 0.02
+  outside its band, away from practice; LR null over practice 210 (Trainers) and 14 (Energy). Evan's row 5: tried
+  (seasons of 2 with `--select`, one candidate, on R1). No new A id.
+  - (1) Practising each draw for a season (40 games a candidate against 20) before selection judges it leaves
+    selection's Energy lean where it was: +0.35 a move in both over the first 15 moves, and +0.16 (0.11) higher in the
+    arm over moves 16-30 (+0.34 against +0.18). At this dose and one seed, judging a draw before the pilot has
+    practised it is not why selection pays Energy, as the record's prior (#131) expected.
+  - (2) The arm's population still ends nearer the lists than the control's at matched moves (median Trainers 25
+    against 21 at move 30, best 12 at 14.0 against 21.5), but selection is not the cause: the arm accepts −0.31
+    Trainers a move against −0.46, and the gap is in the proposals (−0.14 against −0.34), not selection's part (−0.17
+    against −0.12). It is confounded with the season's halved moves an iteration (at a matched move the arm's pilot
+    has had twice the PPO iterations: 60 against 30 at move 30). One seed.
+  - (3) The two game errors (one each at 15 and 52) have no recorded cause; the build predates #235, whose fixes
+    removed errors in its Doll-and-Fossil test deck (3 to 0); not checked as the cause here.
+  - (4) Pre-#235 build: comparable with the earlier screens, not with what follows.
+  - Do not repeat: `--season 2 --select --candidates 1` on R1 from C49-sd-s3 199 at seed 5 on the old build without a
+    new reason. H43's other untested variants stay open: adapter fine-tuning per candidate, seasons matched on draft
+    steps (this run's confound), the equal-adaptation counterfactual.
+- **Next:** By Evan's rule (his idea tried fully, the strongest version plus a variant), a variant of row 5 on the
+  fixed build with its own control: seasons matched on draft steps, or C55's season of 2 with 4 candidates (proposed
+  04:03, never launched). Mark row 5 tried in `notes/evan-requests.md`.
+
+### #239 · 2026-10-24 · A5 · The 5-minute loop (ar/) built, calibrated and started: one edited train.py, M on the lists' Trainers, A/A noise 0.0018, and 5 minutes of training can move M (+0.015 when practising on the evaluation decks)
+- **Done:** Evan's rows 52-54 ("small experiments that we can run in 5 minutes", "Occam's razor", "just modifying
+  something equivalent to train.py from Karpathy's repo", "Yea do it"), on #234's design.
+  - `ar/` (its own local git repo, excluded here, never pushed): `train.py` (190 code lines; C49-sd's recipe from
+    `runs/pilot/C49/chain.sh` as constants, GAE, PPO with the soft search targets; trains from `data/start.pt` =
+    C49-sd's checkpoint at 199 with its Adam state, on its 2,048 practice matchups, for 300 s on its own clock),
+    `fixed.py` (frozen: the budget, the round rule, the evaluation, the guard, the keep rule, a scan of train.py for
+    card names, card kinds, the lists and the evaluation, hashes of fixed.py, data, `rl/`, `env/` and the engine build,
+    a GPU-busy check), `program.md` (the agent's loop, after Karpathy's), `drive.py` (back-to-back `claude -p`
+    sessions on Evan's plan login, keep-awake, until `ar/STOP`).
+  - M: the 24 lists against 4 copies each with 6 random Trainer cards (by card type) turned into the list's commonest
+    basic Energy, the trained pilot on both seats, greedy, the round rule 20-45, 32 games a pair, fixed deals; the mean
+    over 96 pairs of the list's share of decisive games. Guard S: the trained pilot against the start pilot on mirrors
+    of the lists and of their all-Trainers-to-Energy copies, 16 games a deck. Keep: M at least best + delta at seed 1
+    and again at seed 2 (`--confirm`), S at least the guard bar, game errors at most 1%; or fewer code lines with M
+    within delta/2.
+  - CLAUDE.md gains an "Autoresearch loop" section; `loop.py` stays paused while it runs.
+- **Evidence:**
+  - Smoke: train.py alone ran 9 iterations, 5,160 games in 291 s of training (about 30 s an iteration with the GPU to
+    itself), 0 errors; one evaluation (16 games a pair) took 21 s.
+  - Calibration (`fixed.py --calibrate`, 14:31-14:52): the start pilot twice, M 0.4743 and 0.4743, S 0.5026 both
+    (deterministic). A/A, unedited train.py at seeds 1-3: M 0.4701, 0.4665, 0.4690 (mean 0.4686, sd 0.0018); S 0.466,
+    0.504, 0.469 (guard bar 0.458). Quarantined movability control (train.py practising on the evaluation pairs): M
+    0.4834 (+0.015 over the A/A mean, about 8 A/A sd), S 0.541.
+  - A session with drive.py's tool list ran git, tail, grep and fixed.py with 0 permission denials.
+  - Started 14:53 (`drive.py`, session 1).
+- **Found:**
+  - Five minutes of training moves M, but little: even practising on the evaluation decks themselves gains +0.015,
+    and plain training from the start pilot lowers M slightly (0.474 -> 0.469). The design's delta floor of 0.03 would
+    have kept nothing, so delta is 0.01 (about 5 A/A sd from 3 seeds; a keep still needs both seeds), a deviation from
+    #234's rule recorded in `ar/state.json` for Evan to confirm or restore.
+  - Under the start pilot the lists win 0.474 of decisive games against copies 6 Trainers lighter: the pilot still
+    plays as if those Trainers were worth less than Energy, the same deviation C67 measured by group.
+- **Next:** The loop's first experiments (`ar/results.tsv`); at the first keeps that add up to 2 × delta, a long run of
+  the kept train.py, M on fresh deals and the other direction (6 Energy turned into Trainers), and one metagame screen
+  for deck shape against 13.5 / 28 / 18.

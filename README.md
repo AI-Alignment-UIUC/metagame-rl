@@ -162,30 +162,31 @@ gives a biased or blind builder, so pilot strength is the bottleneck.
   exceeded, so the loop now checks GPU memory at launch, keeps its switches from rounds, shows game errors and allows 20
   rounds a day; R1 from a random pilot (C63) and Evan's seasons with selection (C66) ran on R1.
 
-**Recent (log #233–234).** An audit of all 42 pool Trainers in the engine and the env (Evan's row 51) found the human
-lists' staples resolving as printed and only Potion (3 cards in 1 list) broken among their Trainers, but the env makes
-multi-card picks in an order the pilot cannot see (Computer Search, Item Finder, Super Energy Removal, Energy Retrieval,
-Nightly Garbage Run lose part of their picks), never offers Clefairy Doll or Mysterious Fossil, leaves Here Comes Team
-Rocket! blank, reverses Digger, over-powers Challenge! and Maintenance, and gives 1 mulligan card where 2000 gave 2;
-SimpleBot's low Trainer prices turned out to be its design (it never plays Gust, PlusPower or Item Finder). The next
-probes and a Karpathy-style loop were designed (one edited `train.py`, 5 minutes a run, one metric, keep or reset),
-with a first check of whether 5 minutes of training can move the metric at all.
+**Recent (log #233–239).** An audit of all 42 pool Trainers found the human lists' staples resolving as printed, and
+the faults it did find (Potion dead, Digger reversed, Challenge! and Maintenance too strong, PlusPower lost into
+Defender, Clefairy Doll and Mysterious Fossil never offered, multi-card picks in an order the pilot cannot see, 1-card
+mulligans) were fixed in the engine and the env and each verified against the audit's own failing tests; rerun on the
+fixed build, the strongest human-free pilot still prices the lists' search, disrupt and tempo Trainers below a basic
+Energy (0.434 against 0.429, paired SE 0.006), so the fault is the pilot, not the simulator. The night's last screens,
+on the old build, closed as an inconclusive Nf pair (R1's control slid 1.32 per 100 moves, just over its band) and a
+null for Evan's practice-before-it-counts seasons (selection's Energy lean +0.35 a move with and without them). A
+Karpathy-style loop now trains one edited `train.py` for 5 minutes from that pilot and keeps an edit only if it raises
+the lists' share against copies 6 Trainers lighter (0.474 at the start, A/A noise 0.002), and it runs unattended.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. Decision for Evan: fix #233's confirmed faults in the submodule and env (Potion, Digger, Challenge!, Maintenance,
-   the PlusPower order, the Doll/Fossil regex, order-free picks, the 2-card mulligan, the two retrieval rulings), re-run
-   the specs, rulings tests and enumerator check on decks holding all 42 Trainers, then a 5-minute A/B of the Trainer
-   readout on the old and fixed engine with the live pilot.
-2. Decision for Evan: build the 5-minute loop (#234): pilot-only `ar/train.py`, the lists' Trainers against basic
-   Energy as the metric (name-free, 6 random Trainers), a guard against weaker play, keep at the A/A noise confirmed
-   on a second seed; first the movability check. Local commits in `ar/` only; one log entry a night.
-3. The fast probes from #234 on the fixed engine: X1 (random prompt answers against the pilot's), X4 (pace oracles),
-   X3 (the lists' Trainers off the mirror).
-4. Log C63's pair and C66's end (both ended by 11:58 and wait in `loop.py state`).
-5. The unattended rounds stay paused (`loop.py resume` restarts them) while the engine and the loop change.
+1. The 5-minute loop (`ar/`, #239): read `ar/results.tsv` and `git -C ar log`; at keeps adding up to 2 × delta, train
+   the kept `train.py` for 30-60 minutes, read M on fresh deals and the other direction (Energy turned into Trainers),
+   then one metagame screen for deck shape against 13.5 / 28 / 18.
+2. Decision for Evan: the keep threshold is 0.01 (about 5 A/A sd, both seeds), not the design's 0.03, which even
+   practice on the evaluation decks did not reach (+0.015); restore 0.03 or a 20-minute budget if he prefers.
+3. Evan's row 5, by his rule: a variant of practice-before-it-counts on the fixed engine (seasons matched on draft
+   steps, or 4 candidates), beside a concurrent control (#238).
+4. R1 (#231, #237): a second concurrent Nf-against-uniform pair on the fixed build, or drop Nf for the simpler
+   uniform base if the loop's pilot changes what drafting needs.
+5. The unattended rounds (`loop.py`) stay paused while `ar/` runs; `loop.py resume` restarts them.
 <!-- status:end -->
 
 ---

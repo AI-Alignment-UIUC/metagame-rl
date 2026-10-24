@@ -1555,7 +1555,7 @@ Nodes: N1 Game definition (H01, H02, H03, H04); N2 Pilot tactical competence (H0
   - Seasons matched on draft steps (more candidates per season, or a control drafting every K iterations without practice). *Distinct:* Separates practice from drafting less often, the main confound of 008a/008b. *Cost:* medium
   - Mertan-style equal-adaptation counterfactual: fine-tune equal pilot copies on a wall and on a human list, then replay the match. *Distinct:* Tests the premise (judging bias from unequal practice) directly as a diagnostic; not in the log. *Cost:* low
   - Seasons on the current loop (deck-free pilot, entropy floor, group changes, from 460 or 479) with a matched control and a second seed. *Distinct:* The only tests ran in the pre-290 era with a collapsed head; this changes the setting, not the mechanism. *Cost:* medium-high
-- **C66, seasons with --select on R1 (#229-#230, running; Evan row 5):** C63's control command (R1, the rule, C49-sd-s3
+- **C66, seasons with --select on R1 (#229-#230; closed #238, B: practice −, null + on Energy (arm − control −0.00), Trainers −0.17 a move, one seed; Evan row 5):** C63's control command (R1, the rule, C49-sd-s3
   at 199, seed 5) plus `--season 2` (the deck and one candidate played for 2 iterations, the pilot training on both, the
   best kept at the season's end), turnover and protection counted in moves, 60 iterations (30 moves a deck); concurrent
   control `C63-ctl-R1-c49sds3199-s5`. Readout: arm minus control, accepted minus proposed Trainers and Energy a move over
@@ -4268,7 +4268,7 @@ parked with its reason. The full designs are in `notes/data/cycle1/candidates.js
   median 16 / 25 / 18 at 29, best 12 13.8 / 24.7 / 21.6 (within 5 of the lists on each count at that look only); the
   Trainer trade recurs (median 28 -> 25 from 19), and selection's Energy lean rises to +0.53 a move on 20-29. 92 types,
   the largest 2. One game error at 25.
-- **C63, Nf.R (#229-#230, running):** R1 from a random-init pilot (C49-sd-s3's architecture), seed 5, against R1 from
+- **C63, Nf.R (#229-#230; closed #237, inconclusive by its record: the control slid 1.32 per 100, over R1's 1.3; the arm read arrival, accepted − proposed −0.29 on 0-8, one seed):** R1 from a random-init pilot (C49-sd-s3's architecture), seed 5, against R1 from
   C49-sd-s3 at 199 (`runs/screens/C63-h110.nfR-fresh-s5/`, `C63-ctl-R1-c49sds3199-s5/`), 30 iterations. Gate passed
   narrowly: a fresh Nf head under the near-random encoder pulls +2.38 Pokémon a draw (bar +2.5; uniform +5.43, warm
   +1.61). Decided on accepted minus proposed Pokémon on 0-8: arrival within ±0.3 against bootstrap at least +0.3.

@@ -88,3 +88,12 @@ ends or reaches a look, a slot frees, RAM runs low, or 4 hours pass, at most 20 
   `loop.py state` shows what it sees.
 - Rounds may launch and stop runs and edit notes and `rl/`; they never commit, push, delete run data or change the
   training rules.
+
+## Autoresearch loop (`ar/`)
+
+`ar/` (log #236; its own local git repo, never pushed, excluded here) is a Karpathy-style loop: an agent edits only
+`ar/train.py`, and `ar/fixed.py` trains it for 5 minutes from the C49-sd start, scores it on the human lists' Trainers
+against basic Energy (M, with a guard against weaker play), and keeps or resets the commit. `ar/drive.py` runs it
+unattended on Evan's plan login; creating `ar/STOP` stops it after the current experiment. Its runs start through
+`ar/fixed.py`, which checks the GPU and its frozen hashes itself, not through `loop.py launch`; keep `loop.py` paused
+while it runs. A change to `ar/fixed.py`, `rl/`, `env/` or the engine build means a new `--setup` and `--calibrate`.
