@@ -46,7 +46,7 @@ class Env {
     const obs = tokens ? this.encoder.encode(g, d.playerId, decks, d.options)
       : this.u8 ? this.encoder.encodeU8(g, d.playerId, decks) : this.encoder.encode(g, d.playerId, decks);
     if (tokens && (d.options.length > this.encoder.MAX_CAND || obs.overflow)) {
-      g.error = new Error(`state too large for the token encoder: ${d.options.length} options (max ${this.encoder.MAX_CAND}), `
+      g.error = new Error(`state too large for the token encoder: ${d.options.length} options (max ${this.encoder.MAX_CAND - (this.encoder.chain || 0)}), `
         + `tokens ${obs.overflow ? 'over' : 'within'} ${this.encoder.MAX_TOK}`);
       this.current = null;
       return { done: true, winner: g.winner, steps: g.steps, error: g.error };

@@ -31,14 +31,21 @@ const MAX_STEPS = 5000;
 const MAX_TURN_STEPS = 250;
 
 // The action history (log #76): one entry per step, { p: the player who acted, t: the game turn, pr: true if it
-// answered a prompt, v: a verb of env/tokens.js VERB, c: the card it names (full name) or null }. env/tokens.js turns
-// the recent entries into tokens (the opponent's prompt answers without their card, which may be hidden).
+// answered a prompt, v: a verb of env/tokens.js VERB, c: the card it names (full name) or null, k: the option key }.
+// env/tokens.js turns the recent entries into tokens (the opponent's prompt answers without their card, which may be
+// hidden), and the chain head's rows from k. A slot pick (pick_slot, pick_move_damage's target) also keeps kc, the
+// Pokemon in that slot before the step as its player sees it (null if empty or face down), since the slot may hold
+// another Pokemon later (after Gust of Wind, the picked Bench slot holds the old Active).
 function historyEntry(state, d, key) {
   const me = state.players.find(p => p.id === d.playerId);
   const [verb, a, b] = key.split('|');
   const name = card => (card ? card.fullName : null);
   const active = me ? name(me.active.getPokemonCard()) : null;
-  const e = { p: d.playerId, t: state.turn, pr: !!d.prompt, v: verb, c: null };
+  const e = { p: d.playerId, t: state.turn, pr: !!d.prompt, v: verb, c: null, k: key };
+  const inSlot = code => {
+    const s = me && allSlots(state, me).find(x => x.code === code);
+    return s && (s.mine || s.slot.pokemons.isPublic !== false) ? name(s.slot.getPokemonCard()) : null;
+  };
   switch (verb) {
     case 'attach': case 'basic': case 'evolve': case 'trainer': e.c = a; break;
     case 'attack': case 'retreat': e.c = active; break;
@@ -51,9 +58,12 @@ function historyEntry(state, d, key) {
     case 'res': e.v = a === 'yes' || a === 'no' || a === 'ok' ? 'res_' + a : b !== undefined ? 'res_attack' : 'res_select'; break;
     case 'pick': {
       const item = key.slice(5);
+      let m;
       if (/^(o?[AB]\d?|E):(.+)>(o?[AB]\d?)$/.test(item)) e.v = 'pick_move_energy';
-      else if (/^(.+)>(o?[AB]\d?)$/.test(item)) e.v = /^o?[AB]\d?>/.test(item) ? 'pick_move_damage' : 'pick_attach';
-      else if (/^o?[AB]\d?$|^E$/.test(item)) e.v = 'pick_slot';
+      else if ((m = /^(.+)>(o?[AB]\d?)$/.exec(item))) {
+        e.v = /^o?[AB]\d?>/.test(item) ? 'pick_move_damage' : 'pick_attach';
+        if (e.v === 'pick_move_damage') e.kc = inSlot(m[2]);
+      } else if (/^o?[AB]\d?$|^E$/.test(item)) { e.v = 'pick_slot'; e.kc = inSlot(item); }
       else { e.v = 'pick_card'; e.c = item === '?' ? null : item; }
       break;
     }

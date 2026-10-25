@@ -75,7 +75,8 @@ def main(argv=None):
             sh["jobs"].append({"i": i, "j": i + 1, "iSeat": 1 + int(rng.integers(2)), "seed": args.seed * 1_000_003 + g, "rec": True})
         msgs = [{"cmd": "games", "encoding": "tokens", "greedy": False, "deckoutWin": 1, "concurrency": 48,
                  "out": str(out_dir / f"warm_w{w}.bin"), "decks": sh["decks"], "jobs": sh["jobs"],
-                 "history": int(student.config().get("history", 0) or 0)} for w, sh in enumerate(shards) if sh["jobs"]]
+                 "history": int(student.config().get("history", 0) or 0),
+                 "chain": int(student.config().get("chain", 0) or 0)} for w, sh in enumerate(shards) if sh["jobs"]]
         replies = rp.collect(msgs, {0: teacher}, device)
     finally:
         rp.close()

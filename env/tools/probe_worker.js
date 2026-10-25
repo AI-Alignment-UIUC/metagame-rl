@@ -333,7 +333,7 @@ F.readFrames(process.stdin, (type, payload) => {
                     prizeGlob: PRIZE_GLOB } });
         return;
       }
-      if (msg.cmd === 'games') tokens.history = msg.history || 0;
+      if (msg.cmd === 'games') { tokens.history = msg.history || 0; tokens.chain = msg.chain || 0; }
       if (msg.cmd === 'games') { F.writeJson(process.stdout, await games(msg)); return; }
       throw new Error('unknown command ' + msg.cmd);
     } catch (e) {

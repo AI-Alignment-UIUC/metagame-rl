@@ -24,6 +24,8 @@
 //     "seed", "concurrency", "deckoutWin", "redeal": false, "history": 0, "focus": null, "greedyLines": false }
 //     the jobs' games recorded (both seats), plus Monte Carlo values of the options at sampled decisions (qprobe below)
 //   { "cmd": "quit" }
+//   collect, games and qprobe take "history": W and "chain": K, the token encoder's action-history window and chain
+//   rows (env/tokens.js; 0 = none)
 // The learner is model slot 0; "slot:k" is another model the learner holds (a league snapshot).
 'use strict';
 const fs = require('fs');
@@ -415,7 +417,7 @@ F.readFrames(process.stdin, (type, payload) => {
                     prizeGlob: PRIZE_GLOB } });
         return;
       }
-      if (msg.cmd === 'collect' || msg.cmd === 'games' || msg.cmd === 'qprobe') tokens.history = msg.history || 0;
+      if (msg.cmd === 'collect' || msg.cmd === 'games' || msg.cmd === 'qprobe') { tokens.history = msg.history || 0; tokens.chain = msg.chain || 0; }
       if (msg.cmd === 'collect') { F.writeJson(process.stdout, await collect(msg)); return; }
       if (msg.cmd === 'games') { F.writeJson(process.stdout, await games(msg)); return; }
       if (msg.cmd === 'qprobe') { F.writeJson(process.stdout, await qprobe(msg)); return; }

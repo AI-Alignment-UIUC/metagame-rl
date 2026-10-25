@@ -11,6 +11,7 @@
 //
 //      --mirror: both sides play the same deck; --per-deck: a line per deck of X; observations are always the token
 //      ones (env/tokens.js; --tokens is still accepted)
+//      --history N / --chain K: the token encoder's action history and chain rows, for a pilot that reads them
 // Run: node env/tools/evaluate.js --x simplebot --y random --d1 "Wigglytuff" --d2 "Haymaker"
 //        [--games 200] [--workers 16] [--concurrency 16] [--seed 1] [--json out.json]
 'use strict';
@@ -43,6 +44,7 @@ async function makeAgent(spec, enc, seed) {
     const { TokenEncoder } = require('../tokens.js');
     const [file, k, dets] = spec.slice(8).split(':');
     const te = new TokenEncoder();
+    te.chain = enc.chain;                         // the search's own encodings carry the chain rows too
     const pilot = await OnnxTokenAgent.load(file, te, { seed, greedy: true });
     return new PolicySearchAgent(pilot, te, { k: Number(k || 4), dets: Number(dets || 4), seed });
   }
@@ -69,6 +71,7 @@ async function worker(from, to) {
   // with cards outside the field's.
   const enc = new (require('../tokens.js').TokenEncoder)();
   enc.history = Number(flag('history', 0));   // --history N: action-history tokens for a pilot that reads them (log #76)
+  enc.chain = Number(flag('chain', 0));       // --chain K: the chain head's rows for a pilot with chain K (rl/token_model.py)
   const agents = { x: await makeAgent(X, enc, AGENT_SEED * 7919 + from), y: await makeAgent(Y, enc, AGENT_SEED * 104729 + from) };
   const d1 = pickDecks(decks, D1), d2 = pickDecks(decks, D2);
   let g = from;

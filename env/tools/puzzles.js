@@ -14,7 +14,7 @@
 //        [--start 0]   (first game index, to split generation across processes)
 //      node env/tools/puzzles.js merge <part.json> ... [--out notes/data/puzzles/lethal.json]
 //      node env/tools/puzzles.js score --agent heuristic|random|simplebot|onnx:<file>|onnxtok:<file>|psearch:<file>[:k[:dets]] [--in ...]
-//        [--json out.json]   (per puzzle: the move chosen, whether it wins)
+//        [--json out.json]   (per puzzle: the move chosen, whether it wins) [--chain K]   (a token pilot with chain K)
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -138,6 +138,7 @@ async function score() {
   const ps = spec.startsWith('psearch:');            // psearch:<token.onnx>[:k[:dets]], the pilot with play-time search
   const tok = spec.startsWith('onnxtok:') || ps;     // a token model (rl/token_model.py), greedy
   const enc = tok ? new (require('../tokens.js').TokenEncoder)() : new Encoder([...new Set(decks.flatMap(d => d.cards))]);
+  if (tok) enc.chain = Number(flag('chain', 0));   // --chain K: the chain head's rows, for a pilot with chain K
   const [psFile, psK, psDets] = ps ? spec.slice(8).split(':') : [];
   const agent = spec === 'heuristic' ? new agents.HeuristicAgent()
     : spec === 'random' ? new agents.RandomAgent({ seed: 1 })

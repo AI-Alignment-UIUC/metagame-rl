@@ -24,6 +24,21 @@ JSON_FRAME, REQUEST, RESPONSE = 1, 2, 3
 DT = {"uint8": np.uint8, "int16": np.int16, "int32": np.int32, "float32": np.float32}
 TOKEN_INPUTS = ("tok_card", "tok_kind", "tok_aux", "glob", "slots", "cand", "n_cand")
 CHUNK = 2048                # rows a forward pass at most, in a batch with a search's requests (log #148)
+CHAIN_GUARD = 5000          # rows in a row a chain pilot may be served without one chain row before the server raises
+
+
+def trim_inputs(inputs: list, model) -> list:
+    """A token batch cut to its longest state and option list (tokens fill from the front and options are counted, so
+    the encoder's bounds, env/tokens.js, cost no compute here). A chain pilot (rl/token_model.py chain = K) also keeps
+    the last K candidate rows, its chain rows."""
+    live = (inputs[1] > 0).long() * torch.arange(1, inputs[1].shape[1] + 1, device=inputs[1].device)
+    L = max(13, int(live.amax()))
+    M = max(1, int(inputs[6].max()))
+    K = int(getattr(model, "chain", 0) or 0)
+    out = list(inputs)
+    out[:3] = [x[:, :L] for x in out[:3]]
+    out[5] = torch.cat([out[5][:, :M * 6], out[5][:, -K * 6:]], 1) if K else out[5][:, :M * 6]
+    return out
 
 
 def pack_arrays(header: dict, arrays: list) -> bytes:
@@ -152,13 +167,8 @@ class RemotePool:
             if group[0][1]["encoding"] == "tokens":
                 inputs = [cat(k) for k in TOKEN_INPUTS]
                 inputs = [x.view(B, -1) if k != "n_cand" else x for k, x in zip(TOKEN_INPUTS, inputs)]
-                # Tokens fill from the front and options are counted, so the batch is cut to its longest
-                # state and option list: the encoder's bounds (env/tokens.js) cost no compute here.
-                live = (inputs[1] > 0).long() * torch.arange(1, inputs[1].shape[1] + 1, device=device)
-                L = max(13, int(live.amax()))
-                M = max(1, int(inputs[6].max()))
-                inputs[:3] = [x[:, :L] for x in inputs[:3]]
-                inputs[5] = inputs[5][:, :M * 6]
+                self._chain_guard(model, inputs[5], B)
+                inputs = trim_inputs(inputs, model)
                 if getattr(model, "memory", "none") != "none":
                     keys = [(i, int(k)) for i, _, a in group for k in a["keys"]]
                     logits, value, states = model(*inputs, mem_states=[self.mem.get(k) for k in keys])
@@ -204,6 +214,20 @@ class RemotePool:
                                                     [("action", action[sl]), ("logp", logp[sl]), ("value", value[sl]),
                                                      ("sampled", sampled[sl])] + extra))
                 start += n
+
+    def _chain_guard(self, model, cand, B):
+        """A chain pilot whose workers encode no chain rows (a command without "chain", the flag loss of log #94) would
+        play as if it had none: after CHAIN_GUARD rows in a row with no chain row in its batches, raise."""
+        K = int(getattr(model, "chain", 0) or 0)
+        if not K:
+            return
+        unseen = self.__dict__.setdefault("chain_unseen", {})      # id(model) -> rows served since its last chain row
+        has = bool((cand.view(B, -1, 6)[:, -K:, 0] > 0).any())
+        n = 0 if has else unseen.get(id(model), 0) + B
+        unseen[id(model)] = n
+        if n >= CHAIN_GUARD:
+            raise RuntimeError(f"chain pilot served without chain rows: {n} rows in a row with none (chain {K}); "
+                               "the workers' commands must send \"chain\"")
 
     def close(self):
         for i in range(len(self.procs)):

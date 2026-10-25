@@ -39,7 +39,8 @@ def load_policy(path: str, device: str, overrides: dict = None):
                               ability_text=cfg.get("ability_text", False), deck_mode=cfg.get("deck_mode", "joint"),
                               deck_layers=cfg.get("deck_layers", 1), history=cfg.get("history", 0),
                               memory=cfg.get("memory", "none"), value_tower=cfg.get("value_tower", 0),
-                              value_query=cfg.get("value_query", 0), aux_heads=cfg.get("aux_heads", 0))
+                              value_query=cfg.get("value_query", 0), aux_heads=cfg.get("aux_heads", 0),
+                              chain=cfg.get("chain", 0))
         enc = "tokens"
     else:
         from rl.model import build
@@ -47,13 +48,20 @@ def load_policy(path: str, device: str, overrides: dict = None):
         enc = "identity"
     missing, unexpected = m.load_state_dict(state["model"] if "model" in state else state["net"],   # rl.train or rl.metagame
                                             strict=not overrides)
-    assert not unexpected and all(k.startswith(("vquery", "vcross.", "vblocks.", "ln_v.", "aux_head.")) for k in missing), (missing, unexpected)
+    assert not unexpected and all(k.startswith(("vquery", "vcross.", "vblocks.", "ln_v.", "aux_head.", "chain_"))
+                                  for k in missing), (missing, unexpected)
     return m.to(device).eval(), enc
 
 
 def history_of(models: dict) -> int:
     """The action-history window the workers must encode (env/tokens.js): the longest any of the models reads."""
     return max([int(getattr(m, "cfg", {}).get("history", 0) or 0) for m in models.values()] + [0])
+
+
+def chain_of(models: dict) -> int:
+    """The chain rows the workers must encode (env/tokens.js chain): the most any of the models reads (a chain-0 model
+    ignores them)."""
+    return max([int(getattr(m, "cfg", {}).get("chain", 0) or 0) for m in models.values()] + [0])
 
 
 def jobs_for(n: int, games: int, seed: int, new: int = 0, pairs: list = None, pair_keys: list = None) -> list:
@@ -132,6 +140,7 @@ class GpuMatrix:
             msgs = [{"cmd": "games", "encoding": self.encoding, "decks": decks, "jobs": s, "greedy": self.greedy,
                      **({"judgeSearch": {**search, "seed": (seed * 7919 + len(replies)) * 64 + w}} if search else {}),
                      "concurrency": self.concurrency, "valueAtTurn": value_at_turn, "history": history_of(models or {0: self.model}),
+                     "chain": chain_of(models or {0: self.model}),
                      **({"slots": [int(x) for x in slots]} if slots is not None else {}),
                      **({"roundTurns": round_turns} if round_turns else {})} for w, s in enumerate(shards)]
             replies += self.pool.collect(msgs, models or {0: self.model}, self.device)   # fp32, as the ONNX pilot

@@ -14,6 +14,8 @@ Inputs come from env/tokens.js: card tokens (card id, kind, aux), global and slo
                     + attack/Power name + extra, then cross-attention to the tokens
   policy          = one logit per candidate (a pointer over the options on offer)
   value           = from the global token
+  chain = K       = the last K candidate rows are the player's own decisions this turn, which the options and the
+                    value input attend to (the chain head; off with 0, the default)
 
 With n_agents > 0 the network is a population (rl/league.py, log #53; NeuPL-style): a learned agent
 embedding is added to every token, and each agent has its own value head. Both start as the base
@@ -160,7 +162,7 @@ class TokenPointerNet(nn.Module):
                  count_features: bool = False, cross_layers: int = 1, cand_self: int = 0, n_agents: int = 0,
                  card_inputs: str = "all", deck_tokens: bool = True, slot_bind: bool = False,
                  ability_text: dict = None, deck_mode: str = "joint", deck_layers: int = 1, history: int = 0,
-                 memory: str = "none", value_tower: int = 0, value_query: int = 0, aux_heads: int = 0):
+                 memory: str = "none", value_tower: int = 0, value_query: int = 0, aux_heads: int = 0, chain: int = 0):
         super().__init__()
         feats = torch.from_numpy(card_feature_matrix(card_table))
         self.register_buffer("card_feats", feats)
@@ -171,7 +173,7 @@ class TokenPointerNet(nn.Module):
                         cross_layers=cross_layers, cand_self=cand_self, n_agents=n_agents, card_inputs=card_inputs,
                         deck_tokens=deck_tokens, slot_bind=slot_bind, ability_text=ability_text is not None,
                         deck_mode=deck_mode, deck_layers=deck_layers, history=history, memory=memory,
-                        value_tower=value_tower, value_query=value_query, aux_heads=aux_heads)
+                        value_tower=value_tower, value_query=value_query, aux_heads=aux_heads, chain=chain)
         self.max_tok, self.max_cand, self.glob_f, self.slot_f = max_tok, max_cand, glob_f, slot_f
         self.action_size = max_cand
         # What a card id is read from (the ablations of log #70): "all" structured features + rules text +
@@ -314,6 +316,23 @@ class TokenPointerNet(nn.Module):
             self.value_heads = nn.ModuleList([nn.Sequential(nn.LayerNorm(d), nn.Linear(d, d), nn.GELU(), nn.Linear(d, 1))
                                               for _ in range(n_agents)])
             self.init_agents_from_base()
+        # chain = K (the chain head, Evan's rows 58 / 61-62: "redesign the pilot so that it can chain moves"): the last K
+        # candidate rows are not options but the deciding player's own decisions of this game turn, oldest first and
+        # right-aligned (env/tokens.js chainRows), each in the options' own encoding with its role in extra (+ 64 x role:
+        # 1 the move that opened the open prompt, 2 an answer since it, 3 an earlier move, 4 an earlier answer). A row is
+        # embedded as an option is (verb, card, slots, name, extra, plus its role and position, through cand_in), and
+        # after the cross block every option and the value input attend to [a null row, the rows]: the policy over the
+        # turn becomes pi(a_k | s_k, a_1..a_k-1). chain_cross's outputs start at zero, so a grown pilot plays exactly as
+        # its source; the logits keep their width (the K rows get -1e9). The option cap is MAX_CAND - K.
+        self.chain = chain
+        if chain:
+            self.chain_role = nn.Embedding(5, d)          # 0 none, then roles 1-4
+            self.chain_pos = nn.Embedding(chain, d)
+            self.chain_null = nn.Parameter(torch.zeros(d))
+            self.chain_cross = CrossBlock(d, heads, 2 * d)
+            for lin in (self.chain_cross.proj, self.chain_cross.ff[-1]):
+                nn.init.zeros_(lin.weight)
+                nn.init.zeros_(lin.bias)
 
     @torch.no_grad()
     def init_agents_from_base(self, agents=None):
@@ -490,6 +509,9 @@ class TokenPointerNet(nn.Module):
         else:
             vin = src[:, 0]
         cand = cand.long().view(B, -1, 6)               # up to max_cand; the GPU server trims to the batch's longest
+        K = self.chain
+        if K:                                           # the chain rows are the last K (the server keeps them)
+            rows, cand = cand[:, -K:], cand[:, :-K]
         verb, card, s1, s2, name, extra = cand.unbind(-1)
 
         def slot_ref(sl):
@@ -499,12 +521,26 @@ class TokenPointerNet(nn.Module):
             other = self.slot_other(torch.where(on_board, torch.zeros_like(sl), sl))
             return torch.where(on_board[..., None], gathered, other)
 
-        c = (self.verb(verb) + self.card_emb(card) + slot_ref(s1) + slot_ref(s2) + self.name(name)
-             + self.extra(extra.clamp(0, 63)))
-        if self.ability_text:
-            c = c + self.ability_proj(self.ability_emb[self.ability_index[card * self.ability_names + name]])
-        c = self.cand_in(c) + pooled[:, None, :]
+        def embed(verb, card, s1, s2, name, extra):
+            e = (self.verb(verb) + self.card_emb(card) + slot_ref(s1) + slot_ref(s2) + self.name(name)
+                 + self.extra(extra.clamp(0, 63)))
+            if self.ability_text:
+                e = e + self.ability_proj(self.ability_emb[self.ability_index[card * self.ability_names + name]])
+            return e
+
+        c = self.cand_in(embed(verb, card, s1, s2, name, extra)) + pooled[:, None, :]
         c = self.cross(c, x, mask)
+        if K:
+            # each row as an option, plus its role and position inside the same sum (the scale of verb, name and extra);
+            # the options and the value input then attend to [null, rows] (empty rows masked)
+            rv, rc, r1, r2, rn, rx = rows.unbind(-1)
+            role = torch.div(rx, 64, rounding_mode="floor")
+            h = self.cand_in(embed(rv, rc, r1, r2, rn, rx - 64 * role) + self.chain_role(role.clamp(0, 4))
+                             + self.chain_pos.weight[None])
+            keys = torch.cat([torch.zeros_like(h[:, :1]) + self.chain_null.to(h.dtype), h], 1)
+            kmask = torch.cat([torch.ones_like(rv[:, :1], dtype=torch.bool), rv > 0], 1)
+            q = self.chain_cross(torch.cat([vin[:, None].to(c.dtype), c], 1), keys, kmask)
+            vin, c = q[:, 0], q[:, 1:]
         valid = torch.arange(cand.shape[1], device=cand.device)[None, :] < n_cand.long().view(B, 1)
         for i, blk in enumerate(self.cand_blocks):
             if i < len(self.cross_extra):
@@ -514,6 +550,8 @@ class TokenPointerNet(nn.Module):
             c = blk(c, x, mask)
         logits = self.score(c).squeeze(-1)
         logits = logits.masked_fill(~valid, -1e9)
+        if K:                                           # the rows' places: never an action
+            logits = F.pad(logits, (0, K), value=-1e9)
         if not self.n_agents:
             value = torch.tanh(self.value(vin)).squeeze(-1)
         elif agent is None:

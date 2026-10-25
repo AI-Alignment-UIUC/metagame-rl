@@ -23,6 +23,9 @@
 - rl/metagame.py recent_score, which prefers an old --judge-search checkpoint's 'judged' score (check_recent_score),
   and rl/remote.py's top-k reply on a fake pool (log #148): plain replies unchanged, each row's top K legal options best
   first, chunked forwards alike (check_topk)
+- the chain head (rl/token_model.py chain): a chain-0 pilot ignores the tail rows bit for bit; a chain-16 pilot grown from
+  C49-sd plays as it (1e-5, torch and ONNX); a perturbed chain_cross reads the rows; the server's trim keeps them, and
+  its guard raises for a chain pilot served none (check_chain)
 """
 import argparse
 import contextlib
@@ -851,6 +854,162 @@ def check_topk(failures, m, rng):
           "the legal ones; topk 0 gets none; chunked forward answers alike")
 
 
+def chain_inputs(m, rng, B, K, rows=True, n_cards=None):
+    """Random token inputs for a pilot with chain = K: at most max_cand - K options, and in the last K candidate rows up
+    to K chain rows (right-aligned, verb > 0, role 1-4 in extra as + 64 x role), or none with rows=False."""
+    T, M = m.max_tok, m.max_cand
+    n_cards = n_cards or m.card_feats.shape[0]
+    L = rng.integers(20, T, size=B)
+    kind = np.zeros((B, T), np.uint8)
+    for b in range(B):
+        kind[b, :L[b]] = rng.integers(1, 14, size=L[b])
+    card = (rng.integers(0, n_cards, size=(B, T)) * (kind > 0)).astype(np.int16)
+    aux = (rng.integers(0, 30, size=(B, T)) * (kind > 0)).astype(np.uint8)
+    glob_ = rng.integers(0, 49, size=(B, m.glob_f)).astype(np.uint8)
+    slots = rng.integers(0, 49, size=(B, 12 * m.slot_f)).astype(np.uint8)
+    n_cand = rng.integers(1, M - K + 1, size=B).astype(np.int32)
+    cand = np.zeros((B, M, 6), np.int16)
+
+    def some(n):
+        return np.stack([rng.integers(1, 32, size=n), rng.integers(0, n_cards, size=n), rng.integers(0, 16, size=n),
+                         rng.integers(0, 16, size=n), rng.integers(0, 9, size=n), rng.integers(0, 64, size=n)], -1)
+    for b in range(B):
+        cand[b, :n_cand[b]] = some(n_cand[b])
+        r = int(rng.integers(1, K + 1)) if rows else 0
+        if r:
+            cand[b, M - r:] = some(r)
+            cand[b, M - r:, 5] += 64 * rng.integers(1, 5, size=r)
+    return [torch.from_numpy(a) for a in (card, kind, aux, glob_, slots, cand.reshape(B, M * 6), n_cand)]
+
+
+def check_chain(failures, table, text, rng):
+    """The chain head (rl/token_model.py chain = K): (a) a chain-0 pilot's outputs are bit-identical with the last K
+    candidate rows filled or not; (b) a chain-16 pilot grown from C49-sd (runs/pilot/C49-sd/checkpoint.pt, when present)
+    gives C49-sd's logits and value within 1e-5 in fp32, in torch and through the ONNX export; (c) with chain_cross.proj
+    perturbed the outputs depend on the rows (and not before); (d) the GPU server's trim (rl/remote.py trim_inputs) gives
+    the full-width forward's outputs, its replies match it, and its guard raises for a chain pilot served no chain rows."""
+    import onnxruntime as ort
+    from rl import remote
+    K = 8
+    # (a)
+    m0 = tiny_pilot(table, text)
+    with torch.no_grad():
+        m0.score[-1].weight.normal_(0, 1)
+        m0.value[-1].weight.normal_(0, 1)
+        x = chain_inputs(m0, rng, 16, K)
+        empty = [t.clone() for t in x]
+        empty[5].view(16, -1, 6)[:, -K:] = 0
+        (la, va), (lb, vb) = m0(*x), m0(*empty)
+    if not (torch.equal(la, lb) and torch.equal(va, vb)):
+        failures.append(f"chain 0: outputs change with the tail rows ({(la - lb).abs().max():.2e})")
+    # (c)
+    mc = tiny_pilot(table, text, chain=K)
+    with torch.no_grad():
+        mc.score[-1].weight.normal_(0, 1)
+        mc.value[-1].weight.normal_(0, 1)
+        x = chain_inputs(mc, rng, 16, K)
+        other = [t.clone() for t in x]
+        other[5].view(16, -1, 6)[:, -K:] = chain_inputs(mc, rng, 16, K)[5].view(16, -1, 6)[:, -K:]
+        (l1, v1), (l2, v2) = mc(*x), mc(*other)
+        mc.chain_cross.proj.weight.normal_(0, 0.5)
+        (l3, v3), (l4, v4) = mc(*x), mc(*other)
+    valid = torch.arange(mc.max_cand)[None, :] < x[6][:, None].long()
+    if not (torch.equal(l1, l2) and torch.equal(v1, v2)):
+        failures.append("chain head at growth: outputs depend on the rows before chain_cross is trained")
+    if torch.allclose(l3[valid], l4[valid], atol=1e-4) or torch.allclose(v3, v4, atol=1e-5):
+        failures.append("chain head: with chain_cross.proj perturbed, the logits or the value ignore the rows")
+    if not (l3[:, -K:] <= -1e8).all() or l3.shape[1] != mc.max_cand:
+        failures.append(f"chain head: logits {tuple(l3.shape)}, the rows' places not -1e9")
+    with tempfile.TemporaryDirectory() as tmp:                # its ONNX export, rows read
+        export_token_onnx(mc, str(Path(tmp) / "c.onnx"))
+        lo, vo = ort.InferenceSession(str(Path(tmp) / "c.onnx")).run(None, {n: t.numpy() for n, t in
+                                                                         zip(["tok_card", "tok_kind", "tok_aux", "glob", "slots", "cand", "n_cand"], other)})
+    if not (np.allclose(lo[valid.numpy()], l4[valid].numpy(), atol=2e-4) and np.allclose(vo, v4.numpy(), atol=2e-5)):
+        failures.append(f"chain head: ONNX differs from torch by {np.abs(lo[valid.numpy()] - l4[valid].numpy()).max():.2e}")
+    # (d) the server's trim: full width and trimmed agree; the fake pool's greedy replies are the full forward's argmax
+    with torch.no_grad():
+        for p in mc.parameters():
+            p.add_(0.05 * torch.randn_like(p))
+        full = mc(*x)
+        cut = remote.trim_inputs(x, mc)
+        tl, tv = mc(*cut)
+    M = int(x[6].max())
+    vm = valid[:, :M]
+    if not (cut[5].shape[1] == (M + K) * 6 and torch.equal(cut[5][:, -K * 6:], x[5][:, -K * 6:])
+            and torch.allclose(tl[:, :M][vm], full[0][:, :M][vm], atol=1e-4) and torch.allclose(tv, full[1], atol=1e-5)):
+        failures.append(f"chain head: the server's trim changes the outputs ({(tl[:, :M][vm] - full[0][:, :M][vm]).abs().max():.2e})")
+    B = x[0].shape[0]
+    legal = [np.sort(rng.choice(int(c), int(rng.integers(1, min(int(c), 6) + 1)), replace=False)).astype(np.int32) for c in x[6]]
+    arrays = {k: t.numpy().ravel() for k, t in zip(remote.TOKEN_INPUTS, x)}
+    arrays.update({"legal_offsets": np.concatenate([[0], np.cumsum([len(q) for q in legal])]).astype(np.int32),
+                   "legal_ids": np.concatenate(legal), "keys": np.zeros(B, np.int32), "drop": np.zeros(0, np.int32)})
+    sent = {}
+    pool = remote.RemotePool.__new__(remote.RemotePool)
+    pool.mem, pool.pace = {}, 0.0
+    pool._send = lambda i, kind, payload: sent.__setitem__(remote.unpack_arrays(payload)[0]["id"], remote.unpack_arrays(payload))
+    pool._serve_batches([(0, {"id": 1, "slot": 0, "n": B, "encoding": "tokens", "greedy": True}, arrays)], {0: mc}, "cpu")
+    want = [int(q[np.argmax(full[0][r].numpy()[q])]) for r, q in enumerate(legal)]
+    if list(sent[1][1]["action"]) != want or not np.allclose(sent[1][1]["value"], full[1].numpy(), atol=1e-5):
+        failures.append("chain head: the server's replies differ from the full-width forward")
+    old, remote.CHAIN_GUARD = remote.CHAIN_GUARD, 40           # served rows without one chain row: the guard raises
+    try:
+        no_rows = {**arrays, "cand": chain_inputs(mc, rng, B, K, rows=False)[5].numpy().ravel()}
+        raised = []
+        for _ in range(3):
+            try:
+                pool._serve_batches([(0, {"id": 2, "slot": 0, "n": B, "encoding": "tokens", "greedy": True}, no_rows)], {0: mc}, "cpu")
+            except RuntimeError as e:
+                raised.append(str(e))
+        quiet = remote.RemotePool.__new__(remote.RemotePool)
+        quiet.mem, quiet.pace, quiet._send = {}, 0.0, pool._send
+        for _ in range(4):                                     # rows in every batch: never
+            quiet._serve_batches([(0, {"id": 3, "slot": 0, "n": B, "encoding": "tokens", "greedy": True}, arrays)], {0: mc}, "cpu")
+        for _ in range(4):                                     # a chain-0 pilot without rows: never
+            quiet._serve_batches([(0, {"id": 4, "slot": 0, "n": B, "encoding": "tokens", "greedy": True}, no_rows)], {0: m0}, "cpu")
+    except RuntimeError as e:
+        raised.append("unexpected: " + str(e))
+    finally:
+        remote.CHAIN_GUARD = old
+    if len(raised) != 1 or not raised[0].startswith("chain pilot served without chain rows"):
+        failures.append(f"chain guard: raised {raised} (want once, at the third batch of 16 rows past 40)")
+    print(f"chain head: chain 0 ignores the tail rows (bit-identical); at growth the rows change nothing, with "
+          f"chain_cross.proj perturbed they change the logits and value; ONNX matches; the server's trim keeps the rows "
+          f"(outputs within {(tl[:, :M][vm] - full[0][:, :M][vm]).abs().max():.1e}), its replies match, its guard raises")
+    # (b) C49-sd grown to chain 16
+    src = Path("runs/pilot/C49-sd/checkpoint.pt")
+    if not src.exists():
+        print("chain head: no runs/pilot/C49-sd checkpoint here; the growth check is skipped")
+        return
+    from rl.gpu_matrix import load_policy
+    from rl.train import token_net
+    base, _ = load_policy(str(src), "cpu")
+    cfg = base.config()
+    info = {"tokens": {"names": cfg["n_names"], "globF": cfg["glob_f"], "slotF": cfg["slot_f"], "maxTok": cfg["max_tok"],
+                       "maxCand": cfg["max_cand"]}}
+    grown = token_net(cfg, info, chain=16).eval()
+    missing = load_grown(grown, torch.load(src, map_location="cpu", weights_only=False)["model"])
+    if not missing or not all(k.startswith("chain_") for k in missing) or grown.config().get("chain") != 16:
+        failures.append(f"chain 16 growth: missing {missing[:4]}, config chain {grown.config().get('chain')}")
+    xb = chain_inputs(base, rng, 12, 16)
+    with torch.no_grad():
+        (bl, bv), (gl, gv) = base(*xb), grown(*xb)
+    vb = (torch.arange(base.max_cand)[None, :] < xb[6][:, None].long())
+    dl, dv = float((bl - gl)[vb].abs().max()), float((bv - gv).abs().max())
+    with tempfile.TemporaryDirectory() as tmp:
+        outs = []
+        for name, net in (("base", base), ("grown", grown)):
+            export_token_onnx(net, str(Path(tmp) / f"{name}.onnx"))
+            sess = ort.InferenceSession(str(Path(tmp) / f"{name}.onnx"))
+            outs.append(sess.run(None, {i.name: t.numpy() for i, t in zip(sess.get_inputs(), xb)}))
+    (obl, obv), (ogl, ogv) = outs
+    odl, odv = float(np.abs(obl - ogl)[vb.numpy()].max()), float(np.abs(obv - ogv).max())
+    tdl = float(np.abs(ogl - gl.numpy())[vb.numpy()].max())
+    if not (dl <= 1e-5 and dv <= 1e-5 and odl <= 1e-5 and odv <= 1e-5 and (gl[~vb] <= -1e8).all() and (ogl[~vb.numpy()] <= -1e8).all()):
+        failures.append(f"chain 16 grown from C49-sd: max |dlogit| {dl:.1e}, |dvalue| {dv:.1e} in torch; {odl:.1e}, {odv:.1e} in ONNX")
+    print(f"chain 16 grown from C49-sd ({len(missing)} new weights): max |dlogit| {dl:.1e}, |dvalue| {dv:.1e} in torch; "
+          f"{odl:.1e}, {odv:.1e} between the two ONNX exports (ONNX vs torch {tdl:.1e})")
+
+
 def check_lab_loop(failures):
     """rl/lab.py's loop with fake runs (an iteration count per run). (1) A STOP in the middle of a branch's segment, then
     a restart: every card is decided once, at the right iteration, including one that finished before the stop. (2) A
@@ -968,6 +1127,7 @@ def main():
     check_lam_turn(failures)
     check_recent_score(failures)
     check_topk(failures, tiny_pilot(table, text), np.random.default_rng(3))
+    check_chain(failures, table, text, np.random.default_rng(4))
     for f in failures[:20]:
         print("FAIL", f)
     print("FAIL" if failures else "PASS")

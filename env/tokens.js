@@ -20,6 +20,8 @@
 // Candidates (at most MAX_CAND), one per option, as [verb, card, slot1, slot2, name, extra]:
 //   slots 1..12 as above, 13 = an empty Bench slot, 14 = from hand, 15 = from discard; names are
 //   attack and Power names of the pool.
+//   With chain = K > 0 (the chain head, rl/token_model.py chain): at most MAX_CAND - K options, and the last K rows
+//   hold the deciding player's own decisions of this game turn (chainRows), oldest first and right-aligned.
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -74,6 +76,7 @@ class TokenEncoder {
     this.numCards = table.length;
     this.MAX_TOK = MAX_TOK; this.MAX_CAND = MAX_CAND; this.SLOT_F = SLOT_F; this.GLOB_F = GLOB_F;
     this.history = 0;        // turns of action history encoded (0 = none, as before log #76)
+    this.chain = 0;          // the chain head's rows (0 = none): the last `chain` candidate rows
     this.sizes = { tokCard: MAX_TOK, tokKind: MAX_TOK, tokAux: MAX_TOK, glob: GLOB_F, slots: 12 * SLOT_F, cand: MAX_CAND * 6 };
   }
 
@@ -199,7 +202,51 @@ class TokenEncoder {
       out.cand.set(c, i * 6);
     });
     out.nCand = Math.min(opts.length, MAX_CAND);
+    if (this.chain > 0) {
+      if (opts.length > MAX_CAND - this.chain) out.overflow = true;
+      const rows = this.chainRows(game, playerId, prompt, activeCard, state, me);
+      rows.forEach((r, j) => out.cand.set(r, (MAX_CAND - rows.length + j) * 6));
+    }
     return out;
+  }
+
+  // The chain head's rows: the deciding player's own decisions of this game turn (game.history entries with an option
+  // key), oldest first, at most this.chain of them, each in the candidate encoding of its option key against the
+  // current state. A row whose encoding has no card takes the card the decision named (a slot pick's Pokemon, a
+  // retreat's Active), and a slot pick whose slot no longer holds the Pokemon picked loses its slot reference. The role
+  // goes in extra (+ 64 x role): 1 the move that opened the open prompt (the turn's latest move, if it is this
+  // player's), 2 an answer given since, 3 an earlier move, 4 an earlier answer. If the window would cut the opener, it is
+  // kept first.
+  chainRows(game, playerId, prompt, activeCard, state, me) {
+    const hist = game.history || [];
+    let i = hist.length;
+    while (i > 0 && hist[i - 1].t === state.turn) i--;
+    const own = [];
+    let open = -1;
+    for (let j = hist.length - 1; j >= i; j--) {          // the opener: the turn's latest move, if it is this player's
+      if (!hist[j].pr) { if (prompt && hist[j].p === playerId && hist[j].k) open = j; break; }
+    }
+    const slots = allSlots(state, me);
+    for (let j = i; j < hist.length; j++) {
+      const e = hist[j];
+      if (e.p !== playerId || !e.k) continue;
+      const r = this.candidate(e.k, prompt, activeCard, state, me);
+      if (!r[1]) r[1] = this.cardId.get(e.kc || e.c) || 0;
+      if (r[0] === VERB.pick_slot || r[0] === VERB.pick_move_damage) {
+        const at = r[0] === VERB.pick_slot ? 2 : 3;     // the picked slot (pick_move_damage: its target)
+        const s = r[at] >= 1 && r[at] <= 12 ? slots.find(x => x.code === SLOT_CODES[r[at] - 1]) : null;
+        const top = s && s.slot.getPokemonCard();
+        if (s && (!top || top.fullName !== e.kc)) r[at] = 0;
+      }
+      const role = j === open ? 1 : open >= 0 && j > open ? 2 : e.pr ? 4 : 3;
+      r[5] += 64 * role;
+      own.push({ r, opener: j === open });
+    }
+    const K = this.chain;
+    if (own.length <= K) return own.map(x => x.r);
+    const o = own.findIndex(x => x.opener);
+    const tail = own.slice(own.length - K);
+    return o >= 0 && o < own.length - K ? [own[o].r, ...tail.slice(1).map(x => x.r)] : tail.map(x => x.r);
   }
 
   candidate(key, prompt, activeCard, state, me) {
