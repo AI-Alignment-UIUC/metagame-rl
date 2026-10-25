@@ -339,16 +339,22 @@ module.exports.searchScore = score;
 // score of each copy r = 0..dets-1, null where the move did not exist in that copy), paired across candidates under crn.
 // crn (C03, log #162): common random numbers, the same dets re-deal seeds for every candidate of a decision, so options
 // are compared on the same hidden cards and coin flips; off, every (candidate, copy) draws its own seed as before.
+// followups (opt-in, n > 1; env/staged/patches/followups.md): each (candidate, copy) line is run n times on the same
+// re-dealt copy. Replicate 0 is the greedy line; replicates 1..n-1 answer a prompt of the deciding player's own
+// resolving Trainer (game.chain.key 'trainer|..', as X1 in env/tools/probe_worker.js) by a uniform draw among the options
+// but 'cancel', from an Rng of the line's seed. The copy's score is the max over its replicates. stats: followupLines,
+// followupPrompts.
 class PolicySearchAgent {
-  constructor(pilot, enc, { k = 4, dets = 4, maxSteps = 40, seed = 0, horizon = 1, crn = false, keepLines = false } = {}) {
+  constructor(pilot, enc, { k = 4, dets = 4, maxSteps = 40, seed = 0, horizon = 1, crn = false, keepLines = false, followups = 1 } = {}) {
     this.pilot = pilot;
     this.horizon = horizon;
     this.crn = crn;
     this.keepLines = keepLines;
+    this.followups = followups;
     this.enc = enc;
     this.k = k; this.dets = dets; this.maxSteps = maxSteps;
     this.rng = new Rng(seed);
-    this.stats = { searches: 0, changed: 0, lines: 0, lineErrors: 0, capped: 0 };
+    this.stats = { searches: 0, changed: 0, lines: 0, lineErrors: 0, capped: 0, followupLines: 0, followupPrompts: 0 };
   }
 
   async act(batch) {
@@ -371,7 +377,7 @@ class PolicySearchAgent {
 
   async searchAll(items) {
     const { Env } = require('./env.js');
-    const lines = [];
+    let lines = [];
     const probs = items.map(({ b, e }, pi) => {
       const me = b.env.current.playerId;
       const cands = e.order.slice(0, this.k);
@@ -383,26 +389,33 @@ class PolicySearchAgent {
       const seeds = this.crn ? Array.from({ length: this.dets }, () => this.rng.u32()) : null;
       for (const a of cands) {
         for (let r = 0; r < this.dets; r++) {
-          const env = new Env(this.enc, { showOpponentDecklist: b.env.showOpponentDecklist, u8: b.env.u8 });
-          env.game = b.env.game.clone(new Rng(this.crn ? seeds[r] : this.rng.u32()), me);
-          env.decklists = b.env.decklists;
-          const t0 = env.observe();
-          const j = env.current.options.findIndex(o => o.key === keyOf(a));
-          if (j === -1 || !t0.legal.includes(j)) continue;
-          lines.push({ pi, a, r, env, t: env.step(j), score: null, n: 0 });
+          const seed = this.crn ? seeds[r] : this.rng.u32();
+          let base = null;
+          for (let rep = 0; rep < this.followups; rep++) {
+            const env = new Env(this.enc, { showOpponentDecklist: b.env.showOpponentDecklist, u8: b.env.u8 });
+            env.game = b.env.game.clone(new Rng(seed), me);
+            env.decklists = b.env.decklists;
+            const t0 = env.observe();
+            const j = env.current.options.findIndex(o => o.key === keyOf(a));
+            if (j === -1 || !t0.legal.includes(j)) break;
+            const l = { pi, a, r, env, t: env.step(j), score: null, n: 0, rep, of: base,
+              rng: rep ? new Rng((seed ^ Math.imul(rep, 0x9e3779b1)) >>> 0) : null };
+            if (!rep) base = l; else this.stats.followupLines++;
+            lines.push(l);
+          }
         }
       }
       return { me, cands, startTurn, best: e.best };
     });
     this.stats.searches += items.length;
-    this.stats.lines += lines.length;
+    this.stats.lines += lines.filter(l => !l.rep).length;
     const turned = l => l.env.game.state.turn - probs[l.pi].startTurn >= this.horizon;
     for (;;) {
       const ask = [];
       for (const l of lines) {
         if (l.score !== null) continue;
         while (l.n < this.maxSteps && !l.t.done && l.t.legal.length === 1 && !turned(l)) { l.t = l.env.step(l.t.legal[0]); l.n++; }
-        if (l.n >= this.maxSteps) { l.score = 0; this.stats.capped++; continue; }   // still in the turn after maxSteps
+        if (l.n >= this.maxSteps) { l.score = 0; l.capped = true; this.stats.capped++; continue; }   // still in the turn after maxSteps
         if (l.t.done) {
           const me = probs[l.pi].me;
           if (l.t.error) this.stats.lineErrors++;
@@ -417,11 +430,19 @@ class PolicySearchAgent {
         if (turned(l)) {
           l.score = l.t.playerId === probs[l.pi].me ? ev[i].value : -ev[i].value;
         } else {
-          l.t = l.env.step(ev[i].best);
+          let a = ev[i].best;
+          const g = l.env.game;
+          if (l.rep && g.decision().prompt && g.chain && g.chain.key.startsWith('trainer|') && l.t.playerId === g.state.players[g.state.activePlayer].id) {
+            const ok = l.t.legal.filter(x => l.env.current.options[x].key !== 'cancel');
+            if (ok.length) { a = ok[l.rng.int(ok.length)]; this.stats.followupPrompts++; }
+          }
+          l.t = l.env.step(a);
           l.n++;
         }
       });
     }
+    for (const l of lines) if (l.of && !l.capped) l.of.score = Math.max(l.of.score, l.score);   // best replicate, but not a capped one
+    lines = lines.filter(l => !l.of);
     const byProb = probs.map(() => []);
     for (const l of lines) byProb[l.pi].push(l);
     return probs.map((p, pi) => {

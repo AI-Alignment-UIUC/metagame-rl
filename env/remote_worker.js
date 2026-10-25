@@ -145,7 +145,8 @@ function probeCatch(cmd, enc) {
       return { obs: t.obs, legal: t.legal, env };
     });
     const S = new PolicySearchAgent(new RemotePilot(0, probe.k || 4), enc, { k: probe.k || 4, dets: probe.dets || 4,
-      maxSteps: probe.maxSteps || 40, seed: (probe.seed || 0) ^ cmd.seed, crn: true, keepLines: true });
+      maxSteps: probe.maxSteps || 40, seed: (probe.seed || 0) ^ cmd.seed, crn: true, keepLines: true,
+      followups: (probe.followups && probe.followups.n) || 1 });
     const res = [];
     for (let i = 0; i < items.length; i += 32) res.push(...await S.act(items.slice(i, i + 32)));
     return caught.map((c, i) => ({ k: c.k, cands: res[i].cands || null, scores: res[i].scores || null })).filter(p => p.cands);

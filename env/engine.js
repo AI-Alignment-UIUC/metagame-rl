@@ -34,8 +34,9 @@ const { playerTurnReducer } = require(path.join(DIST, 'reducers', 'player-turn-r
 const { checkState } = require(path.join(DIST, 'effect-reducers', 'check-effect.js'));
 
 const FORMAT = 'Base Sets';
-// 2000 rules: Mysterious Fossil is a Trainer in hand at setup, not a starting Pokemon.
-const RULES = new C.Rules({ fossilsAsStarters: false, mulliganDrawCards: 2 });
+// 2000 rules: Mysterious Fossil is a Trainer in hand at setup, not a starting Pokemon. Confusion as in 2000: a
+// failed flip does 20 to the attacker with its own Weakness and Resistance, and retreating takes a heads.
+const RULES = new C.Rules({ fossilsAsStarters: false, mulliganDrawCards: 2, baseEraConfusion: true });
 const cm = C.CardManager.getInstance();
 if (!cm.getAllFormats().some(f => f.name === FORMAT)) {
   const sets = [S.baseSets.setBase, S.baseSets.setJungle, S.baseSets.setFossil, S.baseSets.setTeamRocket];

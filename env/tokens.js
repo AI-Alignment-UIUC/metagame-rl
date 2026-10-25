@@ -8,7 +8,8 @@
 // Tokens (at most MAX_TOK), as card id, kind and an auxiliary small integer:
 //   0        GLOBAL: numeric context in `glob` (turn, sizes, flags, open prompt)
 //   1..12    SLOT: my Active, Bench 0-4, then the opponent's; card = top Pokemon (0 if empty);
-//            numeric features in `slots`
+//            numeric features in `slots`. An opponent's face-down Pokemon (Challenge! TR, until both
+//            players finish) reads as occupied with card 0 and no HP, the same id as a hidden pick in the history
 //   then     UNDER (card beneath an evolved Pokemon), ENERGY / TOOL (attached, aux = slot),
 //            HAND, MY_DISCARD, OPP_DISCARD, MY_UNSEEN (decklist minus visible), OPP_DECKLIST,
 //            STADIUM, PROMPT (cards listed by the open prompt), PICKED (picked so far):
@@ -102,15 +103,18 @@ class TokenEncoder {
 
     push(0, KIND.GLOBAL, 0);
     const slots = allSlots(state, me);
+    // Face down (pokemons.isPublic false, set only by Challenge! TR): its owner knows the card, the other player
+    // only that a card is there.
+    const hidden = s => !s.mine && s.slot.pokemons.isPublic === false;
     slots.forEach((s, i) => {
       const cards = s.slot.pokemons.cards;
       const top = cards.length ? cards[cards.length - 1] : null;
-      push(this.id(top), KIND.SLOT, i);
+      push(hidden(s) ? 0 : this.id(top), KIND.SLOT, i);
       if (!top) return;
       const o = i * SLOT_F;
       out.slots[o] = q(1);
       out.slots[o + 1] = q(cards.length > 1 ? 1 : 0);
-      out.slots[o + 2] = q(Math.round((top.hp || 0) / 10) / 12);
+      out.slots[o + 2] = hidden(s) ? 0 : q(Math.round((top.hp || 0) / 10) / 12);
       out.slots[o + 3] = q(Math.round(s.slot.damage / 10) / 12);
       CONDITIONS.forEach((c, j) => { out.slots[o + 4 + j] = q(s.slot.specialConditions.includes(c) ? 1 : 0); });
       out.slots[o + 9] = q(s.slot.pokemonPlayedTurn >= turn ? 1 : 0);
@@ -119,7 +123,7 @@ class TokenEncoder {
     });
     slots.forEach((s, i) => {
       const cards = s.slot.pokemons.cards;
-      for (let k = 0; k < cards.length - 1; k++) push(this.id(cards[k]), KIND.UNDER, i);
+      for (let k = 0; k < cards.length - 1; k++) push(hidden(s) ? 0 : this.id(cards[k]), KIND.UNDER, i);
       const e = new Map();
       for (const c of s.slot.energies.cards) { const k = this.id(c); e.set(k, (e.get(k) || 0) + 1); }
       for (const [k, v] of e) push(k, KIND.ENERGY, i * 8 + Math.min(v, 7));
