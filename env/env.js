@@ -38,6 +38,8 @@ class Env {
       return { done: true, winner: g.winner, steps: g.steps, error: g.error };
     }
     const decks = this.visibleDecks(d.playerId);
+    const se = this.seatEnc && this.seatEnc[d.playerId];     // a seat's own model options (slotEnc, env/remote_worker.js)
+    if (se) { this.encoder.history = se.history || 0; this.encoder.chain = se.chain || 0; this.encoder.canon = se.canon || 0; }
     // Token encoders (env/tokens.js) score the options themselves: actions are option indices. Every
     // legal option is offered; a decision with more options than the encoder has slots, or a state with
     // more tokens, ends the game as an engine error instead of hiding part of it (log #68).

@@ -52,6 +52,7 @@ class Runner {
 
     const start = job => {
       const env = new Env(enc, { u8: true });
+      if (job.seatEnc) env.seatEnc = job.seatEnc;
       let t;
       let turn0;
       if (job.fromGame) {

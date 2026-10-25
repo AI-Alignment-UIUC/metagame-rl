@@ -24,8 +24,10 @@
 //     "seed", "concurrency", "deckoutWin", "redeal": false, "history": 0, "focus": null, "greedyLines": false }
 //     the jobs' games recorded (both seats), plus Monte Carlo values of the options at sampled decisions (qprobe below)
 //   { "cmd": "quit" }
+//   "slotEnc": { "<slot>": { canon, chain, history } } (collect and games): each seat is encoded with the options of the
+//   model slot it uses, instead of the command's one set; a slot without an entry is an error
 //   collect, games and qprobe take "history": W and "chain": K, the token encoder's action-history window and chain
-//   rows (env/tokens.js; 0 = none)
+//   rows (env/tokens.js; 0 = none); "canon": 1 the one-token-per-card-per-zone encoding of a state_canon pilot (rl/token_model.py)
 // The learner is model slot 0; "slot:k" is another model the learner holds (a league snapshot).
 'use strict';
 const fs = require('fs');
@@ -45,6 +47,13 @@ const deckByName = name => {
   const d = decks.find(x => x.name === name) || decks.find(x => x.name.toLowerCase().includes(name.toLowerCase()));
   if (!d) throw new Error('no archived deck matches ' + name);
   return d;
+};
+
+// A seat's encoder options when the command has slotEnc: those of the model slot it uses (env/env.js seatEnc).
+const seatEnc = (cmd, slotOf) => {
+  if (!cmd.slotEnc) return {};
+  const e = s => { if (!cmd.slotEnc[slotOf[s]]) throw new Error('slotEnc has no entry for slot ' + slotOf[s]); return cmd.slotEnc[slotOf[s]]; };
+  return { seatEnc: { 1: e(1), 2: e(2) } };
 };
 
 const pending = new Map();
@@ -178,7 +187,8 @@ async function collect(cmd) {
     const learnerSeat = rng.int(2) + 1;
     const seats = learnerSeat === 1 ? { 1: 'learner', 2: opp.name } : { 1: opp.name, 2: 'learner' };
     const [deckA, deckB] = learnerSeat === 1 ? [da, db] : [db, da];
-    return { deckA: deckA.cards, deckB: deckB.cards, deckName: deckA.name, deckBName: deckB.name, seed: cmd.seed * 100003 + n++, seats };
+    return { deckA: deckA.cards, deckB: deckB.cards, deckName: deckA.name, deckBName: deckB.name, seed: cmd.seed * 100003 + n++, seats,
+             ...seatEnc(cmd, { 1: agents[seats[1]].slot, 2: agents[seats[2]].slot }) };
   };
   const runner = new Runner(enc, { concurrency: cmd.concurrency || 64, deckoutWin: cmd.deckoutWin ?? 1, roundTurns: cmd.roundTurns || 0 });
   // probe (C49, log #169): copies of a share of the learner's recorded decisions, searched after the games (probeCatch).
@@ -199,6 +209,7 @@ async function games(cmd) {
   const t0 = Date.now();
   const encoding = cmd.encoding || 'tokens';
   const enc = encoding === 'tokens' ? tokens : identity;
+  if (cmd.slotEnc && (cmd.judgeSearch || cmd.probe)) throw new Error('slotEnc is not supported with judgeSearch or probe');
   const agents = {};
   // A recorded seat plays as 'r<slot>', an unrecorded one as 'o<slot>': the same model slot, but only the
   // 'r' names are recorded.
@@ -227,7 +238,8 @@ async function games(cmd) {
       return 'bot:' + job.bot;
     };
     return { deckA: a.cards, deckB: b.cards, deckName: a.name, deckBName: b.name, seed: job.seed,
-             seats: { 1: seat(ia), 2: seat(ib) } };
+             seats: { 1: seat(ia), 2: seat(ib) },
+             ...seatEnc(cmd, { 1: cmd.slots ? cmd.slots[ia] : 0, 2: cmd.slots ? cmd.slots[ib] : 0 }) };
   };
   const recorded = new Set();
   for (const s of new Set(cmd.slots || [0])) recorded.add(pilot(cmd.slots ? cmd.slots.indexOf(s) : 0, true));
@@ -417,7 +429,7 @@ F.readFrames(process.stdin, (type, payload) => {
                     prizeGlob: PRIZE_GLOB } });
         return;
       }
-      if (msg.cmd === 'collect' || msg.cmd === 'games' || msg.cmd === 'qprobe') { tokens.history = msg.history || 0; tokens.chain = msg.chain || 0; }
+      if (msg.cmd === 'collect' || msg.cmd === 'games' || msg.cmd === 'qprobe') { tokens.history = msg.history || 0; tokens.chain = msg.chain || 0; tokens.canon = msg.canon || 0; }
       if (msg.cmd === 'collect') { F.writeJson(process.stdout, await collect(msg)); return; }
       if (msg.cmd === 'games') { F.writeJson(process.stdout, await games(msg)); return; }
       if (msg.cmd === 'qprobe') { F.writeJson(process.stdout, await qprobe(msg)); return; }

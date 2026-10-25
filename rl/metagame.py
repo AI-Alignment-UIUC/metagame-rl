@@ -293,7 +293,8 @@ def main(argv=None):
                      "concurrency": max(8, min(48, len(sh["jobs"]))), "out": str(run / f"rollout_w{w}.bin"),
                      "decks": sh["decks"], "jobs": sh["jobs"],
                      "history": int(net.config().get("history", 0) or 0),     # a pilot's action-history tokens (#76)
-                     "chain": int(net.config().get("chain", 0) or 0)}         # and its chain rows (the chain head)
+                     "chain": int(net.config().get("chain", 0) or 0),         # and its chain rows (the chain head)
+                     "canon": int(net.config().get("state_canon", 0) or 0)}   # and its one-token-per-card-per-zone encoding
                     for w, sh in enumerate(shards) if sh["jobs"]]
             replies = rp.collect(msgs, {0: net}, device)
             t3 = time.time()

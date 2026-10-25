@@ -1,0 +1,177 @@
+diff --git a/rl/gpu_matrix.py b/rl/gpu_matrix.py
+index 23fd7d8..f9fee98 100644
+--- a/rl/gpu_matrix.py
++++ b/rl/gpu_matrix.py
+@@ -40,7 +40,8 @@ def load_policy(path: str, device: str, overrides: dict = None):
+                               deck_layers=cfg.get("deck_layers", 1), history=cfg.get("history", 0),
+                               memory=cfg.get("memory", "none"), value_tower=cfg.get("value_tower", 0),
+                               value_query=cfg.get("value_query", 0), aux_heads=cfg.get("aux_heads", 0),
+-                              chain=cfg.get("chain", 0))
++                              chain=cfg.get("chain", 0), cand_latent=cfg.get("cand_latent", 0),
++                              cand_latent_zone=cfg.get("cand_latent_zone", 0), cand_latent_gate=cfg.get("cand_latent_gate", 0))
+         enc = "tokens"
+     else:
+         from rl.model import build
+@@ -48,7 +49,7 @@ def load_policy(path: str, device: str, overrides: dict = None):
+         enc = "identity"
+     missing, unexpected = m.load_state_dict(state["model"] if "model" in state else state["net"],   # rl.train or rl.metagame
+                                             strict=not overrides)
+-    assert not unexpected and all(k.startswith(("vquery", "vcross.", "vblocks.", "ln_v.", "aux_head.", "chain_"))
++    assert not unexpected and all(k.startswith(("vquery", "vcross.", "vblocks.", "ln_v.", "aux_head.", "chain_", "g_lat", "g_ptr", "lat_", "ptr_"))
+                                   for k in missing), (missing, unexpected)
+     return m.to(device).eval(), enc
+ 
+diff --git a/rl/token_model.py b/rl/token_model.py
+index 1579019..0bbfa8c 100644
+--- a/rl/token_model.py
++++ b/rl/token_model.py
+@@ -14,6 +14,8 @@ Inputs come from env/tokens.js: card tokens (card id, kind, aux), global and slo
+                     + attack/Power name + extra, then cross-attention to the tokens
+   policy          = one logit per candidate (a pointer over the options on offer)
+   value           = from the global token
++  cand_latent     = a card-naming option also reads the encoder output of the state tokens holding that card (hand, discard,
++                    a prompt's list), added to its vector behind a zero gate (1) or as a pointer bonus on its logit (2)
+   chain = K       = the last K candidate rows are the player's own decisions this turn, which the options and the
+                     value input attend to (the chain head; off with 0, the default)
+ 
+@@ -162,7 +164,8 @@ class TokenPointerNet(nn.Module):
+                  count_features: bool = False, cross_layers: int = 1, cand_self: int = 0, n_agents: int = 0,
+                  card_inputs: str = "all", deck_tokens: bool = True, slot_bind: bool = False,
+                  ability_text: dict = None, deck_mode: str = "joint", deck_layers: int = 1, history: int = 0,
+-                 memory: str = "none", value_tower: int = 0, value_query: int = 0, aux_heads: int = 0, chain: int = 0):
++                 memory: str = "none", value_tower: int = 0, value_query: int = 0, aux_heads: int = 0, chain: int = 0,
++                 cand_latent: int = 0, cand_latent_zone: int = 0, cand_latent_gate: int = 0):
+         super().__init__()
+         feats = torch.from_numpy(card_feature_matrix(card_table))
+         self.register_buffer("card_feats", feats)
+@@ -174,6 +177,8 @@ class TokenPointerNet(nn.Module):
+                         deck_tokens=deck_tokens, slot_bind=slot_bind, ability_text=ability_text is not None,
+                         deck_mode=deck_mode, deck_layers=deck_layers, history=history, memory=memory,
+                         value_tower=value_tower, value_query=value_query, aux_heads=aux_heads, chain=chain)
++        if cand_latent:                                 # recorded only when on, so a checkpoint's config is unchanged otherwise
++            self.cfg.update(cand_latent=cand_latent, cand_latent_zone=cand_latent_zone, cand_latent_gate=cand_latent_gate)
+         self.max_tok, self.max_cand, self.glob_f, self.slot_f = max_tok, max_cand, glob_f, slot_f
+         self.action_size = max_cand
+         # What a card id is read from (the ablations of log #70): "all" structured features + rules text +
+@@ -334,6 +339,24 @@ class TokenPointerNet(nn.Module):
+                 nn.init.zeros_(lin.weight)
+                 nn.init.zeros_(lin.bias)
+ 
++        # cand_latent (Evan's rows 65-66, reports/Unified card token references.md A): an option that names a card (from the hand,
++        # the discard, a prompt's list) reads the encoder output of the state tokens with that card id, which slot_ref cannot
++        # reach (it gathers board slots 1-12 only). 1 = L (the mean of those tokens' outputs) added to the candidate vector as
++        # g_lat * lat_proj(L), g_lat a scalar starting at 0 (only the gate is zeroed, so lat_proj gets gradient once it moves);
++        # 2 = g_ptr * log(the attention mass the option's final vector puts on those tokens) added to its logit, g_ptr from 0.
++        # cand_latent_zone keeps only the tokens of the zone the option takes the card from (all if none there); cand_latent_gate
++        # scales L per dimension by sigmoid(lat_verb(verb) + 4), so "discard X" and "fetch X" read the card differently.
++        self.cand_latent, self.cand_latent_zone, self.cand_latent_gate = cand_latent, cand_latent_zone, cand_latent_gate
++        assert cand_latent in (0, 1, 2)
++        if cand_latent == 1:
++            self.lat_proj = nn.Linear(d, d)
++            self.g_lat = nn.Parameter(torch.zeros(()))
++            if cand_latent_gate:
++                self.lat_verb = nn.Linear(d, d)
++        elif cand_latent == 2:
++            self.ptr_q = nn.Linear(d, d)
++            self.g_ptr = nn.Parameter(torch.zeros(()))
++
+     @torch.no_grad()
+     def init_agents_from_base(self, agents=None):
+         """Agents (all, or the listed ones) back to the base network: embedding zero, value head = the
+@@ -492,14 +515,25 @@ class TokenPointerNet(nn.Module):
+                     h, new_states = self.memory_step(m, mem_states if mem_states is not None else [None] * B)
+             pooled = pooled + self.mem_out(h)
+             x = torch.cat([pooled[:, None].to(x.dtype), x[:, 1:]], 1)
+-        logits, value = self.heads(x, mask, cand, n_cand, agent, vx)
++        logits, value = self.heads(x, mask, cand, n_cand, agent, vx, tok_card, tok_kind)
+         if new_states is not None:
+             return logits, value, new_states
+         return (logits, value, x[:, 0]) if return_pooled else (logits, value)
+ 
+-    def heads(self, x, mask, cand, n_cand, agent=None, vx=None):
++    def card_tokens(self, tok_card, tok_kind, mask, verb, card, s1, s2):
++        """[B, n, T]: the state tokens an option's card is (env/tokens.js candidate(): attach / basic / evolve / trainer plays and
++        slot 14 = HAND, slot 15 = MY_DISCARD, pick verbs = PROMPT; else, or when its zone holds none, every zone)."""
++        m = (tok_card[:, None, :] == card[..., None]) & (card != 0)[..., None] & mask[:, None, :] & (tok_kind > 0)[:, None, :]
++        if self.cand_latent_zone:
++            hand = (s1 == 14) | (s2 == 14) | ((verb >= 2) & (verb <= 5))
++            zone = torch.where(hand, 6, torch.where((s1 == 15) | (s2 == 15), 7, torch.where((verb >= 11) & (verb <= 15), 12, 0)))
++            z = m & (tok_kind[:, None, :] == zone[..., None])
++            m = torch.where((zone > 0)[..., None] & z.any(-1, keepdim=True), z, m)
++        return m
++
++    def heads(self, x, mask, cand, n_cand, agent=None, vx=None, tok_card=None, tok_kind=None):
+         """Policy logits and value from the encoded tokens x (token 0 = the pooled state, with memory if any); the
+-        value from vx instead when given (the value tower's tokens)."""
++        value from vx instead when given (the value tower's tokens). cand_latent needs tok_card and tok_kind."""
+         B = x.shape[0]
+         pooled = x[:, 0]
+         src = x if vx is None else vx.to(x.dtype)
+@@ -521,9 +555,19 @@ class TokenPointerNet(nn.Module):
+             other = self.slot_other(torch.where(on_board, torch.zeros_like(sl), sl))
+             return torch.where(on_board[..., None], gathered, other)
+ 
++        if self.cand_latent:
++            assert tok_card is not None and tok_kind is not None, "cand_latent: heads() needs tok_card and tok_kind"
++            tok_card, tok_kind = tok_card.long(), tok_kind.long()
++
+         def embed(verb, card, s1, s2, name, extra):
+             e = (self.verb(verb) + self.card_emb(card) + slot_ref(s1) + slot_ref(s2) + self.name(name)
+                  + self.extra(extra.clamp(0, 63)))
++            if self.cand_latent == 1:
++                m = self.card_tokens(tok_card, tok_kind, mask, verb, card, s1, s2).to(x.dtype)
++                L = (m @ x) / m.sum(-1, keepdim=True).clamp(min=1)
++                if self.cand_latent_gate:
++                    L = L * torch.sigmoid(self.lat_verb(self.verb(verb)) + 4.0)
++                e = e + self.g_lat * self.lat_proj(L)
+             if self.ability_text:
+                 e = e + self.ability_proj(self.ability_emb[self.ability_index[card * self.ability_names + name]])
+             return e
+@@ -549,6 +593,12 @@ class TokenPointerNet(nn.Module):
+         for blk in self.cross_extra[len(self.cand_blocks):]:
+             c = blk(c, x, mask)
+         logits = self.score(c).squeeze(-1)
++        if self.cand_latent == 2:                       # log of the softmax mass on the option's card tokens (0 when none)
++            att = (self.ptr_q(c) @ x.transpose(1, 2)).float() / math.sqrt(x.shape[-1])
++            lm = att.masked_fill(~mask[:, None, :], -1e9).log_softmax(-1)
++            m = self.card_tokens(tok_card, tok_kind, mask, verb, card, s1, s2)
++            ptr = torch.logsumexp(lm.masked_fill(~m, -1e9), -1).clamp(min=-14.0)
++            logits = logits + self.g_ptr * torch.where(m.any(-1), ptr, torch.zeros_like(ptr)).to(logits.dtype)
+         logits = logits.masked_fill(~valid, -1e9)
+         if K:                                           # the rows' places: never an action
+             logits = F.pad(logits, (0, K), value=-1e9)
+diff --git a/rl/train.py b/rl/train.py
+index 52417fa..e07f7c7 100644
+--- a/rl/train.py
++++ b/rl/train.py
+@@ -359,7 +359,9 @@ def build_model(args, info):
+                              deck_mode=getattr(args, "deck_mode", "joint"), deck_layers=getattr(args, "deck_layers", 1),
+                              history=getattr(args, "history", 0), memory=getattr(args, "memory", "none"),
+                              value_tower=getattr(args, "value_tower", 0), value_query=getattr(args, "value_query", 0),
+-                             chain=getattr(args, "chain", 0))
++                             chain=getattr(args, "chain", 0), cand_latent=getattr(args, "cand_latent", 0),
++                             cand_latent_zone=getattr(args, "cand_latent_zone", 0),
++                             cand_latent_gate=getattr(args, "cand_latent_gate", 0))
+ 
+ 
+ # Weights a pilot may lack when a checkpoint is read into a larger architecture: new modules that start as the
+@@ -368,7 +370,8 @@ def build_model(args, info):
+ # not start as the identity (new tokens to attend to; the board encoder stops seeing the deck), log #94. The chain head
+ # (chain_*) starts as the identity: chain_cross's outputs are zero from __init__.
+ NEW_WEIGHTS = ("cross_extra.", "cand_blocks.", "vquery", "vcross.", "vblocks.", "ln_v.", "owner.", "same_bias",
+-               "ability_proj.", "aux_head.", "mem_", "hist_", "deck_null", "deck_blocks.", "fuse.", "chain_")
++               "ability_proj.", "aux_head.", "mem_", "hist_", "deck_null", "deck_blocks.", "fuse.", "chain_",
++               "g_lat", "g_ptr", "lat_", "ptr_")
+ ZERO_AT_GROWTH = ("owner.weight", "ability_proj.weight", "ability_proj.bias",   # additive inputs: start at 0
+                   "fuse.0.proj.weight", "fuse.0.proj.bias", "fuse.0.ff.2.weight", "fuse.0.ff.2.bias")   # deck fusion: a pass-through
+ DEEPER_ZERO = ("proj.weight", "proj.bias", "ff.2.weight", "ff.2.bias")    # a new encoder block: a pass-through
+@@ -382,7 +385,8 @@ def token_net(cfg: dict, info: dict, **overrides):
+                                           **{k: c[k] for k in ("count_features", "cross_layers", "cand_self", "n_agents",
+                                                                "card_inputs", "deck_tokens", "slot_bind", "ability_text",
+                                                                "deck_mode", "deck_layers", "history", "memory",
+-                                                               "value_tower", "value_query", "chain") if k in c}), info)
++                                                               "value_tower", "value_query", "chain", "cand_latent", "cand_latent_zone",
++                                                               "cand_latent_gate") if k in c}), info)
+ 
+ 
+ def load_grown(model, state: dict) -> list:

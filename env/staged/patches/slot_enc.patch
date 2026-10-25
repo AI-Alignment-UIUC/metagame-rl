@@ -1,0 +1,153 @@
+diff --git a/env/env.js b/env/env.js
+index dd28ef1..3a0af46 100644
+--- a/env/env.js
++++ b/env/env.js
+@@ -38,6 +38,8 @@ class Env {
+       return { done: true, winner: g.winner, steps: g.steps, error: g.error };
+     }
+     const decks = this.visibleDecks(d.playerId);
++    const se = this.seatEnc && this.seatEnc[d.playerId];     // a seat's own model options (slotEnc, env/remote_worker.js)
++    if (se) { this.encoder.history = se.history || 0; this.encoder.chain = se.chain || 0; this.encoder.canon = se.canon || 0; }
+     // Token encoders (env/tokens.js) score the options themselves: actions are option indices. Every
+     // legal option is offered; a decision with more options than the encoder has slots, or a state with
+     // more tokens, ends the game as an engine error instead of hiding part of it (log #68).
+diff --git a/env/remote_worker.js b/env/remote_worker.js
+index 5a9328d..d306251 100644
+--- a/env/remote_worker.js
++++ b/env/remote_worker.js
+@@ -24,6 +24,8 @@
+ //     "seed", "concurrency", "deckoutWin", "redeal": false, "history": 0, "focus": null, "greedyLines": false }
+ //     the jobs' games recorded (both seats), plus Monte Carlo values of the options at sampled decisions (qprobe below)
+ //   { "cmd": "quit" }
++//   "slotEnc": { "<slot>": { canon, chain, history } } (collect and games): each seat is encoded with the options of the
++//   model slot it uses, instead of the command's one set; a slot without an entry is an error
+ //   collect, games and qprobe take "history": W and "chain": K, the token encoder's action-history window and chain
+ //   rows (env/tokens.js; 0 = none); "canon": 1 the one-token-per-card-per-zone encoding of a state_canon pilot (rl/token_model.py)
+ // The learner is model slot 0; "slot:k" is another model the learner holds (a league snapshot).
+@@ -47,6 +49,13 @@ const deckByName = name => {
+   return d;
+ };
+ 
++// A seat's encoder options when the command has slotEnc: those of the model slot it uses (env/env.js seatEnc).
++const seatEnc = (cmd, slotOf) => {
++  if (!cmd.slotEnc) return {};
++  const e = s => { if (!cmd.slotEnc[slotOf[s]]) throw new Error('slotEnc has no entry for slot ' + slotOf[s]); return cmd.slotEnc[slotOf[s]]; };
++  return { seatEnc: { 1: e(1), 2: e(2) } };
++};
++
+ const pending = new Map();
+ let nextId = 1;
+ // Memory keys (log #76): each request row carries its game's uid * 2 + seat - 1, so a pilot with memory (rl/remote.py)
+@@ -178,7 +187,8 @@ async function collect(cmd) {
+     const learnerSeat = rng.int(2) + 1;
+     const seats = learnerSeat === 1 ? { 1: 'learner', 2: opp.name } : { 1: opp.name, 2: 'learner' };
+     const [deckA, deckB] = learnerSeat === 1 ? [da, db] : [db, da];
+-    return { deckA: deckA.cards, deckB: deckB.cards, deckName: deckA.name, deckBName: deckB.name, seed: cmd.seed * 100003 + n++, seats };
++    return { deckA: deckA.cards, deckB: deckB.cards, deckName: deckA.name, deckBName: deckB.name, seed: cmd.seed * 100003 + n++, seats,
++             ...seatEnc(cmd, { 1: agents[seats[1]].slot, 2: agents[seats[2]].slot }) };
+   };
+   const runner = new Runner(enc, { concurrency: cmd.concurrency || 64, deckoutWin: cmd.deckoutWin ?? 1, roundTurns: cmd.roundTurns || 0 });
+   // probe (C49, log #169): copies of a share of the learner's recorded decisions, searched after the games (probeCatch).
+@@ -199,6 +209,7 @@ async function games(cmd) {
+   const t0 = Date.now();
+   const encoding = cmd.encoding || 'tokens';
+   const enc = encoding === 'tokens' ? tokens : identity;
++  if (cmd.slotEnc && (cmd.judgeSearch || cmd.probe)) throw new Error('slotEnc is not supported with judgeSearch or probe');
+   const agents = {};
+   // A recorded seat plays as 'r<slot>', an unrecorded one as 'o<slot>': the same model slot, but only the
+   // 'r' names are recorded.
+@@ -227,7 +238,8 @@ async function games(cmd) {
+       return 'bot:' + job.bot;
+     };
+     return { deckA: a.cards, deckB: b.cards, deckName: a.name, deckBName: b.name, seed: job.seed,
+-             seats: { 1: seat(ia), 2: seat(ib) } };
++             seats: { 1: seat(ia), 2: seat(ib) },
++             ...seatEnc(cmd, { 1: cmd.slots ? cmd.slots[ia] : 0, 2: cmd.slots ? cmd.slots[ib] : 0 }) };
+   };
+   const recorded = new Set();
+   for (const s of new Set(cmd.slots || [0])) recorded.add(pilot(cmd.slots ? cmd.slots.indexOf(s) : 0, true));
+diff --git a/env/runner.js b/env/runner.js
+index 11b421d..8986074 100644
+--- a/env/runner.js
++++ b/env/runner.js
+@@ -52,6 +52,7 @@ class Runner {
+ 
+     const start = job => {
+       const env = new Env(enc, { u8: true });
++      if (job.seatEnc) env.seatEnc = job.seatEnc;
+       let t;
+       let turn0;
+       if (job.fromGame) {
+diff --git a/rl/gpu_matrix.py b/rl/gpu_matrix.py
+index 30ac04b..fb4807b 100644
+--- a/rl/gpu_matrix.py
++++ b/rl/gpu_matrix.py
+@@ -17,7 +17,7 @@ import numpy as np
+ import torch
+ 
+ from rl import limits
+-from rl.remote import RemotePool
++from rl.remote import RemotePool, enc_of
+ 
+ ROOT = Path(__file__).resolve().parent.parent
+ 
+@@ -66,6 +66,12 @@ def canon_of(models: dict) -> int:
+     return int(any(getattr(m, "cfg", {}).get("state_canon", 0) for m in models.values()))
+ 
+ 
++def slot_enc_of(models: dict) -> dict:
++    """Each model slot's own encoder options (env/remote_worker.js slotEnc): a command that plays several slots encodes each
++    seat by the model it belongs to, so models with different canon / chain / history can share a game."""
++    return {str(s): enc_of(m) for s, m in models.items()}
++
++
+ def chain_of(models: dict) -> int:
+     """The chain rows the workers must encode (env/tokens.js chain): the most any of the models reads (a chain-0 model
+     ignores them)."""
+@@ -150,6 +156,7 @@ class GpuMatrix:
+                      "concurrency": self.concurrency, "valueAtTurn": value_at_turn, "history": history_of(models or {0: self.model}),
+                      "chain": chain_of(models or {0: self.model}), "canon": canon_of(models or {0: self.model}),
+                      **({"slots": [int(x) for x in slots]} if slots is not None else {}),
++                     **({"slotEnc": slot_enc_of(models)} if models and len(models) > 1 else {}),
+                      **({"roundTurns": round_turns} if round_turns else {})} for w, s in enumerate(shards)]
+             replies += self.pool.collect(msgs, models or {0: self.model}, self.device)   # fp32, as the ONNX pilot
+         self.results = [x for rep in replies for x in rep["results"]]   # per game (with its job's seed), for analyses
+diff --git a/rl/remote.py b/rl/remote.py
+index 285c44e..f058801 100644
+--- a/rl/remote.py
++++ b/rl/remote.py
+@@ -41,6 +41,12 @@ def trim_inputs(inputs: list, model) -> list:
+     return out
+ 
+ 
++def enc_of(model) -> dict:
++    """The token encoder options a model reads (env/tokens.js canon, chain, history): one slotEnc entry."""
++    cfg = getattr(model, "cfg", {})
++    return {"canon": int(bool(cfg.get("state_canon", 0))), "chain": int(cfg.get("chain", 0) or 0), "history": int(cfg.get("history", 0) or 0)}
++
++
+ def pack_arrays(header: dict, arrays: list) -> bytes:
+     meta, offset, parts = [], 0, []
+     for name, arr in arrays:
+@@ -221,10 +227,18 @@ class RemotePool:
+         """A state_canon pilot reads the one-token-per-card-per-zone encoding (env/tokens.js canon) and no other model reads
+         it, so a token command must send "canon" exactly when its models are canon pilots (the flag loss of log #94 again:
+         a worker left on the old encoding feeds the pilot tokens it was never trained on). Refuses a mismatch, and a game
+-        that mixes canon and other models (the workers encode once)."""
++        that mixes canon and other models without "slotEnc" (the workers then encode once). With "slotEnc" (one entry per model
++        slot, env/remote_worker.js) each seat is encoded by its own model, so the mix is allowed: the entries must match the
++        models' configs."""
+         on = {bool(getattr(m, "cfg", {}).get("state_canon", 0)) for m in models.values()}
+-        if len(on) > 1 and any(m.get("encoding") == "tokens" for m in msgs):
+-            raise RuntimeError("state_canon pilots and other models cannot share a round: the workers encode one way")
++        if len(on) > 1:
++            for m in msgs:
++                if m.get("encoding") != "tokens":
++                    continue
++                se = m.get("slotEnc") or {}
++                if {str(s): enc_of(x) for s, x in models.items()} != se:
++                    raise RuntimeError("state_canon pilots and other models cannot share a round unless slotEnc covers every "
++                                       "model slot with its model's options: the workers encode one way")
+         for m in msgs:
+             if m.get("cmd") in ("collect", "games", "qprobe") and m.get("encoding") == "tokens" and bool(m.get("canon")) != (True in on):
+                 raise RuntimeError(f"state_canon pilot {'served' if True in on else 'not in use, yet'} a command with canon="

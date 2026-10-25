@@ -41,6 +41,12 @@ def trim_inputs(inputs: list, model) -> list:
     return out
 
 
+def enc_of(model) -> dict:
+    """The token encoder options a model reads (env/tokens.js canon, chain, history): one slotEnc entry."""
+    cfg = getattr(model, "cfg", {})
+    return {"canon": int(bool(cfg.get("state_canon", 0))), "chain": int(cfg.get("chain", 0) or 0), "history": int(cfg.get("history", 0) or 0)}
+
+
 def pack_arrays(header: dict, arrays: list) -> bytes:
     meta, offset, parts = [], 0, []
     for name, arr in arrays:
@@ -114,6 +120,7 @@ class RemotePool:
     def collect(self, msgs: list, models: dict, device: str) -> list:
         """One round of commands, serving inference for `models` ({slot: nn.Module}) meanwhile."""
         self.mem = {}                                     # the models may have changed; no game spans rounds
+        self._canon_guard(msgs, models)
         for i, m in enumerate(msgs):
             self.send_json(i, m)
         replies = [None] * len(msgs)
@@ -214,6 +221,28 @@ class RemotePool:
                                                     [("action", action[sl]), ("logp", logp[sl]), ("value", value[sl]),
                                                      ("sampled", sampled[sl])] + extra))
                 start += n
+
+    @staticmethod
+    def _canon_guard(msgs, models):
+        """A state_canon pilot reads the one-token-per-card-per-zone encoding (env/tokens.js canon) and no other model reads
+        it, so a token command must send "canon" exactly when its models are canon pilots (the flag loss of log #94 again:
+        a worker left on the old encoding feeds the pilot tokens it was never trained on). Refuses a mismatch, and a game
+        that mixes canon and other models without "slotEnc" (the workers then encode once). With "slotEnc" (one entry per model
+        slot, env/remote_worker.js) each seat is encoded by its own model, so the mix is allowed: the entries must match the
+        models' configs."""
+        on = {bool(getattr(m, "cfg", {}).get("state_canon", 0)) for m in models.values()}
+        if len(on) > 1:
+            for m in msgs:
+                if m.get("encoding") != "tokens":
+                    continue
+                se = m.get("slotEnc") or {}
+                if {str(s): enc_of(x) for s, x in models.items()} != se:
+                    raise RuntimeError("state_canon pilots and other models cannot share a round unless slotEnc covers every "
+                                       "model slot with its model's options: the workers encode one way")
+        for m in msgs:
+            if m.get("cmd") in ("collect", "games", "qprobe") and m.get("encoding") == "tokens" and bool(m.get("canon")) != (True in on):
+                raise RuntimeError(f"state_canon pilot {'served' if True in on else 'not in use, yet'} a command with canon="
+                                   f"{m.get('canon')!r}; the workers' commands must send \"canon\" from the model config")
 
     def _chain_guard(self, model, cand, B):
         """A chain pilot whose workers encode no chain rows (a command without "chain", the flag loss of log #94) would

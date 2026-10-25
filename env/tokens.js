@@ -14,6 +14,11 @@
 //            HAND, MY_DISCARD, OPP_DISCARD, MY_UNSEEN (decklist minus visible), OPP_DECKLIST,
 //            STADIUM, PROMPT (cards listed by the open prompt), PICKED (picked so far):
 //            one token per distinct card, aux = number of copies
+//            With canon = 1 (rl/token_model.py state_canon) the prompt's references are flags on the zone tokens instead: a
+//            listed card sets 32 in the aux of its HAND / MY_DISCARD / MY_UNSEEN (deck or prizes) / OPP_DISCARD token, a card
+//            picked so far 64, the seat's own resolving Trainer 128; copies are capped at 31 (bits 0-4). A listed card with no
+//            zone token still gets a PROMPT token, a pick with none a PICKED token, a source in neither HAND nor MY_DISCARD
+//            a PROMPT token (aux 128).
 //   then     with history = W > 0 (log #76): the action history of the last W turns, newest first, at most
 //            HIST_MAX: HIST_ME / HIST_OPP, card = the card the action names (0 for none, and for the opponent's
 //            prompt answers, which may pick hidden cards), aux = verb * 8 + turns ago (capped at 7)
@@ -77,6 +82,7 @@ class TokenEncoder {
     this.MAX_TOK = MAX_TOK; this.MAX_CAND = MAX_CAND; this.SLOT_F = SLOT_F; this.GLOB_F = GLOB_F;
     this.history = 0;        // turns of action history encoded (0 = none, as before log #76)
     this.chain = 0;          // the chain head's rows (0 = none): the last `chain` candidate rows
+    this.canon = 0;          // 1 = one token per card per zone, the prompt's references as aux flags (state_canon)
     this.sizes = { tokCard: MAX_TOK, tokKind: MAX_TOK, tokAux: MAX_TOK, glob: GLOB_F, slots: 12 * SLOT_F, cand: MAX_CAND * 6 };
   }
 
@@ -98,10 +104,24 @@ class TokenEncoder {
       if (n >= MAX_TOK) { out.overflow = true; return; }
       out.tokCard[n] = card; out.tokKind[n] = kind; out.tokAux[n] = Math.min(255, aux); n++;
     };
+    const canon = this.canon > 0;
+    const zone = new Map();    // canon: kind -> Map(card id -> token index), to set the prompt's flags on
+    const cnt = v => canon ? Math.min(31, v) : v;
+    const note = (kind, id) => {
+      if (!canon || n >= MAX_TOK) return;
+      if (!zone.has(kind)) zone.set(kind, new Map());
+      zone.get(kind).set(id, n);
+    };
+    const flag = (kind, id, bit) => {
+      const i = canon && zone.has(kind) ? zone.get(kind).get(id) : undefined;
+      if (i === undefined) return false;
+      out.tokAux[i] |= bit;
+      return true;
+    };
     const pushCounts = (cards, kind) => {
       const m = new Map();
       for (const c of cards) { const k = this.id(c); m.set(k, (m.get(k) || 0) + 1); }
-      for (const [k, v] of m) push(k, kind, v);
+      for (const [k, v] of m) { note(kind, k); push(k, kind, cnt(v)); }
     };
 
     push(0, KIND.GLOBAL, 0);
@@ -141,12 +161,17 @@ class TokenEncoder {
       const seen = [...me.hand.cards, ...me.discard.cards, ...me.stadium.cards, ...me.supporter.cards];
       for (const s of [me.active, ...me.bench]) seen.push(...s.pokemons.cards, ...s.energies.cards, ...s.trainers.cards);
       for (const c of seen) if (left.has(c.fullName)) left.set(c.fullName, left.get(c.fullName) - 1);
-      for (const [name, v] of left) if (v > 0) push(this.cardId.get(name) || 0, KIND.MY_UNSEEN, v);
+      for (const [name, v] of left) {
+        if (v <= 0) continue;
+        const k = this.cardId.get(name) || 0;
+        note(KIND.MY_UNSEEN, k);
+        push(k, KIND.MY_UNSEEN, cnt(v));
+      }
     }
     if (decks && decks[opp.id]) {
       const m = new Map();
       for (const name of decks[opp.id]) m.set(name, (m.get(name) || 0) + 1);
-      for (const [name, v] of m) push(this.cardId.get(name) || 0, KIND.OPP_DECKLIST, v);
+      for (const [name, v] of m) push(this.cardId.get(name) || 0, KIND.OPP_DECKLIST, cnt(v));
     }
     const stadium = C.StateUtils.getStadiumCard(state);
     if (stadium) push(this.id(stadium), KIND.STADIUM, 0);
@@ -173,11 +198,34 @@ class TokenEncoder {
       g[po + PROMPT_TYPES.length + 1 + hash(String(prompt.message), MSG_HASH)] = q(1);
       g[po + PROMPT_TYPES.length + 1 + MSG_HASH] = q(Math.min(game.picks.length, 12) / 12);
       const listed = prompt.cards ? (prompt.cards.cards || prompt.cards) : prompt.cardList ? prompt.cardList.cards : null;
-      if (Array.isArray(listed) && !(prompt.options && prompt.options.isSecret)) pushCounts(listed, KIND.PROMPT);
+      let shown = Array.isArray(listed) && !(prompt.options && prompt.options.isSecret) ? listed : null;
+      if (canon && shown) {            // each listed card flags its zone token (by identity: the prompt lists the zone's own cards)
+        const home = [[me.hand.cards, KIND.HAND], [me.discard.cards, KIND.MY_DISCARD], [me.deck.cards, KIND.MY_UNSEEN],
+          [opp.discard.cards, KIND.OPP_DISCARD], ...me.prizes.map(z => [z.cards, KIND.MY_UNSEEN])];
+        shown = shown.filter(c => { const h = home.find(x => x[0].includes(c)); return !(h && flag(h[1], this.id(c), 32)); });
+      }
+      if (shown) pushCounts(shown, KIND.PROMPT);
       const picked = game.pickKeys().map(k => k.split(/[>:]/)).flat().map(part => this.cardId.get(part)).filter(Boolean);
       const m = new Map();
       for (const k of picked) m.set(k, (m.get(k) || 0) + 1);
-      for (const [k, v] of m) push(k, KIND.PICKED, v);
+      const ZONES = [KIND.HAND, KIND.MY_DISCARD, KIND.MY_UNSEEN, KIND.OPP_DISCARD, KIND.PROMPT];
+      for (const [k, v] of m) {        // canon: a pick flags the token it was listed on (else its hand / discard / unseen token)
+        if (canon) {
+          const at = ZONES.filter(z => zone.has(z) && zone.get(z).has(k)).map(z => zone.get(z).get(k));
+          const i = at.find(j => out.tokAux[j] & 32) ?? at[0];
+          if (i !== undefined) { out.tokAux[i] |= 64; continue; }
+        }
+        push(k, KIND.PICKED, cnt(v));
+      }
+      // canon: the card whose effect is resolving, the seat's own Trainer (the test of env/tools/probe_worker.js X1)
+      if (canon && game.chain && game.chain.key.startsWith('trainer|') && state.players[state.activePlayer].id === playerId) {
+        const sid = this.cardId.get(game.chain.key.split('|')[1]) || 0;
+        const inPlay = me.supporter.cards.some(c => this.id(c) === sid);     // a Supporter resolves from its own zone
+        if (!(!inPlay && (flag(KIND.HAND, sid, 128) || flag(KIND.MY_DISCARD, sid, 128))) && !flag(KIND.PROMPT, sid, 128)) {
+          note(KIND.PROMPT, sid);
+          push(sid, KIND.PROMPT, 128);
+        }
+      }
     }
     if (this.history > 0 && game.history) {
       let h = 0;

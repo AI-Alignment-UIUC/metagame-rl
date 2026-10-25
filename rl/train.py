@@ -359,7 +359,10 @@ def build_model(args, info):
                              deck_mode=getattr(args, "deck_mode", "joint"), deck_layers=getattr(args, "deck_layers", 1),
                              history=getattr(args, "history", 0), memory=getattr(args, "memory", "none"),
                              value_tower=getattr(args, "value_tower", 0), value_query=getattr(args, "value_query", 0),
-                             chain=getattr(args, "chain", 0))
+                             chain=getattr(args, "chain", 0), cand_latent=getattr(args, "cand_latent", 0),
+                             cand_latent_zone=getattr(args, "cand_latent_zone", 0),
+                             cand_latent_gate=getattr(args, "cand_latent_gate", 0),
+                             state_canon=getattr(args, "state_canon", 0), state_key=getattr(args, "state_key", 0))
 
 
 # Weights a pilot may lack when a checkpoint is read into a larger architecture: new modules that start as the
@@ -368,7 +371,8 @@ def build_model(args, info):
 # not start as the identity (new tokens to attend to; the board encoder stops seeing the deck), log #94. The chain head
 # (chain_*) starts as the identity: chain_cross's outputs are zero from __init__.
 NEW_WEIGHTS = ("cross_extra.", "cand_blocks.", "vquery", "vcross.", "vblocks.", "ln_v.", "owner.", "same_bias",
-               "ability_proj.", "aux_head.", "mem_", "hist_", "deck_null", "deck_blocks.", "fuse.", "chain_")
+               "ability_proj.", "aux_head.", "mem_", "hist_", "deck_null", "deck_blocks.", "fuse.", "chain_",
+               "g_lat", "g_ptr", "lat_", "ptr_", "flag_emb", "g_flag", "key_bias")
 ZERO_AT_GROWTH = ("owner.weight", "ability_proj.weight", "ability_proj.bias",   # additive inputs: start at 0
                   "fuse.0.proj.weight", "fuse.0.proj.bias", "fuse.0.ff.2.weight", "fuse.0.ff.2.bias")   # deck fusion: a pass-through
 DEEPER_ZERO = ("proj.weight", "proj.bias", "ff.2.weight", "ff.2.bias")    # a new encoder block: a pass-through
@@ -382,7 +386,8 @@ def token_net(cfg: dict, info: dict, **overrides):
                                           **{k: c[k] for k in ("count_features", "cross_layers", "cand_self", "n_agents",
                                                                "card_inputs", "deck_tokens", "slot_bind", "ability_text",
                                                                "deck_mode", "deck_layers", "history", "memory",
-                                                               "value_tower", "value_query", "chain") if k in c}), info)
+                                                               "value_tower", "value_query", "chain", "cand_latent", "cand_latent_zone",
+                                                               "cand_latent_gate", "state_canon", "state_key") if k in c}), info)
 
 
 def load_grown(model, state: dict) -> list:
@@ -504,7 +509,7 @@ def main(argv=None):
         missing, unexpected = model.load_state_dict(torch.load(ROOT / args.init_from, map_location=device)["model"],
                                                     strict=False)
         assert not unexpected, f"checkpoint has weights this model lacks: {unexpected[:5]}"
-        assert all(k.startswith(("cross_extra.", "cand_blocks.", "vquery", "vcross.", "vblocks.", "ln_v.", "chain_"))
+        assert all(k.startswith(("cross_extra.", "cand_blocks.", "vquery", "vcross.", "vblocks.", "ln_v.", "chain_", "flag_emb", "g_flag", "key_bias"))
                    for k in missing), f"missing weights: {missing[:5]}"
         if missing:
             print(f"init-from: {len(missing)} new weights left at identity ({sorted({k.split('.')[0] for k in missing})})")
@@ -529,7 +534,8 @@ def main(argv=None):
                                    "seed": args.seed * 7919 + it}} if getattr(args, "search_distill", 0) else {}),
                      "matchups": matchups, "opponents": [{"spec": "self", "weight": 1.0}],
                      "out": str(run / f"rollout_w{w}.bin"), "history": getattr(args, "history", 0),
-                     "chain": getattr(args, "chain", 0)} for w in range(args.workers)]
+                     "chain": getattr(args, "chain", 0),
+                     "canon": int(getattr(model, "cfg", {}).get("state_canon", 0) or 0)} for w in range(args.workers)]
             replies = pool.collect(msgs, {0: model.eval()}, device)
             model.train()
             t1 = time.time()

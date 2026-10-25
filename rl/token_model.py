@@ -14,6 +14,11 @@ Inputs come from env/tokens.js: card tokens (card id, kind, aux), global and slo
                     + attack/Power name + extra, then cross-attention to the tokens
   policy          = one logit per candidate (a pointer over the options on offer)
   value           = from the global token
+  cand_latent     = a card-naming option also reads the encoder output of the state tokens holding that card (hand, discard,
+                    a prompt's list), added to its vector behind a zero gate (1) or as a pointer bonus on its logit (2)
+  state_canon     = one token per card per zone: the open prompt's listed / picked cards and the resolving Trainer are flags in the
+                    aux of the zone tokens (env/tokens.js canon), read through three vectors behind zero gates
+  state_key       = a per-head attention bias between the tokens of one card in different zones, from 0
   chain = K       = the last K candidate rows are the player's own decisions this turn, which the options and the
                     value input attend to (the chain head; off with 0, the default)
 
@@ -39,6 +44,7 @@ NUM_KINDS = 16
 NUM_VERBS = 32
 DECK_KINDS = (9, 10)       # env/tokens.js KIND.MY_UNSEEN, KIND.OPP_DECKLIST
 HIST_KINDS = (14, 15)      # env/tokens.js KIND.HIST_ME, KIND.HIST_OPP (aux = verb * 8 + turns ago)
+ZONE_KINDS = (6, 7, 8, 9, 10, 12, 13)       # HAND .. OPP_DECKLIST, PROMPT, PICKED: aux = copies (state_canon: + flags above bit 4)
 SLOT_KIND, UNDER_KIND, ENERGY_KIND, TOOL_KIND = 2, 3, 4, 5      # their aux is a slot (ENERGY: slot * 8 + copies)
 
 
@@ -162,7 +168,9 @@ class TokenPointerNet(nn.Module):
                  count_features: bool = False, cross_layers: int = 1, cand_self: int = 0, n_agents: int = 0,
                  card_inputs: str = "all", deck_tokens: bool = True, slot_bind: bool = False,
                  ability_text: dict = None, deck_mode: str = "joint", deck_layers: int = 1, history: int = 0,
-                 memory: str = "none", value_tower: int = 0, value_query: int = 0, aux_heads: int = 0, chain: int = 0):
+                 memory: str = "none", value_tower: int = 0, value_query: int = 0, aux_heads: int = 0, chain: int = 0,
+                 cand_latent: int = 0, cand_latent_zone: int = 0, cand_latent_gate: int = 0, state_canon: int = 0,
+                 state_key: int = 0):
         super().__init__()
         feats = torch.from_numpy(card_feature_matrix(card_table))
         self.register_buffer("card_feats", feats)
@@ -174,6 +182,12 @@ class TokenPointerNet(nn.Module):
                         deck_tokens=deck_tokens, slot_bind=slot_bind, ability_text=ability_text is not None,
                         deck_mode=deck_mode, deck_layers=deck_layers, history=history, memory=memory,
                         value_tower=value_tower, value_query=value_query, aux_heads=aux_heads, chain=chain)
+        if cand_latent:                                 # recorded only when on, so a checkpoint's config is unchanged otherwise
+            self.cfg.update(cand_latent=cand_latent, cand_latent_zone=cand_latent_zone, cand_latent_gate=cand_latent_gate)
+        if state_canon:
+            self.cfg.update(state_canon=state_canon)
+        if state_key:
+            self.cfg.update(state_key=state_key)
         self.max_tok, self.max_cand, self.glob_f, self.slot_f = max_tok, max_cand, glob_f, slot_f
         self.action_size = max_cand
         # What a card id is read from (the ablations of log #70): "all" structured features + rules text +
@@ -194,6 +208,18 @@ class TokenPointerNet(nn.Module):
         if count_features:
             nn.init.normal_(self.aux.weight, std=0.02)   # small, so training can actually move it
             self.count_proj = nn.Linear(COUNT_F, d)
+        # state_canon (Evan's rows 65-66, B): the tokens of a card in a zone carry the prompt's references as aux bits (copies in
+        # bits 0-4, 32 listed, 64 picked, 128 source; env/tokens.js canon), on the zone kinds only (a board token's aux is a slot).
+        # The flags are three learned vectors, each behind a scalar gate that starts at 0 (only the gates are zeroed).
+        self.state_canon = state_canon
+        if state_canon:
+            self.flag_emb = nn.Parameter(torch.randn(3, d) * 0.02)
+            self.g_flag = nn.Parameter(torch.zeros(3))
+        # state_key: a per-layer, per-head scalar bias between the tokens that are the same card (nonzero id) in different
+        # kinds, so attention can bind a card's hand, discard, unseen and prompt tokens; starts at 0 (as same_bias below).
+        self.state_key = state_key
+        if state_key:
+            self.key_bias = nn.Parameter(torch.zeros(layers, heads))
         self.glob = nn.Linear(glob_f, d)
         self.slot_num = nn.Linear(slot_f, d)
         self.blocks = nn.ModuleList([Block(d, heads, 2 * d) for _ in range(layers)])
@@ -334,6 +360,24 @@ class TokenPointerNet(nn.Module):
                 nn.init.zeros_(lin.weight)
                 nn.init.zeros_(lin.bias)
 
+        # cand_latent (Evan's rows 65-66, reports/Unified card token references.md A): an option that names a card (from the hand,
+        # the discard, a prompt's list) reads the encoder output of the state tokens with that card id, which slot_ref cannot
+        # reach (it gathers board slots 1-12 only). 1 = L (the mean of those tokens' outputs) added to the candidate vector as
+        # g_lat * lat_proj(L), g_lat a scalar starting at 0 (only the gate is zeroed, so lat_proj gets gradient once it moves);
+        # 2 = g_ptr * log(the attention mass the option's final vector puts on those tokens) added to its logit, g_ptr from 0.
+        # cand_latent_zone keeps only the tokens of the zone the option takes the card from (all if none there); cand_latent_gate
+        # scales L per dimension by sigmoid(lat_verb(verb) + 4), so "discard X" and "fetch X" read the card differently.
+        self.cand_latent, self.cand_latent_zone, self.cand_latent_gate = cand_latent, cand_latent_zone, cand_latent_gate
+        assert cand_latent in (0, 1, 2)
+        if cand_latent == 1:
+            self.lat_proj = nn.Linear(d, d)
+            self.g_lat = nn.Parameter(torch.zeros(()))
+            if cand_latent_gate:
+                self.lat_verb = nn.Linear(d, d)
+        elif cand_latent == 2:
+            self.ptr_q = nn.Linear(d, d)
+            self.g_ptr = nn.Parameter(torch.zeros(()))
+
     @torch.no_grad()
     def init_agents_from_base(self, agents=None):
         """Agents (all, or the listed ones) back to the base network: embedding zero, value head = the
@@ -372,7 +416,15 @@ class TokenPointerNet(nn.Module):
         if not self.history:
             mask = mask & ~is_hist
         aux_in = torch.where(is_hist, torch.zeros_like(tok_aux), tok_aux)     # a history token's aux is not a count
+        if self.state_canon:                                                  # zone tokens: copies in bits 0-4, flags above
+            zone = torch.zeros_like(mask)
+            for k in ZONE_KINDS:
+                zone = zone | (tok_kind == k)
+            aux_in = torch.where(zone, aux_in & 31, aux_in)
         x = self.card_emb(tok_card) + self.kind(tok_kind) + self.aux(aux_in)
+        if self.state_canon:
+            for j in range(3):
+                x = x + (self.g_flag[j] * self.flag_emb[j]) * (zone & ((tok_aux >> (5 + j)) & 1).bool())[..., None].to(x.dtype)
         if self.history:
             hv = torch.div(tok_aux, 8, rounding_mode="floor").clamp(max=NUM_VERBS - 1)
             hist = self.hist_verb(hv) + self.hist_age(tok_aux - 8 * torch.div(tok_aux, 8, rounding_mode="floor"))
@@ -393,7 +445,16 @@ class TokenPointerNet(nn.Module):
                 x = x + self.agent_emb.weight[self.fixed_agent][None, None, :]
             else:
                 x = x + self.agent_emb(agent.long())[:, None, :]
-        bias = lambda i: None if same is None else same * self.same_bias[i][None, :, None, None]
+        if self.state_key:           # [B, 1, T, T]: the same card id (nonzero), in different kinds
+            key = ((tok_card[:, :, None] == tok_card[:, None, :]) & (tok_card[:, :, None] > 0)
+                   & (tok_kind[:, :, None] != tok_kind[:, None, :])).float()[:, None]
+
+        def bias(i):
+            b = None if same is None else same * self.same_bias[i][None, :, None, None]
+            if self.state_key:
+                kb = key * self.key_bias[i][None, :, None, None]
+                b = kb if b is None else b + kb
+            return b
         if self.deck_mode == "joint":
             x0 = x
             for i, b in enumerate(self.blocks):
@@ -492,14 +553,28 @@ class TokenPointerNet(nn.Module):
                     h, new_states = self.memory_step(m, mem_states if mem_states is not None else [None] * B)
             pooled = pooled + self.mem_out(h)
             x = torch.cat([pooled[:, None].to(x.dtype), x[:, 1:]], 1)
-        logits, value = self.heads(x, mask, cand, n_cand, agent, vx)
+        logits, value = self.heads(x, mask, cand, n_cand, agent, vx, tok_card, tok_kind, tok_aux)
         if new_states is not None:
             return logits, value, new_states
         return (logits, value, x[:, 0]) if return_pooled else (logits, value)
 
-    def heads(self, x, mask, cand, n_cand, agent=None, vx=None):
+    def card_tokens(self, tok_card, tok_kind, mask, verb, card, s1, s2, tok_aux=None):
+        """[B, n, T]: the state tokens an option's card is (env/tokens.js candidate(): attach / basic / evolve / trainer plays and
+        slot 14 = HAND, slot 15 = MY_DISCARD, pick verbs = PROMPT; else, or when its zone holds none, every zone)."""
+        m = (tok_card[:, None, :] == card[..., None]) & (card != 0)[..., None] & mask[:, None, :] & (tok_kind > 0)[:, None, :]
+        if self.cand_latent_zone:
+            hand = (s1 == 14) | (s2 == 14) | ((verb >= 2) & (verb <= 5))
+            zone = torch.where(hand, 6, torch.where((s1 == 15) | (s2 == 15), 7, torch.where((verb >= 11) & (verb <= 15), 12, 0)))
+            z = m & (tok_kind[:, None, :] == zone[..., None])
+            if self.state_canon:         # a prompt's cards are the tokens flagged listed (any zone), or its PROMPT-kind leftovers
+                listed = ((tok_aux >> 5) & 1).bool() | (tok_kind == 12)
+                z = torch.where((zone == 12)[..., None], m & listed[:, None, :], z)
+            m = torch.where((zone > 0)[..., None] & z.any(-1, keepdim=True), z, m)
+        return m
+
+    def heads(self, x, mask, cand, n_cand, agent=None, vx=None, tok_card=None, tok_kind=None, tok_aux=None):
         """Policy logits and value from the encoded tokens x (token 0 = the pooled state, with memory if any); the
-        value from vx instead when given (the value tower's tokens)."""
+        value from vx instead when given (the value tower's tokens). cand_latent needs tok_card and tok_kind (and tok_aux with state_canon)."""
         B = x.shape[0]
         pooled = x[:, 0]
         src = x if vx is None else vx.to(x.dtype)
@@ -521,9 +596,21 @@ class TokenPointerNet(nn.Module):
             other = self.slot_other(torch.where(on_board, torch.zeros_like(sl), sl))
             return torch.where(on_board[..., None], gathered, other)
 
+        if self.cand_latent:
+            assert tok_card is not None and tok_kind is not None, "cand_latent: heads() needs tok_card and tok_kind"
+            tok_card, tok_kind = tok_card.long(), tok_kind.long()
+            tok_aux = None if tok_aux is None else tok_aux.long()
+            assert tok_aux is not None or not self.state_canon, "state_canon: heads() needs tok_aux"
+
         def embed(verb, card, s1, s2, name, extra):
             e = (self.verb(verb) + self.card_emb(card) + slot_ref(s1) + slot_ref(s2) + self.name(name)
                  + self.extra(extra.clamp(0, 63)))
+            if self.cand_latent == 1:
+                m = self.card_tokens(tok_card, tok_kind, mask, verb, card, s1, s2, tok_aux).to(x.dtype)
+                L = (m @ x) / m.sum(-1, keepdim=True).clamp(min=1)
+                if self.cand_latent_gate:
+                    L = L * torch.sigmoid(self.lat_verb(self.verb(verb)) + 4.0)
+                e = e + self.g_lat * self.lat_proj(L)
             if self.ability_text:
                 e = e + self.ability_proj(self.ability_emb[self.ability_index[card * self.ability_names + name]])
             return e
@@ -549,6 +636,12 @@ class TokenPointerNet(nn.Module):
         for blk in self.cross_extra[len(self.cand_blocks):]:
             c = blk(c, x, mask)
         logits = self.score(c).squeeze(-1)
+        if self.cand_latent == 2:                       # log of the softmax mass on the option's card tokens (0 when none)
+            att = (self.ptr_q(c) @ x.transpose(1, 2)).float() / math.sqrt(x.shape[-1])
+            lm = att.masked_fill(~mask[:, None, :], -1e9).log_softmax(-1)
+            m = self.card_tokens(tok_card, tok_kind, mask, verb, card, s1, s2, tok_aux)
+            ptr = torch.logsumexp(lm.masked_fill(~m, -1e9), -1).clamp(min=-14.0)
+            logits = logits + self.g_ptr * torch.where(m.any(-1), ptr, torch.zeros_like(ptr)).to(logits.dtype)
         logits = logits.masked_fill(~valid, -1e9)
         if K:                                           # the rows' places: never an action
             logits = F.pad(logits, (0, K), value=-1e9)
