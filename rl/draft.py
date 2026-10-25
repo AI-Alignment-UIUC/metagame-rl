@@ -236,7 +236,6 @@ class Drafter:
         tau = base_tau(cos, vw.base, self.base_ent)
         vw.b0 = cos / tau if math.isfinite(tau) else torch.zeros_like(cos)
         vw.b0np = vw.b0.cpu().numpy().astype(np.float64)
-        vw.tau = tau
 
     @torch.no_grad()
     def refresh(self, vw: DeckView):
@@ -308,7 +307,7 @@ class Drafter:
             left = torch.from_numpy(np.stack([y for x in samples for y in x["ev_left"]])).to(dev).float()
             lw = torch.where(left > 0, torch.log(left.clamp(min=1)) + s[None], torch.full_like(left, -1e9))
             out_lp = lw.gather(1, j[:, None]).squeeze(1) - torch.logsumexp(lw, 1)
-            T = torch.tensor([y for x in samples for y in x.get("ev_T", [1.0] * len(x["ev_j"]))], device=dev)
+            T = torch.tensor([y for x in samples for y in x["ev_T"]], device=dev)
             row = logits[j] / T[:, None] if b0 is None else b0[j] + logits[j] / T[:, None]
             row = row.masked_fill(~m, -1e9)
             in_lp = row.gather(1, c[:, None]).squeeze(1) - torch.logsumexp(row, 1)

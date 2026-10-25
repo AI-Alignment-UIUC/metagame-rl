@@ -17,21 +17,16 @@ const { Env } = require('./env.js');
 class Runner {
   // deckoutWin: the reward for a win by deck-out (a win by prizes or knockout is 1), so a pilot
   // can be paid less for stalling than for taking prizes. Losses are -1 either way.
-  // valueAtTurn: if set, each result also has valueAt { 1, 2 }: the value each seat's agent gave
-  // at its first decision on or after that game turn (null if the game ended first).
   // maxTurns: every new deal ends as a draw at that turn limit (env/game.js; 0 none, log #140).
   // roundTurns: every new deal is played under the 2000 round rule (env/game.js, log #160), cut at T, a number, or at T
   // drawn per deal from a..b by its seed for [a, b]; rewards are then the event's points (Game.reward) and each result
   // carries its roundT.
-  constructor(encoder, { concurrency = 32, showOpponentDecklist = true, deckoutWin = 1, valueAtTurn = 0, maxTurns = 0,
-                         roundTurns = 0 } = {}) {
+  constructor(encoder, { concurrency = 32, deckoutWin = 1, maxTurns = 0, roundTurns = 0 } = {}) {
     this.encoder = encoder;
     this.maxTurns = maxTurns;
     this.roundTurns = roundTurns;
     this.deckoutWin = deckoutWin;
-    this.valueAtTurn = valueAtTurn;
     this.concurrency = concurrency;
-    this.showOpponentDecklist = showOpponentDecklist;
   }
 
   // onDecision(slot, answer, k), if given, sees every asked decision before it is played (the state is still the
@@ -39,9 +34,9 @@ class Runner {
   // A job with fromGame (a function returning a Game, e.g. a clone) starts from that game instead of a new deal,
   // with decklists { 1, 2 }; with first (an option key) that option is played before any agent is asked
   // (env/remote_worker.js qprobe). A job's tag is copied to its result. A job with untilTurnEnd stops at its first asked
-  // decision once the game turn has advanced `horizon` turns (default 1: after the turn it started in; env/remote_worker.js
-  // tsearch, logs #96, #103): its result has no winner and stopped { player, value }, the deciding player there and the
-  // agent's value for it.
+  // decision once the game turn has advanced `horizon` turns (default 1: after the turn it started in; the turn-level
+  // search of logs #96 and #103, since removed): its result has no winner and stopped { player, value }, the deciding
+  // player there and the agent's value for it.
   async run(nextJob, agents, { record = new Set(), onDecision = null } = {}) {
     const rt = this.roundTurns;
     const roundT = seed => {                // the deal's cut under the round rule: fixed, or drawn from a..b by the seed
@@ -56,7 +51,7 @@ class Runner {
     let jobCount = 0, forced = 0, engineMoves = 0, fallbacks = 0;
 
     const start = job => {
-      const env = new Env(enc, { u8: true, showOpponentDecklist: this.showOpponentDecklist });
+      const env = new Env(enc, { u8: true });
       let t;
       let turn0;
       if (job.fromGame) {
@@ -73,7 +68,7 @@ class Runner {
         const usesEngine = [1, 2].some(s => agents[job.seats[s]].engine);
         t = env.reset(job.deckA, job.deckB, job.seed, { backup: usesEngine, maxTurns: this.maxTurns, roundTurns: roundT(job.seed) });
       }
-      return { job, env, t, id: jobCount++, last: { 1: -1, 2: -1 }, valueAt: { 1: null, 2: null }, turn0, stopped: null };
+      return { job, env, t, id: jobCount++, last: { 1: -1, 2: -1 }, turn0, stopped: null };
     };
     const fill = () => {
       while (slots.length < this.concurrency) {
@@ -98,7 +93,7 @@ class Runner {
       results.push({ id: slot.id, seats: slot.job.seats, decks: [slot.job.deckName, slot.job.deckBName], seed: slot.job.seed,
         winner: w, ending: slot.env.game.ending, turns: slot.env.game.state.turn, prizesLeft: { 1: left(1), 2: left(2) },
         ...(slot.job.tag !== undefined ? { tag: slot.job.tag } : {}), ...(slot.stopped ? { stopped: slot.stopped } : {}),
-        ...(this.valueAtTurn ? { valueAt: slot.valueAt } : {}), ...(this.roundTurns ? { roundT: slot.env.game.roundTurns } : {}), steps: slot.t.steps, error: slot.t.error ? String(slot.t.error.message || slot.t.error) : undefined });
+        ...(this.roundTurns ? { roundT: slot.env.game.roundTurns } : {}), steps: slot.t.steps, error: slot.t.error ? String(slot.t.error.message || slot.t.error) : undefined });
     };
 
     fill();
@@ -140,9 +135,6 @@ class Runner {
           if (s.job.untilTurnEnd && s.env.game.state.turn >= s.turn0 + (s.job.horizon || 1)) {   // horizon turns over: stop
             s.stopped = { player: s.t.playerId, value: out[i].value };
             return;
-          }
-          if (this.valueAtTurn && s.valueAt[s.t.playerId] === null && s.env.game.state.turn >= this.valueAtTurn) {
-            s.valueAt[s.t.playerId] = out[i].value;
           }
           if (onDecision) onDecision(s, out[i], keep ? rec.action.length : -1);
           if (keep) {

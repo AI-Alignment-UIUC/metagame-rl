@@ -1,28 +1,18 @@
 """PPO self-play training (plan items A1.5, A3, A4).
 
-Rollouts are played by Node workers. Two ways to run the policy for them:
-  --inference onnx  each worker runs the current policy exported to ONNX (env/rollout_worker.js);
-                    identity model only
-  --inference gpu   workers send their decisions here and the policy runs on the GPU in large
-                    batches across workers (env/remote_worker.js, rl/remote.py); needed for the
-                    token model, and faster for big networks
-Models: --model identity (IdentityMLP over env/encode.js) or tokens (TokenPointerNet over
-env/tokens.js). One iteration: collect N transitions per worker -> PPO epochs -> log.
+Rollouts are played by Node workers (env/remote_worker.js) that send their decisions here: the policy, a
+TokenPointerNet over env/tokens.js, runs on the GPU in large batches across workers (rl/remote.py). One iteration:
+collect N transitions per worker -> PPO epochs -> log. The learner plays itself, and both seats are recorded.
 
-Opponents: the learner plays itself ("self") and, with --league, past snapshots of itself
-(every --snapshot-every iterations), and optionally fixed bots (--bot-opponents heuristic=0.1).
-Both seats are recorded when it plays itself.
-
-Example (A3, one matchup, both directions):
-  .venv/Scripts/python -m rl.train --run runs/a3 --matchup "15+ #2 William Lieu|15+ #1 Andrew Marshall" \
-      --both-directions --iterations 200 --league --eval-every 20
+Example (C49, runs/pilot/C49/chain.sh):
+  .venv/Scripts/python -m rl.train --run runs/pilot/C49-sd --matchups-file runs/pilot/C30/matchups.json \
+      --inference gpu --model tokens --d 256 --tok-layers 4 --heads 8 --deck-mode cross --round-turns 20-45
 """
 import argparse
 import collections
 import json
 import os
 import random
-import subprocess
 import time
 from pathlib import Path
 
@@ -31,43 +21,10 @@ import torch
 import torch.nn.functional as F
 
 from rl import limits
-from rl.model import IdentityMLP, export_onnx
 from rl.rollouts import read_rollout, concat
 
 ROOT = Path(__file__).resolve().parent.parent
 TOKEN_FIELDS = ("obs.tokCard", "obs.tokKind", "obs.tokAux", "obs.glob", "obs.slots", "obs.cand", "obs.nCand")
-
-
-class Workers:
-    """ONNX rollout workers, one JSON command per line each way."""
-
-    def __init__(self, n: int):
-        self.procs = [subprocess.Popen(["node", str(ROOT / "env" / "rollout_worker.js")], cwd=ROOT,
-                                       stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1)
-                      for _ in range(n)]
-
-    def ask_all(self, msgs: list) -> list:
-        for p, m in zip(self.procs, msgs):
-            p.stdin.write(json.dumps(m) + "\n")
-            p.stdin.flush()
-        out = []
-        for p in self.procs:
-            line = p.stdout.readline()
-            if not line:
-                raise RuntimeError("rollout worker exited")
-            reply = json.loads(line)
-            if not reply.get("ok"):
-                raise RuntimeError("rollout worker failed: " + reply.get("error", "?"))
-            out.append(reply)
-        return out
-
-    def close(self):
-        for p in self.procs:
-            try:
-                p.stdin.write(json.dumps({"cmd": "quit"}) + "\n")
-                p.stdin.flush()
-            except OSError:
-                pass
 
 
 def advantages(r: dict, gamma: float, lam: float, lam_turn: float = None):
@@ -168,23 +125,6 @@ def ending_kinds(games: list) -> dict:
                 "cut": sum(1 for g in v if not g.get("ending") and not g.get("error"))} for k, v in sorted(by.items())}
 
 
-def lr_at(it: int, args) -> float:
-    """--lr until --lr-decay-start, then linear to --lr-final at --lr-decay-end (default the last iteration),
-    held after; just --lr without --lr-final."""
-    if args.lr_final is None:
-        return args.lr
-    end = args.iterations - 1 if args.lr_decay_end is None else args.lr_decay_end
-    f = min(max((it - args.lr_decay_start) / max(end - args.lr_decay_start, 1), 0.0), 1.0)
-    return (1 - f) * args.lr + f * args.lr_final
-
-
-def schedule_lr(opt, it: int, args):
-    """Sets every param group's lr to lr_at(it) with --lr-final; without it, leaves the optimizer alone."""
-    if args.lr_final is not None:
-        for group in opt.param_groups:
-            group["lr"] = lr_at(it, args)
-
-
 def save_atomic(obj, path: Path):
     """torch.save to a temp file in the same directory, synced, then moved over path: a kill or power loss
     mid-write leaves the previous file intact."""
@@ -222,25 +162,6 @@ def shape_rewards(r: dict, lam: float, prize_glob) -> np.ndarray:
     return reward
 
 
-def aux_targets(r: dict) -> np.ndarray:
-    """[T, 2] targets of the auxiliary heads (TokenPointerNet aux_heads), from a rollout batch alone, so any game has
-    them: the deciding player's decisions left until its trajectory ends, as log(1 + k) / log(201), and the
-    trajectory's result (the sum of its unshaped rewards; call before shape_rewards). A trajectory's rows may be
-    interleaved with others' but are in decision order."""
-    traj = np.asarray(r["traj"])
-    T = len(traj)
-    order = np.lexsort((np.arange(T), traj))
-    tj = traj[order]
-    starts = np.flatnonzero(np.r_[True, tj[1:] != tj[:-1]])
-    lens = np.diff(np.r_[starts, T])
-    rank = np.arange(T) - np.repeat(starts, lens)
-    left = np.empty(T)
-    left[order] = np.repeat(lens, lens) - 1 - rank
-    result = np.empty(T)
-    result[order] = np.repeat(np.add.reduceat(np.asarray(r["reward"], dtype=np.float64)[order], starts), lens)
-    return np.stack([np.log1p(left) / np.log(201.0), result], 1).astype(np.float32)
-
-
 def legal_mask(idx: torch.Tensor, offsets: torch.Tensor, ids: torch.Tensor, action_size: int) -> torch.Tensor:
     starts, ends = offsets[idx], offsets[idx + 1]
     counts = ends - starts
@@ -253,12 +174,12 @@ def legal_mask(idx: torch.Tensor, offsets: torch.Tensor, ids: torch.Tensor, acti
     return mask
 
 
-def model_inputs(batch: dict, kind: str) -> list:
-    """The network inputs for every transition, as arrays with the batch dimension first."""
+def model_inputs(batch: dict, kind: str = "tokens") -> list:
+    """The token network's inputs for every transition, as arrays with the batch dimension first (kind: 'tokens',
+    the only encoding left)."""
+    assert kind == "tokens", f"model_inputs: only the token encoding is left, not {kind}"
     T = len(batch["action"])
-    if kind == "tokens":
-        return [batch[k].reshape(T, -1) if k != "obs.nCand" else batch[k] for k in TOKEN_FIELDS]
-    return [batch["obs"]]
+    return [batch[k].reshape(T, -1) if k != "obs.nCand" else batch[k] for k in TOKEN_FIELDS]
 
 
 def ppo_update(model, opt, batch, args, device):
@@ -270,34 +191,14 @@ def ppo_update(model, opt, batch, args, device):
     ret = torch.from_numpy(batch["ret"]).to(device)
     old_v = torch.from_numpy(batch["value"]).to(device)
     offsets = torch.from_numpy(batch["legal_offsets"].astype(np.int64)).to(device)
-    # agent-conditioned network (rl/league.py): each transition's agent id
-    agents = torch.from_numpy(batch["agent"].astype(np.int64)).to(device) if "agent" in batch else None
     ids = torch.from_numpy(batch["legal_ids"].astype(np.int64)).to(device)
-    # Mostly greedy collection (--explore, log #81): only the sampled decisions train the policy, since at the others
-    # the recorded log-probability is not what the move was chosen with; the value and the entropy use every decision.
+    # Decisions recorded as not sampled (batch["sampled"] 0, mostly greedy collection, log #81) don't train the policy,
+    # since their recorded log-probability is not what the move was chosen with; the value and the entropy use every one.
     pol = torch.from_numpy(batch["sampled"].astype(np.float32)).to(device) if "sampled" in batch \
         else torch.ones(T, device=device)
     sel = pol > 0 if int((pol > 0).sum()) >= 2 else torch.ones(T, dtype=torch.bool, device=device)
     adv = (adv - adv[sel].mean()) / (adv[sel].std() + 1e-8)
     stats = {"pi_loss": 0.0, "v_loss": 0.0, "entropy": 0.0, "kl": 0.0, "clipfrac": 0.0}
-    aux_w = getattr(args, "aux", 0.0) if getattr(model, "aux_heads", 0) and "aux_target" in batch else 0.0
-    if aux_w:
-        aux_t = torch.from_numpy(batch["aux_target"]).to(device)
-        stats["aux_loss"] = 0.0
-    # Expert iteration (log #96): at decisions a turn-level search scored (rl/metagame.py --distill), the cross-entropy
-    # toward the option it found best, at weight args.distill, averaged over the minibatch's searched decisions.
-    dist_w = getattr(args, "distill", 0.0) if "search_target" in batch else 0.0
-    if dist_w:
-        s_t = torch.from_numpy(batch["search_target"].astype(np.int64)).to(device)
-        stats["distill"] = 0.0
-        stats["distill_agree"] = 0.0
-    # Anchor (log #135): at the decisions marked anchor_row (rl/metagame.py --anchor: the practice games'), KL(anchor ||
-    # policy) toward a frozen pilot's choices, at weight args.anchor_w, averaged over the minibatch's marked decisions.
-    anc = getattr(args, "anchor", None) if "anchor_row" in batch else None
-    anc_w = getattr(args, "anchor_w", 0.0) if anc is not None else 0.0
-    if anc_w:
-        a_row = torch.from_numpy(batch["anchor_row"].astype(bool)).to(device)
-        stats["anchor_kl"] = 0.0
     # Soft search targets (C49, log #169; --search-distill): at a probed decision, over the moves the search scored,
     # target = pi * exp(clip((q - mean q) / tau)) renormalised (pi detached, restricted to those moves), and the loss
     # KL(target || pi restricted) at weight args.search_distill, averaged over all the minibatch's rows.
@@ -347,8 +248,6 @@ def ppo_update(model, opt, batch, args, device):
         """The minibatch's loss accumulated over its micro-batches (same gradient, less memory) into .grad; its stats."""
         mb_stats = {k: 0.0 for k in stats}
         M = float(sum(pol[j].sum() for j, _ in micros))      # the minibatch's decisions that train the policy
-        S = float(sum((s_t[j] >= 0).sum() for j, _ in micros)) if dist_w else 0.0   # ... that a search scored
-        A = float(sum(a_row[j].sum() for j, _ in micros)) if anc_w else 0.0        # ... that the anchor reads
         P = float(sum((p_c[j][:, 0] >= 0).sum() for j, _ in micros)) if sd_w else 0.0   # ... that were probed
         for j, mem_lens in micros:
             w = len(j) / rows
@@ -359,14 +258,8 @@ def ppo_update(model, opt, batch, args, device):
                 if tok_len is not None:
                     L = int(tok_len[j].max())
                     xs[:3] = [x[:, :L] for x in xs[:3]]
-                kw = {"agent": agents[j]} if agents is not None else {}
-                if memory:
-                    kw["mem_lens"] = mem_lens
-                if aux_w:
-                    logits, v, pooled = model(*xs, return_pooled=True, **kw)
-                    aux_loss = ((model.aux_head(pooled).float() - aux_t[j]) ** 2).mean()
-                else:
-                    logits, v = model(*xs, **kw)
+                kw = {"mem_lens": mem_lens} if memory else {}
+                logits, v = model(*xs, **kw)
             logits, v = logits.float(), v.float()
             mask = legal_mask(j, offsets, ids, model.action_size)
             logits = logits.masked_fill(~mask, -1e9)
@@ -378,36 +271,10 @@ def ppo_update(model, opt, batch, args, device):
             a = adv[j]
             pi_rows = -torch.min(ratio * a, ratio.clamp(1 - args.clip, 1 + args.clip) * a) * pm
             pi_loss = pi_rows.sum() / pm.sum().clamp(min=1)
-            vclip = getattr(args, "value_clip", None)
-            vclip = args.clip if vclip is None else vclip
-            if vclip > 0:
-                v_clipped = old_v[j] + (v - old_v[j]).clamp(-vclip, vclip)
-                v_loss = torch.max((v - ret[j]) ** 2, (v_clipped - ret[j]) ** 2).mean()
-            else:
-                v_loss = ((v - ret[j]) ** 2).mean()
-            # the policy term is the mean over the minibatch's policy decisions (all of them without --explore)
+            v_clipped = old_v[j] + (v - old_v[j]).clamp(-args.clip, args.clip)     # PPO's value clip, at --clip
+            v_loss = torch.max((v - ret[j]) ** 2, (v_clipped - ret[j]) ** 2).mean()
+            # the policy term is the mean over the minibatch's policy decisions (all of them unless some are unsampled)
             loss = (pi_rows.sum() / M if M > 0 else 0.0 * pi_rows.sum()) + w * (args.vf * v_loss - args.ent * entropy)
-            if aux_w:
-                loss = loss + w * aux_w * aux_loss
-            if dist_w and S > 0:
-                srow = s_t[j] >= 0
-                if srow.any():
-                    ce = -logp_all[srow].gather(1, s_t[j][srow, None]).squeeze(1)
-                    loss = loss + dist_w * ce.sum() / S
-                    with torch.no_grad():
-                        mb_stats["distill"] += ce.sum().item() / S
-                        mb_stats["distill_agree"] += (logp_all[srow].argmax(1) == s_t[j][srow]).float().sum().item() / S
-            if anc_w and A > 0:
-                arow = a_row[j]
-                if arow.any():
-                    with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16, enabled=args.amp and device == "cuda"):
-                        a_logits = anc(*[x[arow] for x in xs])[0]
-                    am = mask[arow]
-                    a_logp = F.log_softmax(a_logits.float().masked_fill(~am, -1e9), dim=-1)
-                    kl = (a_logp.exp() * (a_logp - logp_all[arow])).masked_fill(~am, 0.0).sum(-1)
-                    loss = loss + anc_w * kl.sum() / A
-                    with torch.no_grad():
-                        mb_stats["anchor_kl"] += kl.sum().item() / A
             if sd_w and P > 0:
                 prow = p_c[j][:, 0] >= 0
                 if prow.any():
@@ -433,8 +300,6 @@ def ppo_update(model, opt, batch, args, device):
                 mb_stats["pi_loss"] += wp * pi_loss.item()
                 mb_stats["v_loss"] += w * v_loss.item()
                 mb_stats["entropy"] += w * entropy.item()
-                if aux_w:
-                    mb_stats["aux_loss"] += w * aux_loss.item()
                 mb_stats["kl"] += wp * ((old_logp[j] - logp) * pm).sum().item() / n_pm.item()
                 mb_stats["clipfrac"] += wp * (((ratio - 1).abs() > args.clip).float() * pm).sum().item() / n_pm.item()
         return mb_stats
@@ -479,36 +344,21 @@ def ppo_update(model, opt, batch, args, device):
             "kl_last": kl_last / max(n_last, 1)}
 
 
-def evaluate(policy_spec: str, opponent: str, d1: str, d2: str, games: int, workers: int, seed: int, tag: str) -> dict:
-    """Seat- and deck-swapped match of the policy (greedy) against a fixed opponent (env/tools/evaluate.js)."""
-    out = ROOT / "runs" / f".eval-{tag}-{opponent}.json"
-    cmd = ["node", str(ROOT / "env" / "tools" / "evaluate.js"), "--x", policy_spec, "--y", opponent,
-           "--d1", d1, "--d2", d2, "--games", str(games), "--workers", str(workers), "--concurrency", "8",
-           "--seed", str(seed), "--json", str(out)]
-    subprocess.run(cmd, cwd=ROOT, check=True, stdout=subprocess.DEVNULL)
-    r = json.load(open(out))
-    out.unlink(missing_ok=True)
-    return {"all": round(r["all"]["xWinRate"], 4), "ci95": round(r["all"]["ci95"], 4),
-            "dir1": round(r["dir1"]["xWinRate"], 4), "dir2": round(r["dir2"]["xWinRate"], 4)}
-
-
 def build_model(args, info):
-    if args.model == "tokens":
-        from rl.token_model import build_token_model
-        t = info["tokens"]
-        return build_token_model(str(ROOT / "notes/data/cards/pool.json"), str(ROOT / "notes/data/cards/text_emb.npy"),
-                                 t["names"], t["globF"], t["slotF"], t["maxTok"], t["maxCand"],
-                                 d=args.d, layers=args.tok_layers, heads=args.heads,
-                                 count_features=args.count_features, cross_layers=args.cross_layers,
-                                 cand_self=args.cand_self, n_agents=getattr(args, "n_agents", 0),
-                                 card_inputs=getattr(args, "card_inputs", "all"), deck_tokens=getattr(args, "deck_tokens", True),
-                                 slot_bind=getattr(args, "slot_bind", False), ability_text=getattr(args, "ability_text", False),
-                                 deck_mode=getattr(args, "deck_mode", "joint"), deck_layers=getattr(args, "deck_layers", 1),
-                                 history=getattr(args, "history", 0), memory=getattr(args, "memory", "none"),
-                                 value_tower=getattr(args, "value_tower", 0), value_query=getattr(args, "value_query", 0),
-                                 aux_heads=getattr(args, "aux_heads", 0))
-    i = info["identity"] if "identity" in info else info
-    return IdentityMLP(i["obsSize"], i["actionSize"], args.hidden, args.layers)
+    """A TokenPointerNet sized to the workers' token bounds (info); architecture options args lacks take the defaults."""
+    from rl.token_model import build_token_model
+    t = info["tokens"]
+    return build_token_model(str(ROOT / "notes/data/cards/pool.json"), str(ROOT / "notes/data/cards/text_emb.npy"),
+                             t["names"], t["globF"], t["slotF"], t["maxTok"], t["maxCand"],
+                             d=args.d, layers=args.tok_layers, heads=args.heads,
+                             count_features=getattr(args, "count_features", False),
+                             cross_layers=getattr(args, "cross_layers", 1), cand_self=getattr(args, "cand_self", 0),
+                             n_agents=getattr(args, "n_agents", 0),
+                             card_inputs=getattr(args, "card_inputs", "all"), deck_tokens=getattr(args, "deck_tokens", True),
+                             slot_bind=getattr(args, "slot_bind", False), ability_text=getattr(args, "ability_text", False),
+                             deck_mode=getattr(args, "deck_mode", "joint"), deck_layers=getattr(args, "deck_layers", 1),
+                             history=getattr(args, "history", 0), memory=getattr(args, "memory", "none"),
+                             value_tower=getattr(args, "value_tower", 0), value_query=getattr(args, "value_query", 0))
 
 
 # Weights a pilot may lack when a checkpoint is read into a larger architecture: new modules that start as the
@@ -530,7 +380,7 @@ def token_net(cfg: dict, info: dict, **overrides):
                                           **{k: c[k] for k in ("count_features", "cross_layers", "cand_self", "n_agents",
                                                                "card_inputs", "deck_tokens", "slot_bind", "ability_text",
                                                                "deck_mode", "deck_layers", "history", "memory",
-                                                               "value_tower", "value_query", "aux_heads") if k in c}), info)
+                                                               "value_tower", "value_query") if k in c}), info)
 
 
 def load_grown(model, state: dict) -> list:
@@ -557,63 +407,41 @@ def remap_adam(opt_state: dict, old_names: list, model) -> dict:
     return {"state": {i: by_name[n] for i, n in enumerate(names) if n in by_name}, "param_groups": [group]}
 
 
-def export_policy(model, path: Path, kind: str) -> str:
-    """Exports for evaluate.js; returns its agent spec."""
-    if kind == "tokens":
-        from rl.token_model import export_token_onnx
-        export_token_onnx(model, str(path))
-        return f"onnxtok:{path}:greedy"
-    export_onnx(model, str(path))
-    return f"onnx:{path}:greedy"
+def export_policy(model, path: Path, kind: str = "tokens") -> str:
+    """Exports a token pilot for evaluate.js; returns its agent spec (kind: 'tokens', the only encoding left; an
+    identity model exports with rl/model.py export_onnx)."""
+    assert kind == "tokens", f"export_policy: only a token pilot exports here, not {kind}"
+    from rl.token_model import export_token_onnx
+    export_token_onnx(model, str(path))
+    return f"onnxtok:{path}:greedy"
 
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True)
-    ap.add_argument("--matchups-file", help="JSON [[deckA, deckB], ...]: names or {name, cards} decklists")
-    ap.add_argument("--matchup", action="append", default=[],
-                    help='"learner deck|opponent deck" (substring of an archived deck name); repeatable; "all" = every pair')
-    ap.add_argument("--both-directions", action="store_true", help="also train each matchup with the decks swapped")
+    ap.add_argument("--matchups-file", required=True, help="JSON [[deckA, deckB], ...]: names or {name, cards} decklists")
     ap.add_argument("--iterations", type=int, default=100)
     ap.add_argument("--workers", type=int, default=14)
     ap.add_argument("--transitions", type=int, default=4096, help="per worker per iteration")
     ap.add_argument("--concurrency", type=int, default=32)
-    ap.add_argument("--inference", choices=["onnx", "gpu"], default="onnx")
-    ap.add_argument("--model", choices=["identity", "tokens"], default="identity")
-    ap.add_argument("--hidden", type=int, default=512)
-    ap.add_argument("--layers", type=int, default=2)
+    ap.add_argument("--inference", choices=["gpu"], default="gpu",
+                    help="the policy runs here for the workers (rl/remote.py); the only choice left")
+    ap.add_argument("--model", choices=["tokens"], default="tokens", help="TokenPointerNet; the only choice left")
     ap.add_argument("--d", type=int, default=192, help="token model width")
     ap.add_argument("--tok-layers", type=int, default=3)
     ap.add_argument("--heads", type=int, default=4)
-    ap.add_argument("--cross-layers", type=int, default=1, help="token model: candidate cross-attention blocks")
-    ap.add_argument("--cand-self", type=int, default=0, help="token model: blocks where candidates attend to each other")
-    ap.add_argument("--count-features", action="store_true",
-                    help="token model: ordered count features (rl/token_model.py count_features)")
-    ap.add_argument("--card-inputs", choices=["all", "feats", "ids"], default="all",
-                    help="token model: card features + text + residual, no text, or the learned embedding only")
-    ap.add_argument("--ability-text", action="store_true",
-                    help="token model: attack / Power options also read that ability's own rules text")
     ap.add_argument("--slot-bind", action="store_true",
                     help="token model: slot embedding, attached-Energy counts and a same-slot attention bias")
-    ap.add_argument("--deck-mode", choices=["joint", "cross", "interleave"], default="joint",
+    ap.add_argument("--deck-mode", choices=["joint", "cross"], default="joint",
                     help="token model: deck tokens in the board encoder, or a deck-free board encoder that then "
-                         "cross-attends to a separate deck encoder (once, or after every layer)")
-    ap.add_argument("--deck-layers", type=int, default=1, help="token model: deck encoder blocks (deck-mode cross / interleave)")
+                         "cross-attends to a separate deck encoder")
     ap.add_argument("--no-deck-tokens", dest="deck_tokens", action="store_false",
                     help="token model: hide the decklist tokens (own unseen cards, opponent's list)")
     ap.add_argument("--history", type=int, default=0,
                     help="token model: read the action history of the last N turns (env/tokens.js history tokens; 0 = none)")
     ap.add_argument("--memory", choices=["none", "gru", "attn"], default="none",
                     help="token model: a recurrent core over the player's own decisions (rl/token_model.py, log #76)")
-    ap.add_argument("--value-tower", type=int, default=0,
-                    help="token model: the value reads its own N transformer blocks over the embedded tokens (log #77)")
-    ap.add_argument("--value-query", type=int, default=0,
-                    help="token model: the value reads the state by cross-attention with N learned queries (log #77)")
     ap.add_argument("--lr", type=float, default=3e-4)
-    ap.add_argument("--lr-final", type=float, default=None,
-                    help="decay the lr linearly to this (lr_at; overrides a resumed optimizer's lr); default constant")
-    ap.add_argument("--lr-decay-start", type=int, default=0, help="iteration where the lr decay starts")
-    ap.add_argument("--lr-decay-end", type=int, default=None, help="iteration where it reaches --lr-final (default the last)")
     ap.add_argument("--epochs", type=int, default=3)
     ap.add_argument("--minibatch", type=int, default=4096)
     ap.add_argument("--micro-batch", type=int, default=0, help="split each minibatch into chunks of this size (0 = whole)")
@@ -628,13 +456,6 @@ def main(argv=None):
     ap.add_argument("--probe-dets", type=int, default=4, help="--search-distill: re-dealt copies shared by the moves (CRN)")
     ap.add_argument("--distill-tau", type=float, default=0.1, help="--search-distill: target pi * exp(clip((q - mean q) / tau))")
     ap.add_argument("--distill-clip", type=float, default=1.0, help="--search-distill: the clip of (q - mean q) / tau")
-    ap.add_argument("--curriculum", action="store_true",
-                    help="a learned practice distribution over the matchups' decks (rl/curriculum.py, C46, log #163)")
-    ap.add_argument("--cur-rho", type=float, default=0.5, help="curriculum: share of decks replayed from the buffer")
-    ap.add_argument("--cur-beta", type=float, default=0.3, help="curriculum: rank temperature of the score")
-    ap.add_argument("--cur-stale", type=float, default=0.3, help="curriculum: weight of staleness in replay")
-    ap.add_argument("--cur-edits", type=int, default=4, help="curriculum: a new deck has 1 to this many card changes")
-    ap.add_argument("--cur-matchups", type=int, default=512, help="curriculum: matchups drawn each iteration")
     ap.add_argument("--round-turns", type=round_turns, default=0,
                     help='the 2000 round rule (log #160): "T" cuts every game at turn T, "A-B" draws T per deal from A..B; '
                          'an unfinished game goes to the player with more Prizes taken, rewards are the event points')
@@ -643,72 +464,35 @@ def main(argv=None):
     ap.add_argument("--gamma", type=float, default=1.0)
     ap.add_argument("--lam", type=float, default=0.95)
     ap.add_argument("--clip", type=float, default=0.2)
-    ap.add_argument("--value-clip", type=float, default=None,
-                    help="PPO's clip of the value's change per update (default --clip; 0 = none; log #77)")
-    ap.add_argument("--lam-value", type=float, default=None,
-                    help="GAE lambda of the value targets (default --lam; 1 = Monte Carlo returns; log #77)")
     ap.add_argument("--vf", type=float, default=0.5)
     ap.add_argument("--ent", type=float, default=0.01)
-    ap.add_argument("--explore", type=float, default=None,
-                    help="mostly greedy collection (gpu inference; log #81): each decision samples with this probability "
-                         "and otherwise plays the top option; only the sampled ones train the policy. Default: sample all")
-    ap.add_argument("--policy-share", type=float, default=None,
-                    help="train the policy on only this random share of the (sampled) decisions; the value on all "
-                         "(the control for --explore's thinner policy data, log #82)")
     ap.add_argument("--max-grad-norm", type=float, default=0.5)
     ap.add_argument("--shaping", type=float, default=0.0, help="prize-shaping weight at iteration 0 (shape_rewards)")
     ap.add_argument("--shaping-iters", type=int, default=100, help="iterations over which the shaping fades to 0")
-    ap.add_argument("--pace", type=float, default=0.25, help="gpu inference: rest this x each served batch's GPU time")
-    ap.add_argument("--league", action="store_true", help="also play past snapshots")
-    ap.add_argument("--snapshot-every", type=int, default=10)
-    ap.add_argument("--max-snapshots", type=int, default=8, help="league size kept in play (gpu inference)")
-    ap.add_argument("--self-weight", type=float, default=0.5, help="share of games against itself with --league")
-    ap.add_argument("--bot-opponents", default="", help='fixed bots to play too, e.g. "heuristic=0.1"')
+    ap.add_argument("--pace", type=float, default=0.25, help="rest this x each served batch's GPU time")
+    ap.add_argument("--snapshot-every", type=int, default=10, help="save model_it*.pt every N iterations")
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--resume", action="store_true")
     ap.add_argument("--stop-file", default="", help="stop after the iteration in which this file exists (log #154)")
     ap.add_argument("--init-from", help="start from this checkpoint's weights (e.g. to pilot new decks)")
-    ap.add_argument("--eval-every", type=int, default=0, help="evaluate against --eval-opponents every N iterations")
-    ap.add_argument("--eval-opponents", default="simplebot,heuristic")
-    ap.add_argument("--eval-games", type=int, default=200)
-    ap.add_argument("--eval-workers", type=int, default=8)
     args = ap.parse_args(argv)
-    if args.model == "tokens" and args.inference != "gpu":
-        raise SystemExit("the token model needs --inference gpu")
-    if args.explore is not None and (args.inference != "gpu" or not 0 < args.explore <= 1):
-        raise SystemExit("--explore needs --inference gpu and a probability in (0, 1]")
 
     run = ROOT / args.run
-    (run / "policies").mkdir(parents=True, exist_ok=True)
+    run.mkdir(parents=True, exist_ok=True)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     args.workers = limits.cap_workers(args.workers)
-    args.eval_workers = limits.cap_workers(args.eval_workers)
     limits.apply(device, args.workers, args.gpu_mem_fraction)
     torch.manual_seed(args.seed)
     random.seed(args.seed)
 
-
-    if args.inference == "gpu":
-        from rl.remote import RemotePool
-        pool = RemotePool(args.workers)
-        pool.pace = args.pace
-    else:
-        pool = Workers(args.workers)
+    from rl.remote import RemotePool
+    pool = RemotePool(args.workers)
+    pool.pace = args.pace
     info = pool.ask_all([{"cmd": "info"}] * args.workers)[0]
-    matchups = json.load(open(args.matchups_file)) if args.matchups_file else []
-    for m in args.matchup:
-        if m == "all":                     # every ordered pair of archived decks, mirrors included
-            names = info["decks"]
-            matchups += [[a, b] for a in names for b in names]
-            continue
-        a, b = m.split("|")
-        matchups.append([a.strip(), b.strip()])
-        if args.both_directions and a.strip() != b.strip():
-            matchups.append([b.strip(), a.strip()])
+    matchups = json.load(open(args.matchups_file))
     model = build_model(args, info).to(device)
     opt = torch.optim.Adam(model.parameters(), lr=args.lr, eps=1e-5)
     start = 0
-    snapshots = []            # onnx: policy files; gpu: state-dict files
     ckpt = run / "checkpoint.pt"
     if args.init_from:
         # Layers the checkpoint lacks (extra candidate blocks) keep their identity initialization.
@@ -724,66 +508,23 @@ def main(argv=None):
         model.load_state_dict(state["model"])
         opt.load_state_dict(state["opt"])
         start = state["iteration"] + 1
-        snapshots = state.get("snapshots", [])
-    cur = None
-    if args.curriculum:
-        from rl.curriculum import Curriculum
-        seen = {}
-        for a, b in matchups:
-            for d in (a, b):
-                seen.setdefault(d["name"], d)
-        cur = Curriculum(list(seen.values()), args.cur_rho, args.cur_beta, args.cur_stale, args.cur_edits, args.seed)
-        if args.resume and (run / "curriculum.json").exists():
-            cur.load(json.loads((run / "curriculum.json").read_text()))
     (run / "config.json").write_text(json.dumps({**vars(args), "matchups": matchups, "model_config": model.config(),
                                                  "device": device}, indent=1))
     log = open(run / "log.jsonl", "a")
     print(f"device {device}, model {args.model}, inference {args.inference}, "
           f"params {sum(p.numel() for p in model.parameters() if p.requires_grad)}, matchups {len(matchups)}", flush=True)
-    bots = []
-    for b in filter(None, args.bot_opponents.split(",")):
-        name, w = b.split("=")
-        bots.append({"spec": name, "weight": float(w)})
-    snapshot_models = {}
 
     try:
         for it in range(start, args.iterations):
-            schedule_lr(opt, it, args)
             t0 = time.time()
-            league = snapshots[-args.max_snapshots:]
-            if args.inference == "gpu":
-                opponents = [{"spec": "self", "weight": 1.0}]
-                if args.league and league:
-                    opponents = [{"spec": "self", "weight": args.self_weight}] + [
-                        {"spec": f"slot:{k + 1}", "weight": (1 - args.self_weight) / len(league)} for k in range(len(league))]
-                for k, f in enumerate(league):
-                    if f not in snapshot_models:
-                        m = build_model(args, info).to(device)
-                        m.load_state_dict(torch.load(f, map_location=device)["model"])
-                        snapshot_models[f] = m.eval()
-                for f in list(snapshot_models):
-                    if f not in league:
-                        del snapshot_models[f]
-                models = {0: model.eval(), **{k + 1: snapshot_models[f] for k, f in enumerate(league)}}
-            else:
-                policy = run / "policies" / f"it{it:05d}.onnx"
-                export_onnx(model, str(policy))
-                opponents = [{"spec": "self", "weight": 1.0}]
-                if args.league and league:
-                    opponents = [{"spec": "self", "weight": args.self_weight}] + [
-                        {"spec": "onnx:" + s, "weight": (1 - args.self_weight) / len(league)} for s in league]
-            opponents += bots
-            it_matchups = cur.matchups(args.cur_matchups) if cur is not None else matchups
             msgs = [{"cmd": "collect", "encoding": args.model, "transitions": args.transitions,
                      "concurrency": args.concurrency, "deckoutWin": args.deckout_win, "seed": args.seed * 1_000_003 + it * 1009 + w,
                      **({"roundTurns": args.round_turns} if getattr(args, "round_turns", 0) else {}),
                      **({"probe": {"p": args.probe_p, "k": args.probe_k, "dets": args.probe_dets, "maxSteps": 40,
                                    "seed": args.seed * 7919 + it}} if getattr(args, "search_distill", 0) else {}),
-                     "matchups": it_matchups, "opponents": opponents, "out": str(run / f"rollout_w{w}.bin"),
-                     "history": getattr(args, "history", 0),
-                     **({"explore": args.explore} if args.explore is not None else {}),
-                     **({"model": str(policy)} if args.inference == "onnx" else {})} for w in range(args.workers)]
-            replies = pool.collect(msgs, models, device) if args.inference == "gpu" else pool.ask_all(msgs)
+                     "matchups": matchups, "opponents": [{"spec": "self", "weight": 1.0}],
+                     "out": str(run / f"rollout_w{w}.bin"), "history": getattr(args, "history", 0)} for w in range(args.workers)]
+            replies = pool.collect(msgs, {0: model.eval()}, device)
             model.train()
             t1 = time.time()
             rolls = [read_rollout(r["out"]) for r in replies]
@@ -791,34 +532,10 @@ def main(argv=None):
             probe_row = None
             if getattr(args, "search_distill", 0):          # soft search targets: each probe's moves and mean scores
                 batch["probe_c"], batch["probe_q"], probe_row = probe_targets(replies, rolls, args.probe_k)
-            if cur is not None:                    # each transition's deck: the learner's seat's deck in its game
-                labels = []
-                for rep, ro in zip(replies, rolls):
-                    games_by_id = {g["id"]: g for g in rep["results"]}
-                    tj = ro["traj"].astype(np.int64)
-                    labels += [games_by_id[int(t) // 2]["decks"][int(t) % 2] for t in tj]
-                deck_of = np.array(labels, dtype=object)
-            if args.policy_share is not None:      # the control for --explore (log #82): only a random share trains the policy
-                keep = np.random.default_rng(args.seed * 7919 + it).random(len(batch["action"])) < args.policy_share
-                batch["sampled"] = (batch.get("sampled", np.ones(len(keep), np.uint8)) * keep).astype(np.uint8)
             lam_shape = args.shaping * max(0.0, 1.0 - it / max(args.shaping_iters, 1))
             if lam_shape:
                 batch["reward"] = shape_rewards(batch, lam_shape, info["tokens"]["prizeGlob"])
-            adv, ret = advantages(batch, args.gamma, args.lam)
-            if getattr(args, "lam_value", None) is not None and args.lam_value != args.lam:
-                ret = advantages(batch, args.gamma, args.lam_value)[1]
-            batch["adv"], batch["ret"] = adv, ret
-            cur_row = None
-            if cur is not None:                    # positive value loss per deck (rl/curriculum.py)
-                pos = np.maximum(np.asarray(adv, dtype=np.float64), 0.0)
-                acc = {}
-                for name, x in zip(deck_of, pos):
-                    s = acc.setdefault(name, [0.0, 0]); s[0] += x; s[1] += 1
-                cur_row = cur.update({k: v[0] / v[1] for k, v in acc.items()})
-                save_atomic_json = run / "curriculum.json"
-                tmp = save_atomic_json.with_suffix(".tmp")
-                tmp.write_text(json.dumps(cur.state(), default=lambda o: o.tolist() if hasattr(o, "tolist") else int(o)))
-                os.replace(tmp, save_atomic_json)
+            batch["adv"], batch["ret"] = advantages(batch, args.gamma, args.lam)
             batch["inputs"] = model_inputs(batch, args.model)
             stats = ppo_update(model, opt, batch, args, device)
             t2 = time.time()
@@ -843,7 +560,6 @@ def main(argv=None):
                    "shaping": round(lam_shape, 5), "collect_s": round(t1 - t0, 1), "train_s": round(t2 - t1, 1), **{k: round(v, 5) for k, v in stats.items()},
                    "ev_mc": ev_mc, "ev_open": ev_open, "lr": opt.param_groups[0]["lr"],
                    **({"sampled": round(float(batch["sampled"].mean()), 4)} if "sampled" in batch else {}),
-                   **({"curriculum": cur_row} if cur_row is not None else {}),
                    **({"search_distill": probe_row} if probe_row is not None else {})}
             log.write(json.dumps(row) + "\n")
             log.flush()
@@ -851,38 +567,13 @@ def main(argv=None):
                   f"ent={stats['entropy']:.3f} kl={stats['kl']:.4f} clip={stats['clipfrac']:.3f} v={stats['v_loss']:.3f} "
                   f"win={row['win_vs']} collect {row['collect_s']}s train {row['train_s']}s", flush=True)
 
-            if args.eval_every and (it + 1) % args.eval_every == 0:
-                d1, d2 = ("all", "all") if not args.matchup or args.matchup[0] == "all" else args.matchup[0].split("|")
-                path = run / "policies" / f"it{it:05d}.onnx"
-                spec = export_policy(model, path, args.model)
-                model.to(device)
-                ev = {"iteration": it, "eval": {}}
-                for opp in args.eval_opponents.split(","):
-                    ev["eval"][opp] = evaluate(spec, opp, d1.strip(), d2.strip(), args.eval_games, args.eval_workers,
-                                               args.seed * 7 + it, run.name)
-                log.write(json.dumps(ev) + "\n")
-                log.flush()
-                print(f"  eval it {it}: " + "  ".join(f"vs {k} {v['all']:.3f} ± {v['ci95']:.3f} "
-                                                      f"(dirs {v['dir1']:.3f} / {v['dir2']:.3f})" for k, v in ev["eval"].items()),
-                      flush=True)
-
             if (it + 1) % args.snapshot_every == 0:
-                snap = run / f"model_it{it:05d}.pt"
-                save_atomic({"model": model.state_dict(), "config": model.config()}, snap)
-                if args.league:
-                    snapshots.append(str(snap) if args.inference == "gpu" else str(run / "policies" / f"it{it:05d}.onnx"))
-                    if args.inference == "onnx":
-                        export_onnx(model, snapshots[-1])
-                        model.to(device)
-            save_atomic({"model": model.state_dict(), "opt": opt.state_dict(), "iteration": it, "snapshots": snapshots,
+                save_atomic({"model": model.state_dict(), "config": model.config()}, run / f"model_it{it:05d}.pt")
+            save_atomic({"model": model.state_dict(), "opt": opt.state_dict(), "iteration": it,
                          "config": model.config()}, ckpt)
             if args.stop_file and Path(args.stop_file).exists():
                 print(f"stop file {args.stop_file} after iteration {it}", flush=True)
                 break
-            if args.inference == "onnx":
-                for old in (run / "policies").glob("it*.onnx"):
-                    if str(old) not in snapshots and int(old.stem[2:]) < it - 2:
-                        old.unlink(missing_ok=True)
     finally:
         pool.close()
         log.close()

@@ -5,13 +5,12 @@
 // the engine. Win rates come with a 95% confidence interval (normal approximation; draws and
 // cut-off games count as half a win).
 //
-// Agents: random | first | heuristic | simplebot | search[:rollouts[:turns]] | onnx:<file.onnx>[:greedy]
-//         | onnxtok:<file.onnx>[:greedy] (token model)
+// Agents: random | heuristic | simplebot | onnxtok:<file.onnx>[:greedy] (token model)
 // Decks:  any substring of an archived deck name ("division #place player (label)"), or "all"
 //         to cycle every archived deck on both sides.
 //
-//      --mirror: both sides play the same deck; --per-deck: a line per deck of X; --tokens: token observations
-//      (needed for decks with cards outside the archived field when no token model plays)
+//      --mirror: both sides play the same deck; --per-deck: a line per deck of X; observations are always the token
+//      ones (env/tokens.js; --tokens is still accepted)
 // Run: node env/tools/evaluate.js --x simplebot --y random --d1 "Wigglytuff" --d2 "Haymaker"
 //        [--games 200] [--workers 16] [--concurrency 16] [--seed 1] [--json out.json]
 'use strict';
@@ -34,11 +33,9 @@ const MIRROR = argv.includes('--mirror');        // both sides play the same dec
 const PER_DECK = argv.includes('--per-deck');    // print the win rate for each of X's decks
 
 async function makeAgent(spec, enc, seed) {
-  const { OnnxAgent, RandomAgent, FirstAgent, HeuristicAgent, SimpleBotAgent, SearchAgent } = require('../agents.js');
+  const { RandomAgent, HeuristicAgent, SimpleBotAgent } = require('../agents.js');
   if (spec === 'random') return new RandomAgent({ seed });
-  if (spec === 'first') return new FirstAgent();
   if (spec === 'heuristic') return new HeuristicAgent();
-  if (spec.startsWith('search')) { const [, r, d] = spec.split(':'); return new SearchAgent({ rollouts: Number(r || 8), depth: Number(d || 2), seed }); }
   if (spec === 'simplebot') return new SimpleBotAgent();
   if (spec.startsWith('psearch:')) {
     // psearch:<token.onnx>[:k[:dets]] - flat policy-guided search (env/agents.js PolicySearchAgent)
@@ -54,21 +51,7 @@ async function makeAgent(spec, enc, seed) {
     const { TokenEncoder } = require('../tokens.js');
     return OnnxTokenAgent.load(spec.slice(8).replace(/:greedy$/, ''), new TokenEncoder(), { seed, greedy: spec.endsWith(':greedy') });
   }
-  if (spec.startsWith('onnx:')) {
-    const parts = spec.slice(5).split(':greedy');
-    // In a game with token observations (against a token model) the identity agent re-encodes.
-    const own = enc.actionId ? null : identityEncoder();
-    const e = own || enc;
-    return OnnxAgent.load(parts[0], e.obsSize, e.actionSize, { seed, greedy: spec.endsWith(':greedy'), reencode: own });
-  }
   throw new Error('unknown agent ' + spec);
-}
-
-// The identity vocabulary is the one the models train on (the field's cards), whatever the decks.
-function identityEncoder() {
-  const { Encoder } = require('../encode.js');
-  const { archivedDecks } = require('../decks.js');
-  return new Encoder([...new Set(archivedDecks().flatMap(d => d.cards))]);
 }
 
 function pickDecks(decks, pattern) {
@@ -79,15 +62,13 @@ function pickDecks(decks, pattern) {
 }
 
 async function worker(from, to) {
-  const { Encoder } = require('../encode.js');
   const { Runner } = require('../runner.js');
   const { archivedDecks } = require('../decks.js');
   const decks = DECKS_FILE ? require('../decks.js').decksFromFile(DECKS_FILE) : archivedDecks();
-  // A token-model agent needs token observations (the other agents choose by option either way); so do
-  // decks with cards outside the field's, which the identity encoder's action space lacks (--tokens).
-  const tok = argv.includes('--tokens') || [X, Y].some(sp => sp.startsWith('onnxtok:') || sp.startsWith('psearch:'));
-  const enc = tok ? new (require('../tokens.js').TokenEncoder)() : identityEncoder();
-  if (tok) enc.history = Number(flag('history', 0));   // --history N: action-history tokens for a pilot that reads them (log #76)
+  // Token observations: a token model needs them, the other agents choose by option either way, and they cover decks
+  // with cards outside the field's.
+  const enc = new (require('../tokens.js').TokenEncoder)();
+  enc.history = Number(flag('history', 0));   // --history N: action-history tokens for a pilot that reads them (log #76)
   const agents = { x: await makeAgent(X, enc, AGENT_SEED * 7919 + from), y: await makeAgent(Y, enc, AGENT_SEED * 104729 + from) };
   const d1 = pickDecks(decks, D1), d2 = pickDecks(decks, D2);
   let g = from;

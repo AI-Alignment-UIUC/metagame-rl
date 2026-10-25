@@ -16,14 +16,13 @@
   accumulated while drawing; random_changes (turnover mutants) stays legal; and on a bandit (a draw's
   reward is the share of its incoming cards among 8 targets) REINFORCE moves the incoming mass on the
   targets from ~3% to over 30%
-- rl/train.py logging and lr schedule: lr_at's endpoints and clipping, and without --lr-final the optimizer's
-  lr is left alone; explained_variance equals the closed form on two trajectories; ending_kinds' PP / PR / RR;
+- rl/train.py logging: explained_variance equals the closed form on two trajectories; ending_kinds' PP / PR / RR;
   save_atomic keeps the old file when a save fails; ppo_update's stats equal their closed forms on one step
   (grad_norm the pre-clip norm, kl_last the last epoch's kl), and two seeded calls give identical parameters;
   out of GPU memory mid-minibatch, it redoes the minibatch in micro-batches half the size, with the same step
-- search-strength judging (log #148): rl/metagame.py judged_mean, its noise baseline and recent_score (check_judged),
-  and rl/remote.py's top-k reply on a fake pool: plain replies unchanged, each row's top K legal options best first,
-  chunked forwards alike (check_topk)
+- rl/metagame.py recent_score, which prefers an old --judge-search checkpoint's 'judged' score (check_recent_score),
+  and rl/remote.py's top-k reply on a fake pool (log #148): plain replies unchanged, each row's top K legal options best
+  first, chunked forwards alike (check_topk)
 """
 import argparse
 import contextlib
@@ -44,8 +43,8 @@ from rl.draft import LEAD, MY_UNSEEN, OPPONENT_LIST, SLOT, Drafter, deck_tokens,
 from rl.model import IdentityMLP
 from rl.rollouts import concat, read_rollout, subset
 from rl.token_model import TokenPointerNet, export_token_onnx
-from rl.train import (ZERO_AT_GROWTH, advantages, aux_targets, ending_kinds, explained_variance, legal_mask, load_grown, lr_at, ppo_update,
-                      remap_adam, save_atomic, schedule_lr, shape_rewards)
+from rl.train import (ZERO_AT_GROWTH, advantages, ending_kinds, explained_variance, legal_mask, load_grown, ppo_update,
+                      remap_adam, save_atomic, shape_rewards)
 
 PRIZE_GLOB = (6, 22)
 
@@ -469,22 +468,6 @@ def check_draft(failures, table, text, archived, rng):
 
 
 def check_train(failures, rng):
-    # lr schedule: held before the start and after the end, linear between; end defaults to the last iteration
-    a = argparse.Namespace(lr=3e-4, lr_final=3e-5, lr_decay_start=80, lr_decay_end=219, iterations=220)
-    b = argparse.Namespace(lr=1e-3, lr_final=0.0, lr_decay_start=0, lr_decay_end=None, iterations=101)
-    for ar, want in ((a, {0: 3e-4, 80: 3e-4, 150: 3e-4 + (3e-5 - 3e-4) * 70 / 139, 219: 3e-5, 400: 3e-5}),
-                     (b, {0: 1e-3, 50: 5e-4, 100: 0.0, 200: 0.0})):
-        got = {i: lr_at(i, ar) for i in want}
-        if not all(np.isclose(got[i], w, rtol=1e-12, atol=0) for i, w in want.items()):
-            failures.append(f"lr_at: {got}, not {want}")
-    opt = torch.optim.Adam([torch.nn.Parameter(torch.zeros(2))], lr=1.234e-4)     # e.g. a resumed optimizer
-    schedule_lr(opt, 150, argparse.Namespace(**{**vars(a), "lr_final": None}))
-    if opt.param_groups[0]["lr"] != 1.234e-4:
-        failures.append("schedule_lr: without --lr-final it changes the optimizer's lr")
-    schedule_lr(opt, 150, a)
-    if opt.param_groups[0]["lr"] != lr_at(150, a):
-        failures.append("schedule_lr: with --lr-final the lr is not lr_at")
-
     # Explained variance: trajectory 0 at t = 0, 2, 3 (rewards 0.25, 0, 1), trajectory 1 at t = 1, 4 (0, -1).
     g = np.zeros((5, 82), np.uint8)
     g[:, 0] = [1, 2, 5, 7, 3]                       # game turn
@@ -588,22 +571,7 @@ def check_train(failures, rng):
         failures.append(f"ppo_update: stats {sa}")
     if sa != sb or not all(torch.equal(p, q) for p, q in zip(ma.parameters(), mb.parameters())):
         failures.append("ppo_update: two seeded calls differ")
-    # Expert iteration (--distill, log #96): with search targets on a quarter of the rows the stats give the cross-entropy
-    # before the step, the step lowers it, and at weight 0 the targets change nothing.
-    st = np.full(T, -1, np.int32)
-    rows = np.arange(0, T, 4)
-    st[rows] = [ids[off[t] + (t % counts[t])] for t in rows]
-    pick = (torch.from_numpy(rows), torch.from_numpy(st[rows].astype(np.int64)))
-    ce0 = float(-lp_all[pick].mean())
-    batch["search_target"] = st
-    md, sd = run(distill=5.0)
-    m0, s0 = run(distill=0.0)
-    del batch["search_target"]
-    ce1 = float(-policy(md)[0][pick].mean())
-    if not (np.isclose(sd["distill"], ce0, atol=1e-4) and ce1 < ce0 and "distill" not in s0
-            and all(torch.equal(p, q) for p, q in zip(m0.parameters(), m1.parameters()))):
-        failures.append(f"ppo_update distill: stats {sd.get('distill')} vs {ce0}, after the step {ce1}; weight 0 {s0}")
-    # Mostly greedy collection (--explore, log #81): only the sampled decisions enter the policy terms, with the
+    # Decisions recorded as not sampled (mostly greedy collection, log #81): only the sampled ones enter the policy terms, with the
     # advantage normalized over them; all ones changes nothing; micro-batches give the same step.
     smp = (np.arange(T) % 3 == 0).astype(np.uint8)
     k = torch.from_numpy(smp.astype(bool))
@@ -640,7 +608,7 @@ def check_train(failures, rng):
     if calls != [T // 2, T // 2] + [T // 4] * 8 or not all(np.isclose(s6[q], s6b[q], atol=1e-6) for q in s6b) \
             or not all(torch.allclose(p, q, atol=1e-6) for p, q in zip(m6.parameters(), m6b.parameters())):
         failures.append(f"ppo_update out of memory: calls {calls}, stats {s6} vs {s6b}")
-    print(f"train: lr_at, explained_variance ({ev[0]:.4f}, {ev[1]:.4f}), ending_kinds, save_atomic ok; ppo_update "
+    print(f"train: explained_variance ({ev[0]:.4f}, {ev[1]:.4f}), ending_kinds, save_atomic ok; ppo_update "
           f"stats match the closed form, grad_norm {s1['grad_norm']:.4f} = step {step(m1):.4f}, kl_last {s3['kl_last']:.5f}")
 
 
@@ -688,19 +656,6 @@ def check_lab(failures, table, text, rng):
         po = [pokemon_overlap(pool, arch[a][1], arch[b][1]) for a, b in ((0, 1), (0, 16), (1, 16))]
         if ty != 2 or ty_h != 3 or max(po) >= 0.5:
             failures.append(f"lab.deck_types {ty} (want 2), human lists {ty_h} (want 3); Pokémon overlaps {po}")
-    # draft heads (log #120): dealt round-robin unless the source had as many; a head out of range or missing is redealt
-    from rl.metagame import assign_heads
-    p1 = [{} for _ in range(7)]
-    assign_heads(p1, 3, keep=False)
-    p2 = [{"head": h} for h in (2, 2, 0, 1)]
-    assign_heads(p2, 3, keep=True)
-    p3 = [{"head": 0}, {"head": 3}, {}]
-    assign_heads(p3, 3, keep=True)
-    p4 = [{"head": 0} for _ in range(4)]
-    assign_heads(p4, 2, keep=False)
-    if ([a["head"] for a in p1] != [0, 1, 2, 0, 1, 2, 0] or [a["head"] for a in p2] != [2, 2, 0, 1]
-            or [a["head"] for a in p3] != [0, 1, 2] or [a["head"] for a in p4] != [0, 1, 0, 1]):
-        failures.append(f"assign_heads {p1} {p2} {p3} {p4}")
     if lab.cli({"--a": 1, "--b": True, "--c": False, "--d": {"k": 2}}) != ["--a", "1", "--b", "--d", '{"k": 2}']:
         failures.append(f"lab.cli {lab.cli({'--a': 1, '--b': True, '--c': False, '--d': {'k': 2}})}")
     # growing a pilot: the policy is unchanged, additive new inputs start at 0, Adam's moments follow the names
@@ -760,13 +715,7 @@ def check_lab(failures, table, text, rng):
                          env={k: v for k, v in env.items() if k not in ("RL_GPU_SHARE", "RL_CPU_THREADS")}).stdout.split()
     if out != ["0.8", "0.0", "14"]:
         failures.append(f"limits without shares: {out}")
-    # auxiliary heads (log #84): targets from interleaved trajectories; a grown pilot plays as its source; the loss
-    # reaches the trunk
-    r = {"traj": np.array([0, 1, 0, 1, 0, 2]), "reward": np.array([0, 0, 0, -1, 1, 0], dtype=np.float32)}
-    t = aux_targets(r)
-    want_left = np.log1p([2, 1, 1, 0, 0, 0]) / np.log(201.0)
-    if not (np.allclose(t[:, 0], want_left) and np.allclose(t[:, 1], [1, -1, 1, -1, 1, 0])):
-        failures.append(f"aux_targets {t.tolist()}")
+    # auxiliary heads (log #84; rl/token_model.py aux_heads): a grown pilot plays as its source; the loss reaches the trunk
     ax = tiny_pilot(table, text, seed=5, aux_heads=2)
     grown_aux = load_grown(ax, base.state_dict())
     with torch.no_grad():                                        # base has taken a step above: its outputs now
@@ -781,7 +730,7 @@ def check_lab(failures, table, text, rng):
     with tempfile.TemporaryDirectory() as tmp:
         export_token_onnx(ax, str(Path(tmp) / "ax.onnx"))
     print(f"lab: llr = direct ({direct:.3f}), grows under H1 {up[0]:.1f} -> {up[1]:.1f}, H0 {down[0]:.1f} -> {down[1]:.1f}; "
-          f"pair scores, cli, deck types, draft heads dealt; grown pilot ({len(missing)} new weights, policy unchanged; 2 more blocks, joint and cross: unchanged), remap_adam, shares ok")
+          f"pair scores, cli, deck types; grown pilot ({len(missing)} new weights, policy unchanged; 2 more blocks, joint and cross: unchanged), remap_adam, shares ok")
 
 
 def check_lam_turn(failures):
@@ -806,78 +755,15 @@ def check_lam_turn(failures):
     print("lam_turn: lambda 1 inside a turn, lam across turns, interleaved trajectories; None = ordinary GAE")
 
 
-def check_judged(failures):
-    """rl/metagame.py judged / judged_mean (--judge-search, log #148): without searched games it is exactly (sum / n, n)
-    (the score without --judge-search) in both modes, with none at all the default, with searched games only their
-    mean and count; the searched mean is shrunk toward the greedy one by `prior` games (prior 0: unshrunk) and
-    approaches its own mean as its games grow; 'min' at z 0 is the plain min of the two, and at z > 0 the greedy mean
-    lowered only to the shrunk mean plus z of its errors (never above the greedy mean, never below the plain min, the
-    greedy mean when search agrees), monotone in searched wins, with the shrunk mean's games behind a lowered score; on
-    noise alone (search as strong as greedy) z 1.5 lowers scores by under 0.01 where the plain min lowers them ~0.05
-    (the #148 review); null_searched redraws only scores with both kinds of game; recent_score prefers 'judged'."""
-    from rl.metagame import judged, judged_mean, null_searched, recent_score
-    rng = np.random.default_rng(5)
-    bad = []
-    for _ in range(200):
-        n, sn = int(rng.integers(1, 30)), int(rng.integers(1, 30))
-        x = {"sum": float(rng.integers(0, 2 * n + 1)) / 2, "n": n, "ssum": float(rng.integers(0, 2 * sn + 1)) / 2, "sn": sn}
-        g, s = x["sum"] / n, x["ssum"] / sn
-        prior = float(rng.choice([0.0, 1.0, 4.0, 16.0]))
-        z = float(rng.choice([1.0, 1.5, 2.0]))
-        m0, m, q = judged_mean(x, "min", prior, z=0.0), judged_mean(x, "min", prior, z=z), judged_mean(x, "search", prior)
-        shrunk = (x["ssum"] + prior * g) / (sn + prior)
-        if not (np.isclose(q, shrunk) and np.isclose(m0, min(g, shrunk)) and min(g, s) - 1e-12 <= q <= max(g, s) + 1e-12):
-            bad.append(("bounds", x, prior, m0, q))
-        p = min(0.85, max(0.15, (x["sum"] + x["ssum"]) / (n + sn)))
-        u = shrunk + z * sn / (sn + prior) * (p * (1 - p) * (1 / sn + 1 / n)) ** 0.5
-        if not (np.isclose(m, min(g, u)) and m0 - 1e-12 <= m <= g + 1e-12):
-            bad.append(("z: min(greedy, shrunk + z errors)", x, prior, z, m))
-        ns = (sn + prior) ** 2 / (sn + prior ** 2 / n)
-        if not np.isclose(judged(x, "min", prior, z)[1], n if g <= u else ns) or not np.isclose(judged(x, "search", prior)[1], ns):
-            bad.append(("games behind the score", x, prior, z))
-        if s >= g and not (m == g and m0 == g):
-            bad.append(("min = greedy when the searched mean is as high", x, m))
-        if prior == 0 and not (np.isclose(q, s) and np.isclose(ns, sn)):
-            bad.append(("prior 0", x, q))
-        more = {**x, "ssum": x["ssum"] + 1, "sn": sn + 1}
-        if (judged_mean(more, "search", prior) < q - 1e-12 or judged_mean(more, "min", prior, z=0.0) < m0 - 1e-12
-                or judged_mean(more, "min", prior, z=z) < m - 1e-12):
-            bad.append(("a searched win lowers the score", x, prior, z))
-        plain = {"sum": x["sum"], "n": n}
-        if not (judged_mean(plain, "min", prior) == x["sum"] / n == judged_mean({**plain, "ssum": 0.0, "sn": 0}, "search", prior)
-                and judged(plain, "min", prior)[1] == n):
-            bad.append(("no searched games", x))
-        y = null_searched(x, rng)
-        if not (y["sn"] == sn and y["n"] == n and y["sum"] == x["sum"] and 0 <= y["ssum"] <= sn and y["ssum"] == int(y["ssum"])):
-            bad.append(("null_searched", x, y))
-    if null_searched(plain, rng) is not plain or null_searched({"sum": 0.0, "n": 0, "ssum": 2.0, "sn": 3}, rng)["ssum"] != 2.0:
-        bad.append(("null_searched: no redraw without both kinds of game",))
-    if judged_mean({"sum": 0.0, "n": 0}, "min", 4.0, -1.0) != -1.0 or judged_mean({"sum": 0.0, "n": 0, "ssum": 0.0, "sn": 0}, "search", 4.0, 0.5) != 0.5:
-        bad.append(("no games: the default",))
-    if judged({"sum": 0.0, "n": 0, "ssum": 3.0, "sn": 4}, "min", 4.0) != (0.75, 4):
-        bad.append(("searched only: their mean",))
-    if judged_mean({"sum": 10.0, "n": 10, "ssum": 0.0, "sn": 4}, "min", 4.0, z=0.0) != 0.5:      # (0 + 4 x 1) / (4 + 4)
-        bad.append(("shrinkage by the prior's games",))
-    big = judged_mean({"sum": 6.0, "n": 10, "ssum": 2000.0, "sn": 10000}, "search", 4.0)
-    if abs(big - 0.2) > 1e-3:
-        bad.append(("many searched games: their own mean", big))
-    bias = {}                                            # search exactly as strong as greedy: what noise alone costs
-    for z in (0.0, 1.5):
-        d = []
-        for _ in range(4000):
-            x = {"sum": float(rng.binomial(24, 0.5)), "n": 24, "ssum": float(rng.binomial(8, 0.5)), "sn": 8}
-            d.append(judged_mean(x, "min", 4.0, z=z) - x["sum"] / 24)
-        bias[z] = float(np.mean(d))
-    if not (bias[0.0] < -0.03 and bias[1.5] > -0.01):
-        bad.append(("noise alone", bias))
+def check_recent_score(failures):
+    """rl/metagame.py recent_score: a deck's mean this window, else the last window's, else the default; an old
+    --judge-search checkpoint's 'judged' score (log #148) first when it holds one."""
+    from rl.metagame import recent_score
     a = {"sum": 3.0, "n": 4, "last": 0.2}
     if not (recent_score(a) == 0.75 and recent_score({**a, "judged": 0.6}) == 0.6 and recent_score({**a, "judged": None}) == 0.75
             and recent_score({"sum": 0.0, "n": 0, "last": 0.2, "judged": None}) == 0.2 and recent_score({"sum": 0.0, "n": 0}, 0.5) == 0.5):
-        bad.append(("recent_score",))
-    if bad:
-        failures.append(f"judged_mean: {len(bad)} failures, first {bad[0]}")
-    print(f"judged_mean: sum / n without searched games; shrinkage by the prior; min lowered only past z errors, "
-          f"monotone in searched wins; noise alone {bias[0.0]:+.3f} at z 0, {bias[1.5]:+.3f} at z 1.5; recent_score")
+        failures.append("recent_score")
+    print("recent_score: the window's mean, else the last window's, else the default; an old checkpoint's judged score first")
 
 
 def check_topk(failures, m, rng):
@@ -1080,7 +966,7 @@ def main():
     check_lab(failures, table, text, np.random.default_rng(2))
     check_lab_loop(failures)
     check_lam_turn(failures)
-    check_judged(failures)
+    check_recent_score(failures)
     check_topk(failures, tiny_pilot(table, text), np.random.default_rng(3))
     for f in failures[:20]:
         print("FAIL", f)

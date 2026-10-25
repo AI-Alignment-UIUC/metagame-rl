@@ -4,7 +4,6 @@
 //
 //   OnnxAgent    a policy network exported from rl/model.py (masked softmax over the legal ids)
 //   RandomAgent  uniform over the legal ids
-//   FirstAgent   always the first option (a cheap deterministic baseline)
 //   HeuristicAgent simple rules over the option keys (set up, then attack)
 //   SimpleBotAgent ryuu-play's bundled bot (an evaluation floor; it plays through the engine,
 //                not through option ids, see actEngine)
@@ -127,10 +126,6 @@ class RandomAgent {
   }
 }
 
-class FirstAgent {
-  async act(batch) { return batch.map(b => ({ action: b.legal[0], logp: 0, value: 0 })); }
-}
-
 // A cheap rule-based player over the option keys (a ladder rung between random and SimpleBot):
 // set up first (attach to the Active, evolve, bench Basics, useful Trainers), then attack with
 // the strongest attack, else pass. Prompts get simple defaults. Deterministic.
@@ -242,55 +237,10 @@ class SimpleBotAgent {
   forget(game) { this.ais.delete(game); }
 }
 
-module.exports = { OnnxAgent, OnnxTokenAgent, RandomAgent, FirstAgent, HeuristicAgent, SimpleBotAgent, sampleMasked };
+module.exports = { OnnxAgent, OnnxTokenAgent, RandomAgent, HeuristicAgent, SimpleBotAgent, sampleMasked };
 
-// Flat Monte Carlo search with determinization (a fixed-budget relative scale for the ladder).
-// At a main-phase decision every option is tried in `rollouts` copies of the game where the
-// hidden cards are re-dealt at random, each played on by the heuristic for both players for
-// `depth` turns; the option with the best mean score is played. Score: 1 / 0 for a finished
-// game, otherwise 0.5 plus prize and damage differences. Prompts are answered by the heuristic.
-class SearchAgent {
-  constructor({ rollouts = 8, depth = 2, seed = 0 } = {}) {
-    this.rollouts = rollouts;
-    this.depth = depth;
-    this.rng = new Rng(seed);
-    this.heuristic = new HeuristicAgent();
-  }
-
-  async act(batch) {
-    const out = [];
-    for (const b of batch) out.push(await this.decide(b));
-    return out;
-  }
-
-  async decide(b) {
-    const game = b.env.game;
-    const d = game.decision();
-    if (d.prompt || d.options.length === 1) return (await this.heuristic.act([b]))[0];
-    const me = d.playerId;
-    let best = 0, bestScore = -Infinity;
-    for (let i = 0; i < d.options.length; i++) {
-      let total = 0;
-      for (let r = 0; r < this.rollouts; r++) total += this.rollout(game, i, me);
-      if (total > bestScore) { bestScore = total; best = i; }
-    }
-    return { action: b.legal[best], logp: 0, value: bestScore / this.rollouts };
-  }
-
-  rollout(game, optionIndex, me) {
-    const g = game.clone(new Rng(this.rng.u32()), me);
-    g.decision();
-    g.step(optionIndex);
-    const stopTurn = game.state.turn + this.depth;
-    while (!g.done && g.state.turn < stopTurn) {
-      const d = g.decision();
-      if (!d) break;
-      g.step(heuristicIndex(g, d));
-    }
-    return score(g, me);
-  }
-}
-
+// The heuristic's choice at a decision (env/tools/puzzles.js), and searchScore: a game's score for `me`, 1 / 0 for a
+// finished game, otherwise 0.5 plus prize and damage differences (env/tools/test_search.js's stub pilot).
 function heuristicIndex(game, d) {
   let best = 0, bestScore = -Infinity;
   d.options.forEach((o, i) => {
@@ -312,7 +262,6 @@ function score(game, me) {
   return Math.max(0, Math.min(1, v));
 }
 
-module.exports.SearchAgent = SearchAgent;
 module.exports.heuristicIndex = heuristicIndex;
 module.exports.turnScore = turnScore;           // env/tools/test_search.js's stub pilot (log #148)
 module.exports.promptScore = promptScore;

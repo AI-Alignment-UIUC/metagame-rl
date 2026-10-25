@@ -138,8 +138,8 @@ class RemotePool:
                 self.mem.pop((i, 2 * int(uid) + 1), None)
         by_slot = {}
         for r in requests:
-            by_slot.setdefault((r[1]["slot"], bool(r[1].get("greedy")), r[1].get("explore")), []).append(r)
-        for (slot, greedy, explore), group in by_slot.items():
+            by_slot.setdefault((r[1]["slot"], bool(r[1].get("greedy"))), []).append(r)
+        for (slot, greedy), group in by_slot.items():
             model = models[slot]
             ns = [h["n"] for _, h, _ in group]
             B = sum(ns)
@@ -180,14 +180,10 @@ class RemotePool:
             mask[torch.from_numpy(np.concatenate(rows)).to(device),
                  torch.from_numpy(np.concatenate(cols).astype(np.int64)).to(device)] = True
             logp_all = torch.log_softmax(logits.float().masked_fill(~mask, -1e9), -1)
-            # explore = e (mostly greedy collection, log #81): each decision samples with probability e and otherwise
-            # plays the top option; "sampled" marks which, since only the sampled ones train the policy (rl/train.py).
+            # "sampled" marks a sampled action (a greedy one is not), since only sampled ones train the policy (rl/train.py).
             if greedy:
                 action = logp_all.argmax(-1)
                 sampled = torch.zeros(B, dtype=torch.bool, device=device)
-            elif explore is not None:
-                sampled = torch.rand(B, device=device) < float(explore)
-                action = torch.where(sampled, torch.multinomial(logp_all.exp(), 1).squeeze(1), logp_all.argmax(-1))
             else:
                 action = torch.multinomial(logp_all.exp(), 1).squeeze(1)
                 sampled = torch.ones(B, dtype=torch.bool, device=device)
