@@ -24,21 +24,9 @@ import fixed                                            # noqa: E402
 from rl import limits                                   # noqa: E402
 from rl.remote import RemotePool                        # noqa: E402
 from rl.rollouts import concat, read_rollout            # noqa: E402
+from probe_prompt_stats import advantages               # noqa: E402  ar/train.py's GAE per trajectory
 
 TRANSITIONS, CONCURRENCY, PACE = 4096, 108, 0.25        # ar/train.py's, per worker per batch
-
-
-def advantages(batch: dict, gamma: float, lam: float):
-    """ar/train.py's GAE per trajectory; (adv, adv + value)."""
-    value, reward, done, traj = batch["value"], batch["reward"], batch["done"], batch["traj"]
-    adv = np.zeros(len(value), dtype=np.float32)
-    nxt_v, nxt_a = {}, {}
-    for t in range(len(value) - 1, -1, -1):
-        k = traj[t]
-        v1, a1 = (0.0, 0.0) if done[t] else (nxt_v.get(k, 0.0), nxt_a.get(k, 0.0))
-        adv[t] = reward[t] + gamma * v1 - value[t] + gamma * lam * a1
-        nxt_v[k], nxt_a[k] = value[t], adv[t]
-    return adv, adv + value
 
 
 def main():
