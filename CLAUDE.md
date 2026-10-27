@@ -89,6 +89,12 @@ ends or reaches a look, a slot frees, RAM runs low, or 4 hours pass, at most 20 
 - Rounds may launch and stop runs and edit notes and `rl/`; they never commit, push, delete run data or change the
   training rules.
 
+## The three agents
+
+`notes/scripts/agents.py` (log #289, #318) opens Evan's implementation, auditing and research agents, each fresh in its
+own window with a standing brief; they rebuild state from the log, audits, requests and run records. `runs/GPU-PAUSE`
+pauses GPU work while Evan games (nothing new starts; checkpointing arms save and exit at their next iteration).
+
 ## Autoresearch loop (`ar/`)
 
 `ar/` (log #236; its own local git repo, never pushed, excluded here) is a Karpathy-style loop: an agent edits only

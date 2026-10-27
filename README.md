@@ -53,11 +53,9 @@ gives a biased or blind builder, so pilot strength is the bottleneck.
 ## Status
 
 <!-- status:start -->
-*Updated 2026-10-24.*
+*Updated 2026-10-27.*
 
-**Where things stand.** A0, A1 and A3 are done, A2 has its ladder and the SimpleBot matchup matrix, and Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards. Every learned drafting loop forked from a wall state has ended in Chansey / Snorlax walls with more Energy and fewer Trainers than the human lists, and with the 2000 round rule in the game (Evan's decision) the loop came closest to the human shape of any run (6.3-6.8 cards off) while walls still held 44-69 of 99 decks. Pilots grown with the walls rate them 0.68-0.75 against the human lists untimed, and the human-free pilot made 22-57 Elo stronger on the human lists by soft search targets (two seeds, short of their replication bar) rated the walls higher still, so tactical strength is not the fix. Fresh wide decks slide into Pokémon piles under the draft head's uniform prior (five starts, 2.4-4.0 Pokémon per 100 moves), and drawing the proposals from the pilot's own card similarity (Nf, provisional R1 after #231's audit graded it B and found it mostly proposes extra copies of cards already in the deck) slows that to about a third and kept the population median within 5 of the lists' 13.5 / 28 / 18 at two seeds, but both seeds gave up 3-5 Trainers after iteration 15 while selection paid Energy in every window. That lean sits upstream of selection, since a frozen, stronger judge leans the same, a basic Energy beats an average Trainer in every field, and both pilots price the human lists' own search, disrupt and tempo Trainers below an Energy whether they play greedy or search, so the open causes are the pilot's value, its inputs, the engine's Trainers and the clock, which an audit of all 42 Trainers in the engine and a loop of 5-minute experiments (Evan's rows 51-53) now take on.
-
-**Earlier work:**
+**Where things stand.** A0, A1 and A3 are done, A2 has its ladder and the SimpleBot matchup matrix, and Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards. Every learned drafting loop ended with more Energy and fewer Trainers than the human lists (the round rule and proposals drawn from the pilot's own card similarity came closest, reaching the lists' median shape for a few iterations), and from fresh decks that still holds on the fixed engine: C85's best decks slid to 22.7 / 18.4 / 18.9 Pokémon / Trainers / Energy against the lists' 13.5 / 28 / 18 and won 0.114 of decisive games against them (C78 and C86: 0.12-0.21). That lean sits in the pilot, which prices the lists' search, disrupt and tempo Trainers below a basic Energy and answers its own Trainer prompts (what to fetch, discard or target) no better than random, and the target-signal probe (one seed) found why PPO doesn't learn them: a better answer is worth a little (+0.018 of a game result a prompt), but a single visit's advantage would need about 290k visits to get its sign. Tests of fixes (Evan's card-token keys and the chain head, at 110 iterations) were null, and a Q over a prompt's answers driving an all-action gradient gave no answer gain under any of three targets (one return, the next-turn value, and the pilot's own branched returns; one seed each), the two noisy targets also costing M, so prompt-answer work has stopped. The On the fixed engine the best recipe (round479 with the restored selection gate, C91) reproduced at two seeds and its best decks win 0.44-0.45 of decisive games against the lists, against 0.10-0.22 for every fresh-deck screen; that shape lives in the 479 population rather than its pilot (C92), and from fresh decks the gate replicates on shape only (G1 −7.6 over four seeds, G3 unchanged), so the open question is whether a gated run from an early lineage state finds the lists rather than only holding them.
 
 - **Log #1–56 (A0–A5, B1–B2; rolled up from eight block summaries).** The engine and environment cover
   the 2000 field and were verified against an oracle (0 mismatches over 1.65M checked decisions), with
@@ -99,93 +97,21 @@ gives a biased or blind builder, so pilot strength is the bottleneck.
   Its first prevention start, fresh wide decks with the warm pilot under the rule, moved its population median from
   10 / 27 / 24 to 14 / 27 / 19 in 14 iterations without the slide into Pokémon piles of every earlier from-scratch run,
   though the decks it rates best still carried about 6 too few Trainers and 6 too much Energy.
-- **Log #185–192 (A5).** The night's prevention start, fresh wide decks with the warm human-free pilot under the rule,
-  had held under the significance gate only because the gate moved decks 5-7 times slower, and ungated (C51) it slid
-  like every from-scratch run: the population median went from 12 to 27-29 Pokémon in 19 iterations (2.3 per 100 moves,
-  against 2.8-3.7 untimed with pilot-v2) while the 12 decks the pilot rates best rose only 5-7 and kept their Trainers.
-  Selection is not the cause (accepted moves carry about 0.2 fewer Pokémon than proposed) and the learning head does not
-  unlearn its uniform prior over an 81%-Pokémon pool (its pull fell from +5.6 to +1.2 Pokémon a proposal, then climbed
-  back to +2.2-2.7), so at one seed the slide is the proposals; the replicate runs as seed 3 after seed 2 was stopped
-  because three jobs put GPU memory over 80%, a limit the launcher does not check. The soft search targets' dose arm
-  resumed and sat 41 and 13 Elo above the clocked pilot on the human lists under the rule at 139 and 159, rating the
-  walls higher as it grew stronger (0.57 to 0.68 against the lists untimed).
-- **Log #193–200 (A5).** At two seeds the slide of fresh wide decks into Pokémon piles came from the draft head's
-  near-uniform proposals over an 81%-Pokémon pool, which selection passed through (C51), so H110's label-free base
-  measure was built to draw each incoming card by the pilot's own similarity to the card going out: offline it cut a
-  fresh head's Pokémon pull from +5.6 to +1.6 a draw and left an Energy drain that a base entropy of 2 nats removes, and
-  on C51 seed 1's exact start (C52) it held the population median to +2 Pokémon over 349 moves through iteration 8 (0.6
-  per 100 against 2.4-4.5; LR 12.8 at one seed, no concurrent control), reaching 12 / 27 / 19. The decks the pilot rates
-  best still carry 3-6 more Energy than the lists' 18, so the lists' Energy deviation now sits in the judge's ranking
-  rather than in the proposals. Tripling the soft search targets' weight (C49b) ended no better than C49 under the rule
-  (+40 Elo over the clocked pilot, 17 below C49) and 78 Elo worse untimed, and C49's replication seed is training.
-- **Log #201–208 (A5).** With the proposals drawn from the pilot's own card similarity (C52, one seed), a fresh wide
-  population never slid into Pokémon piles through 33 iterations and its median reached the lists' 14 / 28 / 18 at
-  iterations 12-14 in 92-99 deck types, but over 20-29 it traded Trainers for Energy (median 24 Trainers; the best 12 at
-  17.6 / 19.0 / 23.4), and selection paid Energy and cut Trainers against the proposals in every window from iterations
-  0-2 on, before the pilot could co-adapt, so a screen with a frozen, stronger, human-free judge (C53) was built,
-  smoke-tested and launched to tell the judge from a fixed preference. The soft search targets' replication seed
-  (C49-s3) ended 22 Elo above the clocked pilot on the human lists under the round rule (C49 +57), so at two seeds the
-  targets do not hurt transfer but miss their +50 replication bar (mean +40; not adopted), and its untimed gain faded
-  from +83 at 159 to −1 at 199, as C49b's did. At both seeds the stronger pilot rates the walls higher (0.60 and 0.64 of
-  the event points under the rule against the clocked pilot's 0.53).
-- **Log #209–216 (A5).** At two seeds a frozen, stronger, human-free judge in the loop (C53) leaned to Energy against
-  the proposals exactly as the learning judge had on paired starts (+0.005 a move over iterations 0-9), and the same
-  lean runs through 13 of 16 windows of the untimed escape screens, so selection's preference for Energy is neither
-  co-adaptation, weak play nor the round rule (at one seed the frozen judge's best decks also slid further toward
-  Pokémon piles, 27 against 16 cards from the lists). Offline, a basic Energy beat an average random Trainer of a fresh
-  wide deck by about 0.025 a 3-card swap under both pilots, against fresh, drafted and human fields and with or without
-  the clock (C56), so the lean is what these pilots' own games pay for the Trainers the draft head proposes. Whether
-  they also price the human lists' chosen Trainers below an Energy, the scorecard's first Pilot row and never read on
-  these pilots, decides between a pilot fault and a fault in which Trainers get proposed and kept; that probe (C59)
-  passed its greedy and searched smokes, and its greedy stage runs.
-- **Log #217–224 (A5).** Under both human-free pilots, 57 Elo apart, and the round rule the human lists lose to their own
-  copies with the search, disrupt and tempo Trainers turned into basic Energy (0.40-0.48), and untimed, where 57% of
-  those games end in deck-outs, even their whole Trainer suites lose (0.456), as for every player read before (C59), so
-  selection's Energy lean is these pilots' payoff for Trainers in general and sits upstream of selection, in the pilot,
-  its inputs, the engine's Trainers or this readout; search on both seats, the pilot's oracle swap, is playing on those
-  groups. The frozen, stronger judge closed as a fixed preference, both of its seeds ending as Pokémon piles further
-  from the lists than the learning judge's run (C53). Drawing proposals from the pilot's own card similarity (C52) held
-  fresh wide decks off the Pokémon slide at a second seed and start (1.35 Pokémon per 100 moves against 4.0 for the same
-  start without it; median 14 / 28 / 17 at iteration 9), though at both seeds the decks rated best still carry 3-5 more
-  Energy than the lists; its code passed an integrity check for human data, and its concurrent control, the cheapest
-  test before adopting it into the recipe, runs beside it.
+- **Log #185–248 (A5; rolled up from eight block summaries).** Fresh wide decks slid into Pokémon piles from the draft head's near-uniform proposals (C51), and drawing proposals from the pilot's own card similarity (Nf, C52; provisional R1, graded B by #231's audit) cut the slide to about a third and brought the population median to the lists' 14 / 28 / 18 around iterations 9-14 at two seeds, but every run then traded 3-5 Trainers for Energy as selection paid Energy in every window, and a frozen, stronger judge leaned the same (C53). That lean traced upstream of selection to the pilots: both human-free pilots, greedy or searching, price the human lists' search, disrupt and tempo Trainers below a basic Energy (C59), an audit of all 42 Trainers fixed the engine's faults without changing that price, and fast probes located it in the pilot's answers inside its own Trainer prompts, no better than random (C68 X1) although lookahead answers there are worth +0.044 (C73, one seed), while no input named the card that opened a prompt and the search targets scored Trainer plays with those same answers. A Karpathy-style 5-minute loop (`ar/`) built to raise the lists' Trainer share M ran 21 changes with no effect beyond noise, its keep bar of 0.01 having come from a 3-seed A/A that understated the run-to-run sd (about 0.0115) six times, and literature searches for Evan's rows 64-66 queued move-level training signals and designed opt-in keys under which options and the state refer to each card through its one encoded token, built as staged patches that are bit-identical when off.
+- **Log #249–312 (A5; rolled up from eight block summaries).** On build K (a bug batch, a 1,600-line cleanup, and an opt-in chain head and card-token keys, all bit-identical when off), the fast `ar/` loop and 110-iteration arms tested Evan's ideas and the pilot's Trainer-prompt answers: the keys and the chain head were null, a target-signal probe found a better answer inside a Trainer worth only +0.018 of a game a prompt with a single PPO visit far too noisy to learn it, and a Q over a prompt's answers under three targets (one return, the next-turn value, the pilot's own branched returns) gave no answer gain, so the prompt-answer line closed. The ground truth then moved through the draft's selection: the `--select-z` gate the 10-24 cleanup had removed by mistake was restored, round479 with it (C91) reproduced C47's best shape at two seeds (distance 6.43 against 5.33), and its best decks win 0.44-0.45 of decisive games against the lists under a frozen pilot against 0.11-0.22 for every fresh-deck screen, while putting the 479 lineage's pilot on fresh decks (C92) changed nothing, so that shape is carried by the 479 population and draft head rather than its pilot. From fresh decks, paired selection (C90) doubled G3 at one seed but not at the second, though it kept the drafted shape closer to the lists; along the way runs became pausable for Evan's games, which had stopped runs three times in two days, the three agents gained a one-step launcher, and the overnight queues learned to launch each screen in its own thread.
 
-- **Log #225–232 (A5).** The uniform-base control on C52 seed 3's start slid like every uniform start (3.9 Pokémon per 100
-  moves against Nf's 1.35), so the night's last round adopted Nf as R1, but an audit of the night (#231) graded that B,
-  not A (one concurrent control, seed 3 just outside its own band, a control-only LR), found that Nf slows the slide to
-  about a third mostly by proposing extra copies of cards already in the deck, and confirmed that under R1 the median
-  again gives up 3-4 Trainers after iteration 15 while selection's Energy lean rises to +0.53 a move. Search on both
-  seats moved half the pilot's decisions yet left the human lists' search, disrupt and tempo Trainers below an Energy
-  (−0.025, paired SE 0.021), so the pilots' low price for Trainers is shared by greedy and searched play and sits in the
-  pilot's value, its inputs, the engine's Trainers or the clock. The night kept its hard limits (no git writes, frozen
-  files intact, every run through the launcher) while three errors kills went unapplied and GPU limits were briefly
-  exceeded, so the loop now checks GPU memory at launch, keeps its switches from rounds, shows game errors and allows 20
-  rounds a day; R1 from a random pilot (C63) and Evan's seasons with selection (C66) ran on R1.
-
-**Recent (log #233–241).** An audit of all 42 pool Trainers found the human lists' staples resolving as printed, and
-the faults it did find (Potion dead, Digger reversed, Challenge! and Maintenance too strong, PlusPower lost into
-Defender, Clefairy Doll and Mysterious Fossil never offered, multi-card picks in an order the pilot cannot see, 1-card
-mulligans) were fixed and verified; on the fixed build the strongest human-free pilot still prices the lists' search,
-disrupt and tempo Trainers below a basic Energy (0.434 against 0.429), so the fault is the pilot. Fast probes then
-located it: the pilot's answers inside its own Trainer prompts are no better than random (+0.002, SE 0.009), while it
-never passes with an attack on offer, reads card identity, and plays the lists' search Trainers as worth no more than a
-blank card, with the same deficit off the mirror as in it. A Karpathy-style loop trains one edited `train.py` for 5
-minutes from that pilot and keeps an edit only if it raises the lists' share against copies 6 Trainers lighter (0.474
-at the start, kept only on two seeds), now pointed at the prompt decisions, beside a day's schedule of probe windows.
+**Recent (log #313–317).** From fresh decks the gate now replicates on the drafted shape: over four seeds the gated draft (C90 and C93) held its best decks 7.6 closer to the lists than the ungated one (Welch 95% CI −11.9 to −3.3) with about 3 more Trainers in the population, but it did not raise their decisive share against the lists (four-seed G3 0.169 against 0.128). Sizing a rediscovery run, the research session found that the method reached the lists' shape from random decks once, about 290 drafting iterations in, ungated and without the round rule, held it for about 85 iterations and then collapsed into the walls, with the last step coinciding with a pilot architecture change that also changed the judge, so a gated fork from `seg_0240` (distance about 36) is the clean test of whether the gate finds the lists rather than only holding them. The night's drivers have all finished, and the GPU is free for Evan's call.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. The 5-minute loop (`ar/`, #239-#241) on the prompt-decision ideas in `ar/ideas.md`; its results are in
-   `ar/results.tsv` and `git -C ar log`.
-2. Probe window 2 at 23:30 (`runs/dayplan/plan.json`): X1b, a lookahead oracle for the pilot's prompt answers inside
-   Trainers: would well-chosen answers lift the lists' Trainers above the Energy?
-3. The loop's milestone at 07:00 on 2026-10-25 (C72): the kept `train.py` for 30 minutes, M on fresh deals and the
-   reverse direction; then, if it holds, a metagame screen at 12:00 for deck shape against 13.5 / 28 / 18.
-4. Decisions for Evan: (a) the keep threshold 0.01 (not 0.03); (b) a scheduled task for `ar/drive.py` so the loop
-   outlives this session (Claude Code's auto mode refused to create one).
-5. Evan's row 5 variant on the fixed engine and a second concurrent Nf pair (#237, #238), after the loop's milestone.
+1. Evan's morning call (333-10) on a gated "find the lists" fork from lab main `seg_0240` (#314-#315), its record with
+   stop bands written first; short runs, and pausable while Evan games.
+2. The `ar/` re-setup and calibration after tonight's `rl/metagame.py` change (#293), before the loop runs again.
+3. A live test of the GPU pause (runs/GPU-PAUSE) on a checkpointing arm, which has not been run yet.
+4. Decisions for Evan: (1) a scheduled task for `ar/drive.py` so the loop outlives its session; (2) whether the §8 floor
+   should keep barring forks from 479, the lab's best ground-truth state (A3).
 <!-- status:end -->
 
 ---

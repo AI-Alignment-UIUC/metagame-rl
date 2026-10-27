@@ -33,8 +33,10 @@ def log(msg):
 
 
 def ar_busy() -> bool:
-    """An ar/ experiment (fixed.py or train.py) is running."""
-    return any(re.search(r"ar[\\/](fixed|train)\.py", cmd or "") for _, _, cmd in loop.processes().values())
+    """An ar/ experiment (fixed.py or train.py) is running: python processes only, so a session whose prompt names the
+    script is not counted (log #256)."""
+    return any(str(name).lower().startswith("python") and re.search(r"ar[\\/](fixed|train)\.py", cmd or "")
+               for _, name, cmd in loop.processes().values())
 
 
 def run_job(job: dict) -> str:

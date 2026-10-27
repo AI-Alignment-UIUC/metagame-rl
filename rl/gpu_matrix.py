@@ -50,7 +50,8 @@ def load_policy(path: str, device: str, overrides: dict = None):
         enc = "identity"
     missing, unexpected = m.load_state_dict(state["model"] if "model" in state else state["net"],   # rl.train or rl.metagame
                                             strict=not overrides)
-    assert not unexpected and all(k.startswith(("vquery", "vcross.", "vblocks.", "ln_v.", "aux_head.", "chain_", "g_lat", "g_ptr", "lat_", "ptr_", "flag_emb", "g_flag", "key_bias"))
+    assert not unexpected and all(k.startswith(("vquery", "vcross.", "vblocks.", "ln_v.", "aux_head.", "chain_", "g_lat", "g_ptr", "lat_", "ptr_", "flag_emb", "g_flag", "key_bias",
+                                                                 "hist_"))   # history grown from a history-0 pilot (log #259)
                                   for k in missing), (missing, unexpected)
     return m.to(device).eval(), enc
 

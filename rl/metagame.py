@@ -30,6 +30,8 @@ stopped it, so basic Energy, which has none, piled up (#127). The select log row
 Trainers and Energy over the moves taken ("acc") and over every candidate drawn ("prop"): what the games accept against
 what the head proposes. A fork may start from a population snapshot (population_it*.pt), which carries no optimizer or
 random state: Adam starts fresh, and --reseed is required.
+--select-paired (log C90): a deck and its entries play the same scheduled games (one opponent entry, seat and deal, an
+entry each); the move takes the entry with the best mean paired difference from the deck, if above its SE, else stays.
 Nothing human enters training: the archived lists and SimpleBot are for evaluation only (rl/evaluate_agents.py).
 --practice-games N (log #127): N more games an iteration between two fresh random decks of a playable structure and no
 strategy (rl/decks.py wide_deck, the kind pilot-v2 learned on), all recorded for PPO and outside the population and the
@@ -101,6 +103,18 @@ def deck_kinds(pool: Pool, decks: list, score: np.ndarray, link: float = 0.5):
     return kind_of, sizes
 
 
+def paired_move(vs: list):
+    """--select-paired: (entry, complete slots): the entry q >= 1 with the largest mean of z(q) - z(0) over the slots, if
+    that mean exceeds its SE (sd with ddof 1 / sqrt(n), n >= 2), else 0."""
+    v = np.array([x for x in vs if not np.isnan(x).any()])
+    if len(v) < 2:
+        return 0, len(v)
+    d = v[:, 1:] - v[:, :1]
+    m, se = d.mean(0), d.std(0, ddof=1) / np.sqrt(len(v))
+    q = int(np.argmax(m))
+    return (q + 1 if m[q] > se[q] else 0), len(v)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True)
@@ -135,6 +149,12 @@ def main(argv=None):
     ap.add_argument("--select", action="store_true",
                     help="a deck moves to the best-scoring of itself and its candidates, not to a random one (log #127); "
                          "a run needs it or --season > 1")
+    ap.add_argument("--select-paired", action="store_true",
+                    help="with --select: a deck and each of its entries play the same scheduled games (opponent entry, seat, "
+                         "deal); the move takes the best mean paired difference if above its SE, else stays (C90); "
+                         "--games becomes games // (1 + --candidates) slots")
+    ap.add_argument("--select-z", type=float, default=0.0,
+                    help="--select: move only on a gain above this many standard errors (0: any gain; log #138, restored C91)")
     ap.add_argument("--round-turns", type=round_turns, default=0,
                     help='the 2000 round rule in every game (log #160): "T" or "A-B" (T drawn per deal); an unfinished game '
                          'goes to the side with more Prizes taken; PPO rewards and deck scores are the event points')
@@ -173,6 +193,10 @@ def main(argv=None):
     run.mkdir(parents=True, exist_ok=True)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     args.workers = limits.cap_workers(args.workers)
+    paired = args.select_paired
+    H = 1 + args.candidates if paired else 1                # games a slot plays: the deck's entries, one opponent entry
+    assert not paired or (args.select and args.workers >= H), "--select-paired needs --select and --workers >= 1 + --candidates"
+    assert not (paired and args.select_z > 0), "--select-paired and --select-z are separate selection rules"
     limits.apply(device, args.workers)
     torch.manual_seed(args.seed)
     rng = np.random.default_rng(args.seed)
@@ -204,6 +228,7 @@ def main(argv=None):
     targs = SimpleNamespace(**{**PPO, "epochs": args.epochs, "micro_batch": args.micro_batch})
 
     start, deal_seed, cands = 0, args.seed, {}          # cands: deck id -> its candidates this season
+    pairs = {}                                           # --select-paired: deck id -> its focus slots' vectors of results
     if st or fork:
         src = st or fork
         if st:
@@ -247,7 +272,7 @@ def main(argv=None):
             lam = args.shaping * max(0.0, 1.0 - it / max(args.shaping_iters, 1))
             counted = it % args.season == args.season - 1                # the draft head learns from this iteration
             if it % args.season == 0:
-                cands = {}
+                cands, pairs = {}, {}
             # 1. read every deck against a sample of the field
             views = []
             for d in range(D):
@@ -265,20 +290,25 @@ def main(argv=None):
                         x["sum"], x["n"] = 0.0, 0
                     cands[pop[d]["id"]] = held
             shards = [{"decks": [], "jobs": []} for _ in range(args.workers)]
-            games_meta, draws = {}, {}
+            games_meta, draws, pair = {}, {}, {}                 # keyed by seed, or with --select-paired by (shard, job i)
             rec_share = min(1.0, args.record / max(args.games, 1))
-            for g in range(args.games):
-                k, l = (int(x) for x in rng.choice(D, 2, replace=False))
-                k_seat, seed = 1 + int(rng.integers(2)), (deal_seed * 100_000 + it) * 1_000_003 + g
-                sh = shards[g % args.workers]
+            for g in range(args.games // H * H):
+                q = g % H                                                # with --select-paired: slot g // H, entry q
+                if q == 0:
+                    k, l = (int(x) for x in rng.choice(D, 2, replace=False))
+                    k_seat, seed = 1 + int(rng.integers(2)), (deal_seed * 100_000 + it) * 1_000_003 + g // H
+                    eo = int(rng.integers(len(cands[pop[l]["id"]]))) if paired else 0     # l's one entry in the slot
+                w = (g // H + q) % args.workers      # the paired jobs share a seed: one shard each (remote_worker.js bySeed)
+                sh = shards[w]
+                i = len(sh["decks"])
                 for a in (k, l):
                     held = cands[pop[a]["id"]]
-                    draws[g, a] = held[int(rng.integers(len(held)))]
-                    sh["decks"].append({"name": f"g{g}d{a}", "cards": pool.names(draws[g, a]["deck"])})
-                i = len(sh["decks"]) - 2
+                    draws[(w, i) if paired else g, a] = held[(q if a == k else eo) if paired else int(rng.integers(len(held)))]
+                    sh["decks"].append({"name": f"g{g}d{a}", "cards": pool.names(draws[(w, i) if paired else g, a]["deck"])})
                 rec = bool(rng.random() < rec_share)
                 sh["jobs"].append({"i": i, "j": i + 1, "iSeat": k_seat, "seed": seed, "rec": rec})
-                games_meta[seed] = (g, k, l, k_seat)
+                games_meta[(w, i) if paired else seed] = ((w, i) if paired else g, k, l, k_seat)
+                pair[w, i] = (g // H, q)
             for g in range(args.games, args.games + args.practice_games):
                 seed = (deal_seed * 100_000 + it) * 1_000_003 + g    # practice: two wide decks, recorded, nobody's draw
                 sh = shards[g % args.workers]
@@ -286,7 +316,7 @@ def main(argv=None):
                                 {"name": f"p{g}b", "cards": pool.names(wide_deck(pool, rng))}]
                 i = len(sh["decks"]) - 2
                 sh["jobs"].append({"i": i, "j": i + 1, "iSeat": 1 + int(rng.integers(2)), "seed": seed, "rec": True})
-                games_meta[seed] = None
+                games_meta[(g % args.workers, i) if paired else seed] = None
             t2 = time.time()
             msgs = [{"cmd": "games", "encoding": "tokens", "greedy": False, "deckoutWin": 1,
                      **({"roundTurns": args.round_turns} if args.round_turns else {}),
@@ -297,6 +327,9 @@ def main(argv=None):
                      "canon": int(net.config().get("state_canon", 0) or 0)}   # and its one-token-per-card-per-zone encoding
                     for w, sh in enumerate(shards) if sh["jobs"]]
             replies = rp.collect(msgs, {0: net}, device)
+            for w, rep_ in zip([w for w, sh in enumerate(shards) if sh["jobs"]], replies):    # replies align with msgs
+                for r in rep_["results"]:
+                    r["key"] = (w, r["i"]) if paired else r["seed"]
             t3 = time.time()
 
             # 3. PPO on the recorded games
@@ -315,12 +348,16 @@ def main(argv=None):
             t4 = time.time()
 
             # 4. REINFORCE for the draft head on every draw
-            practice = [r for rep in replies for r in rep["results"] if games_meta[r["seed"]] is None]
-            games = [r for rep in replies for r in rep["results"] if games_meta[r["seed"]] is not None]
+            practice = [r for rep in replies for r in rep["results"] if games_meta[r["key"]] is None]
+            games = [r for rep in replies for r in rep["results"] if games_meta[r["key"]] is not None]
             per = {d: {"samples": [], "z": [], "margin": []} for d in range(D)}
+            vec = {}
             for r in games:
-                g, k, l, k_seat = games_meta[r["seed"]]
+                g, k, l, k_seat = games_meta[r["key"]]
                 zk, zl = round_score(r, k_seat, args.round_turns), round_score(r, 3 - k_seat, args.round_turns)
+                if paired:                                   # the focus deck's results by entry, per slot
+                    s_, q_ = pair[r["key"]]
+                    vec.setdefault((k, s_), np.full(H, np.nan))[q_] = zk
                 left = r.get("prizesLeft") or {}
                 mk = (left.get(str(3 - k_seat), 0) - left.get(str(k_seat), 0)) / 6.0
                 for a, z, m in ((k, zk, mk), (l, zl, -mk)):
@@ -339,6 +376,8 @@ def main(argv=None):
                 z_iter[d] = z.mean()
                 pop[d]["sum"] += float(z.sum())
                 pop[d]["n"] += len(z)
+            for (d, _), v in vec.items():
+                pairs.setdefault(pop[d]["id"], []).append(v)
             draft = drafter.update(batch_d, args.draft_ent) if counted else {}
             t5 = time.time()
 
@@ -346,12 +385,20 @@ def main(argv=None):
             #    best-scoring of them, the deck itself first among equals, else to one at random
             select = {}
             if counted:
-                moved, gain, acc, prop = 0, [], [], []
+                moved, gain, acc, prop, slots, held_back = 0, [], [], [], [], 0
                 for d in range(D):
                     held = cands[pop[d]["id"]]
                     if args.select:
                         mean = [mean_score(x, -1.0) for x in held]
                         k = max(range(len(held)), key=lambda q: (mean[q], -q))
+                        if paired:
+                            k, n_ = paired_move(pairs.get(pop[d]["id"], []))
+                            slots.append(n_)
+                        if k > 0 and args.select_z > 0:          # --select-z: only a clear gain moves the deck (log #138)
+                            (s0, n0), (sk, nk) = (held[0]["sum"], held[0]["n"]), (held[k]["sum"], held[k]["n"])
+                            pb = min(0.85, max(0.15, (s0 + sk) / max(n0 + nk, 1)))
+                            if not (n0 and nk) or mean[k] - mean[0] <= args.select_z * (pb * (1 - pb) * (1 / n0 + 1 / nk)) ** 0.5:
+                                k, held_back = 0, held_back + 1
                         sh = [deck_shape(pool, x["deck"]) for x in held]
                         sh = [np.array([s["pokemon"], s["trainer"], s["basic_energy"] + s["special_energy"]]) for s in sh]
                         prop += [s - sh[0] for s in sh[1:]]
@@ -367,7 +414,10 @@ def main(argv=None):
                     select = {"moved": moved, "gain": round(float(np.mean(gain)), 4) if gain else None,
                               "games_per_candidate": round(float(np.mean([x["n"] for h in cands.values() for x in h])), 2),
                               "acc": np.round(np.mean(acc, 0), 3).tolist() if acc else None,
-                              "prop": np.round(np.mean(prop, 0), 3).tolist() if prop else None}
+                              "prop": np.round(np.mean(prop, 0), 3).tolist() if prop else None,
+                              **({"paired": {"slots": round(float(np.mean(slots)), 2),
+                                             "stay_low_n": sum(1 for n_ in slots if n_ < 2)}} if paired else {}),
+                              **({"held_back": held_back} if args.select_z > 0 else {})}
                 cands = {}
 
             # 6. turnover

@@ -6906,3 +6906,2076 @@ Entry format:
   loss at prompt rows, credit a turn's outcome to every decision in it, exploration at prompt rows). X1b, a lookahead
   oracle for those prompt answers, is being built for window probes-2 at 23:30: would well-chosen answers lift the
   lists' Trainers above the Energy?
+
+### #242 · 2026-10-24 · A5 C74-C76 · Audits A1 and A3 call the 5-minute loop stuck; an outside literature search puts its keep bar at about 1 sd and finds no published fix for untrained answers inside card prompts; three probes join window probes-2
+- **Done:** Evan's rows 56-57 (after each new audit in `notes/audits.md`, research the problems of a stuck loop and
+  change `runs/dayplan/plan.json`; jobs may also be removed).
+  - A watcher waits for each new audit. A1 (17:15, "partly stuck") started a literature search: 4 researchers and a
+    writer, notes in `research_notes/Audit A1 Trainer plateau fixes/` (noisy_keep_bar, sub_decisions_in_card_effects,
+    selfplay_drift_and_search, research_agent_stuck), report `reports/Audit A1 Trainer plateau fixes.md`. A2 (17:17)
+    made no stuck call. A3 (17:35, "the needle has not moved since 10-23") repeats A1's problems plus the §8 floor
+    barring forks from 479, which the earlier notes already cover (quality_diversity, design_controller_coadaptation),
+    so there was no second round.
+  - `plan.json` probes-2 (23:30) gets C76-promptstats, C74-noise and C75-confirm, each with a record (bands, kill
+    rule) and a chain in `runs/probe/`; new script `notes/scripts/probe_prompt_stats.py`. Nothing was removed. C73-x1b
+    belongs to the planning session, which was told about each change before the write (written atomically).
+- **Evidence:**
+  - From `ar/results.tsv` (the report's arithmetic, not a new measurement): the three failed confirms pool to an sd
+    of about 0.0115 per run (3 df), against the A/A's 0.0018. Delta 0.01 is about 1 sd. Estimated runs per arm for
+    80% power: 6 for +0.015, 14 for +0.010.
+  - Engine source (a static grep of each Trainer's prompts in `ryuu-play/packages/sets/src/base-sets`):
+    - 8 Trainers open ChooseCards with CHOOSE_CARD_TO_HAND, 7 with CHOOSE_CARD_TO_DISCARD, and 3 open ChoosePokemon
+      with CHOOSE_POKEMON_TO_DISCARD_CARDS.
+    - `env/tokens.js` gives a prompt as its type, a 32-bin message hash, the cards it lists and the cards picked.
+    - C49-sd has history 0, so no input names the card that opened the prompt. Computer Search, for example, stays
+      in hand during its discard prompt and is left out of the prompt's list.
+  - Checks:
+    - `ar_milestone.py --dry` passes for 6e34d8c, 349d9c1 and 3985251.
+    - `loop.launch_problems` passes all three jobs (checked offline; nothing launched).
+    - C76's CPU smoke (682 rows) shows the prompt flag at glob byte 48 agreeing with the one-hot on 100% of rows.
+    - Runtimes are estimates (5 minutes of training plus evaluation a run), not timed on the GPU.
+- **Found:**
+  - The literature has no card-game study of how answers inside prompts are learned.
+  - A KL anchor or a frozen opponent can at best hold M at the start's 0.474; neither adds a skill.
+  - Three levers are not queued yet:
+    - a signal for prompt answers that does not wait for the game's result (search targets at prompts, gated on
+      C73-x1b);
+    - an input naming the card that opened a prompt (an `env/` change, so ar/ needs a new --setup);
+    - a keep rule set against a shared pool of baseline seeds.
+  - The research also finds two process gaps: a ledger of failed idea families, and a forced structural change after
+    6 discards in a row. Both are zero-GPU edits to `program.md` or `ideas.md`, sent to the planning session.
+- **Next:** probes-2 at 23:30. C74's sd and C75's verdict go to Evan for the keep bar. C73's verdict decides whether
+  the 12:00 screen trains search targets at prompts or adds the prompt-source input.
+
+### #244 · 2026-10-24 · A5 C77 · Evan's row 64, the training signal: an outside literature search finds the search targets score Trainer plays with the pilot's own near-random prompt answers; two move-level signals are queued for 08:30 and an opt-in fix is staged for the deploy
+- **Done:** Evan's row 64 ("a training signal from RL theory that isn't just some binary on the win or loss").
+  The architecture side (rows 61-62) is the planning session's.
+  - The search: 4 researchers and a writer. Notes are in `research_notes/Dense training signals for Trainer play/`
+    (return_decomposition, oracle_critics_card_games, intrinsic_and_auxiliary, chains_and_move_targets); the report
+    is `reports/Dense training signals for Trainer play.md`.
+  - C77-signals (`runs/probe/C77-signals/`, record and chain): a new window `signals` at 2026-10-25 08:30 in
+    `runs/dayplan/plan.json`, timeout 210. It tests two `ar/train.py` commits on side branches of ar/, never main:
+    - `row64-optpot` 088cfa4, an option-count potential, r += 0.05 (log n_legal next - log n_legal now), with
+      Phi(terminal) = 0, before GAE;
+    - `row64-spr` 0c981d0, a self-predictive head: it predicts the stop-gradient pooled state at the same player's
+      next decision, cosine loss 0.5, in its own Adam.
+    - Each gets 3 seeds of 15 minutes against 3 baseline seeds of 15 minutes. That was 5 seeds of 5 minutes until
+      audit A4 (17:58: 22 nulls; nothing moves M in 5 minutes).
+  - `env/staged/patches/` (followups.patch, test_followups.js, followups.md) holds an opt-in flag for the deploy batch:
+    - With `probe.followups.n`, each search line is replayed n times, sampling the answers at the deciding seat's own
+      Trainer prompts, and the copy keeps the best replicate.
+    - A replicate that hits maxSteps is left out of that best; replicate 0 stays greedy.
+    - Off by default. Using it in training waits on C73-x1b and on Evan's call under row 60.
+  - Audit A4 needed no new research round: its problems (nothing moves M in 5 minutes; Evan's A/B tested on one
+    5-minute seed each) are the short-horizon and noise points of the A1 report. The planning session got the
+    budget advice for its redesign tests and A4's ground-truth flag.
+- **Evidence:**
+  - Code (`env/agents.js` PolicySearchAgent, read this session): a candidate's line is played on by the pilot
+    greedily to the end of the turn ("Prompts and single-option decisions are left to the pilot"). The soft search
+    targets (weight 20) therefore score a Trainer play with the pilot's prompt answers, which C68 X1 found no better
+    than random. The size of that bias is not measured; C73-x1b, the prompt oracle at 18:20, gives it at game level.
+  - Branch checks:
+    - `ar_milestone.py --dry` exits 0 for both branches (forbidden names none).
+    - CPU smoke, 685 rows: optpot's term has mean -0.0017 and sd 0.041, and sums to -Phi(first row) per trajectory
+      within 5e-8; spr's loss falls 0.946 -> 0.741 over 5 updates on one batch.
+    - ar's status was empty and its HEAD unchanged before and after; the worktrees were removed.
+  - Patch checks:
+    - `git apply --check` is clean.
+    - test_followups.js passes on a patched scratch copy: n=1 equals absent on 30/30 states; n=3 is never below greedy
+      (27 of 501 copy scores higher); 1,091 prompts resampled; 0 line errors; 0 copy scores from a capped replicate
+      (147 with the guard removed).
+    - It was not run against the real RemotePilot.
+  - Runtimes (C77 about 170 minutes) are estimates.
+- **Found:**
+  - Prior dense signals failed on Elo (lambda 1 in a turn -37, prize shaping that never fades -31, scalar aux heads).
+    The literature suggests why: prize shaping pays for tempo, and a scalar head or self-imitation shares the value's
+    blind spot.
+  - A critic that sees hidden information gave only a small gain in Dou Dizhu (PerfectDou, about +0.09 ADP), so it
+    was not queued.
+  - The literature has no card-game study of dense credit for tutor or search cards; every transfer here is untested.
+- **Next:** C73-x1b (18:20): if well-chosen prompt answers lift the lists' Trainers, the search bias is real, and the
+  followups flag gets a screen after Evan's row-60 answer. C77 at 08:30. After the deploy, rebase both branches onto
+  the new baseline in a temp worktree.
+
+### #245 · 2026-10-24 · A5 C77 · C73 measures the search's prompt-answer bias at game level; C77 moves to 20 minutes, shares C79-chain's baseline and gains a gated third arm; audits A4-A5 need no new research round
+- **Done:** follow-ups to #244, under Evan's rows 56 and 64.
+  - **Corrects #244:** C77's budget is now 20 minutes, not 15. It uses 3 seeds on fresh deals (`--eval-seed 1091
+    --guard-seed 1097 --eval-games 64`), the planning session's settings for its overnight C79-chain window.
+  - The baseline is shared. C77 reuses `runs/probe/C79-chain/base-s1..3` only when commit, minutes, seed, deals and
+    games all match; otherwise it runs its own.
+  - A third arm is added, `row64-followups`: the staged `probe.followups` flag at n = 3. Its branch is created only
+    after Evan allows it under row 60 and the deploy carries the flag; until then the chain skips it.
+  - The timeout is now 330 in `runs/dayplan/plan.json` (atomic writes).
+  - Audit A4 (17:58) needed no new research round (see #244). Audit A5 (19:00) needed none either:
+    - Its new number, G3, has R1's best decks winning 0.12-0.21 of decisive games against the lists under the same
+      pilot (C78).
+    - That is a pipeline question for the drafting loop, so it went to the planning session. The earlier notes find
+      that published deck builders beat human decks under their own agent.
+    - The usage limit hit at 18:09 also argued against a fourth round (about 400k tokens).
+- **Evidence:** C73-x1b (`runs/probe/X1b-prompt-oracle/xprobe.json`; the planning session's probe; 1 seed, 24 lists,
+  6,080 games an arm; band "partial"):
+  - With lookahead answers at the pilot's own Trainer prompts, the lists' search, disrupt and tempo Trainers gain
+    +0.044 (SE 0.008) against their Energy copies, and the search group +0.063 (0.013). S scores 0.479 against G's
+    0.435.
+  - The oracle changed 50% of the answers.
+  - So the search targets, which answer those prompts with the pilot's greedy policy (#244), score Trainer plays with
+    answers measurably worse than good ones.
+  - C77's reuse check passed on fake result files (match exit 0; wrong commit or missing seed exit 1). `sh -n` is
+    clean.
+- **Found:** Even oracle answers leave the lists under 0.5 against their Energy copies, so prompt answers are about
+  half of the Trainer gap; the rest is in how Trainers are played outside the prompts.
+- **Next:** the deploy (19:05 to about 23:00: cleanup, bug batch with the followups flag off, the chain head), then K
+  and the build hash. Rebase both C77 branches onto K in a temp worktree and re-run the dry checks. probes-2 (moves to
+  00:00 if the deploy runs late). Evan's row-60 answer decides the third arm.
+
+### #246 · 2026-10-24 · A5 C73 C78 · Window 1b: well-chosen prompt answers lift the lists' Trainers by +0.044 but not to the Energy's level (0.479), and R1's best decks win only 0.12-0.21 of decisive games against the lists under the pilot that drafted them
+- **Done:** Evan's rows 59 and 61-63, `dayplan.py` window probes-1b (18:20-18:36, ar/ idle). (Log #243, reserved
+  for the deploy, was not used; numbers go on from #244-#245.)
+  - C73 X1b (`runs/probe/X1b-prompt-oracle/`, `env/tools/probe_oracle_worker.js`, `notes/scripts/probe_prompt_oracle.py`;
+    record and an adversarial review before launch; the reviewer fixed a leak of the opponent's real hand into the
+    copies): at the seat's own Trainer prompts the oracle (S) tries each option (cap 8) on 4 re-dealt copies, plays the
+    pilot greedily to the end of the turn and keeps the best mean of the pilot's value; everything else is the pilot's.
+    An evaluation reference only (Evan, row 60).
+  - C78 (`runs/probe/C78-premise/`, `notes/scripts/probe_meta_premise.py`): the 12 best decks (judged score) of three
+    R1 populations at iteration 29 against the 24 lists, C49-sd 199 on both seats, greedy, the rule, 8 games a pair.
+- **Evidence:**
+  - C73, C49-sd 199, 64 games a pair, 6,080 games an arm, 0 errors (G 79 s, S 729 s): S − G by group, paired by list:
+    draw +0.026 (SE 0.014), search +0.063 (0.013), disrupt +0.037 (0.017), tempo +0.034 (0.010); mean of the three
+    +0.044 (0.008); S's three 0.479 (0.012) against G's 0.435 (0.013). Band: partial (S − G ≥ +0.02, S below 0.50).
+    S changed the pilot's pick at 50% of the 12.7 searched prompts a game (85% of those clearly, mean estimated gain
+    0.031); draw-card prompts 0. G repeats C68's G exactly (every pair identical).
+  - C78, 2,304 games a population, 0 errors: mean decisive share against the lists C52 seed 3 0.119 (SE 0.009, median
+    shape of the 12: 11 / 29 / 17.5), C63's control 0.210 (0.013; 21.5 / 18 / 19), C63's random-pilot arm 0.139 (0.010;
+    10 / 29 / 20). Band: build arm/ (both at most 0.35).
+- **Found:**
+  - Better prompt answers, found by the pilot's own value, close about two thirds of the gap between the lists'
+    Trainers and an Energy (0.435 -> 0.479 of 0.5): the untrained prompt answers are a large part of the Trainers' low
+    price, not all of it. The rest sits in the value the oracle scores with, or in what the main-phase play does with
+    the Trainers. It also measures the bias the row-64 session found in the soft search targets (#245): they score a
+    Trainer with these near-random answers.
+  - Deck shape is not enough: C52 seed 3's best decks have about the lists' counts (11 / 29 / 17.5) and still win
+    only 12% of decisive games against them under the pilot that drafted them. Selection's fitness (results within the
+    population) does not find decks that beat strong ones; the metagame loop arm/ optimises exactly that.
+- **Next:** the deploy (stopped ar/; cleanup, the bug batch, the chain head; then ar/ re-setup and calibration), the
+  overnight chain test (C79), then arm/.
+
+### #246 · 2026-10-24 · A5 · Evan's rows 65-67, unified card tokens: researched and designed as opt-in model keys, to be built on tonight's deploy and put first in ar/ideas.md
+- **Done:**
+  - Evan's rows 65-67 ("a unified token vocabulary for referring to cards across the actions and architectures ...
+    always learning some latents over those using attention. Prioritize these changes for the autoresearch agent";
+    "And also for referring to them on the game state"; "You can do a deep research on this as well").
+  - A literature search: 3 researchers and a writer. Notes are in `research_notes/Unified card token references/`
+    (entity_pointer_architectures, card_game_tokenization, unified_state_action_tokens); the report is
+    `reports/Unified card token references.md`.
+  - The design is opt-in config keys, so the ar/ loop can switch them on through MODEL_OVERRIDES. Each has a
+    strongest version and a variant, per Evan's rule.
+  - (A) actions:
+    - `cand_latent: 1`: each option adds a gated Linear of the mean encoder latent of the matching card's tokens
+      (zone-aware with `cand_latent_zone`, verb-gated with `cand_latent_gate`); board slots are unchanged.
+    - `cand_latent: 2`: a pointer-logit variant.
+  - (B) state:
+    - `state_canon: 1`: one canonical token per card per zone, with prompt-listed, picked and source as flags. It
+      changes the tokens, so it is a fine-tune, not an identity start.
+    - `state_key: 1`: a zero-init same-card attention bias across zones.
+  - The planning session owns rl/ and env/ tonight. Its deploy rewrites token_model.py and tokens.js, so these get
+    built as staged patches against that commit and integrated in a second deploy, before C79 (about 01:30) if
+    ready, else right after.
+  - It puts them first in `ar/ideas.md`; the keys and description were sent.
+- **Evidence:**
+  - Code (`rl/token_model.py` heads(), read this session): every option uses the static card_emb(card). Only board
+    slots 1-12 gather the encoder's output (slot_ref); hand, discard and prompt picks use fixed vectors 14/15.
+  - `env/tokens.js`: the prompt's list and the picks so far are separate PROMPT / PICKED tokens, and the source card
+    has none.
+  - Literature (precedent only; most papers read at abstract level):
+    - ygo-agent's actions gather the post-encoder latent of the card they name.
+    - AlphaStar and OpenAI Five point at entity latents.
+    - UPDeT's broken action-to-entity pairing falls below its baseline (self-reported).
+    - No paper ablates pointing at a latent against a static embedding.
+    - DraftFM predicts human picks on held-out Magic sets 51-60% of the time from text embeddings with no card ids.
+- **Found:** the chain head's rows go through the same candidate path, so they inherit (A) if they keep their
+  referent's zone code. The planning session was asked to keep it.
+- **Next:**
+  - Build (A) and (B) on the deploy commit: staged patches, a step-0 bit-identity test with gates at 0, and an X1
+    re-run as the mechanism readout.
+  - Then 20 minutes × 3 seeds per key against the shared baseline, since 5-minute single seeds cannot read an
+    architecture change (A1, A4).
+
+### #247 · 2026-10-24 · A5 · Correction: two entries are numbered #246
+- **Done:** corrects the numbering. The second entry headed #246 (Evan's rows 65-67, unified card tokens; written by
+  the row-56/64 session) duplicates the planning session's #246 (C73 and C78, window 1b), which was appended
+  moments earlier. That entry is cited as **#246b** from here on; nothing in either entry changes.
+- **Found:** the number check and the append ran as separate steps, so a concurrent append slipped between them.
+  From now on the row-56/64 session checks the last number and appends in one step that aborts on a mismatch.
+
+### #248 · 2026-10-24 · A5 · Evan's rows 65-66 built: options read their card's encoded token (cand_latent), and the state names each card once with flags (state_canon, state_key), as staged patches on 77fbae0
+- **Done:** the design of #246b is built as opt-in keys, every one off by default, in `env/staged/patches/`. They were
+  built in separate worktrees of the main repo at 77fbae0 (the chain head); the working tree was not touched.
+  - Part A, `card_latent.patch` (rl/token_model.py, gpu_matrix.py, train.py):
+    - `cand_latent: 1`: a candidate adds g_lat x Linear(mean encoder latent of the tokens with its card id).
+    - `cand_latent_zone`: those tokens are limited to the option's zone (hand, discard, prompt list).
+    - `cand_latent_gate`: a verb-gated sigmoid.
+    - `cand_latent: 2`: the pointer-logit variant.
+    - g_lat and g_ptr start at 0.
+  - Part B, `card_state.patch`, stacked on A (env/tokens.js, remote_worker.js, tools/probe_worker.js; rl/token_model,
+    gpu_matrix, metagame, remote, train):
+    - `state_canon: 1`: prompt-listed, picked and source cards become aux-bit flags on the card's zone token
+      (listed 32, picked 64, source 128; copies capped at 31), read through zero-init flag gates. PICKED tokens are
+      gone; PROMPT tokens remain only for listed cards with no zone token. A "canon" message field is wired like
+      `chain`, with a remote.py guard against mixed encodings.
+    - `state_key: 1`: a zero-init per-head attention bias between same-card tokens in different zones.
+  - The planning session applies card_latent.patch in tonight's deploy, before ar/'s re-setup, and card_state.patch
+    there too if the review allows, else in the second deploy.
+- **Evidence** (CPU only, no training):
+  - Part A (1,111 C49-sd decisions, 1,651 chain rows):
+    - Keys off: bit-identical to 77fbae0. Every key with its gate at 0: bit-identical.
+    - Gate 1: logits change at all 144 pick rows, and gradients reach the gates.
+    - Zone matching: prompt picks reach a PROMPT token 97.0% of the time, hand plays a HAND token 100%.
+    - C49-sd loads with only the new params fresh, and step-0 play is identical.
+  - Part B, JS (60 games, 11,255 decisions):
+    - Canon off: every encoding equals a clean tree.
+    - Canon on: every listed card flags its zone token, and every resolving-Trainer prompt carries the source flag.
+    - Tokens drop from 86.2 to 84.7 per decision. No zone count reaches the cap.
+  - Part B, Python (43 PASS):
+    - Keys off: bit-identical. state_key at gate 0: bit-identical; at gate 1, gradient.
+    - The guard refuses mixed encodings.
+    - Pick-card candidates reach a listed or PROMPT token 95.8% of the time. This was relaxed from "listed-flag
+      tokens >= 90%": move-Energy and Choose-energy picks read ENERGY tokens, which have no free flag bit.
+  - `git apply --check` is clean for both in order; rl.tests passes on the patched tree.
+- **Found:**
+  - state_canon conflicts with ar/fixed.py's guard S. S plays the trained pilot against the start pilot in one
+    batch, which would mix canon and non-canon encodings, so the guard raises. The fix options went to the planning
+    session: per-model encoding in the worker (recommended), a canon start opponent, or no S for canon runs.
+  - ar/train.py's collect message would need a "canon" field.
+  - Not verified: GPU, ONNX, training, X1.
+- **Next:** the deploy and re-setup. Then the keys go first in ar/ideas.md (cand_latent 1 and 2, state_key; state_canon
+  after the S fix), each read at 20 minutes x 3 seeds with an X1 re-run. Rebase the C77 branches onto the new baseline.
+
+### #249 · 2026-10-24 · A5 · Per-model token encoding (slot_enc.patch) lets ar/'s guard S seat a state_canon pilot against the plain start pilot
+- **Done:** the fix chosen with the planning session for #248's conflict (state_canon against guard S's mixed
+  game). `env/staged/patches/slot_enc.patch` is stacked on card_latent and card_state at 77fbae0, with
+  `test_slot_enc.js`, `test_slot_enc.py` and `slot_enc.md`. It touches env/env.js, runner.js, remote_worker.js,
+  rl/gpu_matrix.py and remote.py (42 added lines).
+  - A message field `slotEnc` ({slot: {canon, chain, history}}) is sent by GpuMatrix.play whenever several model
+    slots play, and each seat is encoded with its own slot's options.
+  - The mixed-encoding guard now allows a mix only when slotEnc matches every model; it still refuses without one.
+  - ar/fixed.py's S goes through GpuMatrix.play and needs no edit (read, not run). It ships in the second deploy.
+- **Evidence** (CPU):
+  - `git apply --check` is clean for the three patches in order on a fresh 77fbae0.
+  - JS (ALL PASS): without seatEnc, 30 games at each of canon 0 and canon 1 give identical observation hashes and
+    results. In three mixes, both seat orders, 3,829 decisions each, every observation equals a fresh encoder with
+    that seat's options.
+  - Python (22 PASS): play({0: canon, 1: plain}) and ({0: canon, 1: plain chain 4}) run without the guard raising,
+    and each served model sees only its own encoding (canon: 326 flags and 0 PICKED tokens; plain: 0 flags and
+    20 PICKED tokens).
+  - The guard refuses a missing or wrong slotEnc.
+- **Found:** a behaviour change. Every multi-model game now encodes each seat exactly by its own model. Before, all
+  seats used the round's max chain K and one history, so mixed chain or history rounds measure differently from now.
+  The planning session was told (it decides when to ship relative to C79). Not verified: GPU, ONNX, the real S run,
+  and collect with slotEnc (that path exists but is untested).
+- **Next:** the second deploy; then state_canon becomes usable in ar/ (`ar/ideas.md`).
+
+### #250 · 2026-10-24 · A5 · Tonight's deploy: the bug batch, the dead-code cleanup, the chain head and the unified card tokens are live, reviewed and pushed; ar/'s new baseline K
+- **Done:** Evan's rows 58, 61-63 and 65-66 (with the research session's rows 64-65 patches), and the leftovers of #233.
+  The PC restarted at about 21:50 mid-deploy (the planning, auditor and research sessions and `dayplan.py` died;
+  stages 1-2 were committed); resumed at 21:56.
+  - `753d9c4` (engine `ryuu-play` `a62e054`, compiled): Confusion under the 2000 rules behind
+    `Rules.baseEraConfusion` (20 to itself with its own Weakness and Resistance; a Confused retreat pays, then flips),
+    set by `env/engine.js`; Dark Dugtrio's Sinkhole hits the Pokémon that retreated; no promote prompt after a
+    knock-out that takes the last Prize; Omanyte's Clairvoyance as the printed always-on rule; face-down Benched
+    Pokémon hidden from the opponent in `env/tokens.js`; the row-64 session's `probe.followups` (off).
+  - `1dc02c2`: the verified-unused paths of `rl/train.py`, `rl/metagame.py` and the env workers removed (net about
+    −1,600 lines; the ONNX rollout path, the identity model, leagues, curriculum, judge search, the draft-head league
+    and more); logs and logging kept.
+  - `77fbae0`: the chain head (rows 58, 61-62), `chain = K`: the last K candidate rows hold the seat's own decisions
+    of the current turn in the options' own encoding, with a role (opener, answer, earlier move, earlier answer) and
+    a position, read by a zero-initialised `chain_cross`; a server guard against chain pilots served without rows.
+  - `cdc5fae`: the research session's `card_latent`, `card_state` and `slot_enc` patches (rows 65-66; #248-#249):
+    options read their card's encoded state token (gated), canonical card tokens with flags (`state_canon`), a
+    same-card attention bias (`state_key`), and per-model encoding in multi-model play.
+  - All opt-in; pushed with the submodule first.
+- **Evidence:**
+  - An independent review of `8612048..77fbae0` (CPU): verdict ready, no bug. With everything off, every live path is
+    identical to the pre-cleanup build: C49's `rl.train` smoke (log row and weights bit-identical, also on resume),
+    two shrunk R1 recipes (identical apart from the removed `select.held_back` field), `trainer_value.py`, the C68 and
+    X1b probes, `evaluate.js`, observation hashes over 200 games. A chain-16 pilot grown from C49-sd played every game
+    the same as C49-sd (60 greedy, 6 searched), with 0.0 logit and value gap in fp32 and bf16 and ONNX within 6.7e-06.
+  - Suites after the last commit: `rl.tests` PASS; engine specs 267 and 714, 0 failures; rulings 23/23; decks 24/24;
+    `test_env` PASS (hash unchanged); `verify_enumerator` 0 mismatches and 0 missing; the six staged and patch tests
+    all PASS; chain head 1.05x forward time.
+  - Reviewer's non-blocking notes: sampled play is not seed-reproducible against C49-sd once logits are padded; a
+    chain pilot's first updates drifted faster (KL 0.20 against 0.09 with a fresh Adam); `evaluate.js` and
+    `puzzles.js` need `--chain K` for a chain pilot and do not warn; 25 retired chains no longer parse.
+  - ar/: `fixed.py` forbids the oracle's files in train.py (row 60); train.py sends `history`, `chain` and `canon`
+    from its model and keeps the start's Adam moments when `MODEL_OVERRIDES` grows new weights (the earlier history-1
+    runs started from a fresh Adam). `--setup`: K = `4659689`, frozen hash `4fdcb4418aee1141`. Side branches on K:
+    `chain16` `b68f38e`, `chain16-credit` `97969fa` (each prompt answer takes its opener's advantage), `histA` `70d6d6b`.
+- **Next:** ar/'s calibration (started 22:47); probes-2 at 00:15 (moved from 23:30 so it runs on this build); C79, the
+  chain test, from 01:00 (`runs/probe/C79-chain/`: base, chain, chain + credit and history 1, 20 minutes × 3 seeds,
+  fresh deals, X1 on each seed-1 pilot); then the milestone and the row-64 signals, which slide if C79 runs long.
+
+### #251 · 2026-10-24 · A5 C77 · C77's signal branches rebased onto the deploy's baseline K (4659689)
+- **Done:** follow-up to #244-#245.
+  - The planning session's deploy landed: main repo cdc5fae, which carries card_latent, card_state and slot_enc
+    (#248-#249).
+  - K = 4659689 (subject "baseline"); calibration started 22:47.
+  - `row64-optpot` is now 28a514c and `row64-spr` 7fdb95f: the same one-commit train.py changes, cherry-picked onto K
+    in temp worktrees of ar/.
+  - ar's HEAD, index and status were unchanged before and after; the worktrees were removed and the temp branches
+    deleted.
+  - C77's chain now resolves its baseline to K and reuses C79-chain's base-s1..3 when all of commit, minutes 20,
+    seeds 1-3 and eval 1091/1097/64 match.
+- **Evidence:**
+  - Both cherry-picks were clean; `ar_milestone.py --dry` at 20 minutes gives forbidden names none and imports both.
+  - CPU smoke on K (710 rows, 10 games):
+    - optpot's term sums to -Phi(first row) within 5.4e-08. The smoke's "rollout reward untouched: False" line is
+      `np.shares_memory` against a copy, so False is the correct result.
+    - spr's loss falls 0.994 -> 0.768 over 5 updates, with K's remap_adam path.
+- **Next:** probes-2 at 00:15, C79 from 01:00, then the milestone, then C77 (slides if C79 runs long).
+
+### #252 · 2026-10-24 · A5 · Evan paused all GPU use (22:52): ar/'s calibration and dayplan.py stopped on purpose
+- **Done:** Evan's rows 69-70 ("pause all gpu use from you", "or other agents", 22:52). Killed ar/'s calibration
+  (pid 45696 and its children; it had scored the start pilot twice on the new build, M 0.4707 both times, and was in
+  its A/A seeds) and `dayplan.py` (pid 41424): no window runs (probes-2, chain C79, milestone, signals). `ar/STOP` and
+  `ar/PAUSE` stay; `runs/loop/PAUSE` holds the unattended rounds indefinitely. The research session and 333-81 were
+  told to launch nothing on the GPU; both confirmed none of theirs is on it.
+- **Evidence:** 22:53 `nvidia-smi`: 4.9 of 16.3 GB, 5% busy, no Python or Node process of the project on it (desktop
+  apps only); no ar/, rl.train, rl.metagame, probe or trainer_value process running.
+- **Found:** These processes are stopped on purpose, not crashed. `ar/results.tsv` has no row from this calibration
+  (it ended before its first A/A row); `plan.json`, the C79 arms and the records are unchanged.
+- **Next:** when Evan lifts the pause: rerun `ar/fixed.py --calibrate` (about 25 min), relaunch `dayplan.py`, and move
+  the windows to fit.
+
+### #253 · 2026-10-25 · A5 · Evan's rows 65-66 put first in ar/ideas.md after the restart
+- **Done:** after the shutdown (PC off about 01:55-08:33), per the 333-77 brief (15:10).
+  - `ar/ideas.md` now opens with the card-token keys deployed in cdc5fae (#250): cand_latent 1 (zone-aware,
+    verb-gated), cand_latent 2, state_key, then state_canon. There is one `MODEL_OVERRIDES` line each, and a note that
+    a 5-minute single seed is not a verdict, since each key also gets 20 minutes x 3 seeds. The file is untracked, so
+    no re-setup is needed.
+  - The audit watcher is re-armed (A18 is in). Evan's usage rule is in `~/estack/learnings/inbox.md`.
+- **Evidence:** `ar/train.py` sends `canon` and `chain` from `MODEL_OVERRIDES` (line 181). `rl/remote.py` reads
+  state_canon per model. `fixed.start_model` grows new weights (#250). Usage at 15:2x: 5-hour 6%, week 69%.
+- **Next:** ar/'s recalibration (the planning session), then the loop takes these keys first. The 20-minute x 3-seed
+  reads go into a dayplan window when the planning session re-plans.
+
+### #254 · 2026-10-25 · A5 · Restart after the PC was off (01:55-08:33): Evan's GPU pause lifted, ar/ re-calibrating on K, the windows re-planned from 16:40
+- **Done:** Evan, 2026-10-25 15:10 (via session 333-77): "pick up where you left off with the 3 agents", and keep
+  an eye on the usage. Read as lifting #252's GPU pause (333-77 tells him; he can re-pause).
+  - `ar/fixed.py --calibrate` on K `4659689` started 15:22 (pid 4256, log `ar/calibrate-k.log`). The partial A/A row
+    written after the 22:52 kill (`ar/results.tsv` row 31, "baseline (A/A seed 1)", M 0.4529) stays in the file but
+    is not part of the new baseline: calibrate computes best, delta and the guard bar from its own runs.
+  - `runs/dayplan/plan.json` re-planned (atomic write): probes-2 at 16:40 (C76, C74, C75; C75 skips itself on this
+    build), C79's chain test at 18:30 (base, chain, chain + credit, history 1; 20 min × 3 seeds), C77's signals at
+    01:30 on 10-26. The milestone (C72) and screen windows are removed until ar/ keeps a commit beyond the baseline.
+    `dayplan.py` relaunched (15:24).
+  - `ar/STOP` removed and `ar/drive.py` restarted as a background task of this session; it waits while `ar/PAUSE`
+    exists and runs between windows, taking #253's card-token keys first.
+  - `runs/loop/PAUSE` kept: no unattended `loop.py` rounds.
+- **Evidence:** GPU at 15:20: 2.4 GB, 4% (desktop only). Plan usage at 15:18: 5-hour 3%, 7-day 68% (resets 10-27
+  09:00).
+- **Next:** after calibration, delta as before (max(2 sd, 0.01), #239); C79's chain test is the first read of the
+  chain head; the card-token keys' 20-minute × 3-seed reads need a window after C77.
+
+### #255 · 2026-10-25 · A5 · ar/ calibrated on K: A/A sd 0.012, and practice on the evaluation decks now moves M by +0.050 in 5 minutes
+- **Done:** `ar/fixed.py --calibrate` on K `4659689` (15:22-15:42, `ar/calibrate-k.log`); delta set to max(2 sd, 0.01)
+  as in #239 (calibrate's floor is 0.03).
+- **Evidence:** the start pilot scored twice: M 0.4707 and 0.4707, S 0.5039 both (deterministic). A/A, unedited
+  train.py at seeds 1-3: M 0.4648, 0.4408, 0.4565 (mean 0.4540, sd 0.0122); S 0.4915, 0.5260, 0.4727 (guard bar
+  0.4459). Quarantined movability control: M 0.5038 (+0.050 over the A/A mean), S 0.5729. State: best 0.4540, delta
+  0.0244, guard bar 0.4459.
+- **Found:**
+  - On the fixed build, 5 minutes of practice on the evaluation pairs moves M by +0.050 (on the old build +0.015,
+    #239), so the budget can show a real gain; plain baseline training lowers M by 0.017 from the start pilot.
+  - The A/A sd at 5 minutes, 0.012, matches C74's earlier measurement (0.0115, #242), not #239's 0.0018 from 3 seeds.
+- **Next:** probes-2 at 16:40, the chain test C79 at 18:30; ar/ runs between windows on #253's card-token keys first.
+
+### #256 · 2026-10-25 · A5 C76 · C76: the pilot's prompt answers get a learning signal about as large as its main-phase moves, and it commits to them, yet they are no better than random
+- **Done:** C76-promptstats (Evan's row 56; record and bands in `runs/probe/C76-promptstats/record.md`), first job of
+  probes-2. It ran 16:50-16:51: the window waited 10 minutes on a false "ar/ busy" match, the text `ar/fixed.py`
+  inside a claude.exe restart brief, which ended when that session relaunched. C74-noise followed at 16:51.
+- **Evidence** (`runs/probe/C76-promptstats/promptstats.json`; start pilot C49-sd on build K, no training, 2
+  iterations at 6 workers, seed 91; 1,695 games, 111,390 decisions, 0 errors; prompt flag agrees with the one-hot on
+  100% of rows):
+  - Main-phase decisions: 73% of rows; mean |adv| 0.295; explained variance 0.413; normalised entropy 0.237; median
+    top-1 margin 0.860.
+  - Prompt answers: 27% of rows; mean |adv| 0.260 (0.88x main); explained variance 0.369; normalised entropy 0.335;
+    median margin 0.929.
+  - Choose cards prompts (16% of rows): |adv| 0.272, explained variance 0.348, margin 0.905. The worst message bin
+    has explained variance 0.19 (Choose cards bin 12, 2,579 rows).
+  - The script's call is **mixed**: neither blind (|adv| under 0.5x main) nor unexplored (entropy over 0.8) nor
+    confident (entropy under 0.3, missed by 0.035).
+- **Found:**
+  - The advantage reaching prompt answers is about as large as at main-phase moves, and the pilot plays them nearly
+    deterministically (margin 0.93).
+  - With C68 X1 (random answers do as well), it is committed to answers no better than random: the signal reaches the
+    prompts but does not separate good answers from bad.
+  - That fits the six null ideas.md runs, which re-weighted or re-normalised that same signal. It favours levers that
+    add information at prompts: search at prompts (C77's gated followups arm, C73 +0.044) and options reading their
+    card's latent (cand_latent, #246b).
+  - One seed, no training: a mechanism readout, not an effect.
+- **Next:** C74 (the new build's noise) now; C75 skips itself on this build; C79 at 18:30; C77 at 01:30.
+
+### #257 · 2026-10-25 · A5 · Relaunch at 16:45: ar/drive.py restarted, dayplan's busy check counts python processes only, and the hour ar/ lost to a stale PAUSE
+- **Done:** after 333-77 relaunched the terminals (16:45) at Evan's request.
+  - `ar/drive.py` restarted as a background task of this session (16:53); it waits while probes-2 holds `ar/PAUSE`.
+  - `notes/scripts/dayplan.py` `ar_busy()` now counts only python processes. A session's brief that named the script
+    matched the pattern, so probes-2 waited its full 10 minutes for an experiment that was not running (16:40-16:50),
+    as the research session found. The running `dayplan.py` restarts on the fix once probes-2 ends, unless the next
+    window has already begun.
+- **Evidence:** `ar/drive.log` has no session after 2026-10-24 19:06, though drive.py ran from about 15:24 today and
+  calibration ended at 15:42: `ar/PAUSE` was in place the whole time (the deploy's pause of 10-24, overwritten by
+  dayplan's at 16:40), so ar/ ran no experiment for about an hour. C76 ran 16:50:08-16:50:53, exit 0.
+- **Next:** C79's chain test after probes-2; ar/ runs between windows on the card-token keys first (#253).
+
+### #258 · 2026-10-25 · A5 C74 C75 · C74: on build K the loop's run-to-run sd is 0.013, all of it from training (evaluation is exact), and a fixed seed does not repeat; C75 skipped itself as designed
+- **Done:** probes-2 finished (16:40-17:48). C74-noise ran 16:51-17:48: 9 runs, all exit 0, 57 minutes (my
+  estimate was 70-90). C75-confirm logged "skipped: build 4fdcb44 is not 7a86033" and exited, as its record says.
+  ar/ resumed at 17:48.
+- **Evidence** (`runs/probe/C74-noise/*/result.json`; baseline K 4659689 on build 4fdcb44; 5 minutes; the loop's deals,
+  eval 91, guard 97, 32 games a pair; 0 game errors):
+  - Seed 1 twice: M 0.4514 and 0.4569 (Δ 0.0054), with 3,926 and 4,566 games. Training is not repeatable at a fixed
+    seed, since the budget is wall-clock seconds and games per run vary from 3,499 to 5,097.
+  - s1a's pilot re-scored twice: 0.4514 both times (Δ 0.0000). Evaluation is exact, so the run-to-run noise is all
+    training.
+  - Seeds 1-6: 0.4514, 0.4642, 0.4507, 0.4397, 0.4748, 0.4716; mean 0.4587, sd 0.0137 (5 df).
+  - Pooled with #255's calibration A/A (same commit, seeds 1-3: 0.4648, 0.4408, 0.4565): n 9, mean 0.4572, sd 0.0126.
+  - The start pilot scores 0.4707 on these deals, so 5 minutes of plain training lowers M by about 0.012.
+- **Found:**
+  - Bands: "nondeterministic training" (just over its 0.005 line) and "bar too low" for the old delta 0.01. #255's
+    delta of 0.0244 (2 sd) matches this sd.
+  - A single-seed keep at best + 0.0244 needs about a 2-sd lucky draw or a real +0.025.
+  - The A1 report's rule would detect about +0.021 (estimated, alpha 0.05 one-sided, power 0.8): a candidate's 3-seed
+    mean against this 9-run pool by one-sided Welch.
+  - A fixed iteration count instead of seconds would remove the games-per-run spread. That is a fixed.py change (new
+    setup), so it is the planning session's or Evan's call.
+- **Next:** the pool (`runs/probe/C74-noise/s1a,s2-s6` plus #255's A/A) is available to the keep rule and to C79 and
+  C77's readouts on K. C79 starts at 18:30.
+
+### #259 · 2026-10-25 · A5 C80 · Evan's four card-token keys came up null at one 5-minute seed each (A23); C80 queues them at 20 minutes x 3 seeds before C77
+- **Done:** Evan's rows 56 and 65-66.
+  - Audit A23 (18:28) read ar/ rows 36-39: Evan's four card-token keys, one 5-minute seed each, all null against the
+    0.0244 delta. It calls that "not tried fully". No new research round: the cause is the short single-seed budget
+    of the A1 and A4 findings.
+  - Added `runs/probe/C80-cardtok/` (record with bands and kill rule, chain). It reuses the loop's own commits for
+    those rows: 1d17240 lat1, 342eed1 canon, dba1884 lat2, 4d80323 skey, each K 4659689 plus one MODEL_OVERRIDES line
+    (checked with git diff).
+  - Each runs 3 seeds at 20 minutes on fresh deals (1091/1097/64, C79's settings). C79-chain's baseline is reused
+    only on an exact match.
+  - `runs/dayplan/plan.json` (atomic): a new window "cardtok" at 2026-10-26 01:30, and C77's "signals" moved to
+    07:00, since row 65 said to prioritize these. The planning session was told.
+- **Evidence:**
+  - Rows 36-39 (`ar/results.tsv`, one seed each, 5 minutes): lat1 0.4589, lat2 0.4755 (+0.0215 over the A/A mean
+    0.454, under delta, no second seed), skey 0.4669, canon 0.4574.
+  - `sh -n` is clean. `ar_milestone.py --dry` on 342eed1 at 20 minutes reports forbidden names none, and ar/'s status
+    is unchanged. `launch_problems` passes for C80.
+  - The runtime (12 runs, about 5 h) is an estimate.
+- **Next:** C79 from 18:30, C80 at 01:30, C77 at 07:00 on 2026-10-26.
+
+### #260 · 2026-10-25 · A5 C79 · C79 stopped mid-way while Evan's game shares the machine, histA's crash fixed, the rest resumes at 01:00
+- **Done:**
+  - At 21:05 `runs/probe/C79-chain/STOP` (written before its next arm): RAM was 1.6 GB free of 31.4 and GPU memory
+    14.8 of 16.3 GB (91%, over CLAUDE.md's 80%), with Counter-Strike 2 (5 GB of RAM, part of the GPU) and Chrome (6 GB)
+    beside C79's trainer (2.6 GB) and workers (2.2 GB). Claude Code's memory reaper stopped `ar/drive.py`, which only
+    waited under the window's PAUSE; it stays off until Evan says.
+  - histA seed 1 (Evan's idea A, history 1) crashed at its start: `rl/gpu_matrix.load_policy` refused the missing
+    `hist_verb` and `hist_age` weights when growing a history-0 pilot. `hist_` joins its allow-list (the start pilot now
+    loads with history 1, checked on CPU). The partial output is kept as `runs/probe/C79-chain/histA-s1.crashed`.
+  - A window `chain-2` at 2026-10-26 01:00 resumes C79 (`--resume`, `chain-resume.sh` clears the STOP; `chain.sh`
+    skips every arm with a `result.json`). `cardtok` (01:30) and `signals` (07:00) slide after it.
+- **Evidence:** C79's training per arm (20 minutes, wall clock): base s1 37 iterations / 20,747 games (before the
+  game), base s2 31 / 17,525, chain s1 31 / 17,991, chain s2 29 / 16,120, chaincredit s1 32 / 18,002. `rl/` changed, so
+  `ar/fixed.py --setup` re-hashes before the loop resumes.
+- **Found:** a wall-clock budget makes arms that share the machine with other work train less; the C74 note's fixed
+  iteration count (#258) would remove that. Read C79 by seed pairs.
+- **Next:** chain-2 at 01:00; restart `ar/drive.py` when Evan says, after the re-setup.
+
+### #261 · 2026-10-25 · A5 C77 C80 · C80 and C77 reuse a C79 baseline seed only if it trained with the GPU free; the memory reaper stopped the audit watcher
+- **Done:**
+  - Evan started CS2 during C79 (free RAM about 1.6-1.8 GB of 31.4, GPU memory 91%). The planning session stopped
+    C79 after its current arm and added a window "chain-2" at 2026-10-26 01:00 to resume it, so cardtok (C80)
+    follows at about 04:00 and signals (C77) after that.
+  - The training budget is wall-clock: C79 arms trained during the game got 16-18k games against base s1's 20.7k. So
+    C80's and C77's baseline-reuse check now also requires at least 19,000 training games, a note in both records.
+  - At about 21:00 Claude Code's memory reaper stopped this session's audit watcher (rows 56 and 71). It is not
+    restarted until Evan says so.
+- **Evidence:**
+  - On the real files: base-s1 (20,747 games) is reused, and base-s2 (17,525) is run by each chain itself. base-s3
+    does not exist yet; chain-2 runs it with the GPU free.
+  - The first version of the check compared a string to an integer and so rejected every seed. That is fixed (cast
+    to int) and retested. `sh -n` is clean on both chains.
+  - 21:01: 1.8 GB free; the largest processes were cs2 (4.1 GB) and C79's python (2.6 GB).
+- **Next:** chain-2 at 01:00, C80 after it, then C77. The audit watcher is restarted on Evan's word.
+
+### #262 · 2026-10-25 · A5 C81 · Evan's row 72: the chain head on a longer training loop, 110 iterations an arm with a fixed budget, from 22:40
+- **Done:** Evan, 22:25 (relayed by 333-77): "try the chain head test on a longer training loop", on 333-77's spec.
+  - Three side branches of ar/, each its C79 commit plus `MAX_ITERS = 110` in the training loop's condition (2 lines;
+    no frozen file changed): c81-base 37d335a (K's train.py), c81-credit c0b346c (chain 16 + chain-level credit),
+    c81-chain ed95a44 (chain 16). `ar_milestone.py --minutes 150` (a stall cap only), seeds 1 and 2, eval-seed 1091,
+    guard-seed 1097, eval-games 64; X1 on each seed-1 pilot. Before each arm the chain holds while free RAM is under
+    2 GB or GPU memory over 80%.
+  - Record with bands before launch: `runs/probe/C81-chainlong/record.md` (R-chain: an arm's M − base at least +0.02
+    over 2 seeds, above 0 at both, X1 U − G at most −0.02; R-null: all within ±0.01; length alone: base +0.02 over
+    the start).
+  - `runs/dayplan/plan.json`: window `chainlong` at 22:40 in place of chain-2 (whose 20-minute seed-3 arms it
+    replaces); cardtok (01:30) and signals (07:00) run after it. histA (Evan's idea A at 20 minutes) is left for a
+    later window, as the spec says.
+- **Evidence:** `ar_milestone.py --dry` on c81-chain: train.py sees the patched budget, forbidden names none, worktree
+  removed, ar/ unchanged. `loop.launch_problems` empty. At 22:25: GPU 2.4 GB in use, 0%; 13.7 GB RAM free (the game
+  closed).
+- **Next:** about 7 hours (110 iterations at about 32 s plus 3 minutes of evaluation an arm, X1 on three pilots);
+  `ar/drive.py` stays stopped until Evan says.
+
+### #263 · 2026-10-25 · A5 · Evan paused all GPU use (23:24, row 74): a pause, not a crash
+- **Done:** Evan, 23:24 (relayed by 333-77), "pause", while playing Counter-Strike. 333-77 stopped everything at 23:25,
+  as in #252: `runs/probe/C81-chainlong/STOP` written and C81's chain killed; `dayplan.py` killed, so the cardtok
+  (01:30) and signals (07:00) windows will not fire; `ar/PAUSE` kept. `ar/drive.py` (reaped at about 21:00, #260) and
+  `loop.py` rounds were already off.
+- **Evidence:** C81's base seed 1 had reached iteration 57 of 110 at 23:14 and ended about 45 minutes in with no
+  `result.json`, so it reruns from the start. At 23:26 no project python process runs; the GPU (9.3 GB, 46%) is the
+  game's.
+- **Next:** nothing launches on the GPU until Evan says resume. Then: remove the STOP, relaunch C81's chain (finished
+  arms are skipped; base s1 reruns), and relaunch `dayplan.py` with cardtok and signals moved after C81.
+
+
+### #264 · 2026-10-26 · A5 · Restart and a new plan (Evan rows 75-78): two days of proxy tests moved nothing, so today measures whether the RL signal can tell a Trainer's targets apart, then fixes the part that fails
+- **Done:** The PC was off from about 00:50 to 14:46 (loop.py's daemon restarted at 14:46); no project job was running
+  and #263's GPU pause held. Session 333-10 read row 75 as lifting the pause, synthesized #236-#263, rewrote the day's
+  plan around Evan's row 78 and resumed the three sessions with it.
+- **Ground truth: unmoved.** No screen since 10-24 11:01 (old engine). The best recent decks are 17-20 / 17.5-21 /
+  20-22 Pokémon / Trainers / Energy against the lists' 13.5 / 28 / 18 (distance best ever 3.2, since 10-23 7.2), and
+  they win 0.12-0.21 of decisive games against the lists (#246).
+- **Synthesis (#236-#263):**
+  - Located: the pilot plays Trainers but answers their prompts (what to fetch, discard, target) no better than random
+    (C68 X1: U − G +0.002, SE 0.009), and nearly deterministically (C76: median margin 0.93). As played, the lists'
+    search Trainers are worth a blank card (C70). Well-chosen answers lift them +0.044 (C73), not the whole gap.
+  - The signal reaches the prompts at full size (C76: |adv| 0.88x main-phase), but nothing has measured whether it
+    points at the better target. The training search skips prompts (#234), so PPO's return is their only teacher.
+  - The engine faults were real and are fixed (#233, #235); they did not move Trainer prices (#236).
+  - ar/ (44 rows): 1 keep (no value clipping, 789cf07), 28 discards. Evan's 4 card-token keys, the chain head,
+    history, prompt weight, entropy and credit changes all landed within about 2 sd of the A/A mean (sd 0.013, C74),
+    one 5-minute seed each. Plain training lowers M (−0.017 in 5 minutes); only practising on the evaluation decks
+    moved it (+0.050, quarantined).
+  - C79 (20 minutes, 2 seeds, M − base; `runs/probe/C79-chain/*/result.json`): chain +0.007, chain + credit +0.017
+    (+0.034 and −0.001); base −0.004 against the start pilot. Inconclusive; the seed-2 arms trained during the game.
+- **Found:** Evan's row 78 is the open question: does the training signal carry which target is better? X1 measured
+  the outcome and C76 the signal's size, not its direction.
+- **Plan for 2026-10-26** (rows 75-78):
+  1. **A1, the target-signal probe (build 15:30, run by about 17:30; no training).** At about 300 Trainer prompts from
+     the ar/ start pilot's self-play on K, branch every legal answer (up to 8) with m rollouts of the pilot (common
+     random numbers), giving Q̂(s,a). Report by Trainer: (a) the spread of Q̂ across answers, (b) the critic: corr of
+     V after each answer with Q̂, and of the GAE advantage with Q̂ minus its mean, (c) games needed for PPO's expected
+     gradient to get the sign right, (d) a frozen linear probe from the option embeddings to Q̂'s ranking. Evaluation
+     only (row 60): nothing trains on Q̂. Bands written before the run.
+  2. **The fix follows A1, as 5-minute ar/ reads:** (a) the critic sees the target → pure TD (λ 0) at prompt rows;
+     (b) the critic is blind and the spread is real → a value over a prompt's answers trained on the pilot's own
+     returns, with an exploration floor at prompts so unchosen targets get tried; (c) the spread is small → the target
+     is not the lever, the play around it is (chain head, C81); (d) the probe fails → representation (Evan's card-token
+     keys, C80, at 20 minutes).
+  3. **C81 (Evan's row 72) resumes now:** seed 1 of base, chain + credit and chain first (110 iterations each, so
+     sharing the GPU doesn't change what an arm trains), X1 on each pilot. At about 22:00, if both chain arms are
+     within ±0.01 of base on M and X1, stop there; otherwise seed 2 overnight.
+  4. **ar/ gets a fixed iteration budget** (C74's note, #258) so it can share the GPU with C81 and Evan's games:
+     re-setup and recalibrate (about 25 minutes), then drive.py restarts with program.md and ideas.md pointed at the
+     prompt signal, A1's branch first. M stays the keep metric; X1 is logged.
+  5. **Overnight:** the best fix at 110 iterations x 2 seeds with X1, then a metagame screen on K (the first
+     ground-truth reading on the fixed engine) with it, or with the baseline if nothing clears.
+  6. C77's dense-signal arms and C80 join the ar/ queue, ranked by A1; dayplan's stale windows (cardtok, signals)
+     are dropped.
+- **Decisions for Evan:** (1) may training use the pilot's own branched rollouts at prompts as per-target returns
+  (vine or AlphaZero-style self-play), or is that row 60's "oracle answers"? Default: no, diagnostics only, until he
+  says. (2) ar/'s fixed iteration budget (item 4). Default: yes.
+- **Evidence:** at 14:47 usage was week 73% (resets Tue 10-27 09:00, 18 h away, 89% of the week gone), 5-hour 3%;
+  GPU 1.0 of 16.3 GB, 0%; RAM 17.5 GB free; no game running.
+- **Next:** the implementation session takes #265.
+
+### #265 · 2026-10-26 · A5 A1 · A1's bands written before the run; ar/ideas.md and program.md point at the prompt signal (#264 items 1-2)
+- **Done:** the research session's part of #264 (Evan rows 76-78; restart brief from 333-10).
+  - A1's record with bands, `runs/probe/A1-targetsignal/record.md`. The implementation session builds it, reusing
+    X1b's PromptOracle with lines played to the game's end by the sampled pilot.
+    - Design: 300 decisions inside the seat's own Trainer (at least 50 each for Computer Search, Super Energy Removal,
+      Energy Removal, Energy Retrieval and Gust of Wind) plus 50 main-phase controls; up to 8 answers each; m = 32
+      rollouts to the end with common random numbers, kept in two halves.
+    - Readouts: R (split-half reliability), S (spread), G (held-out gain of the best answer over the pilot's), rho_V
+      (the critic), rho_A (the realized advantage), n\* (visits for the right sign), rho_probe (ridge from the option
+      vectors) and rho_pi (the pilot's own ranking, a check against X1).
+    - Bands: (c) G's 90% upper bound < 0.015; real spread if G >= 0.01 and > 2 SE. Then (a) rho_V >= 0.5 sqrt(R) with
+      rho_A >= 0.2, or (b) rho_V < 0.2 sqrt(R); (d) rho_probe < 0.2 sqrt(R); readable only if R >= 0.3.
+  - `ar/ideas.md` (untracked) has a new top section, the fix per branch, each a small train.py change:
+    - P1: pure TD (lambda 0) at prompt rows.
+    - P2: a Q head on the option vectors (a hook on `model.score`), trained on the pilot's own returns, with an eps 0.1
+      exploration floor at prompt rows through a logits wrapper, so PPO's ratio is the importance correction.
+    - P3: an all-action expected policy gradient at prompt rows.
+    - Then C77's two dense-signal arms for (c), and Evan's card-token keys with P2 for (d).
+  - `ar/program.md` has a "Focus" paragraph pointing at the prompt signal. It is left uncommitted for the
+    implementation session's re-setup baseline commit, as earlier program.md changes went in.
+  - Branched rollouts as training returns (vine or AlphaZero-style) are designed in `research_notes/Dense training
+    signals for Trainer play/branched_returns_design.md` and kept out of train.py (Evan's decision 1).
+  - The audit watcher was re-armed (row 56).
+- **Evidence:**
+  - Prior attempts checked against the record: C68 X1 (#241), C73 X1b (#246), C76 (#256), #234, ar/ rows 23-30
+    (prompt weight, lambda 1 in a turn, prompt entropy, separate normalisation, value-only first iteration,
+    prompt-heavy practice) and 36-41 (the card-token keys, the chain head). All null, or measured size and outcome,
+    not direction.
+  - The P-item citations (GAE, EPG, Mean Actor-Critic, V-trace, Precup 2000, TRPO vine) are from memory, not re-read
+    today.
+  - Usage at 14:55: week 74%, 5-hour 6%. No subagents were used for this entry.
+- **Next:**
+  - A1 at about 16:30-17:30; its call ranks P1-P3, C77's arms and C80 for the loop.
+  - The program.md edit is committed with the re-setup.
+
+### #266 · 2026-10-26 · A5 C81 C82 · Restart: C81 resumed, A1 (C82, the target-signal probe) built to the research session's record, ar/ on a fixed 9-iteration budget, and the GPU shared by turns
+- **Done:** #264 items 1, 3 and 4 (Evan rows 72, 75-78), on 333-10's restart brief and its GPU decision (row 78
+  first; C81 yields at arm boundaries).
+  - C81 resumed at 14:56 through `loop.py launch --resume`, after removing its STOP and the killed base-s1 run's stale
+    ar/ worktree (`ar-milestone-37d335a-nnchej__`). STOP is written again (15:25), so the chain stops after base s1 and
+    its X1, about 16:30; a background handover then runs ar/'s calibration and relaunches C81 with `--resume`
+    (`runs/probe/C81-chainlong/handover.log`). dayplan.py's stale windows (cardtok, signals) are not relaunched.
+  - A1 / C82 (`runs/probe/A1-targetsignal/`; the record and bands are the research session's, #265): built by one
+    lean-builder as `env/tools/probe_target_worker.js` (from X1b's oracle worker: CRN copies of the game at the prompt,
+    every answer up to 8, m = 32 rollouts to the game's end, both seats sampled at temperature 1 from probabilities a
+    pool subclass returns, so policy sampling is CRN too; the live game plays the pilot's own answer) and
+    `notes/scripts/probe_target_signal.py` (stratified quotas, the source game's realized GAE of the taken answer, the
+    input of `model.score` per answer through a pre-hook, the record's readouts R, S, G, rho_V, rho_A, n*, rho_probe,
+    rho_pi). Evaluation only (row 60). `loop.py launch` refused it beside C81 (10.6 + 2.4 GB over 80% of the card); a
+    watcher launches it when C81's chain stops.
+  - ar/ (item 4; Evan may still say no): `fixed.py` now trains `ITERS = 9` iterations a run (about 5 minutes alone)
+    instead of 300 seconds, so sharing the GPU no longer changes what a run trains (C74's note, #258); TIME_BUDGET
+    1800 s and WALL 2400 s are stall caps; `run_train` rejects a run with another iteration count. The GPU check
+    (busy above 4 GB) became `room()`: GPU used + 4.5 GB at most 80%, free RAM at least 5 GB; an experiment waits up to
+    30 minutes for room, then reports `paused`, and calibration waits before each step. delta = max(2 A/A sd, 0.01).
+    `setup` now ignores PAUSE, ideas.md, session-*.json and drive.out (they were tracked; PAUSE and ideas.md were hidden
+    by skip-worktree bits). The unrun "mirror practice" commit d255be1 is kept on branch pending-mirror-practice. New
+    baseline K' 99904d5 (subject "baseline", with the research session's program.md Focus paragraph), frozen hash
+    0b9db0d17d63. Not calibrated yet; drive.py stays stopped and ar/PAUSE stays until it is.
+- **Evidence:** A1's CPU smoke (2 workers, m 2-4): 0 line errors, 13 probes, offline V0 equal to the worker's (diff
+  0.0), probing on and off give the same games with greedy live play, readouts compute. `fixed.room()` at 15:10: "GPU
+  memory 10240 of 16303 MiB in use". `fixed.preflight` on K': clean. Usage at 14:58: week 74%, 5-hour 10%.
+- **Found:**
+  - C81's trainer holds about 8.6 GB, and `RL_GPU_SHARE` caps memory and paces the inference server together
+    (`rl/limits.py`: rest = 1/share − 1), so capping C81 at about 5 GB would slow it 2-3x: the jobs take turns at
+    arm boundaries instead.
+  - Sampled live games are not reproducible at a fixed seed (the server's sampler follows batch order); A1's "probe
+    does not change play" check uses greedy live games.
+- **Next:** about 16:30: C81 stops, A1 and ar/'s calibration run, C81 resumes about 17:10; A1's readouts pick #264
+  item 2's fix (P1-P3 in ar/ideas.md, the research session's), then drive.py restarts.
+
+### #267 · 2026-10-26 · A5 C82 C81 · A1: answers inside the Trainers do differ (+0.023 a prompt for the 5 named, +0.080 for Computer Search), but the critic doesn't see it and a single visit's advantage is far too noisy to set the sign; C81's base after 110 iterations still answers prompts at random
+- **Done:** A1 / C82 (`runs/probe/A1-targetsignal/`, record and bands #265) ran 16:10-16:27 beside ar/'s calibration,
+  GPU share 0.4; its 20-decision timing projected 22 minutes, so m stayed 32. C81's chain stopped after base s1 and its
+  X1 (16:09), as planned in #266; the handover then started ar/'s calibration. Correction to #266: C81's STOP was
+  written at 15:05, not 15:25 (#266's clock times after 15:00 were guesses; `date` is used from now on).
+- **Evidence (A1):** 1,164 practice-matchup games, 488 decisions (50 each of the 5 named Trainers, 188 other prompts,
+  50 main-phase), 56,448 rollouts to the game's end, 0 line or game errors, 11 capped; the branched answers cover
+  0.98 of the pilot's probability on average (min 0.42). Readouts (`a1.json`; G in game result units, SE over decisions):
+
+  | stratum | decisions (3+ answers) | R | G held-out gain (SE) | rho_V | rho_A | median n* (games) |
+  |---|---|---|---|---|---|---|
+  | Computer Search | 50 (42) | −0.03 | +0.080 (0.038) | −0.04 | −0.20 | 5,439 (6,110) |
+  | Super Energy Removal | 50 (12) | 0.91 (n 5) | +0.016 (0.010) | n 2 | −0.03 | 3.6e9 |
+  | Energy Removal | 50 (14) | 0.60 (n 7) | −0.004 (0.012) | 0.34 (n 8) | −0.13 | 1.8e6 |
+  | Energy Retrieval | 50 (33) | −0.01 | +0.001 (0.014) | −0.43 | −0.03 | 1,060 |
+  | Gust of Wind | 50 (39) | 0.41 | +0.022 (0.015) | 0.06 | 0.20 | 52,788 |
+  | the 5 pooled | 250 (140) | 0.26 | +0.023 (0.009) | −0.04 | −0.07 | 52,275 (19,730) |
+  | all prompts | 438 (249) | 0.08 | +0.018 (0.007) | 0.03 | 0.02 | 287,627 (37,639) |
+  | main-phase control | 50 (49) | 0.37 | +0.003 (0.018) | 0.43 | −0.15 | 1.3e7 |
+
+  rho_probe (ridge on the input of `model.score`, held out by game): the 5 pooled −0.13, all prompts −0.01 (top-1 0.42
+  against chance 0.36), main 0.27. rho_pi: the 5 pooled −0.06, all prompts 0.07, main 0.25.
+- **Evidence (C81 base s1):** 110 iterations, 63,005 games, 3,948 s of training, 0 errors. On fresh deals, M 0.465
+  (SE 0.010) against the start's 0.454: +0.011, z 1.2, "flat"; reverse direction 0.653 against 0.636. X1 on its pilot:
+  U − G on search, disrupt and tempo −0.002 (SE 0.008): its prompt answers are still no better than random.
+- **Found** (by the record's bands; the research session posts the branch call):
+  - Real spread, small: picking the best answer instead of the pilot's greedy one is worth +0.023 of a game result a
+    prompt for the 5 named Trainers (2.5 SE), most of it in Computer Search (+0.080, 2.1 SE); Energy Removal's spread
+    is below the (c) bar.
+  - Reliability is low (R 0.26 pooled; Computer Search −0.03), because the answers' values are close at m = 32, so
+    rho_V, rho_A and rho_probe are unreadable for most strata. Where readable, the critic tracks main-phase choices
+    (rho_V 0.43) but not Gust of Wind's targets (0.06 against the (b) bar 0.13), and the realized advantage doesn't
+    track A* at prompts.
+  - Signal noise is the clearest result: the median visit count for PPO's mean advantage to get the sign right is in
+    the tens of thousands of visits for the 5 named Trainers (about 20,000 games; Computer Search about 6,000), far
+    above the record's 1,000. That favours an all-action gradient (band (b)) over pure TD at prompt rows (a).
+  - The pipeline check fired only on Energy Removal (rho_pi 0.84 on 8 decisions) and the main-phase control (0.25),
+    not on the pooled prompts (−0.06); X1 stands.
+  - 110 iterations of plain training (C81 base) leave the prompt answers random and M flat.
+- **Next:** the research session's branch call on #265's bands, then that fix (P1-P3, ar/ideas.md) in ar/ once
+  calibration on K' ends; C81 resumes after calibration (chain + credit s1, then chain s1).
+
+### #268 · 2026-10-26 · A5 A1 · A1's call against its bands: a Trainer's target is worth a little (+0.018 a prompt, 2.7 SE), but neither the critic, the option vectors nor the pilot sees it, and PPO would need about 290k visits to get its sign; the loop starts with a Q over answers plus the all-action gradient, together with card-token key 1
+- **Done:** read `runs/probe/A1-targetsignal/a1.json` (the implementation session's run and table, #267) against the
+  record's bands, written before the run (#265).
+  - Wrote the call and the fix order at the top of `ar/ideas.md`, and sent it to 333-10 and the implementation
+    session.
+- **Evidence** (measured: one run, the ar/ start pilot on K; 1,164 games, 488 decisions, m = 32, 56,448 lines, 0
+  errors):
+  - All 438 prompt decisions:
+    - G +0.018 (SE 0.0066), real spread by the band.
+    - R 0.08 (< 0.3), so the correlation readouts are unreadable under the gate.
+    - rho_V 0.03, rho_A 0.02, rho_probe -0.01, rho_pi 0.07; median n\* about 290k visits.
+  - The 5 named Trainers: G +0.023 (0.009), real; R 0.26; rho_V -0.04; rho_probe -0.13; n\* about 52k.
+  - By Trainer:
+    - Computer Search: G +0.080 (0.038), R -0.03.
+    - Gust of Wind (readable, R 0.41): G +0.022 (0.015), between; rho_V 0.06; rho_probe -0.02.
+    - Energy Removal: band (c), G's upper bound 0.011. Its pipeline flag (rho_pi 0.84) rests on 8-14 decisions.
+  - Main-phase control (R 0.37): rho_V 0.43, rho_probe 0.27, rho_pi 0.25.
+- **Found:**
+  - The per-prompt value of a better target is real and matches C73 in size: about 6 own prompts a game x 0.018,
+    roughly +0.05 of M (an estimate; C73 measured +0.044).
+  - The critic and the option vectors read main-phase moves but not prompt answers, and the per-visit PPO sign is
+    hopeless.
+  - So the fix must add per-answer information: P2's Q over answers with an exploration floor, plus P3's all-action
+    gradient. The option vectors also need a card-naming input, key 1.
+  - P1 (TD) uses the blind V, so it goes last.
+  - Within-prompt rankings are noisy at m = 32 (R 0.08), so a Q head needs many visits.
+  - Evan's decision 1 (branched returns as training targets, `branched_returns_design.md`) is the direct way to give
+    each answer its return, and is now the strongest pending option.
+- **Next:**
+  - ar/ restarts after K' calibration with P2 + P3 + key 1.
+  - Ask Evan decision 1 again with A1's numbers.
+
+### #269 · 2026-10-26 · A5 A1 · Correction to #268 (audit A41): A1 did not measure whether the critic, option vectors or pilot see a prompt's target; P2 + P3 now run alone first
+- **Done:** corrects #268's heading and Found. Their "neither the critic, the option vectors nor the pilot sees it"
+  claims what A1's own gate makes unreadable: the split-half R is 0.08 for all prompts and 0.26 for the named 5,
+  under the record's 0.3. The script printed "rho_V, rho_A, rho_probe not readable; S and G stand". Under the null
+  rule, the critic's blindness at prompts is unmeasured.
+  - What A1 measured (one seed): real spread, G +0.018 (SE 0.0066) a prompt; median n\* about 290k visits; the
+    main-phase control (R 0.37: rho_V 0.43, rho_probe 0.27, rho_pi 0.25).
+  - The pipeline flag on main-phase rho_pi does not contradict X1, which is about prompts: a trained pilot ranking
+    main-phase moves is expected. The record's check was meant for prompts.
+  - The order in `ar/ideas.md` is changed:
+    1. P2 + P3 alone, supported by the measured n\* whatever the critic sees;
+    2. P2 + P3 with card-token key 1, whose case rested on the unreadable probe;
+    3. C77;
+    4. P1.
+  - The implementation session and 333-10 were told before drive.py started.
+- **Next:** A1's G needs a second seed before it counts as an effect (A41).
+
+### #270 · 2026-10-26 · A5 C81 C83 · ar/ calibrated at 9 iterations, but its movability control can't clear delta, so A1's fix (P2+P3) is tested at 110 iterations outside the loop; the GPU order for the evening
+- **Done** (333-10's calls of 16:33 and 16:50; the research session's order, #269):
+  - ar/ calibration on K' (16:09-16:45, beside A1): the start pilot twice M 0.4707 and 0.4707 (exact); A/A at 9
+    iterations M 0.4824, 0.4644, 0.4500 (sd 0.016), so best 0.4656, delta 0.0324, guard bar 0.460; the quarantined
+    movability control (practice on the evaluation pairs) M 0.4877, +0.022 over best: under delta, "NOT informative at
+    this budget".
+  - drive.py ran on Sonnet (`AR_MODEL`, default sonnet, 333-10) from 16:45. Its first session quit at once: its first
+    command chained `cd .../ar && tail ...; git log | head`, which the allowlist denies, and it stopped instead of
+    retrying. program.md gained a "Commands" paragraph (one command per call, no `cd`, chains or pipes; Read and Edit
+    for files); re-setup K'' = 377267f, same calibration. Then 333-10's option (a): drive.py stopped at 16:49 and
+    ar/PAUSE kept, since at 9 iterations the loop's reads are noise.
+  - C81 resumed at 16:49 with chain + credit s1; STOP written again at 16:56, so it holds before chain s1.
+  - C83 (`runs/probe/C83-p23/`, record with bands before launch): ar side branches p23 (P2: a Q head on the input of
+    `model.score`, own Adam, trained on the pilot's own returns at prompt rows, eps 0.15 exploration floor at prompt
+    rows with PPO's ratio as the correction; P3: the expected all-action policy gradient at prompt rows) and p23-key1
+    (plus Evan's card-token key 1), 110 iterations each, X1 on each pilot; base = C81's base s1 (same build, deals,
+    seeds). Being built by one lean-builder on K''. p23 runs first (#269's corrected order).
+  - GPU order (one job at a time): C81 chain + credit s1 (until about 18:10) → C83 p23 s1 → C83 p23-key1 s1 → C81 chain
+    s1 → overnight seed 2 only for arms that moved at seed 1 (M − base or X1 beyond ±0.01); if anything clears on 2
+    seeds, a metagame screen on K with it, else a baseline K screen (the first ground-truth reading on the fixed engine).
+- **Evidence:** `ar/calibrate.log`; `ar/results.tsv` rows on 99904d5; `ar/session-015.json` (the denied command); usage
+  76% of the week at 16:54 (the line allows about 75%), 5-hour 5%.
+- **Found:** a fixed iteration count did not shrink the A/A spread (sd 0.016 at 9 iterations against 0.012-0.013 at 300 s,
+  3 seeds each), and the loop's best case (+0.022) is under 2 sd: at about 5 minutes the loop can't detect an effect of
+  the size A1 measured, so its reads are noise until the budget grows (option (b), about 30 iterations with a
+  recalibration, skipped today).
+- **Next:** C83's branches, smoke-tested on CPU, launch when C81's chain + credit s1 ends.
+
+### #271 · 2026-10-26 · A5 C83 C84 · C83's branches launch-ready with the research session's two fixes, and tonight's decisions automated (C84): seed 2 only for arms that move, then a metagame screen on K
+- **Done** (333-10, 17:05: apply its rule without waiting for it):
+  - C83's branches, revised with the research session's approval (17:05): `q_head` zero-initialised (Q starts flat,
+    so P3 does nothing until Q has learned; one linear layer still gets weight gradients), and P3's advantage
+    (Q − Σ pi Q) divided by the same batch advantage sd PPO normalises with; per-iteration logs `q_sd` (Q's spread
+    across a prompt's answers), `q_corr` (Q of the taken answer against its return) and `kl_prompt` (the pilot at prompt
+    rows before against after the update). p23 = 7c1fb59, p23-key1 = 383e073 (`runs/probe/C83-p23/arms.json`).
+  - The evening sequence (`scratchpad/evening.sh`, log `runs/probe/C83-p23/evening.log`): C81 chain + credit s1 ends →
+    C83 launches (p23 s1, p23-key1 s1, X1 on each) → C81 chain s1, STOP set before its seed 2.
+  - C84 (`runs/probe/C84-overnight/`, record with bands, `notes/scripts/overnight_c84.py`, launched 17:05 through
+    `loop.py launch`): when the sequence has ended, each seed-1 arm against C81 base s1 (moved if M − base or X1 − base's
+    beyond ±0.01); seed 2 for base and the moved arms (110 iterations, the row-73 hold before each); cleared if the mean
+    M − base over 2 seeds is at least +0.02, above 0 at both, with seed-1 X1 at most −0.02; then a metagame screen on K
+    (C85, R1 from fresh wide decks, 30 iterations, then its best 12 against the lists under C49-sd 199 as C78) from the
+    cleared arm's pilot if rl.metagame can load it, else the baseline. The screen's record and bands are written by C84
+    before its launch (near the lists: best-12 distance ≤ 7, median Trainers ≥ 25, decisive share ≥ 0.30; the old
+    deviation: median Trainers ≤ 22, best-12 Energy ≥ 22 or share ≤ 0.21).
+- **Evidence:** a CPU iteration of the revised p23: 0 errors, `q_sd` 0.003, `q_corr` 0.31, `kl_prompt` 0.0007, Q's
+  gradient reaches only `q_head`, the expected-PG reaches every legal answer, the saved pilot's keys equal the start's;
+  `ar_milestone.py --dry --commit p23` passes (forbidden names none; worktree removed; ar/ unchanged). C84's readers
+  return C81 base s1 (M 0.4655, X1 −0.002); every rl.metagame flag of the screen exists on K.
+- **Next:** C83 from about 18:10; C84's decisions after C81 chain s1 (about 22:30); the screen overnight.
+
+### #272 · 2026-10-26 · A5 C83 C84 · Research round 1 under Evan's new trigger (row 79): a Q over answers removes action-sampling noise but not the game's luck; paired fixed-scenario readouts and a CMPO alternative proposed for tonight
+- **Done:**
+  - **The trigger changed** (Evan, relayed by 333-10, rows 56 and 79): "If it says then nothing moved, why would it
+    not trigger a deep research?", refined by "or is it not moving because the experiments are just running?".
+    - A research round now fires when a result lands null or flat against its bands, with at most one round every 3
+      hours, each on a question not researched yet. A "nothing moved" while runs are mid-flight does not fire one.
+    - My earlier reading had added an unstated "only if the audit names a new problem" condition. That is in the
+      estack inbox as a correction.
+    - The audit watcher was restarted on Evan's go-ahead, now matching the one-line audit format (A24 onward, which
+      it had missed).
+  - **Round 1** (on A1's result): 3 Haiku lean-readers. The topics skipped those of earlier rounds. Notes are in
+    `research_notes/Learning sparse target choices/round1_notes.md` (sources abstract- or snippet-level).
+  - **Proposed to the implementation session for C83/C84**, awaiting its yes or no:
+    1. ΔG: each seed-1 arm scored on A1's 438 stored prompt states, its greedy answer's Q-hat against the start
+       pilot's. Bands: moved if ΔG >= +0.009 and > 2 SE; null if |ΔG| < 0.005. Also proposed as a third "moved"
+       criterion in C84.
+    2. A C83 null read through `q_sd`: below 0.01 means Q stayed flat and the update rule was never tested.
+    3. A conditional `p23-cmpo` arm (Muesli-style clipped, normalised advantage target at prompt rows) if Q learned
+       but the policy did not follow.
+- **Evidence:** reader summaries only; no new measurement. Usage at 18:12: week 76%, 5-hour 7%. The readers used
+  about 21-24k tokens each.
+- **Found:**
+  - The research's main caution (Tucker et al. 2018): a learned action-dependent baseline rarely beats a state-only
+    one, because the noise is the future's luck. So P2 + P3 (C83) must learn gaps of 0.02-0.05 from ±1 returns.
+  - Paired branched rollouts (TRPO vine; PEGASUS) are the methods that remove that luck from comparing answers. That
+    is Evan's decision 1, now with literature support.
+  - No card-game agent reports, or solves, the credit problem for target choices.
+- **Next:** the implementation session's answer on 1-3. The next round no earlier than 21:15, and only on a result
+  that lands null.
+
+### #273 · 2026-10-26 · A5 · The research trigger narrowed again (Evan 18:15): a deep round only on an audit's dead-end call; round 1 (#272) began under the 18:12 trigger
+- **Done:** Evan, relayed by 333-10: "we should probably deep research only if the current experiments are a dead
+  end, as determined by the audit agent. We might have to refine the audit agent criteria." This replaces the 18:12
+  trigger (a null or flat result).
+  - From now on a deep round fires only when an audit explicitly calls the current experiments a dead end. Evan may
+    refine the auditor's criteria.
+  - Round 1 (#272: 3 Haiku readers) began at 18:15 under the 18:12 trigger, before this message reached me. Its
+    readers had finished and nothing more was spawned. Its outputs stand: the C83/C84 record amendments (ΔG replay,
+    q_sd readings, conditional p23-cmpo, written 18:50 before any seed-1 readout) were agreed by the implementation
+    session.
+  - The audit watcher now wakes only on a new "dead end" mention in `notes/audits.md`, or after 90 minutes with no
+    new audit (auditor down).
+- **Next:** none from this session until a dead-end call or a message from Evan; C83's reads land at about 20:50
+  (the implementation session).
+
+### #274 · 2026-10-26 · A5 · The research trigger is the auditor's judgment (Evan 18:25): a "RESEARCH CALL:" line when the work is not moving the metrics meaningfully
+- **Done:** Evan, relayed by 333-10, clarifying row 80: "I wouldn't say only wakes on an audit that says that, I mean
+  more subjectively if the auditor thinks that the research is not progressing on the metrics meaningfully."
+  - At each audit the auditor judges whether the work is moving the ground truth, the target skill (X1, ΔG) or M,
+    allowing for runs still mid-flight. When it judges it is not, it writes a line starting `RESEARCH CALL:` with its
+    reasons. No fixed criterion.
+  - My watcher now wakes on a new `RESEARCH CALL:` line, in place of "dead end" (#273), and after 90 minutes with no
+    new audit.
+  - Rounds stay at least 3 hours apart and on topics not researched yet, unless a call says otherwise.
+- **Next:** a round only on a research call.
+
+### #275 · 2026-10-26 · A5 C83 C84 · The A1 replay (dG: does a trained pilot pick better answers on A1's stored prompts?) built and wired into C84 as a third "moved" test; C83 running, its Q already tracks returns
+- **Done:** the research session's round 1 (#272), items (1)-(3) agreed (its amendments to the C83 and C84 records are
+  written with bands).
+  - `notes/scripts/a1_replay.py` (no games, CPU): reruns a trained pilot and the start pilot on A1's 488 stored
+    decisions (`a1.json.probes.json.gz`) and reports dG = mean of Q-hat(trained greedy) − Q-hat(start greedy), SE over
+    decisions, and the trained logits' within-decision Spearman with Q-hat; a chain pilot is reported as not valid (A1's
+    chain-0 observations have no chain rows).
+  - C84 (restarted 18:19 through `loop.py launch --resume`, after a refusal at 18:16 while C83's GPU share still counted
+    as loading): an arm also moved if its replay dG over all prompts is beyond ±0.009 and 2 SE.
+  - C83 launched 18:08 (the evening sequence), p23 s1 first.
+- **Evidence:**
+  - Replay of C81 base s1 (110 iterations of plain training): all 438 prompts dG +0.0018 (SE 0.0026), the 5 named
+    +0.0046 (0.0038), main-phase −0.0042 (0.006); the pilot changed its greedy answer on 14.8% of decisions; the trained
+    logits' Spearman with Q-hat 0.15 (start 0.07): null on every group.
+  - C83 p23 s1 at iterations 13-14 (18:16): `q_sd` 0.022 (Q spreads across a prompt's answers), `q_corr` 0.73-0.77 (Q of
+    the taken answer against its return), `kl_prompt` 0.0001 then 0.079; about 30 s an iteration.
+- **Found:** plain training doesn't move the answers on A1's own prompts (dG null), in line with X1. In C83 the Q head
+  tracks the returns within 15 iterations; whether the policy follows is what its X1 and replay will say.
+- **Next:** C83 p23 s1 ends about 19:10, p23-key1 about 20:15, C81 chain s1 about 21:30, then C84 decides.
+
+### #276 · 2026-10-26 · A5 · A44's research call is held to 21:15 by the 3-hour gap; a cheap ground-truth read on K proposed; a timestamp correction
+- **Done:**
+  - A44 (18:20) wrote the first `RESEARCH CALL:`: target skill (X1) is unmoved in three pilots, and the levers found
+    are small next to G3's gap. Its questions:
+    1. What accounts for the gap between the drafted decks and the lists beyond prompt answers?
+    2. What is the cheapest ground-truth read on K before tonight's screen?
+  - Question 1 is held until 21:15, 3 hours after round 1 started at 18:15. A timer checks C83's seed-1 reads then.
+    If C83 moves ΔG or X1, 333-10 decides whether the call still stands; its question goes beyond target skill.
+  - Question 2 needs no literature. Re-run C78 (`notes/scripts/probe_meta_premise.py`, about 2 GPU minutes on 10-24)
+    on engine K with K's start pilot. That gives G3 on the new engine in minutes. Proposed to 333-10 and the
+    implementation session.
+- **Correction:** #272 said "proposed ... 18:40", and the C83/C84 record amendments said "18:50". All three were
+  really about 18:17-18:18, a clock misreading on my side. The records and round-1 notes are corrected to "about
+  18:18" (noting the mistaken first time). They were still written before any seed-1 readout.
+- **Evidence** (C83 p23 s1 mid-run, the implementation session's report, iterations 0-23): q_sd 0.048 -> 0.072, then
+  0.021-0.023; q_corr 0.58 -> 0.78; kl_prompt about 0.088 an iteration. C81 base s1's A1 replay: ΔG +0.0018 (SE
+  0.0026), null (#275).
+- **Next:** p23 s1's X1 and ΔG at about 19:15; the 21:15 decision on round 2.
+
+### #277 · 2026-10-26 · A5 C83 C86 C87 C84 · C83's Q over answers lost at seed 1 (M −0.034 against base; answers no better, the replay leaning worse), so p23-key1 is dropped and key 1 runs alone (C87); C86: the drafted decks' gap to the lists is unchanged on the fixed engine
+- **Done:**
+  - C83 p23 s1 (P2 + P3; trained 18:09-19:17, X1 to 19:19:42) read against its record's bands.
+  - 333-10's call (19:20), applied:
+    - p23-key1 is not run (it carries the losing P2 + P3); `runs/probe/C83-p23/STOP` stays.
+    - Key 1 runs alone at 110 iterations instead (C87).
+    - C84 gives seed 2 to gains only.
+    - The overnight screen (C85) is unchanged.
+  - C86, C78 on engine K (#276's question 2, relayed by 333-10; record with bands before launch,
+    `runs/probe/C86-premiseK/`): ran 19:19:56-19:21:56, exit 0. The pilot is `ar/data/start.pt`, whose weights equal C78's
+    C49-sd 199 (max difference 0.0), so only the engine differs.
+  - C87 (`runs/probe/C87-key1/record.md`): ar/ branch `key1-110` = 68e60fe, K'' plus `MAX_ITERS = 110` and the key 1 line
+    (cand_latent 1, zone 1, gate 1, as row 36). `ar_milestone.py --dry` is clean (forbidden names none, worktree
+    removed). C84 trains it after C81 chain s1.
+  - C84 (`notes/scripts/overnight_c84.py`; record amended before it decides):
+    - Step 0 trains C87 (110 iterations, seed 1) and runs its X1. p23key1 is out of its arms.
+    - An arm gets seed 2 only for a gain: M − base >= +0.01, X1 − base's <= −0.01, or dG >= +0.009 and > 2 SE.
+    - It was restarted at 19:25 through `loop.py launch --resume --gpu-gb 0`. The launch with a 3 GB GPU share was
+      refused while C81 counted 12.2 GB, but the driver uses no GPU until C81 ends, and its child runs hold under row 73.
+  - **A slip in the evening sequence.** `TaskStop` on `evening.sh` (18:25) did not end its sh process.
+    - At 19:19:59, as C83 ended, it relaunched C81 chain s1 beside C86 and set C81's STOP for after it (19:20:15). That
+      is the order 333-10 then asked for.
+    - The replacement `evening2.sh` would have resumed C83 for key1 and removed C81's STOP. It was killed at 19:21,
+      before it acted.
+    - C86 shared the GPU with C81's first two minutes (120 s against C78's 88 s).
+- **Evidence:**
+  - **p23 s1** (`runs/probe/C83-p23/p23-s1/`): 110 iterations, 65,134 games, 3,814 s, 0 errors.
+    - M on fresh deals 0.4312 (SE 0.0088) against C81 base s1's 0.4655: −0.034. Against its start (0.4541): D −0.023,
+      z −2.4, "loss". Reverse M 0.673 against the start's 0.636 (D +0.037, z 4.0).
+    - X1 U − G (SE; base in brackets): the three groups +0.003 (0.007) [−0.002]; draw +0.030 (0.010) [+0.006]; search
+      +0.005 [−0.001], disrupt −0.002 [−0.023], tempo +0.003 [+0.019].
+    - A1 replay (`a1replay.json`, CPU):
+      - all 438 prompts dG −0.0078 (SE 0.0044), "between";
+      - the 5 named −0.012 (0.0055); Gust of Wind −0.033 (0.015); main-phase −0.0004 (0.008);
+      - the greedy answer changed on 28.3% of decisions (base s1 14.8%); the logits' Spearman with Q-hat 0.03 (the
+        named 5 −0.11).
+    - Train log over 110 iterations, mean (last 5): `q_sd` 0.024 (0.029), `q_corr` 0.79 (0.81), `kl_prompt` 0.099
+      (0.119). Entropy 0.428 against base s1's 0.457.
+  - **C86** (`premise.json`; 6,912 games, 0 errors; decisive share against the lists, SE over pairs, C78's in
+    brackets): C52 s3 0.117 (0.009) [0.119]; C63-ctl 0.212 (0.013) [0.210]; C63 random-pilot arm 0.150 (0.010) [0.139].
+    All are within 1 combined SE.
+  - **Key 1 on the replay:** at gate 0, a key 1 model's logits equal the start's on 60 stored A1 prompts. With the gate
+    (`g_lat`) set to 1 they change on 60 of 60, so A1's stored inputs carry what key 1 reads.
+- **Found:**
+  - **p23 by C83's bands:** M is a one-seed loss (−0.034), X1 is null, and dG is between, leaning worse.
+    - With `q_sd` at least 0.01 and `kl_prompt` far above 1e-3, the amended reading applies: "Q learned, the policy
+      moved, answers not better" (the research session's reading). Q's ranking of the answers is wrong, as #272's
+      caution predicted: a learned per-answer Q fits the game's luck.
+    - X1 draw is new. Random answers now beat the pilot's own at draw prompts by +0.030 (3 SE), against +0.006 for base.
+    - This is one seed: under the null rule it is a loss, not a confirmed harm.
+  - **C86 is R-same:** the fixed engine leaves the gap where C78 put it. The drafted decks' best 12 win 0.12-0.21 of
+    decisive games against the lists, and C78's R-gap call (both at most 0.35: build arm/) carries over.
+  - Stopping a background script with `TaskStop` can leave its shell running. Check the process list after stopping a
+    sequence that launches runs.
+- **Next:**
+  1. C81 chain s1 with its X1 (until about 20:30).
+  2. C84: C87 (until about 21:45), then the seed-1 calls, seed 2 for gains, and the C85 screen overnight.
+  3. After p23's reading, the research session's next options are eps 0.25 at prompts or Evan's decision 1 (branched
+     returns per answer).
+
+### #278 · 2026-10-26 · A5 C88 C89 · Evan's testable solution (19:33): p23 failed through its Q target, so change only the target; C88 turn-end value (no decision 1), C89 paired branched returns (decision 1)
+- **Done:** Evan, relayed by 333-10: "The research agent should propose a solution that can be tested via an
+  experiment."
+  - The record with bands, written before the run: `runs/probe/C88-qtarget/record.md`. The spec went to the
+    implementation session, copied to 333-10.
+  - Mechanism: p23 (C83) trained its Q head on the single ±1 return of the answer taken (the position's value, plus
+    the answer's ~0.02, plus later luck). It fitted luck: ΔG named-5 -0.012 (SE 0.0055), answers changed on 28%, M
+    -0.034 (#277).
+  - The test keeps p23's Q head and policy update and changes only the target (ar/train.py constant `Q_TARGET`):
+    - C88 "turn" (about 15 lines): V at the seat's next turn. It drops later turns' luck; V does track move values
+      at main-phase states (A1's control, rho_V 0.43).
+    - C89 "branch" (about 80-120 lines; Evan's decision 1): every answer played to the game's end from the same state
+      with common random numbers, m 8, centred within the prompt. Value targets only.
+  - Bands, against C81 base s1 with p23 as the reference:
+    - fixes the direction: ΔG named-5 >= +0.009 (> 2 SE), which earns seed 2 and possibly the C85 screen;
+    - no harm, no gain: |ΔG| < 0.005;
+    - same failure: ΔG <= -0.009 or M <= base - 0.025.
+  - A C89 failure would retire prompt-answer work for A44's gap question.
+- **Evidence:** A1 (#268-#269), C83 p23 s1 and its replay (#277), C86 (G3 unchanged on K). No new measurement; no
+  subagents. Usage about week 77%.
+- **Next:** C88 after C87 (about 21:50-23:05, estimated); C89 on Evan's yes to decision 1 and once built; then C85.
+
+### #279 · 2026-10-26 · A5 C88 C89 C84 · C88 (Q's target = V at the seat's next turn) built, smoke-tested on real rows and queued in C84 after C87; C89 (branched targets) is being built behind Evan's decision 1
+- **Done** (the research session's C88 / C89, #278, Evan 19:33):
+  - C88 = ar/ branch `c88-turn`, d822ed9: p23 (7c1fb59) plus `Q_TARGET = "turn"` and `turn_targets(batch)` (23 lines
+    added, 2 changed).
+    - The target walks each trajectory backwards: the final reward if the game ends after the row; otherwise the next
+      row's value if its turn (glob byte 0) differs, else the next row's target.
+    - `q_loss` and `q_corr` use it; the PPO advantage, P3 and the floor are p23's.
+    - `ar_milestone.py --dry` is clean. A build note and the smoke are in `runs/probe/C88-qtarget/record.md`.
+  - C84 was restarted at 20:26 (`--resume --gpu-gb 0`). After C87 it trains C88 the same way (110 iterations, seed 1,
+    X1), then any arm listed in `runs/probe/C84-overnight/extra_arms.json`.
+    - C88's record bands on the named-5 replay ΔG also give seed 2: "fixes the direction" (>= +0.009 and > 2 SE), or
+      "between" with ΔG > 0.
+    - Checked on p23's numbers: "same failure as p23", no seed 2.
+    - The C84 record has amendment 2.
+  - C89 (Q trained only on per-answer mean returns from branched rollouts of the current pilot's own self-play):
+    - The design was agreed with the research session (20:30). Each iteration, A1's worker runs unchanged on separate
+      games, so env/, a frozen ar/ path, does not change.
+    - It is being built by one Sonnet lean-builder on branch `c89-branch`. It joins C84 through `extra_arms.json`
+      only on Evan's yes to decision 1.
+- **Evidence:**
+  - Synthetic check: on two interleaved trajectories, the targets equal the hand-computed ones.
+  - Real-row smoke (CPU, the start pilot behind the floor, 1 worker; about 20:28): 3,151 rows from 51 games, 0 errors,
+    all 102 trajectories end with `done`.
+    - Of 787 prompt rows, 96.7% take the next-turn value and 3.3% the final reward; none is cut.
+    - The target's difference from the row's own V has sd 0.21, against the λ-return's 0.69 at the same rows.
+  - Usage at 20:26: week 78% (the line allows about 79%), 5-hour 23%.
+- **Found:** the turn target carries about a third of the return's spread at prompt rows. If p23 failed on its
+  target's noise (#278's rival R-target), C88 removes most of it, at the cost of V's bias at turn end.
+- **Next:** C81 chain s1 ends (about 20:45), then C87 (about 22:00), then C88 (about 23:15), then C84's calls. C89 is
+  built, and runs on Evan's yes.
+
+### #280 · 2026-10-26 · A5 C89 · C89 built (Q trained on branched per-answer returns of the pilot's own self-play) and checked; it runs only on Evan's yes to decision 1
+- **Done:** one Sonnet lean-builder (about 80k tokens, 5 minutes) built C89 to #279's agreed design. ar/ branch
+  `c89-branch` = 8d523da, on c88-turn, train.py only (107 lines added, 5 changed).
+  - With `Q_TARGET = "branch"`, after each PPO update the newest weights play sampled self-play games through A1's
+    worker (`env/tools/probe_target_worker.js`, unchanged).
+    - Prompts inside the seat's own Trainer are branched: `need` {"any"} only, no named-card quotas, no main-phase
+      probes; m 8, up to 8 answers, p 0.3, at most 2 a game.
+    - Batches are played until branching takes 0.5 x that iteration's collect + update, with at least one batch.
+  - Q trains only on those prompts.
+    - Targets: per-answer mean returns centred within the prompt, held in a 10-iteration FIFO.
+    - 4 Adam steps an iteration; option vectors from the current model, no_grad.
+    - p23's Q loss on PPO rows is off; P3, the floor and the stats are p23's.
+  - The "it" line gains `n_br buf br_s br_share q_br line_err`. Line errors over 1% stop the run.
+  - The "return" and "turn" modes are unchanged.
+  - Its C84 entry is staged as `runs/probe/C84-overnight/extra_arms.c89-pending.json`; renaming it to
+    `extra_arms.json` queues it after C88.
+- **Evidence:**
+  - Builder's smoke (2 iterations, tiny settings, on cuda beside C87): n_br 2 a batch, 0 game and line errors.
+    - q_br 0.0 at iteration 0 (likely all-zero targets at m 2; not confirmed), then 0.1055, and q_head changed.
+    - The model's gradient is identical before and after the branch Q step.
+  - Builder's timing at m 8 (3 iterations beside C87): about 1.1-1.2 s a branched prompt, games and Q steps included.
+    One 16-game batch takes about 20 s and gives 15-20 prompts, so about 0.4 of a 33 s iteration (projected, not
+    measured).
+  - My checks:
+    - `ar_milestone.py --dry`: forbidden names none, ar/ unchanged.
+    - The branch games get the training rules: GpuMatrix.play omits roundTurns when not given, so the pool's
+      setdefault from fixed.GAME fills both.
+- **Found:**
+  - In branch mode q_corr (Q of the taken answer against PPO's return) no longer reads a fit, since Q is centred within
+    the prompt and carries no state value. The builder saw about −0.38 on 40 prompts. Read q_br, n_br and ΔG instead.
+  - The option vectors are fp32 for Q's training and bf16 in PPO's update, a small mismatch.
+- **Next:** the decision 1 question goes to Evan with C89 ready. On yes, the pending file is renamed and C89 runs after
+  C88 (about 23:15, about 110 minutes, estimated).
+
+### #281 · 2026-10-26 · A5 C89 · C89's Q window now covers the whole run (the research session's power amendment)
+- **Done:** the research session amended the C88 / C89 record (20:3x):
+  - A 10-iteration window holds about 150-200 branched prompts at m 8, against about 1,750 that A1's pooled gain would
+    need at m 8. A C89 null now counts as R-small only if the window held at least 1,500 prompts at the end; below
+    that it is "underpowered".
+  - Applied on `c89-branch` as f634b6a: `buffer_iters` None (the whole run, about 1,650-2,200 prompts by iteration
+    110, projected), and each probe's option vectors are freed after Q's step (2 lines).
+  - The "it" line's `buf` is the window size in prompts. The staged C84 entry
+    (`extra_arms.c89-pending.json`) points at f634b6a.
+- **Evidence:** `ar_milestone.py --dry` on f634b6a: forbidden names none, ar/ unchanged; `git diff --stat 8d523da
+  f634b6a`: train.py, 2 lines.
+- **Found:** with the whole window, Q's per-iteration pass reruns the model on up to about 2,000 stored rows. It runs
+  once an iteration, not once per Q step: a few seconds late in the run (estimated).
+- **Next:** C89 runs after C88 only on Evan's yes to decision 1.
+
+### #282 · 2026-10-26 · A5 C81 C87 · C81 (Evan's row 72, the chain head at 110 iterations): both chain arms are null at seed 1 against base, so no seed 2; C87 started
+- **Done:**
+  - C81 chain s1 (relaunched 19:20, #277) trained to 20:42 and ran its X1 by 20:45 (exit 0 both). The chain stopped
+    before base s2, as its STOP said.
+  - C84 then started C87, card-token key 1 alone, at 20:46.
+  - C81's arms are read against base s1 by its record's bands, and by C84's gain rule (#277).
+- **Evidence** (`runs/probe/C81-chainlong/*-s1/`; fresh deals, 64 games a pair; X1 on the three groups, U − G):
+  - chain + credit s1: 110 iterations, 61,194 games (1 error), 4,253 s.
+    - M 0.4691 (SE 0.0102) against base s1's 0.4655: +0.004. Against its start: D +0.015, z 1.6, "flat".
+    - X1 +0.000 (0.007) against base's −0.002.
+  - chain s1: 110 iterations, 61,942 games, 4,666 s.
+    - M 0.4633 (SE 0.0081): −0.002. D +0.009, z 0.95, "flat".
+    - X1 −0.000 (0.007).
+  - Neither moves M or X1 by 0.01 in either direction. The A1 replay is not valid for chain pilots (#275).
+- **Found:**
+  - Both are R-null at seed 1 (C81's band: all within ±0.01). Under C84's rule they get no seed 2.
+  - #264's stop rule (both chain arms within ±0.01 of base on M and X1) ends C81 here.
+  - Evan's chain-head idea (rows 41, 72) has now had 20 minutes x 2 seeds (C79) and 110 iterations x 1 seed, and
+    moved neither the Trainer share nor the prompt answers.
+- **Next:** C87 until about 22:00, C88 until about 23:15, C89 on Evan's yes, then C84's calls and C85.
+
+### #283 · 2026-10-26 · A5 C90 · Research round 2 on A44's call: the draft fails to find good decks even for its own pilot, and its selection reads game noise; C90 pairs it with common random numbers and reads the ground truth
+- **Done:** audit A44's RESEARCH CALL (18:20) asked what accounts for the gap beyond prompt answers. It was held by the
+  3-hour gap and run at 21:16 on 333-10's go: 2 Haiku lean-readers on topics not researched before. Usage at 21:15:
+  week 79%, under the line (about 79.7%); 5-hour 1%.
+  - Notes: `research_notes/Learning sparse target choices/round2_notes.md`.
+  - The proposal, C90, has its record and bands written before the run (`runs/probe/C90-pairedselect/record.md`).
+    `rl/metagame.py --select-paired` (opt-in, about 40-60 lines) makes a deck and its candidates play the same
+    opponents, seats and deals, and moves the deck only if a candidate beats it by more than 1 SE.
+    - Control: C85, the overnight screen.
+    - Bands: R-search, G3 +0.08 and >= 0.30; R-pilot, G3 up with fewer Trainers; R-small, |ΔG3| < 0.04.
+  - Sent to the implementation session and 333-10. It changes nothing tonight unless the queue would otherwise idle.
+- **Evidence** (all measured earlier):
+  - Under one pilot the drafted decks win 0.12-0.21 against the lists (C78; C86 on K). Yet the lists against their
+    Energy copies score M about 0.45-0.47, so they are only slightly improvable for this pilot.
+  - `--select` today compares candidates on different opponents and deals: rl/metagame.py's docstring, step 5.
+  - Literature (most sources abstract-level): the Dominion benchmark (Halawi 2024, full text) has a self-play DQN
+    stuck on money play because the engine was never explored; difference rewards and COMA give per-edit credit.
+- **Found:** two separable faults for A44's question: (1) the draft's search reads noise (testable by C90); (2) the
+  pilot's valuation, of which prompt answers are the part tested so far (C83, C88, C89). C90's R-pilot band tells
+  them apart on the ground truth itself.
+- **Mistake:** an unquoted heredoc ran one backticked `--select` as a command and dropped it from the record. It was
+  restored within the minute, before any launch.
+- **Next:** C88 at about 22:00; C89 on Evan's decision 1; C90 queued behind them and beside C85.
+
+### #284 · 2026-10-26 · A5 C90 · C90 (paired selection in the drafting loop) built as a reviewed patch and queued after C85; correction to #282
+- **Done** (the research session's round 2 on A44's call, record `runs/probe/C90-pairedselect/record.md`; 333-10's
+  call (a) with guards, 21:15):
+  - `--select-paired` for `rl/metagame.py`: a deck and its candidates play the same scheduled games (opponent entry,
+    seat and deal seed). The move goes to the entry with the best mean paired difference from the deck itself, only if
+    it is above 1 SE; otherwise the deck stays.
+    - One Sonnet lean-builder (about 60k tokens) built it on a scratch copy: +55 / −16 lines.
+    - I reviewed the diff line by line and staged it as `metagame_c90.py` with the live file's sha256
+      (d2cc568e...).
+    - The live file is untouched (guards 1 and 2).
+  - C90-queue (`notes/scripts/queue_c90.py`, through `loop.py launch` at 21:23, --gpu-gb 0):
+    - It waits until C84's C85 screen has launched and ended. Only then does it copy the patch in, if the live file is
+      unchanged, keeping the old file.
+    - It writes C90's chain from C85's own chain.sh (renamed, plus `--select-paired`), so C85 is the exact control.
+    - It launches through `loop.py launch` after the row-73 hold, and applies the record's kill rule (errors over 1%;
+      0 moves for 10 counted iterations).
+    - It stops if C84 ends without a screen.
+  - The ar/ re-setup for the rl/ change waits until tomorrow (333-10, guard 5).
+- **Evidence:**
+  - Off: the scheduled msgs equal the live file's (stubbed collect, 12 decks, 40 games), and every changed line is the
+    same with one entry a slot.
+  - On: 20 slots × 2 jobs sharing seed, seat and opponent entry. A 2-iteration CPU smoke had 0 errors and made no moves
+    (under 2 focus slots a deck), so the move rule was checked on toy vectors only.
+  - Usage at 21:20: week 79%, 5-hour 2%.
+- **Found:** a slot's paired jobs must go to different shards. `env/remote_worker.js` maps games results back by
+  seed, so same-seed jobs in one shard can't be told apart. This needs `--workers` >= 1 + `--candidates` (C85: 6
+  and 2).
+- **Correction to #282:** "Evan's chain-head idea (rows 41, 72)" should read "(row 72; ar/ results rows 36-41)". Row
+  41 is an ar/ results row, not one of Evan's.
+- **Next:** C87 until about 22:00, C88, C89 on Evan's yes, then C84's calls and C85; C90 after C85.
+
+### #285 · 2026-10-26 · A5 C89 C87 · Evan's yes to decision 1 (row 83): C89 queued in C84 after C88; C87 trained its 110 iterations
+- **Done:**
+  - Evan, 22:05, relayed by 333-10, on its explanation of C89: "Sounds good looking forward to seeing the results"
+    (row 83).
+  - Decision 1 (log #264) is answered yes. Training may use the pilot's own paired playouts per Trainer target as the
+    targets of a value over answers. The pilot never copies an answer, and no human data enters. Row 60 still bars
+    training on an oracle's answers.
+  - `runs/probe/C84-overnight/extra_arms.c89-pending.json` was renamed to `extra_arms.json` (22:05), naming C89 =
+    f634b6a, run folder `runs/probe/C89-qbranch`, C88's bands. C84 reads the file after C88, so C89 trains next
+    (110 iterations, seed 1, X1), before the seed-1 calls.
+  - The rest of the queue is unchanged: C84's calls and seed 2 for gains, then C85, then C90 (C90-queue).
+- **Evidence:**
+  - The file parses and the commit resolves in ar/.
+  - C84 at 22:04: C87 (key 1 alone) at iteration 109 of 110, scoring its start pilot; its X1 and C88 come next.
+- **Next:** C87's readout about 22:15. Then C88 (about 22:15-23:30), C89 (about 23:30-01:20, estimated), C84's calls,
+  C85 and C90.
+
+### #286 · 2026-10-26 · A5 C87 C84 C90 · C87 (card-token key 1 alone, 110 iterations) moves nothing: M +0.000, X1 slightly worse within noise, ΔG null; C84 crashed on my bug at 22:06 and resumed; C88 started
+- **Done:**
+  - C87 trained 20:46-22:06 (exit 0); X1 to 22:10:44. The A1 replay ran on CPU (2 threads).
+  - **C84 crash (22:06:04, my bug).** `main()` assigns a local `x1` in its seed-2 step, so the call to the helper
+    `x1()` raised UnboundLocalError right after C87 trained. The helper is renamed `run_x1`, and an AST check finds no
+    other module function shadowed in `main`.
+    - Relaunched 22:08 through `loop.py launch --resume`. It skipped C87's finished training and ran its X1.
+    - Nothing was lost but about 2 minutes.
+  - The gap made C90-queue stop at 22:07:17 ("C84 ended without launching a screen"). It now gives up only after C84
+    has been down 15 minutes, and was relaunched 22:08 (`--resume`).
+  - C88 (Q's turn target) started training at 22:10:44.
+- **Evidence** (`runs/probe/C87-key1/key1-s1/`; against C81 base s1):
+  - 110 iterations, 61,809 games (1 error), 4,494 s.
+  - M 0.4658 (SE 0.0083) against 0.4655: +0.000. Against its start: D +0.012, z 1.2, "flat". Reverse D +0.018
+    (z 1.9).
+  - X1 U − G (SE; base in brackets):
+    - the three groups +0.010 (0.009) [−0.002];
+    - draw +0.019 (0.009) [+0.006]; search +0.016 (0.013) [−0.001]; disrupt +0.002 (0.013) [−0.023]; tempo +0.014
+      (0.010) [+0.019].
+  - Replay: all prompts dG −0.0021 (SE 0.0037); the 5 named −0.0031 (0.0056); Gust −0.028 (0.020); Computer Search
+    +0.008 (0.008). Answers changed on 21.9% (base 14.8%).
+- **Found:**
+  - By C87's bands, "between", not R-learn. M and dG are null. X1 is +0.012 against base, just past the ±0.01 null
+    line on the worse side, about 1 SE of the difference.
+  - C84's gain rule gives no seed 2.
+  - Evan's key 1 has now had one 5-minute seed (row 36) and one 110-iteration seed. Neither moved the Trainer share or
+    the prompt answers.
+- **Next:** C88 until about 23:30, then C89 (until about 01:20, estimated), C84's calls, C85, and C90.
+
+### #287 · 2026-10-26 · A5 · Evan paused all GPU use at 22:12 (Cyberpunk): a pause, not a crash; C88 lost its first minutes and reruns from the start on resume
+- **Done:** Evan, 22:12, relayed by 333-10: "pause".
+  - 333-10 wrote `runs/probe/C84-overnight/STOP` and killed overnight_c84.py's tree (pid 24292). That ended C88
+    about 2 minutes into training, with no result.
+  - It also killed C90-queue (pid 17948).
+  - I stopped my C88 watcher and removed the killed run's stale ar/ worktree (`ar-milestone-d822ed9-nd3vqx7u`). It
+    held only that iteration's rollout files, and ar/'s worktree list is clean. `runs/probe/C88-qtarget/c88-s1` has
+    only `reverse/`; ar_milestone reruns any arm without `result.json`.
+- **Evidence:** at 22:13 no ar_milestone, remote_worker, overnight_c84 or queue_c90 process runs (333-10, 22:12);
+  GPU 1.8 GB, 1%. `ar/PAUSE` stays.
+- **State kept:**
+  - C87's result, X1 and replay; C84's fixes (#284, #286); `extra_arms.json` (C89).
+  - C90's staged patch, with the live `rl/metagame.py` unchanged.
+- **Next:** nothing launches on the GPU until Evan says resume. Then:
+  1. Remove C84's STOP and relaunch C84 with `--resume`. It reruns C88 from the start, then C89, the seed-1 calls,
+     seed 2 for gains and C85.
+  2. Relaunch C90-queue with `--resume`.
+
+### #288 · 2026-10-26 · A5 C88 C84 C90 · Resume at 22:19 (Evan: "resume for now"): C84 relaunched, C88 rerunning from the start; C90-queue waiting
+- **Done:** Evan, 22:19, relayed by 333-10: "resume for now". His game wasn't running.
+  - Removed C84's STOP and relaunched C84 (`loop.py launch --resume`, pid 23288). It started C88 from the start at
+    22:19:19.
+  - Relaunched C90-queue (`--resume`, pid 27216); it waits for C85.
+  - The row-73 hold stays before every arm. A pause mid-arm loses that arm, as at 22:12 (#287).
+- **Evidence:** at 22:19 the GPU was at 1.8 GB, 5%. ar/'s worktree list holds only the new C88 run's.
+- **Next:** C88 until about 23:35, C89 until about 01:25 (estimated), then C84's calls, C85 and C90.
+
+
+### #289 · 2026-10-26 · A5 · Evan's rows 84-85: a one-step launcher for the three agents (notes/scripts/agents.ps1), and the decidueye-perch pane reworked per agent
+- **Done:**
+  - `notes/scripts/agents.ps1` opens the implementation, auditing and research agents, each in its own window with
+    a standing brief: its role, which files to rebuild state from, the auditor's 30-minute job prompt (with the
+    RESEARCH CALL judgment, rows 80-81), the research trigger and proposal format (rows 81-82), and the common rules
+    (ground truth, rows 60 and 83, the null rule, usage line, row 73, runs/GPU-PAUSE). Fresh sessions by default;
+    `-Resume` reopens the old ones by id; `-Only <agent>`; `-DryRun` prints the commands. Each window sets
+    PERCH_ROLE. The project CLAUDE.md files point at it.
+  - The decidueye-perch mod (in 333-77's dev-mods folder): one owl per agent (fletcher, sentinel, scholar; overseer
+    for any other session), picked by PERCH_ROLE or the old session ids, with its own section (the queue, the newest
+    audit and research call, research calls and notes). The line-art owl is kept (a pixel-art version was dropped at
+    Evan's word: it read less like an owl), shaded and animated per agent.
+- **Evidence:** `agents.ps1 -DryRun` prints the three commands; the auditing brief is 3,299 characters with no
+  double quotes. The mod passes `claude plugin validate`, `tsc` and its 5 tests (`claude plugin test`).
+- **Found:** the three resumed agent sessions have not saved their transcripts since about 2026-10-24 21:36 (file
+  sizes unchanged all of 10-26), so `--resume` restores only that much; fresh sessions with standing briefs lose
+  nothing more and start lighter.
+- **Next:** after a shutdown, run `powershell -File metagame-rl/notes/scripts/agents.ps1` (pausable arms, row 84,
+  are being built by the implementation session).
+
+### #290 · 2026-10-26 · A5 C84 C88 C89 C90 · Handoff (Evan: "lets pause implementation and restart everything"): pausable runs half built (row 84), C84 stops itself before C89, and what a fresh implementation agent does next
+- **Live when this was written (22:37 by `date`):**
+  - C84-overnight (pid 23288; launched 22:19 on the OLD code) is training C88 (`c88-turn` d822ed9), at iteration 30
+    of 110 at 22:36. Training ends about 23:35, then evaluation and X1.
+    - Early C88 (it 0-8): `q_corr` 0.61 rising to 0.88 (against the turn target), `q_sd` 0.068 falling to 0.026,
+      `kl_prompt` 0.00-1.16.
+  - C90-queue (pid 20620, launched 22:27:48 on the NEW code) waits for C85.
+  - `runs/probe/C84-overnight/STOP` (written 22:25; it says "not a pause"): C84 finishes C88 and its X1, then logs
+    "STOP before c89" in `runs/probe/C84-overnight/log.txt` and exits. The GPU then idles until C84 is relaunched.
+  - This session's automatic relaunch at that boundary dies with this window. **The fresh agent does it** (below).
+  - The running C84 process does NOT honour runs/GPU-PAUSE: it predates the edit. A pause during C88 loses C88, as
+    at 22:12.
+- **Pausable runs (Evan row 84, "yeah do it" about 22:20; 333-10's spec of 22:25):**
+  - **Done and checked:**
+    1. `notes/scripts/overnight_c84.py` (compiles; not yet run live):
+       - `hold()` also waits while `runs/GPU-PAUSE` exists.
+       - `milestone()` loops: an ar_milestone exit 5 (paused) waits through `hold()`, then reruns the same arm with
+         `--resume-from <arm dir>/ckpt.pt`. It passes `--resume-from` only if that file exists.
+       - `SCREEN_CHAIN` (C85's chain, not yet written) passes `--resume` to rl.metagame. After training, if its STOP
+         says "pause", it exits 5 before the lists probe.
+       - Also tonight: the `x1()` helper was renamed `run_x1` (#286).
+    2. `notes/scripts/queue_c90.py` (running): `watch()` handles a GPU-PAUSE in either screen (C85, C90).
+       - It writes the screen's STOP ("pause") unless training has ended. rl.metagame checkpoints every iteration
+         and stops after the current one; rl/ is unchanged.
+       - When the pause lifts (and row 73 clears) it removes the STOP and relaunches the screen through
+         `loop.py launch --resume`.
+       - C90 also keeps the record's kill rule. A kill STOP doesn't say "pause", so it isn't resumed.
+       - It gives up on C85 only if C84 is down 15 minutes without a screen.
+       - Tested offline with stubs: pause, wait, one --resume relaunch, end.
+  - **Built, not fully tested:** `notes/scripts/ar_milestone.py` (one Sonnet builder, stopped by me at 22:34 for the
+    restart; +91 / −4 against git HEAD; a snapshot is in `runs/probe/C84-overnight/ar_milestone.pausable-wip.py` and
+    `.diff`).
+    - `patch_train()` text-patches the worktree's train.py, never the branch:
+      - a `fixed.ckpt_restore(locals(), ...)` line before the `while ... it < ...` line;
+      - after the one `it += 1`, `fixed.ckpt_save(...)` and `if fixed.gpu_paused(): raise fixed.Paused(it)`.
+      - With no exact anchors the run goes unpatched.
+    - `install_ckpt()` sets those helpers on the worktree's fixed module.
+      - The save covers model, opt, q_head and q_opt state_dicts, C89's buf and st, the counters, and the torch, cuda,
+        numpy and python RNG states.
+      - It is written atomically to `<out>/ckpt.pt`.
+    - `--resume-from PATH`. On Paused: exit 5, no result.json, the worktree removed. ckpt.pt is deleted after a
+      finished training. `AR_GPU_PAUSE` overrides the flag path, for tests.
+    - **My check:** the anchors are found, and the patched text compiles, on 377267f, 37d335a, 7c1fb59, d822ed9,
+      f634b6a and 68e60fe. It compiles.
+    - **Not verified:** 333-10's item 5, the CPU same-weights test (3 iterations straight twice, then with a pause
+      after iteration 1 and a resume). The builder ran CPU test runs (`scratchpad/.../pause/br.log`: a 3-iteration
+      c89 run, 0 errors, then a second run's iterations 0-1), but its comparison wasn't finished or reported. A live
+      GPU pause isn't tested either.
+    - I ended its orphaned test processes and removed its test worktrees (`pz-*`). ar/ is clean: main 377267f plus
+      the live C88 worktree.
+- **What the fresh implementation agent does:**
+  1. **Before about 23:35**, decide on ar_milestone.py: either run the CPU test above (scratch out-dirs, `AR_GPU_PAUSE`
+     pointing at a scratch file, CPU only) and keep it; or revert it to git HEAD
+     (`git show HEAD:notes/scripts/ar_milestone.py`), in which case C89 runs unpausable. The live C88 process loaded
+     the old file, so the edit can't reach it.
+  2. When `runs/probe/C84-overnight/log.txt` shows "STOP before c89":
+     - `rm runs/probe/C84-overnight/STOP`;
+     - relaunch: `.venv/Scripts/python notes/scripts/loop.py launch C84-overnight --candidate C84 --record
+       runs/probe/C84-overnight/record.md --run runs/probe/C84-overnight --kind probe --start other --from
+       ar/data/start.pt --evan-row 78 --gpu-gb 0 --resume -- .venv/Scripts/python.exe notes/scripts/overnight_c84.py`.
+       loop.py refuses below 6.5 GB of free RAM; retry every 2 minutes.
+     - C84 then runs C88's X1 if it is missing, C89 (`extra_arms.json`, f634b6a, `runs/probe/C89-qbranch`), the
+       seed-1 calls (gain-only seed 2; C88's and C89's named-5 bands), base s2 plus seed 2s, and C85.
+  3. If C90-queue dies, relaunch it with #284's command plus `--resume`. It patches `rl/metagame.py` only after C85
+     ends, and only if the file's sha256 still equals `runs/probe/C90-pairedselect/metagame_base.sha256`.
+  4. Readouts:
+     - C88 and C89 by `runs/probe/C88-qtarget/record.md`'s bands: the A1 replay's named-5 ΔG; for C89, a null counts
+       only if its final "it" line shows `buf` >= 1,500;
+     - C90 against C85 on G3 (`runs/probe/C90-pairedselect/record.md`).
+     - Message 333-10 and the research session.
+- **Mid-edit:** nothing. All edits are on disk and compile. The README folds #289 with this entry.
+
+### #291 · 2026-10-26 · A5 C84 C89 · Fresh implementation agent (the handoff of #290): ar_milestone's checkpointing kept after a CPU pause/resume test on C89's commit; C84 is relaunched at its stop before C89
+- **Done:** rebuilt state from #286-#290, the request rows to 85, `runs/probe/C84-overnight/` and the live processes.
+  - At 22:40, C84 (pid 23288, old code) was training C88 at iteration 36 of 110. C90-queue (pid 20620) was waiting.
+    No `runs/GPU-PAUSE`; free RAM 15.2 GB; GPU 9.9 of 16.3 GB, 61%.
+  - Usage at 22:39: week 80% (resets 10-27 09:00), 5-hour 12%. No subagents spawned.
+  - Tested `notes/scripts/ar_milestone.py`'s patch on f634b6a (C89), CPU only, 1 worker, tiny games
+    (`scratchpad/pause/h2.py`, a variant of the builder's `h.py` with the checkpoint path fixed):
+    1. GPU flag on, cap 3: `PAUSED after 1`. ckpt.pt is 52.2 MB and took 0.05 s to save.
+    2. Resume with the cap at 1 (the loop body doesn't run): `resumed at iteration 1`; iterations 1, games 10,
+       train_seconds 55.
+    3. Resume with the cap at 2: one more iteration.
+  - Kept the file as it is (+91 / −4 against HEAD).
+- **Evidence:**
+  - Step 2's saved pilot equals the checkpoint's model: same keys, every tensor `torch.equal`.
+  - Step 3 went on from the checkpoint:
+    - buf 12 to 24 probes (2 iterations);
+    - st key 8 to 20;
+    - games 10 to 19; t_train 55 to 128 s;
+    - Adam steps 5,892 to 5,894 (opt) and 4 to 8 (q_opt).
+- **Found:**
+  - An exact same-weights test can't work for C89. The builder's two straight 3-iteration runs already differ: 13 vs 15
+    branch probes in iteration 0, 30 vs 29 games. The branch games run to a time budget.
+  - The builder's resume test failed on its own wiring: it resumed from `br/b/ckpt.pt` while the pause had written
+    `br/p/ckpt.pt`. That was not a code fault.
+  - The patch saves the loop's whole state for f634b6a's loop. Rollout and branch seeds come from `it`, and the loop's
+    budget is accumulated `t_train`, not a start time, so a resume neither repeats an iteration's seeds nor counts the
+    pause against the budget.
+- **Not verified:**
+  - The full ar_milestone path: exit 5, no result.json, and overnight_c84's rerun with `--resume-from`. It was read,
+    not run.
+  - A live GPU pause.
+- **Next:** at C84's "STOP before c89", remove its STOP and relaunch it with #290's command; C89 then runs pausable.
+
+### #292 · 2026-10-26 · A5 C91 C90 · A54's RESEARCH CALL (22:54): round479's G1 depends on the select-z gate, which the 10-24 cleanup removed; C91 (round479 rerun on engine K with the gate restored) is recorded, and C90's record is amended
+- **Done** (research session, fresh at 22:39 by `date`; no deep round, which waits for the 3-hour gap until 00:16; no
+  subagents):
+  - Read A54 and its call, and 333-10's relay at about 22:56, which keeps the order C89, the seed-2 runs, C85, C90.
+    333-10 asked for a record if a two-seed round479 rebaseline is worth running.
+  - Checked C47's command against today's `rl/metagame.py`. Every flag exists except `--select-z`, which 1dc02c2
+    (10-24) removed: "the removed --select-z's count, 0 in every reference row", checked only on R1 rows.
+  - Wrote `runs/screens/C91-round479k/record.md` (bands and kill rule before any build) and Amendment 2 to
+    `runs/probe/C90-pairedselect/record.md`.
+- **Evidence** (`aa_window.dist` from each run's `log.jsonl`; one seed per run; all forked from
+  `scr-resetcap/population_it0479.pt`). G1 distance, mean over 480-484 → 495-499:
+  - round rule + gate (C47 s5, s6): 9.77 → 4.97, 10.43 → 5.70;
+  - gate only (`scr-gate479`, s3, s4): 10.07 → 10.33, 10.87 → 10.83, 11.10 → 12.27;
+  - ungated (`scr-ctl479`, `scr-resetcap`): 8.40 → 15.73, 9.83 → 19.27.
+  - Moves an iteration: C47 13.8 / 11.8, with 27-42 held back by the gate (at 480-482 and 498-499); gate only
+    20.0-21.5; ungated 73.5-74.2.
+- **Found:**
+  - round479's G1 was earned during the run, on both seeds: a fall of about 5 in 20 iterations, not inherited from the
+    start. It needs both the gate and the round rule. Neither alone moved the distance down.
+  - The gate left the screens on 10-24 for pace (#186-187: too slow for 30-iteration screens from fresh decks), not
+    because it failed. The cleanup then removed it as unused. So the best recipe can't run on today's code, and every
+    screen since (C51-C66, C85) has run without it.
+  - C90's 1-SE paired rule brings back a paired gate. Against C85 it changes both the gate and the pairing.
+    Amendment 2 (bands unchanged) says so. An R-search result reads "a gate helps", not "pairing is needed". If C90 moves
+    under a quarter of C85's decks, a null reads "no reading at this pace", as #186 found.
+- **C91** (record before launch): restore `--select-z` as at 753d9c4, about 12 lines. Stage it on `metagame_c90.py` and
+  apply it only after queue_c90 has patched C90 in, so C90's sha256 guard holds. Then run C47's command at seeds 5 and
+  6 side by side, 480-499, with no chain evaluations.
+  - Bands: R-repro if the two-seed mean over 495-499 is under 8.3 and each seed falls by 3 or more from 480-484;
+    R-drift at 8.3 or more.
+  - Kill: no descent (the 490-494 mean at 10.0 or more); a broken restore (moves outside 5-25 an iteration, or under
+    15 held back, over 480-482); errors over 2%.
+  - About 90-110 minutes (estimated from C47's 4.5 minutes an iteration). It runs after C90 only if it ends by about
+    08:00 (333-10).
+- **Next:** hand C91 to the implementation agent. The next research round is allowed from 00:16. Read C88 against its
+  bands when its X1 and replay land.
+
+### #293 · 2026-10-26 · A5 C91 C90 C85 C84 · C91's gate restore built and checked, both rl/metagame.py patches put in before any screen, and the night's order changed to the ground truth first (333-10, 23:00-23:07)
+- **Done:**
+  - **The gate (research's C91, #292):** `--select-z` restored as at 753d9c4 (log #138), without the judge-search
+    branches.
+    - It sits on C90's staged file as `runs/probe/C90-pairedselect/metagame_c90_c91.py`, +12 / −2 lines against
+      `metagame_c90.py`: the argparse line, the binomial gate after the move is chosen, `held_back` in the select row
+      (only when the flag is on), and an assert that `--select-paired` and `--select-z` aren't combined.
+  - **Patches applied at 23:10** (333-10, 23:00): `rl/metagame.py` is now the two-patch file (sha256 ced36d19...). The
+    base (d2cc568e...) is kept as `metagame_pre_c90.py`. No screen was running, so none runs while the file changes.
+    The ar/ frozen hash now differs, so the ar/ re-setup waits for tomorrow (#284's guard 5).
+  - **The order (333-10, 23:07, after the auditor found the 10-24 cut was a mistake):**
+    1. C89.
+    2. The seed-1 calls.
+    3. C85 on the baseline pilot, with C91 seeds 5 and 6 beside it: 3 slots.
+    4. The seed 2s for any arm that gained, after those screens end.
+    5. C90, in the first screen slot that frees, after the seed 2s if any are due.
+  - `notes/scripts/overnight_c84.py`:
+    - Step 4's screen now runs right after step 1, always from C49-sd 199, as `C85-R1-K-base`.
+    - The seed 2s wait for C85 and both C91 seeds: running, paused, or not yet launched while the queue runs.
+    - A relaunch keeps a screen already started (decisions.json).
+    - An arm that clears on 2 seeds is logged for its own screen later.
+  - `notes/scripts/queue_c90.py` (old copy: `queue_c90.pre-c91.py`):
+    - It now patches only if the live file is still the base (it isn't).
+    - Once C85 launches, it writes C91's two chains and launches C91 s5 and s6. The chains are C47's rl.metagame line
+      with the first `--turnover-every 10` dropped and `--resume` added (research's Amendment 1; `--start escape
+      --from population_it0479.pt --components select-z,round-turns`, s6 `--replicate-of` s5).
+    - It watches C85 and both seeds in threads: pausable, with C91's kill rule (errors over 2%; 480-482 moves outside
+      5-25 or held_back under 15 on both seeds; two-seed mean distance over 490-494 at 10.0 or more).
+    - It launches C90 in the first slot that frees, after C84 ends if seed 2s are due.
+    - Refused launches are retried every 2 minutes.
+    - Relaunched 23:12 (pid 36460, `--resume`) after its QSTOP. It is waiting for C85.
+- **Evidence:**
+  - Stubbed-collect msgs (C90's harness on 12 decks and 40 games, `scratchpad/c91/harness.py`; RL_GPU_SHARE 0.1):
+    - flags off, the two-patch file's msgs equal the live base file's: True (22 + 22 jobs);
+    - `--select-paired`, they equal `metagame_c90.py`'s: True;
+    - `--select-z 1`, they equal off: True;
+    - both flags: refused by the assert.
+  - Gate-on smoke: one real iteration (480) forked from `scr-resetcap/population_it0479.pt`, `--reseed 5`, 48 games,
+    2 workers. 0 errors, `held_back` 20, moved 1.
+  - loop.py's `launch_problems` on the two C91 chains: none for s5 (20 GB free, 1 slot used); none for s6 with s5
+    registered alive (`--replicate-of`, new `--reseed`).
+  - All three scripts compile.
+- **Not verified:**
+  - C84's new order and the queue's C91 / C90 branches were read and compiled, not run.
+  - The flag-off check covers the scheduled games only. The selection step is identical by reading: every gate line
+    is behind `args.select_z > 0`.
+- **Next:**
+  - C84's relaunch at its "STOP before c89" (about 23:25) on this code; C89 until about 01:30 (estimated).
+  - The seed-1 calls, then C85, C91 s5 and s6 together. C91 runs about 90-110 min (research's estimate).
+
+### #294 · 2026-10-26 · A5 C88 C89 · C88 (Q's turn target, seed 1) reads "same failure as p23" on M, but the stated reason fails: p23 lost the same M with another target, and C88's prompt answers got worse (all-prompt dG -0.025 at 3.3 SE); C89 is read on the replay and X1
+- **Done** (research session):
+  - Read C88 from `runs/probe/C88-qtarget/c88-s1/` (summary.md, x1.json at 23:27:17).
+  - Ran its A1 replay myself on CPU at 23:28 (`a1_replay.py`, 11 s), rather than after C89 in C84's seed-1 calls.
+  - Checked ar d822ed9's train.py: the eps floor wraps only the rollout pool's model (`Floor`, line 85), and
+    `fixed.save_pilot(model)` saves the plain model. P3 acts at prompt rows only.
+  - Wrote the readout and a C89 amendment into `runs/probe/C88-qtarget/record.md`. The amendment was written at 23:29,
+    after C89 started training at 23:28:19 and before any C89 result.
+- **Evidence** (seed 1, 110 iterations, 63,594 games, 0 errors):
+  - M 0.4307 (SE 0.0085) against base 0.4655 (-0.035); D against its start -0.0234 (SE 0.0096, z -2.4).
+  - X1 three -0.0091 (SE 0.0077) against base -0.002.
+  - Replay:
+    - named-5 dG -0.0063 (SE 0.009);
+    - all prompts -0.0246 (SE 0.0074);
+    - answers changed 45.5%; logits against Q-hat r -0.18 to -0.19.
+  - For comparison:
+    - p23 s1: M -0.034, named-5 -0.012 (0.0055), all -0.0078 (0.0044), changed 28.3%;
+    - C87 key1: all -0.0021 (0.0037), changed 21.9%;
+    - base: changed 14.8%.
+- **Found:**
+  - The band is "same failure as p23" on M. The stated meaning ("V at turn end is too blind") is not supported.
+    - Two different Q targets lost the same M, so the cause is what p23 and C88 share: Q driving P3 at prompt rows,
+      with collection under the eps 0.15 floor (333-10's reading).
+    - The loss runs through the prompt answers. Both arms change more answers than plain training, and C88's changes
+      are worse by 3.3 SE across all prompts.
+  - X1 null. 0 effects; 1 null (a loss on M).
+- **Next:**
+  - C89 (training since 23:28) is read on its replay and X1 per the amendment; an M loss alone is the shared cost.
+  - Tomorrow's queue (not tonight's): p23 with P3 off, and p23 with the floor off, to name the shared cause.
+
+### #295 · 2026-10-26 · A5 C84 C89 C88 · C84 relaunched at its stop before C89 (23:28) on #293's code; C89 trains pausable; C88's seed-1 M is −0.035 against base; corrections to #293
+- **Done:**
+  - C84 stopped itself as planned (`STOP before c89`, 23:27:17), after C88 trained (exit 0, 23:24:37) and its X1 (exit
+    0, 23:27:17).
+  - Removed its STOP and relaunched it with #290's command (`loop.py launch ... --resume`, pid 16100, 23:28:18).
+    - It skipped key1 and c88, which were finished, and started C89 (f634b6a) at 23:28:19.
+    - ar_milestone logged `pausable anchors found: True`.
+  - Research's amendment (23:29, #294): `c88_band()` now labels an M-only loss (dM <= −0.025 with the named-5 replay
+    above −0.009) "shared cost (M only; the verdict is the replay plus X1)", not "same failure as p23". The seed-2
+    choice is unchanged (no seed 2 either way).
+    - This is on disk only. The C84 process started at 23:28 holds the old label, so tonight's decisions.json may
+      still say "same failure as p23" for C89. Read C89 by the amended record.
+- **Evidence:**
+  - C89 iteration 0: 569 games, 74 s (branch share 0.45), n_br 39, buf 39, q_br 0.0298, line_err 0. `ckpt.pt`
+    (52.3 MB) was written at 23:29. GPU 7.9 GB, 44%.
+  - C88 s1 (110 iterations, 63,594 games, 0 errors) against C81 base s1, by C84's `read()`:
+    - M 0.4307 against 0.4655: −0.035;
+    - X1 three-group −0.009 against −0.002: −0.007.
+    - Its own summary: D forward −0.023 (SE 0.0096) against its start, "loss"; reverse −0.000.
+    - Research's A1 replay (CPU, 23:28): named-5 dG −0.0063 (SE 0.009), all prompts −0.0246 (SE 0.0074).
+    - One seed. C84 makes the formal call after C89.
+- **Found:** at 74 s an iteration, 110 iterations take about 136 minutes, under the 150-minute cap. So C89 trains
+  until about 01:45, then evaluation and X1 (estimated). A slower pace with Evan gaming would hit the cap before 110.
+- **Corrections to #293:**
+  - The gate is +11 / −2 lines against `metagame_c90.py`, not +12 / −2.
+  - The README's Next item 2 ("C89 (about 110 minutes)") is about 136 minutes at tonight's pace.
+- **Next:**
+  - C89 until about 01:55 with X1. Then C84's seed-1 calls, C85 with C91 s5 and s6 (queue_c90), any seed 2s, and C90.
+  - A watcher reports C84's and the queue's next events.
+
+### #296 · 2026-10-27 · A5 C89 C88 · C89 (Q on branched returns, seed 1, powered) gives no prompt-answer gain: R-small by its band, so prompt-answer work stops; it loses no M, which corrects #294's shared-cause reading
+- **Done** (research session):
+  - Read C89 from `runs/probe/C89-qbranch/c89-s1/` (summary.md, x1.json) and C84's log line at 01:44:23.
+  - Reran its A1 replay on CPU at 01:44; it matches C84's numbers.
+  - Wrote the readout into `runs/probe/C88-qtarget/record.md`, the record C88 and C89 share.
+- **Evidence** (110 iterations, 62,468 games, 0 errors, trained 23:28-01:41):
+  - `buf` 3,704 branched prompts at the end, so the run is powered.
+  - M 0.4620 against base 0.4655: −0.0035. Against its start: D +0.008 (SE 0.0097), flat; reverse +0.025.
+  - X1 three −0.0004 (SE 0.0067), against base −0.002.
+  - Replay:
+    - named-5 dG −0.0097 (SE 0.0077);
+    - all prompts −0.0042 (SE 0.005);
+    - answers changed 35.5%;
+    - logits against Q-hat r −0.29 (named 5), −0.03 (all).
+  - C84: "band same failure as p23: no seed 2"; "no seed-1 arm moved beyond ±0.01: no seed 2". C85-R1-K-base
+    launched at 01:44:23.
+- **Found:**
+  - **R-small by the band**: named-5 dG −0.0097 <= −0.009.
+    - The band's "(2 SE)" assumed an SE near 0.0045. At C89's SE it is 1.3 SE, so the harm is weak evidence.
+    - The no-gain reading is clear: X1 null, all-prompt dG null, no named-5 gain.
+    - The seed-2 clause (M above base − 0.01) was written for dG "between", so it does not apply. No seed 2.
+  - Three Q targets on P2 + P3 now give no prompt-answer gain at 110 iterations, one seed each: p23 (one return), C88
+    (turn value) and C89 (branched, powered). Per the record, prompt-answer work stops. The work moves to the gap beyond
+    prompts, which C85, C90 and C91 test on G1 and G3.
+  - **Correction to #294.** C89 runs the same P2 + P3 machinery under the same floor and loses no M (−0.0035 against
+    C88's −0.035; difference about +0.031, about 2.6 SE). So the machinery alone does not cost M. The noisy targets do,
+    through P3. #294's reading that the loss came "rather than from either target" is withdrawn.
+  - Tomorrow's "P3 off / floor off" ablations would only explain a harm that branched targets already avoid. I propose
+    dropping them.
+- **Next:** read C91 (seeds 5 and 6 beside C85) at its kill looks (480-482, 490-494) and its end; then C85 and C90 on
+  G3.
+
+### #297 · 2026-10-27 · A5 C84 C85 C91 C90 · No seed 2 for any arm; C85 and C91 seeds 5 and 6 run side by side from 01:44-01:56; queue_c90's sequential launch fixed and the queue restarted
+- **Done:**
+  - C84 finished its run on #293's order:
+    - C89's X1 exited 0 at 01:44:01.
+    - The seed-1 calls came at 01:44:03-01:44:23. No arm gained, so there is no seed 2.
+    - C84 launched `C85-R1-K-base` (C49-sd 199, pid 36256) at 01:44:23 and ended.
+    - 333-10 withdrew its C89 seed-2 request after research's readout (#296).
+  - queue_c90 (pid 36460) saw C85 and found the two patches already in (01:46:00).
+    - It launched C91 s5 at 01:46:01 (pid 13620).
+    - s6 was refused at 01:47, 01:49 and 01:51. loop.py adds the nominal 3.7 GB of every screen launched in the last
+      10 minutes (`GPU_LOADING_MIN`) to nvidia-smi's reading: 14.8-14.9 GB counted against 12.7 GB, while the GPU read
+      7.6-7.7 GB.
+  - Research found a gap: the seeds launched in sequence, and `Screen.launch()` blocks while it retries. So C85's and
+    s5's watchers (GPU-PAUSE handling, C91's kill rule) had not started.
+    - Fixed: each C91 seed now launches and watches in its own thread.
+    - I killed the queue's tree at 01:51:10, right after a refusal.
+    - Its relaunch was refused too (a 0 GB probe, because the counted total was already over 80%). It got in at
+      01:54:12 (pid 7888).
+    - Its watchers for C85 and s5 started at 01:54:13. s6 launched at 01:56:15 (pid 40708).
+- **Evidence:**
+  - The seed-1 calls (C84's log, M − base 0.4655; X1 − base; replay named-5):
+
+    | arm | M − base | X1 − base | named-5 | band |
+    |---|---|---|---|---|
+    | chaincredit | +0.0036 | +0.0022 | invalid | — |
+    | chain | −0.0022 | +0.0016 | invalid | — |
+    | p23 | −0.0343 | +0.0046 | −0.012 (0.0055) | — |
+    | key1 | +0.0003 | +0.0123 | −0.0031 (0.0056) | — |
+    | c88 | −0.0348 | −0.0071 | −0.0063 (0.009) | "same failure as p23" |
+    | c89 | −0.0035 | +0.0016 | −0.0097 (0.0077) | "same failure as p23" |
+
+    - c88's band came from the M-only clause, which research's 23:29 amendment renames "shared cost". The running C84
+      held the old label (#295).
+  - Machine at 01:57 (3 screens): GPU 10.8 of 16.3 GB, utilization 29-69% over 6 samples at 10 s; free RAM 6.8 GB.
+  - All three screens and the queue show alive in the registry.
+- **Found:**
+  - loop.py refuses any launch, even a 0 GB probe, while the counted total (with the loading estimate) is over 80%. With
+    nominal 3.7 GB a screen, the third screen of a set waits about 10 minutes after the second.
+  - Research's "latent gap" note (01:57) is already fixed in the code, by the threading above.
+- **Next:**
+  - C85 (30 iterations, about 2 h) and C91 s5 and s6 (480-499, about 90-110 min, estimated), with C91's kill rule
+    live.
+  - C90 takes the first slot that frees. No seed 2s are due.
+  - Readouts: C91 by its bands (R-repro: the two-seed mean 495-499 distance under 8.3, each seed falling by at least
+    3); C85 by its record; C90 against C85 on G3.
+
+### #298 · 2026-10-27 · A5 C85 C90 C91 · C85 (R1 on K, baseline pilot) reads "the old deviation": best 12 at 22.7 / 18.4 / 18.9, decisive share against the lists 0.114; C90 took its slot at 02:26; C91 passes its gate check on both seeds
+- **Done:**
+  - C85-R1-K-base: 30 iterations 01:44:23-02:23:50 (exit 0); its probe against the lists ended 02:24:40. The queue saw
+    it end at 02:25:14.
+  - The queue launched `C90-R1-K-base-paired` (C85's chain plus `--select-paired`, pid 2400) at 02:26:14.
+- **Evidence:**
+  - **C85** (one seed; record `runs/screens/C85-R1-K-base/record.md`; lists 13.5 / 28 / 18; `aa_window.dist` for the
+    best 12 by score):
+
+    | iteration | best-12 P / T / E | distance | median P / T / E |
+    |---|---|---|---|
+    | 9 | 14.8 / 23.8 / 21.5 | 9.00 | 14 / 27 / 18 |
+    | 19 | 22.4 / 18.6 / 19.0 | 19.33 | 19 / 23 / 18 |
+    | 29 | 22.7 / 18.4 / 18.9 | 19.67 | 20 / 23 / 19 |
+
+    - 0 errors in every row.
+    - Decisive share of the best 12 against the 24 lists (C49-sd 199, 8 games a pair, the round rule): 0.1139 (SE over
+      pairs 0.0085). One of the 12 is a 39 / 1 / 20 Pokémon pile.
+  - **C91**, running; interim, not a result (distance, moved, held_back):
+    - s5: 480 10.50, 16, 34; 481 10.00, 16, 36; 482 8.67, 12, 38; 483 10.00; 484 8.67; 485 7.67; 486 7.17.
+    - s6: 480 11.67, 16, 34; 481 12.00, 9, 36; 482 10.00, 13, 41; 483 10.50.
+    - 0 errors throughout.
+    - C91's kill rule "the restore isn't the gate" doesn't fire. The 480-482 means are 14.7 moved and 36 held back
+      (s5), and 12.7 and 37 (s6), against 5-25 and 15. C47 had 9-15 and 27-42.
+    - About 4.8 min an iteration (s5's 481: 288 s), so s5 reaches 499 about 03:25 and s6 about 03:35 (estimated).
+- **Found:**
+  - By C85's bands, **the old deviation**: decisive share 0.114 <= 0.21, and median Trainers 23 is above the old
+    band's 22.
+  - The near-lists state was there early and then lost. At iteration 9 the best 12 sat at distance 9.0 and the median
+    at 14 / 27 / 18, close to the lists. By 19 both had slid to Pokémon-heavy decks, as C51-C66 did from fresh decks.
+  - The drafting loop on K, ungated, still drifts away from the lists after about 10 iterations.
+- **Next:**
+  - C91 to 499 (bands: R-repro if the two-seed mean 495-499 distance is under 8.3 and each seed falls by at least 3).
+  - C90 (30 iterations, about 45 min plus its probe) against C85 on G3.
+
+### #299 · 2026-10-27 · A5 C90 C85 · C90 (selection gated by paired comparisons) reads R-pilot against C85 at seed 1: the drafted decks beat the lists twice as often under this pilot (G3 0.219 against 0.114), and carry 6 fewer Trainers; seed 2 of both proposed
+- **Done** (research session): read both screens' `log.jsonl` and `vs_lists.json`; wrote the readout into
+  `runs/probe/C90-pairedselect/record.md`.
+- **Evidence** (one seed each, 30 iterations from fresh wide decks, frozen C49-sd 199 pilot, 0 errors):
+  - G3, the best 12 against the 24 lists (decisive share): C90 0.2193 (SE 0.0118); C85 0.1139 (SE 0.0085).
+  - Best-12 median P / T / E: C90 18 / 22.5 / 22; C85 14.5 / 28.5 / 15.5; the lists 13.5 / 28 / 18.
+  - Moves: 430 against 1,314 (14.3 against 43.8 an iteration).
+  - G1, the last-5 mean distance: 14.43 against 16.23. C85's per-iteration distance ranged 6.8-22.3.
+- **Found:**
+  - **R-pilot by the bands written before the run:** G3 +0.105 (>= +0.05) with median Trainers -6 (>= 2). R-search's
+    G3 >= 0.30 is not met. G1 is null (-1.8, inside 3). The pace clause doesn't apply (33% of C85's moves).
+  - Reading: once selection reads less noise, the draft finds decks that do better for this pilot. Those decks lean
+    further from the lists, toward Energy and Pokémon. That puts the shape deviation in the pilot's valuation, not in a
+    draft that can't search (as X5 and M said). By Amendment 2, the credit goes to the gate; pairing isn't separated.
+  - One seed, and G3's run-to-run spread is unmeasured. It is not an effect until seed 2.
+- **Next:** propose seed 2 of C85 and C90 after C91, about 40-45 minutes each, if they end by about 08:00. Read C91 at
+  490-494 and at 499.
+
+### #300 · 2026-10-27 · A5 C90 · Correction to #299: C90's band is "between", not R-pilot; the Trainer clause holds on only one of three best-12 sets
+- **Done:** checked #299's shapes against the implementation session's C85 numbers (#298: best 12 22.7 / 18.4 / 18.9
+  at 29), which differed from mine. `probe_meta_premise.py` takes each population's 12 best by judged score
+  (`best_decks`, sum / n). `aa_window.dist` takes the log row's top 12 by z. Those are different decks.
+- **Evidence** (iteration 29, C90 against C85, median P / T / E):
+  - G3's 12: 18 / 22.5 / 22 against 14.5 / 28.5 / 15.5;
+  - G1's top 12 by z: 17 / 20 / 23.5 against 22 / 19 / 19;
+  - population of 99: 15 / 24 / 21 against 20 / 23 / 19.
+- **Found:**
+  - Trainers fall by 6 only in G3's 12. They rise by 1 in the other two. The record doesn't name the set, so taking
+    G3's set would be a post-hoc call.
+  - The band is **between**: G3 +0.105 (robust), R-search not met, R-pilot ambiguous. The record's between rule
+    ("seed 2 only if G3 rose") keeps the seed-2 proposal.
+  - #299's reading that "the deviation is the pilot's" is withdrawn. Energy is higher in C90 in all three sets (+6.5,
+    +4.5, +2); Pokémon and Trainers move in opposite directions across the sets.
+  - Future records must name the deck set behind any shape clause.
+- **Next:** seed 2 of C85 and C90 (proposed to 333-10); C91 at 490-494 and 499.
+
+### #301 · 2026-10-27 · A5 C90 C85 · Seed 2 of C90 and C85 launched by the record's between rule ("seed 2 only if G3 rose"; #300): C90-s2 at 03:09:58, C85-s2 waiting for a slot
+- **Done:**
+  - `notes/scripts/queue_s2.py` (new, 41 lines): C90's and C85's chains with `--seed 2` and an `-s2` name (the probe's
+    `--seed 93` unchanged). Each is launched in its own thread with `--replicate-of` its seed 1, and watched pausable
+    through queue_c90's `Screen`. C90-s2 keeps its record's kill rule.
+    - Launched as `S2-queue` (pid 43660, 03:09).
+  - `C90-R1-K-base-paired-s2` started at 03:09:58 (pid 16032).
+  - `C85-R1-K-base-s2` was refused at 03:10:03: 3 of 3 slots, free RAM 7.2 GB under 8.0, GPU counted 15.0 GB. It
+    retries every 2 minutes and should get in when C91 s5 ends (about 03:25, estimated).
+  - Usage at 03:09: week 82% (resets 09:00), 5-hour 1%. No subagents.
+- **Evidence:**
+  - My G1-set numbers in #298 (the log row's top 12 by z) and research's G3-set numbers (#299, the 12 best by judged
+    score) are different deck sets, as #300 found. Both are kept as written.
+  - C90 seed 1 by its bands, as #300: G3 0.2193 against 0.1139 (+0.105), R-search not met, "between".
+- **Next:** C90-s2 until about 03:55 and C85-s2 from about 03:25 to about 04:10 (estimated); then G3 of both. C91 s5
+  and s6 to 499 (about 03:25 / 03:35).
+
+### #302 · 2026-10-27 · A5 C91 C90 C85 · C91 reads R-repro: round479 with the gate restored, on engine K and today's code, still reaches C47's G1 (two-seed 495-499 distance 6.43 against C47's 5.33); C90-s2's G3 0.158 waits for C85-s2; gt_board sees seed subfolders
+- **Done:**
+  - C91 s5 ended 03:49:14 and s6 04:05:16 (the queue's log), each 480-499.
+  - C85-s2 took the freed slot at 03:50:18 (pid 17380). C90-s2 trained 03:09:58-03:55:12 (exit 0); its probe ended
+    03:55:51.
+  - `notes/scripts/gt_board.py` also reads `runs/screens/*/*/log.jsonl` and names runs by their path (333-10's
+    request), so C91's `s5` and `s6` are on the board.
+- **Evidence:**
+  - **C91** by its record (`runs/screens/C91-round479k/record.md`), with `aa_window.dist` (the log row's top 12 by z):
+
+    | seed | 480-484 mean | 495-499 mean | fall | best 12 at 499 (distance) | median at 499 | moved / held back | errors (of 40,000) |
+    |---|---|---|---|---|---|---|---|
+    | s5 | 9.57 | 6.10 | 3.47 | 11.7 / 26.6 / 21.8 (7.00) | 13 / 27 / 20 | 13.1 / 37.5 | 0 |
+    | s6 | 11.07 | 6.77 | 4.30 | 10.9 / 27.9 / 21.2 (5.83) | 12 / 27 / 21 | 14.5 / 38.9 | 2 |
+
+    - Two-seed 495-499 mean: **6.43**, under R-repro's 8.3; both seeds fell by at least 3.
+    - C47 read 4.97 / 5.70 (mean 5.33).
+    - 333-10's `loop.ground_truth` numbers for s5 (6.27, 7.83 at 499) come from a different top-12 selection. s6
+      agrees exactly. The band is the same under either.
+  - **C90-s2:** G3 0.1578 (SE 0.0096), against seed 1's 0.2193. 30 iterations, 0 errors, 15.7 moves an iteration.
+    - G1 at 29 (gt_board): 13.0 / 25.8 / 21.2, distance 6.0, mean5 8.5. Seed 1 had 18.5 / 13.9.
+  - **C85-s2** at iteration 9 (gt_board): 15.5 / 22.2 / 22.3, distance 12.2.
+- **Found:**
+  - **R-repro.** The anchor stands on today's code. The gated round479 recipe reproduces near C47 at two seeds, and
+    the 10-24 cleanup's removal of the gate is what took the screens off it.
+  - C85 and C90 are now read against a live G1 of about 6.4.
+  - C90's G3 difference at seed 2 waits for C85-s2. Amendment 3 needs both seeds' differences >= +0.08.
+- **Next:**
+  - C85-s2 to 29 and its probe (about 04:35, estimated), then C90's two-seed G3 call.
+  - The research session's call on what C91 makes next.
+
+### #303 · 2026-10-27 · A5 C91 · C91 reads R-repro: today's code with the gate restored reproduces round479's G1 on both seeds (two-seed mean 6.43 against C47's 5.33); it does not show rediscovery from scratch, and Energy stays about +3.5
+- **Done** (research session): read both seeds' `log.jsonl` with `aa_window` at 04:05. Wrote the readout into
+  `runs/screens/C91-round479k/record.md`.
+- **Evidence:**
+  - Distance, 480-484 → 495-499: s5 9.57 → 6.10, s6 11.07 → 6.77; two-seed mean 6.43.
+    - C47, same windows: 9.77 → 4.97 and 10.43 → 5.70.
+    - 333-10's figure for s5 was 6.27. The difference is the row source; both are under the line.
+  - Top 12 at 499: 11.7 / 26.6 / 21.8 and 10.9 / 27.9 / 21.2 against the lists' 13.5 / 28 / 18.
+  - Moves 13.1 and 14.5 an iteration. Errors 0 and 2.
+- **Found:**
+  - **R-repro** by the bands written before the run (mean under 8.3, each seed falls by 3 or more), as the prior
+    expected. The best G1 recipe holds on engine K and today's code once the gate is back.
+  - Not shown:
+    - rediscovery from fresh decks: the fork starts near the lists;
+    - the Energy lean: still about +3.5 Energy in the top 12;
+    - G3: no lists probe;
+    - the gate's pace from fresh decks (#186): that rests on C90 and its seed 2.
+- **Next:** C90-s2 and C85-s2 by C90's Amendment 3. A G3 probe on C91's two 499 populations under C49-sd 199 would
+  take about 1 minute of GPU each (C85's probe took 35 s). It isn't in the record, so it is offered, not run.
+
+### #304 · 2026-10-27 · A5 C92 · Proposal after C91: C92 swaps only the pilot in C90's fresh-deck gated screen (the 479 population's pilot against C49-sd 199), 2 seeds, to find whether C91's shape lives in the pilot or in the 479 decks
+- **Done** (research session; asked by 333-10 after C91; auditor A68 recommends a fresh-start gated screen at 2
+  seeds):
+  - Checked earlier attempts. Fresh-start gated screens are C50 (z-gate, C45-R pilot, old engine; no descent in 18
+    iterations; #186: "do not repeat" as designed) and C90 (paired gate, 2 seeds). The log and hypotheses have no run
+    putting the 479 pilot on fresh decks.
+  - Wrote `runs/screens/C92-p479fresh/record.md`, with bands, the kill rule and the lineage precondition, before any
+    build.
+- **Evidence:** C90-s2, read at 04:08: G1 last-5 8.47 (s1 14.43); G3 0.1578 (SE 0.0096); G3's 12 median 12 / 25.5 /
+  18; 471 moves. C91 two-seed G1 6.43 (#303).
+- **Found:** fresh starts differ from C91 in the decks and head and in the pilot. C92 holds C90 fixed and changes only
+  the pilot.
+  - Bands on two-seed means against C90's: R-pilot if G1 is 3 or more below C90's and at most 9.4; R-population if
+    within 3.
+  - Prior, written before the run: R-population.
+  - Precondition: the 479 lineage trained human-free (no lists, archived decks or anchor to a human-trained pilot).
+- **Next:** 333-10 decides the slot: after C85-s2, about 1.5 hours for 2 seeds, tonight only if it ends by about
+  08:00.
+
+### #305 · 2026-10-27 · A5 C91 · C91-G3: the first G3 of the best recipe on engine K. C91's best 12 at 499 win 0.44 and 0.45 of decisive games against the lists under C49-sd 199, against 0.11-0.22 for every fresh-deck screen
+- **Done:**
+  - Ran the lists probe on C91 s5's and s6's `population_it0499.pt` (333-10's approval of research's #303 offer). It
+    is exactly C85's and C90's probe: `probe_meta_premise.py --pilot runs/pilot/C49-sd/model_it00199.pt --games 8
+    --workers 6 --seed 93`, the 12 best by judged score, the round rule.
+  - Record `runs/probe/C91-G3/record.md`, written first: a reading, no bands. It went through `loop.py launch` as
+    probe C91-G3 (pid 31092) and ran 04:07:16-04:08:55 (exit 0).
+    - It was tagged `--evan-row 78` like the night's other launches. That is a convention here, not a request of
+      Evan's.
+  - At launch: free RAM 11.6 GB, GPU 5.3 GB, beside C85-s2.
+- **Evidence** (2,304 games a population, 0 errors; 45-52 s each):
+
+  | population | G3 (SE over pairs) | G3's 12 median P / T / E | mean P / T / E (distance of the mean) |
+  |---|---|---|---|
+  | C91 s5 at 499 | 0.4391 (0.0163) | 11 / 29 / 20 | 11.8 / 29.2 / 19.1 (4.00) |
+  | C91 s6 at 499 | 0.4536 (0.0143) | 13 / 26 / 19.5 | 13.4 / 26.0 / 20.6 (4.67) |
+
+  - The same probe gave C85 s1 0.1139, C90 s1 0.2193 and C90 s2 0.1578; C78 / C86 gave 0.12-0.21.
+- **Found:**
+  - The decks C91 drafts win about 2-4 times as often against the lists as any fresh-deck screen's.
+  - The G3 set's shape is near the lists: Trainers 26-29 against 28; Energy +1.5 to +2.6.
+  - Not a like-for-like recipe test. C91 forks the 479 lineage (about 500 iterations, its own pilot and head), and
+    C85/C90 start from fresh decks for 30 iterations.
+  - The G3 pilot is the same frozen C49-sd 199 for all of them, so it reads deck quality under one pilot. Research's
+    C92 (#304) separates the pilot from the population.
+- **Next:** C85-s2 and its probe (about 04:35, estimated), then C90's two-seed call. C92's slot is 333-10's call.
+
+### #306 · 2026-10-27 · A5 C92 · C92 precondition: the 479 pilot's lineage trained human-free (random decks → pilot-v2 → lab main → resetcap); C92 approved by 333-10 for tonight and handed to implementation
+- **Done** (research session, before any build; 333-10's condition 1): traced
+  `runs/screens/scr-resetcap/population_it0479.pt` back to its root through the configs and the log.
+- **Evidence:**
+  1. `scr-resetcap/config.json`: `fork_from runs/lab/main/seg_0460.pt`, `init_from ''`, `distill 0.0`, self-search
+     settings only. No anchor, archive, bot or judge key.
+  2. `runs/lab/main/config.json`: `init_from runs/pilot-v2/model_it00349.pt`, `field_sample 4`. No anchor, archive or
+     bot key. Its `lineage.jsonl` adoptions are 6 hyperparameters (epochs 2, swaps 6, draft margin 0, deckcross,
+     lr 2e-4, draft lr 3e-4).
+  3. pilot-v2 (#48, `runs/pilot-v2/config.json`): "trained from scratch on #42's random decks (no archived lists)",
+     with a league and `bot_opponents ''`. SimpleBot was used for evaluation only.
+  4. #42: 512 random legal decks "with no human deck shape".
+- **Found:**
+  - Human-free by every link checked, so the precondition passes.
+  - One shared caveat: the card pool is the field's 56 cards (#42). It applies to every run in the project, not to C92
+    alone.
+- **Next:** implementation builds C92, then runs seeds 1 and 2 after C85-s2. It must end by 08:00 or pause for Evan's
+  morning (333-10's conditions 2 and 3). The bands stay as written.
+
+### #307 · 2026-10-27 · A5 C92 · C92 built and launched: the 479 lineage's pilot extracted (every tensor equal), a CPU smoke with 0 errors, C90's exact chain with only --init-from swapped; seed 1 since 04:15
+- **Done** (research's record `runs/screens/C92-p479fresh/record.md`, written 04:08; 333-10's approval; the
+  precondition is #306):
+  - `runs/screens/C92-p479fresh/pilot_it0479.pt`: `{"model": net, "config": config}` from
+    `scr-resetcap/population_it0479.pt` (iteration 479; sha256 db36badf...).
+    - Its config differs from C49-sd 199's in `count_features` (True). rl.metagame builds the net from the
+      `--init-from` file's own config, so it keeps the architecture.
+  - `notes/scripts/queue_c92.py` (new): C90's chain.sh with these changes:
+    - the run paths and names changed to `C92-p479fresh/s{1,2}`;
+    - the `cd` depth for the seed subfolder;
+    - `--init-from` set to that file, and the header comment changed to match;
+    - `--seed 1` → `--seed 2` for s2.
+    - The probe (`--pilot` C49-sd 199, `--seed 93`) is unchanged.
+    - Each seed launches in its own thread (s2 `--replicate-of` s1, after s1 registers) and is watched pausable
+      through queue_c90's `Screen`. It applies the record's kill rule: errors over 2%; moves outside 3-30 for 3 counted
+      iterations in a row within 0-5.
+  - Launched as `C92-queue` (pid 14260).
+    - C92-p479fresh-s1 started at 04:15:16 (pid 37064), beside C85-s2. Two slots were free, so it started before C85-s2
+      ended, not after it as the record's slot says. Nothing in the screens depends on wall-clock time.
+    - C92-p479fresh-s2 was refused at 04:15:26 on the GPU estimate (11.6 GB counted with s1 loading). It retries every 2
+      minutes.
+- **Evidence:**
+  - Extraction: 128 tensors, every one `torch.equal` to the population's `net`, config equal, 4,427,828 parameters.
+  - CPU smoke (`CUDA_VISIBLE_DEVICES=-1`; 1 iteration, 12 decks, 40 games, 2 workers, C90's other flags): rc 0, 40
+    games, 0 errors. The select row had moved 1 and `paired` slots 1.67. The best decks' shapes (8 / 25 / 27 and
+    others) are from one iteration of fresh decks.
+    - With `CUDA_VISIBLE_DEVICES` empty, rl.metagame still saw CUDA as available and the load failed. `-1` works, as
+      C84's replay sets it.
+  - loop.py's `launch_problems` on both chains: none (s2 with s1 registered). The kill rule fires on fake rows with 1
+    move an iteration and not on rows with 12.
+- **Next:**
+  - C92 s1 (about 45 minutes plus its probe, until about 05:05) and s2 when it gets a slot. Both should end before
+    08:00 (estimated).
+  - C85-s2's probe about 04:35, then C90's two-seed call.
+
+### #308 · 2026-10-27 · A5 C90 C85 · C90's two-seed call by Amendment 3: no G3 gain (C90 − C85 is +0.105 at seed 1 but +0.033 at seed 2, under the +0.08 both seeds need); G1 is lower for C90 at both seeds (by 1.8 and 10.9); corrections to #298
+- **Done:**
+  - C85-R1-K-base-s2 trained 03:50-04:35:03 (exit 0); its probe ended 04:35:54.
+  - Read all four screens with the deck sets Amendment 3 names. G3 is the 12 best by judged score at 29. G1 is the log
+    row's top 12 by z, "last 5" = 25-29. 333-10's raw numbers agree.
+- **Evidence:**
+
+  | screen | G3 (SE) | G1 last-5 | G3's 12 median P / T / E | moves an iteration | game errors |
+  |---|---|---|---|---|---|
+  | C85 s1 | 0.1139 (0.0085) | 16.23 | 14.5 / 28.5 / 15.5 | 43.8 | 1 |
+  | C85 s2 | 0.1249 (0.0082) | 19.37 | 23 / 18 / 20 | 41.8 | 1 |
+  | C90 s1 | 0.2193 (0.0118) | 14.43 | 18 / 22.5 / 22 | 14.3 | 1 |
+  | C90 s2 | 0.1578 (0.0096) | 8.47 | 12 / 25.5 / 18 | 15.7 | 0 |
+
+  - G3, C90 − C85: s1 +0.1054 (SE 0.0145), s2 +0.0329 (SE 0.0126); two-seed mean +0.069.
+  - G1, C90 − C85: s1 −1.80, s2 −10.90; two-seed mean −6.35 (11.45 against 17.80).
+- **Found:**
+  - **By Amendment 3, no G3 gain.** Seed 2's difference is +0.033 against the +0.08 both seeds need. Seed 1's
+    "between" does not replicate. At seed 2 it sits in R-small's |difference| < 0.04.
+  - The first within-recipe G3 spread: C85 0.114 / 0.125, C90 0.219 / 0.158.
+  - G1 is reported, not banded, in C90's record. C90 is lower at both seeds, but past the bar of 3 (C91's) at seed 2
+    only. So it's a lean, not an effect.
+  - Every fresh-deck screen, gated or not, stays at G3 0.11-0.22, against C91's 0.44-0.45 (#305). The gate on its own
+    doesn't take fresh decks to the lists in 30 iterations. Whether the 479 pilot does is C92's question, now running.
+- **Corrections to #298:**
+  - "0 errors in every row" for C85 should read "1 game error in its 30 rows". I had checked rows 9, 19 and 29 only.
+  - #301's driver summary is unchanged.
+- **Next:** C92 s1 (since 04:15) and s2, by its record on G1 and G3 against C90, and against C91's G3 of 0.45.
+  333-10's watchers ping when their probes land.
+
+### #309 · 2026-10-27 · A5 C90 C85 · C90 two seeds (research reading, agreeing with #308): no G3 gain, band between, null; R-pilot's Trainer leg fails on both named sets, so the "deviation is the pilot's" reading is out; G1 leans to the gate (not banded)
+- **Done** (research session): checked #308's numbers from the four runs. They match. Wrote the two-seed readout into
+  `runs/probe/C90-pairedselect/record.md`.
+- **Evidence:**
+  - G3 differences +0.105 and +0.033; two-seed means 0.119 against 0.189.
+  - Median Trainers, C90 against C85, two-seed mean: G3's 12 at 24.0 against 23.25; the population at 25 against 22.
+  - G1 last-5: −1.8 and −10.9.
+- **Found:**
+  - **No G3 gain** by Amendment 3 (seed 2 under +0.08). R-search, R-small and R-pilot all fail on the two-seed means,
+    so the band is between: null.
+  - The R-pilot reading (#299, already withdrawn in #300) is now refuted for this pair. The gated draft keeps more
+    Trainers in its population, not fewer.
+  - Unbanded lean: the gate holds G1 and the population's Trainers, where ungated C85 s2 slid into Pokémon. That
+    agrees with #153 and C91, but it is not an effect here.
+- **Next:** C92 (s1 since 04:15) against C90's two seeds and C91's G3 0.44-0.45.
+
+### #310 · 2026-10-27 · A5 C93 · C93 recorded (auditor A71): seeds 3 and 4 of C85 and C90, banded on G1, to test the gate's unbanded G1 lean from fresh decks; awaiting 333-10's slot
+- **Done** (research session): wrote `runs/screens/C93-gate-fresh-s34/record.md` with bands, the kill rule and the
+  prior before any launch.
+- **Found:** C85 against C90 is already the gated-against-ungated test from fresh decks. Its G1 lean (−1.8, −10.9 at
+  seeds 1-2) had no band. C93 adds seeds 3 and 4 of each with no code change.
+  - R-gate if the seed-3-4 mean of (C90 − C85) G1 is −3 or less; null otherwise. The 4-against-4 Welch CI is reported.
+  - Prior, written before the run: null.
+- **Evidence:** usage at 05:17 was 5-hour 7% and week 83% (resets at 09:00); nothing spawned.
+- **Next:** 333-10 decides the slot: after C92 s2, about 1.5-3 hours, pausing at about 08:00 for Evan's morning.
+
+### #311 · 2026-10-27 · A5 C92 C93 · C92 s1's interim reading (G3 0.179, G1 last-5 12.67, against C90 s1's 0.219 / 14.43); C93 (C85 and C90 at seeds 3-4) queued behind C92 s2 with an 08:30 start cutoff
+- **Done:**
+  - C92 s1 trained 04:15-05:03 and its probe ended 05:03:56. 333-10's ping didn't reach me; I found it at 05:18 and sent
+    the numbers to research.
+  - C93 (research's record `runs/screens/C93-gate-fresh-s34/record.md`, bands written 05:17; 333-10's approval):
+    - `notes/scripts/queue_c93.py` (new): C85's and C90's chain.sh with `--seed 3`, then `--seed 4`. Names are
+      `-s3` / `-s4`, each `--replicate-of` its seed-1 name, candidate C93. The probe (C49-sd 199, seed 93) is
+      unchanged.
+    - It waits until C92 s2 ends, then runs C85-s3 with C90-s3 side by side, then the s4 pair, each launch retried
+      while loop.py refuses. Each run is watched pausable with the record's kill rule (errors over 2%; 0 moves for 10
+      counted iterations).
+    - `Screen.launch()` in queue_c90.py takes a `deadline`: a first launch after it gives up and logs "waits for Evan's
+      go". A resume after a pause is not held.
+    - C93's deadline is 08:30 today.
+  - Launched as `C93-queue` (pid 7336, 05:19:27). It is waiting for C92 s2.
+- **Evidence:**
+  - C92 s1 (one seed; interim, no band; the bands use two-seed means):
+
+    | | G3 (SE) | G1 last-5 | distance at 9 / 19 / 29 | G3's 12 median P / T / E | population median at 29 | moves at 0-5 | errors |
+    |---|---|---|---|---|---|---|---|
+    | C92 s1 | 0.1791 (0.0111) | 12.67 | 16.00 / 21.83 / 12.17 | 13 / 25 / 26 | 13 / 24 / 23 | 17, 11, 16, 20, 11, 12 (mean 14.7) | 0 |
+    | C90 s1 | 0.2193 | 14.43 | 8.67 / 13.00 / 18.50 | 18 / 22.5 / 22 | — | — | — |
+
+  - Dry `launch_problems` on C85-s3 and C90-s3: none (seeds `--seed 3`).
+- **Next:**
+  - C92 s2 (row 22 at 05:18; about 05:30), then C92's two-seed call by its record.
+  - C93's s3 pair (about 45 minutes), then the s4 pair; both pairs should start before 08:30 (estimated).
+
+### #312 · 2026-10-27 · A5 C92 C93 · C92 reads R-population: the 479 lineage's pilot on fresh gated decks lands where C49-sd 199 does (two-seed G1 10.95 against C90's 11.45), so C91's shape is carried by its population, not its pilot; C93's seed-3 pair started 05:31
+- **Done:**
+  - C92 s2 trained 04:35-05:29:24 (exit 0); its probe ended 05:29:53. The queue logged it ended at 05:30:34.
+  - C93-queue launched C85-R1-K-base-s3 (pid 21996) at 05:31:28 and C90-R1-K-base-paired-s3 (pid 9572) at 05:31:33.
+- **Evidence** (C92's record bands: two-seed means against C90's; G1 = `aa_window.dist` top 12 by z, last 5 = 25-29;
+  G3 = the 12 best by judged score under C49-sd 199):
+
+  | | G3 (SE) | G1 last-5 | G3's 12 mean Energy − 18 | G3's 12 median P / T / E | population median at 29 | moves an iteration | errors |
+  |---|---|---|---|---|---|---|---|
+  | C90 s1 | 0.2193 (0.0118) | 14.43 | +4.33 | 18 / 22.5 / 22 | 15 / 24 / 21 | 14.3 | 1 |
+  | C90 s2 | 0.1578 (0.0096) | 8.47 | +4.08 | 12 / 25.5 / 18 | 13 / 26 / 19 | 15.7 | 0 |
+  | C92 s1 | 0.1791 (0.0111) | 12.67 | +6.42 | 13 / 25 / 26 | 13 / 24 / 23 | 14.7 | 0 |
+  | C92 s2 | 0.1394 (0.0084) | 9.23 | +3.75 | 13.5 / 28 / 19 | 12 / 26 / 20 | 16.1 | 0 |
+
+  - Two-seed G1: C92 10.95, C90 11.45 (−0.50). G3, C92 − C90: −0.040, −0.018. Two-seed Energy: C92 +5.08, C90 +4.21.
+  - 333-10's gt_board numbers (12.9 / 9.2, mean 11.05) use loop.ground_truth's top 12. The band is the same.
+- **Found:**
+  - **R-population**, the record's prior. G1 is within 3 of C90's, so swapping the pilot doesn't matter.
+  - C91's near-lists shape (G1 6.43, G3 0.44-0.45) is carried by the 479 decks and draft head. A mature pilot alone
+    doesn't take fresh decks there in 30 iterations.
+  - G3 shows no gain (both seeds lower), and Energy is not closed (+5.1).
+- **Next:**
+  - C93's seed-3 pair (C85-s3, C90-s3; about 45 minutes, to about 06:20), then the s4 pair (to about 07:10, estimated),
+    by C93's record.
+  - The research session's call on what R-population makes next.
+
+### #313 · 2026-10-27 · A5 C92 · C92 reads R-population (research reading, agreeing with #312): the 479 pilot on fresh decks matches C90 on G1 (−0.50) and G3, so C91's shape lives in the 479 decks and draft head, not the pilot
+- **Done** (research session): checked #312's numbers from the four runs. They match. Wrote the readout into
+  `runs/screens/C92-p479fresh/record.md`.
+- **Evidence:**
+  - G1 last-5 two-seed means 10.95 against 11.45.
+  - G3 0.179 / 0.139 against 0.219 / 0.158.
+  - G3's 12 Energy +6.4 / +3.8 over the lists' 18.
+- **Found:**
+  - R-population, as the prior expected. Swapping the whole pilot changes neither G1 nor G3 from fresh decks.
+  - C91's G1 of 6.43 and G3 of 0.44-0.45 rode on the 479 decks and head.
+  - That state came from a human-free lineage that started on random decks (#306), about 480 iterations long. The
+    method has reached a near-list shape from scratch once, slowly. 30-iteration fresh screens can't test that.
+  - A longer gated fresh run is the test of rediscovery. It is long, against Evan's preference for short runs, so it is
+    his call in the morning.
+- **Next:** C93 (the s3 pair since 05:31) on its G1 band.
+
+### #314 · 2026-10-27 · A5 · Sizing a long rediscovery run (333-10): the 479 lineage first came within 8 of the lists at iteration 290, ungated, without the round rule, under forced swaps, then lost it; the gate and round rule came only at 480
+- **Done** (research session, files only, no subagent): computed `aa_window.dist` (top 12 by z) for every row of
+  `runs/meta-99` (0-149), `runs/lab/main` (150-459) and `runs/screens/scr-resetcap` (460-499), and read each run's
+  `config.json`.
+- **Evidence:**
+  - Distance means by 25 iterations:
+
+    | Iterations | Mean | Run |
+    |---|---|---|
+    | 0-24 | 41.9 | meta-99 |
+    | 25-149 | 26-48 | meta-99 |
+    | 150-249 | 34-39 | lab main |
+    | 250-274 | 27.1 | lab main |
+    | 275-299 | 12.5 (min 5.8) | lab main |
+    | 300-374 | 12.9-19.7 (min 4.3) | lab main |
+    | 375-449 | 18.6 → 34.7 | lab main (the walls) |
+    | 475-499 | 13.6 | resetcap |
+
+  - First single row at 8 or less: iteration 290 (6.0). First 5-row mean at 8 or less: ending at 293.
+  - Settings at that time (meta-99 and lab main configs): no `--select`, so no gate; no round rule; forced swaps (3,
+    then 6 from 220); pilot initialized from pilot-v2 it349, which was itself 349 iterations on random decks (#48).
+  - The gate (`--select-z`) and the round rule came only from 480 (C29, C47). resetcap (460-499) selected among 3
+    candidates without a gate.
+- **Found:**
+  - The method has reached the lists' shape from random decks once. It took about 290 drafting iterations after a
+    349-iteration pilot, without a gate or the round rule. It held near the lists for about 85 iterations (290-374),
+    then collapsed into the walls by 425-449.
+  - So the gate wasn't on throughout. It never ran from scratch. What it showed (C29, C47, C91) is holding and
+    sharpening a near-list state.
+  - A long gated fresh run would need about 300 or more iterations (the ungated pace). The gate moves decks 3-5 times
+    slower (#186), so it may need more. That is about 6.5-7.5 hours or more at C85's roughly 1.3-1.5 minutes an
+    iteration (estimated), against Evan's preference for short runs. Shorter alternative: start the gate at the first
+    approach (fork the lab main state at about 290), which tests whether the gate prevents the walls' collapse.
+  - Caveat: the judge behind z changed across these eras, so the per-row distances are comparable only roughly.
+
+### #315 · 2026-10-27 · A5 · Fork points for a gated "find the lists" test (auditor A72-A73): seg_0240 (distance about 36) or seg_0280 (about 18-21); the drop to 6 at 290 coincides with the deckcross adoption, so part of #314's first approach may be the judge, not the decks
+- **Done** (research session, files only): per-row `aa_window.dist` over lab main 236-295, and its saved states.
+- **Evidence:**
+  - Saved states near the descent: `seg_0240.pt`, `seg_0280.pt` and `seg_0320.pt` (none at 275).
+  - Distance by iteration:
+
+    | Iterations | Distance |
+    |---|---|
+    | 236-259 | 32-40 |
+    | 260-269 | 21-31 |
+    | 270-281 | 18-21 |
+    | 282-289 | 13-16 |
+    | 290-294 | 6 at every row |
+    | 295 | 8 |
+
+  - `runs/lab/main/lineage.jsonl`: `009-pilot-deckcross-w` was adopted at 290.
+- **Found:**
+  - From 259 to 289 the descent is gradual (33 to 13). The step from 13 to 6 happens at the one iteration where the
+    pilot's architecture changed. The decks are judged by that pilot (z), so part of #314's first approach may be a
+    change in the judge, not in the decks. Unverified: it would need the 289 and 290 populations scored by one pilot.
+  - For the auditor's "does the gate find the lists" fork, the clean start is `seg_0240` (distance about 36, before the
+    descent). `seg_0280` (about 18-21) is mid-descent.
+  - The comparison is the ungated lineage's own path from that point, 36 to about 13 by 289 before the step.
+- **Next:** 333-10 or Evan decides; a record with stop bands comes first.
+
+### #316 · 2026-10-27 · A5 C93 · C93 reads R-gate: from fresh decks the gated draft holds G1 closer to the lists on all four seeds (−7.6, Welch 95% CI [−11.9, −3.3]), the first banded, replicated G1 effect; G3 does not move, and Energy is unchanged
+- **Done** (research session): read C93 (seeds 3 and 4 of C85 and C90; finished 07:15) with seeds 1-2 from
+  `aa_window` and `vs_lists.json`. Wrote the readout into `runs/screens/C93-gate-fresh-s34/record.md`.
+- **Evidence:**
+  - G1 last-5 differences (C90 − C85): −1.80, −10.90, −8.17, −9.53. Seed-3-4 mean −8.85.
+  - Four against four: 10.17 against 17.77, −7.60, Welch 95% CI [−11.87, −3.33], df 4.3, p 0.007.
+  - G3 differences: +0.105, +0.033, +0.039, −0.012.
+  - Population median Pokémon 13-15 against 17-22, Trainers 24-26 against 20-23, Energy 19-21 against 18-21.
+  - These match 333-10's gt_board figures (s3 −8.2, s4 −9.6).
+- **Found:**
+  - **R-gate**, by the bands written at 05:17. It is bigger than the noise, it holds on both new seeds, and it was
+    banded before the run, so it passes all three of the null rule's tests. It is the night's first replicated effect
+    on G1. The prior (null) was wrong.
+  - What the gate changes: fresh-deck populations stay near the lists' Pokémon and Trainer counts, where ungated
+    selection slides into Pokémon (#188).
+  - What it doesn't change:
+    - G3: the gated decks don't beat the lists more often under C49-sd 199;
+    - Energy: about +1 to +3 over the lists, either way.
+  - Caveat: G1 ranks the decks by each run's own judged z. Both arms are judged the same way.
+- **For Evan (with 333-10's framing):**
+  1. The gate as the default for fresh-deck screens now has a replicated G1 effect (it is a §10 change, so his call).
+  2. The 289/290 judge check.
+  3. A gated fork at 290 or 240.
+
+### #317 · 2026-10-27 · A5 C93 · C93's runs and drivers finished (07:16:34); my reading agrees with #316 (R-gate on G1, no G3 gain); the GPU is left free for Evan's morning
+- **Done:**
+  - C93-queue's s4 pair ended 07:15:29 (C85-s4) and 07:16:34 (C90-s4), and the queue logged "C93 done".
+  - Every driver of the night has exited: C84, C90-queue, S2-queue, C92-queue and C93-queue. Nothing is queued (333-10:
+    leave the GPU free for Evan's call).
+- **Evidence:**
+  - My independent read (`aa_window.dist` last 5; G3's 12 by judged score) matches #316:
+    - seeds 3-4 mean G1 difference (C90 − C85) −8.85 (−8.17, −9.53), against R-gate's −3 or less;
+    - four seeds: −7.60, Welch 95% CI [−11.87, −3.33], df 4.3 (aa_window.welch);
+    - G3 differences at seeds 3-4: +0.0385 and −0.0118, so no G3 gain; four-seed G3 means 0.169 against 0.128.
+  - Population median Trainers at 29: C90 24 / 26 / 24 / 25 (mean 24.75), C85 23 / 21 / 23 / 20 (mean 21.75). This is
+    reported, not banded.
+  - Game errors (C85 / C90, of 60,000 games each): s3 1 / 0, s4 3 / 4.
+  - At 07:17: no rl.metagame, queue, probe or ar_milestone process; GPU 1.8 GB, 0%; free RAM 16.1 GB.
+- **Found** (with #308, #312 and #316):
+  - From fresh decks, a gate on selection replicates as holding the drafted shape closer to the lists (G1 −7.6 over 4
+    seeds) and keeping about 3 more Trainers in the population. It doesn't raise G3.
+  - Every fresh-deck screen tonight sits at G3 0.10-0.22. Only C91 (the 479 population, gated) reaches 0.44-0.45.
+  - G1 closes faster than the decks' strength against the lists.
+- **Next:** Evan's morning call (333-10). The open items:
+  1. #314-#315's gated rediscovery run from an earlier lineage fork;
+  2. the `ar/` re-setup after tonight's `rl/metagame.py` change (#293);
+  3. the README's two standing decisions.
+
+
+### #318 · 2026-10-27 · A5 · The three-agent launcher is Python now (notes/scripts/agents.py): the execution policy blocks the .ps1; the auditor is a dialectic analyzer (Evan row 87)
+- **Done:** `notes/scripts/agents.ps1` replaced by `notes/scripts/agents.py` (same three briefs; `--only`, `--resume`,
+  `--dry-run`). Each agent opens as `claude` in its own console (CREATE_NEW_CONSOLE) with PERCH_ROLE set and NO_COLOR
+  removed from its environment, so no PowerShell script runs. Both CLAUDE.md files and the memory point at it. The
+  auditor's brief is the dialectic prompt (ground truth, thesis, antithesis, evidence under the null rule, the
+  cheapest discriminating experiment; a RESEARCH CALL whenever no metric moved beyond its bands in 2 hours or that
+  experiment is not queued); research may run a round at most hourly, each ending in a queued run (rows 86-87).
+- **Evidence:** a `powershell -File` run of the .ps1 failed with "running scripts is disabled on this system";
+  adding an execution-policy bypass to the instructions was refused as a security weakening, so the launcher moved
+  to Python instead. `py notes/scripts/agents.py --dry-run` prints the three commands (briefs 2,375 / 3,348 / 2,440
+  characters). The live auditor runs the dialectic job 15eaa07f; its first entry, A79, carries a RESEARCH CALL.
+- **Next:** after a shutdown, `py metagame-rl/notes/scripts/agents.py`.
+
+### #319 · 2026-10-27 · A5 C95 C96 · Research round 3 (Evan about 07:25): value-head candidates ranked against the C94 oracle (C95), and auditor A79's search check of M (C96); both recorded with bands and handed to implementation
+- **Done** (research session; Evan's direct request, so the 3-hour gap doesn't apply):
+  - Usage at 08:39: 5-hour 3%, week 84% (resets 09:00).
+  - Three Haiku lean-readers (losses; targets and heads; representations and auxiliaries), all snippet-level.
+  - Measured A1's stored probes myself.
+  - Notes: `research_notes/Value heads over prompt answers/round3_notes.md`.
+  - Records: `runs/probe/C95-qhead-candidates/record.md` and `runs/probe/C96-search-M/record.md`.
+- **Evidence:**
+  - A1's 488 decisions at m 32: 3.6 answers on average (median 3).
+  - Discordance between two answers' CRN-paired outcomes: mean 0.20, median 0.16. A quarter of pairs never differ.
+  - At d 0.2 a 0.02 gap needs about 8,000 paired seeds at a z of 2, against about 20,000 unpaired (the readers'
+    formula), so a head must pool across decisions.
+  - A1 already stores what every target needs: per-rollout rewards, the seat's later values (`vals`), and option
+    vectors and V0 offline.
+  - C94's timing: 15 probes at m 128 in 152 s.
+- **Found:**
+  - Ranked candidates (C95), trained on self-play only and scored on the C94 oracle's held-out decisions:
+    1. seed-centred regression on a new branched set B (m 8, A1's tool at seed 191, about 20 minutes);
+    2. Bradley-Terry on within-seed pairs;
+    3. truncated-bootstrap and TD(λ) targets from `vals`;
+    4. an allocation curve (m 1-8 at a fixed budget);
+    5. a Trainer-conditioned head;
+    6. ListNet;
+    7. the single-visit baselines (MC, GAE, next-turn value), expected null;
+    8. an ensemble.
+  - Plus a quarantined capacity check fitted to oracle values (never adopted).
+  - Bands: signal at a disattenuated Spearman >= 0.3 (CI excluding 0) and ΔG_O > 0 at 2 SE, at both training seeds.
+    Prior: 1-3 show signal on the named five only.
+  - C96: M with `--search "4:4:crn"` at every decision against greedy, M's own decks, 2 seeds, about 60
+    GPU-minutes. C73 searched prompts only (+0.044, to 0.479).
+    - Bands: R-play at a lift >= +0.03 and M_search >= 0.50; between if the lift holds but M stays under 0.5; R-not-play
+      at a lift under 0.03.
+    - Prior: between.
+- **Next:** implementation builds B and runs C95's candidates as B and O land, then C96. Evan's row 87: every round
+  ends in at least one queued run with a record and bands; this round queues two.

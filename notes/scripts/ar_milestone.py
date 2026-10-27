@@ -14,7 +14,13 @@ A commit of ar/train.py, trained longer than the loop's 5 minutes and scored on 
 It refuses to run unless ar/PAUSE exists (without it the loop may be using the GPU), no ar/ experiment is still
 running (python ar/fixed.py or ar/train.py) and the GPU is free; it refuses a train.py that fails fixed.py's name rule.
 Out: runs/probe/ar-milestone-<commit7>, or ...-<commit7>-<minutes>min for a budget other than 30.
-Exit codes: 0 done, 1 crash, 2 bad arguments, 3 aborted (ar/PAUSE removed during training), 4 refused.
+Exit codes: 0 done, 1 crash, 2 bad arguments, 3 aborted (ar/PAUSE removed during training), 4 refused, 5 paused.
+
+Pausable: the worktree's train.py is text-patched (never the branch) to save <out>/ckpt.pt (model, opt, q_head, q_opt,
+buf, st, counters, RNG states; atomic) after each iteration and to stop after it while runs/GPU-PAUSE exists (env
+AR_GPU_PAUSE overrides the path): exit 5, no result.json. Remove the file and rerun the same command plus
+--resume-from <out>/ckpt.pt to go on from that iteration. ckpt.pt is deleted when a run finishes training. If the
+loop's anchors (the loop's `while ... it < N` line, the one `it += 1`) aren't found, the run goes unpatched (not pausable).
 
 Run:  PYTHONPATH=. .venv/Scripts/python notes/scripts/ar_milestone.py [--commit REV] [--minutes 30]
       (runs/probe/ar-milestone/chain.sh)
@@ -140,7 +146,7 @@ def build_reverse_decks(seed: int = REV_SEED) -> dict:
     return {"decks": decks, "pairs": pairs, "swapped": swapped}
 
 
-def load_fixed(wt: Path, minutes: float):
+def load_fixed(wt: Path, minutes: float, out: Path = None, resume=None):
     """The worktree's fixed module, registered as `fixed` (train.py's import), patched for the longer run."""
     spec = importlib.util.spec_from_file_location("fixed", wt / "fixed.py")
     fixed = importlib.util.module_from_spec(spec)
@@ -149,7 +155,77 @@ def load_fixed(wt: Path, minutes: float):
     fixed.TIME_BUDGET = minutes * 60
     fixed.ROOT, fixed.DATA, fixed.START = ROOT, DATA, DATA / "start.pt"
     assert fixed.AR == wt and fixed.OUT.parent.parent == wt, (fixed.AR, fixed.OUT)   # rollouts and pilot in the worktree
+    if out is not None:
+        install_ckpt(fixed, out, resume)
     return fixed
+
+
+class Paused(Exception):
+    pass
+
+
+def patch_train(text: str):
+    """text with the checkpoint/pause lines around the loop, or None if the anchors aren't found exactly once."""
+    import re
+    w = list(re.finditer(r"^([ \t]*)while .*\bit < .*$", text, re.M))
+    i = list(re.finditer(r"^([ \t]*)it \+= 1[ \t]*$", text, re.M))
+    if len(w) != 1 or len(i) != 1 or i[0].start() < w[0].end():
+        return None
+    ni, nw = i[0].group(1), w[0].group(1)
+    save = (f"\n{ni}fixed.ckpt_save(locals(), t_train=t_train, it=it, games=games, errors=errors)"
+            f"\n{ni}if fixed.gpu_paused():\n{ni}    raise fixed.Paused(it)")
+    text = text[:i[0].end()] + save + text[i[0].end():]
+    return (text[:w[0].start()] + f"{nw}t_train, it, games, errors = fixed.ckpt_restore(locals(), t_train, it, games, "
+            f"errors)\n" + text[w[0].start():])
+
+
+def install_ckpt(fixed, out: Path, resume):
+    """ckpt_save / ckpt_restore / gpu_paused / Paused on the worktree's fixed module (used by the patched train.py)."""
+    import os
+    import random
+    import torch
+    path = out / "ckpt.pt"
+    flag = Path(os.environ.get("AR_GPU_PAUSE") or ROOT / "runs" / "GPU-PAUSE")
+    kinds = (torch.nn.Module, torch.optim.Optimizer)
+
+    def rng():
+        return {"torch": torch.get_rng_state(), "cuda": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None,
+                "np": np.random.get_state(), "py": random.getstate()}
+
+    def ckpt_save(ns, **scalars):
+        t0 = time.time()
+        ck = {"objs": {k: ns[k].state_dict() for k in ("model", "opt", "q_head", "q_opt")
+                       if k in ns and isinstance(ns[k], kinds)}, "scalars": scalars, "rng": rng()}
+        if "buf" in ns:
+            ck["buf"] = list(ns["buf"])
+        if "st" in ns:
+            ck["st"] = dict(ns["st"])
+        torch.save(ck, str(path) + ".tmp")
+        os.replace(str(path) + ".tmp", path)
+        fixed.ckpt_secs = time.time() - t0
+
+    def ckpt_restore(ns, t_train, it, games, errors):
+        if not resume:
+            return t_train, it, games, errors
+        ck = torch.load(resume, map_location="cpu", weights_only=False)
+        for k, sd in ck["objs"].items():
+            ns[k].load_state_dict(sd)
+        if "buf" in ck:
+            ns["buf"].clear(); ns["buf"].extend(ck["buf"])
+        if "st" in ck:
+            ns["st"].clear(); ns["st"].update(ck["st"])
+        r = ck["rng"]
+        torch.set_rng_state(r["torch"])
+        if r["cuda"] is not None and torch.cuda.is_available() and len(r["cuda"]) == torch.cuda.device_count():
+            torch.cuda.set_rng_state_all(r["cuda"])
+        np.random.set_state(r["np"]); random.setstate(r["py"])
+        sc = ck["scalars"]
+        log(f"resumed at iteration {sc['it']}")
+        return sc["t_train"], sc["it"], sc["games"], sc["errors"]
+
+    fixed.ckpt_save, fixed.ckpt_restore, fixed.gpu_paused, fixed.Paused, fixed.CKPT = (
+        ckpt_save, ckpt_restore, flag.exists, Paused, path)
+    fixed.ckpt_secs = 0.0
 
 
 class Tee:
@@ -282,7 +358,7 @@ def summary(res: dict, r: dict) -> str:
 def run_commit(a, wt: Path, out: Path, rev_dir: Path, pilot, res: dict, st: dict) -> int:
     """Steps 2-4 inside the checked-out worktree; the exit code (0 done, 3 aborted)."""
     from rl import limits
-    fixed = load_fixed(wt, a.minutes)
+    fixed = load_fixed(wt, a.minutes, out, Path(a.resume_from).resolve() if a.resume_from else None)
     res["fixed_py_same_as_ar"] = sha(wt / "fixed.py") == sha(AR / "fixed.py")
     res["evaluate_same_as_ar"] = evaluate_source(wt / "fixed.py") == evaluate_source(AR / "fixed.py") != ""
     res["limits"] = {"gpu_share": limits.GPU_SHARE, "cpu_threads": limits.CPU_THREADS, "max_workers": limits.MAX_WORKERS}
@@ -296,6 +372,12 @@ def run_commit(a, wt: Path, out: Path, rev_dir: Path, pilot, res: dict, st: dict
     log(f"train.py forbidden names: {hits[:5] or 'none'}")
     if hits:
         raise RuntimeError(f"train.py names something it may not read: {hits[:5]}")
+    patched = patch_train(text)
+    log(f"pausable anchors found: {patched is not None}" + ("" if patched else " (unpausable: anchors not found)"))
+    if patched:
+        if [w for w in tuple(getattr(fixed, "FORBIDDEN", ())) + tuple(c["fullName"] for c in Pool().cards) if w in patched]:
+            raise RuntimeError("patched train.py names something it may not read")
+        (wt / "train.py").write_text(patched, encoding="utf-8")   # the worktree's copy only
     if a.dry:
         spec = importlib.util.spec_from_file_location("ar_train", wt / "train.py")
         mod = importlib.util.module_from_spec(spec)
@@ -313,6 +395,7 @@ def run_commit(a, wt: Path, out: Path, rev_dir: Path, pilot, res: dict, st: dict
             raise RuntimeError("train.py saved no pilot")
         pilot = out / "pilot.pt"
         shutil.copyfile(fixed.OUT, pilot)
+        fixed.CKPT.unlink(missing_ok=True)
     res["pilot"] = pilot.relative_to(ROOT).as_posix()
     gc.collect()
     import torch
@@ -344,6 +427,7 @@ def main():
                     "variance of the trained-minus-start difference)")
     ap.add_argument("--pilot", help="skip training and score this saved pilot (inside the repo), e.g. the pilot.pt "
                     "of a run that died during evaluation")
+    ap.add_argument("--resume-from", help="a ckpt.pt of a paused run (exit 5): go on from its iteration")
     ap.add_argument("--out-dir", help="default runs/probe/ar-milestone-<commit>")
     ap.add_argument("--dry", action="store_true", help="no GPU, no games: build the reverse decks, check the "
                     "worktree out, patch the budget, import train.py, remove the worktree")
@@ -404,6 +488,9 @@ def main():
     code = 1
     try:
         code = run_commit(a, wt, out, rev_dir, pilot, res, st)
+    except Paused as e:
+        code = 5
+        log(f"paused after iteration {e.args[0]}: runs/GPU-PAUSE; resume with --resume-from {out / 'ckpt.pt'}")
     except BaseException as e:
         res["crash"] = f"{type(e).__name__}: {e}"
         raise
@@ -412,7 +499,7 @@ def main():
         gone = remove_worktree(wt, tmp)
         log(f"worktree removed: {gone}; ar/ git status as before: {git('status', '--porcelain') == status_before}; "
             f"worktrees now: {git('worktree', 'list').splitlines()}")
-        if not a.dry:
+        if not a.dry and code != 5:
             res["ended"] = f"{datetime.now():%Y-%m-%d %H:%M}"
             (out / "result.json").write_text(json.dumps(res, indent=1), encoding="utf-8")
             if "readout" in res:
