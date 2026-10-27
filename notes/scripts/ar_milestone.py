@@ -20,7 +20,9 @@ Pausable: the worktree's train.py is text-patched (never the branch) to save <ou
 buf, st, counters, RNG states; atomic) after each iteration and to stop after it while runs/GPU-PAUSE exists (env
 AR_GPU_PAUSE overrides the path): exit 5, no result.json. Remove the file and rerun the same command plus
 --resume-from <out>/ckpt.pt to go on from that iteration. ckpt.pt is deleted when a run finishes training. If the
-loop's anchors (the loop's `while ... it < N` line, the one `it += 1`) aren't found, the run goes unpatched (not pausable).
+loop's anchors (the loop's `while ... it < N` line, the one `it += 1` in that while's own body) aren't found, or a
+name the inserted lines use isn't bound above that while line in a scope they can see, the run goes unpatched (not
+pausable).
 
 Run:  PYTHONPATH=. .venv/Scripts/python notes/scripts/ar_milestone.py [--commit REV] [--minutes 30]
       (runs/probe/ar-milestone/chain.sh)
@@ -165,18 +167,74 @@ class Paused(Exception):
 
 
 def patch_train(text: str):
-    """text with the checkpoint/pause lines around the loop, or None if the anchors aren't found exactly once."""
+    """text with the checkpoint/pause lines around the loop, or None if the anchors aren't found exactly once, the
+    `it += 1` isn't in that while's own body, or a name those lines use isn't bound above the while line where they can
+    see it (they would raise NameError or UnboundLocalError)."""
+    import ast
+    import builtins
     import re
+    import textwrap
     w = list(re.finditer(r"^([ \t]*)while .*\bit < .*$", text, re.M))
     i = list(re.finditer(r"^([ \t]*)it \+= 1[ \t]*$", text, re.M))
     if len(w) != 1 or len(i) != 1 or i[0].start() < w[0].end():
         return None
+    save = ("fixed.ckpt_save(locals(), t_train=t_train, it=it, games=games, errors=errors)\n"
+            "if fixed.gpu_paused():\n    raise fixed.Paused(it)")
+    restore = "t_train, it, games, errors = fixed.ckpt_restore(locals(), t_train, it, games, errors)"
+    used = [n for n in ast.walk(ast.parse(save + "\n" + restore)) if isinstance(n, ast.Name)]
+    need, sets = {n.id for n in used} - set(dir(builtins)), {n.id for n in used if isinstance(n.ctx, ast.Store)}
+    line, iline = (text.count("\n", 0, m[0].start()) + 1 for m in (w, i))
+    tree = ast.parse(text.lstrip("\ufeff"))                                # read_text keeps a BOM; ast.parse rejects it
+    scope = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+    at = lambda k: [tree] + [s for s in ast.walk(tree) if isinstance(s, scope) and s.lineno < k <= s.end_lineno]  # noqa
+    chain, loop = at(line), [n for n in ast.walk(tree) if isinstance(n, ast.While) and n.lineno == line]
+    # the save lines go in at `it += 1`, so it must be in that while's own body (not a def or the module below it)
+    if not loop or iline > loop[0].body[-1].end_lineno or at(iline) != chain:
+        return None
+
+    def bound(s, end):
+        """(names scope s binds above line `end`, names it makes local anywhere, names it declares global or nonlocal).
+        Binding: assignments, imports, its arguments, a walrus; local without binding for sure: a bare annotation, del,
+        except-as, a match capture, a comprehension's walrus. A nested def, class or lambda keeps its own names (only a
+        def's or class's name binds in s), a comprehension all but a walrus's."""
+        out, loc, decl, todo = set(), set(), set(), [(n, False) for n in ast.iter_child_nodes(s)]
+        while todo:
+            n, comp = todo.pop()                                # comp: inside a comprehension
+            kids, only = list(ast.iter_child_nodes(n)), []      # only: names made local without surely binding them
+            if isinstance(n, scope + (ast.Lambda,)):
+                kids, names = [], [n.name] if hasattr(n, "name") else []
+            elif isinstance(n, ast.NamedExpr):                 # in a comprehension it may run 0 times
+                kids, names, only = [n.value], [] if comp else [n.target.id], [n.target.id] if comp else []
+            elif isinstance(n, (ast.Global, ast.Nonlocal)):
+                decl.update(n.names)
+                continue
+            elif isinstance(n, ast.AnnAssign) and n.value is None:
+                kids, names, only = [], [], [n.target.id] if isinstance(n.target, ast.Name) else []
+            elif comp:
+                names = []
+            else:
+                names = ([n.id] if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Store)
+                         else [n.arg] if isinstance(n, ast.arg)
+                         else [(a.asname or a.name).split(".")[0] for a in n.names]
+                         if isinstance(n, (ast.Import, ast.ImportFrom)) else [])
+                only = ([n.id] if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Del)
+                        else [n.name] if isinstance(n, (ast.ExceptHandler, ast.MatchAs, ast.MatchStar)) and n.name
+                        else [n.rest] if isinstance(n, ast.MatchMapping) and n.rest else [])
+            loc.update(names + only)
+            out.update(names if names and n.lineno < end else [])
+            comp = comp or isinstance(n, (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp))
+            todo.extend((k, comp) for k in kids)
+        return out, loc - decl, decl
+    # the names the lines assign become locals of the loop's own scope (chain[-1]) unless it declares them global or
+    # nonlocal; its locals must be bound there above the while line, the others there, in an enclosing function or in
+    # the module
+    own, loc, decl = bound(chain[-1], line)
+    outer = set().union(*(bound(s, line)[0] for s in chain[:-1] if not isinstance(s, ast.ClassDef)))
+    if not all(n in own or n not in loc | (sets - decl) and n in outer for n in need):
+        return None
     ni, nw = i[0].group(1), w[0].group(1)
-    save = (f"\n{ni}fixed.ckpt_save(locals(), t_train=t_train, it=it, games=games, errors=errors)"
-            f"\n{ni}if fixed.gpu_paused():\n{ni}    raise fixed.Paused(it)")
-    text = text[:i[0].end()] + save + text[i[0].end():]
-    return (text[:w[0].start()] + f"{nw}t_train, it, games, errors = fixed.ckpt_restore(locals(), t_train, it, games, "
-            f"errors)\n" + text[w[0].start():])
+    text = text[:i[0].end()] + "\n" + textwrap.indent(save, ni) + text[i[0].end():]
+    return text[:w[0].start()] + f"{nw}{restore}\n" + text[w[0].start():]
 
 
 def install_ckpt(fixed, out: Path, resume):
@@ -373,7 +431,8 @@ def run_commit(a, wt: Path, out: Path, rev_dir: Path, pilot, res: dict, st: dict
     if hits:
         raise RuntimeError(f"train.py names something it may not read: {hits[:5]}")
     patched = patch_train(text)
-    log(f"pausable anchors found: {patched is not None}" + ("" if patched else " (unpausable: anchors not found)"))
+    log(f"pausable anchors found: {patched is not None}"
+        + ("" if patched else " (unpausable: anchors not found or not in one loop, or a name they use unbound)"))
     if patched:
         if [w for w in tuple(getattr(fixed, "FORBIDDEN", ())) + tuple(c["fullName"] for c in Pool().cards) if w in patched]:
             raise RuntimeError("patched train.py names something it may not read")

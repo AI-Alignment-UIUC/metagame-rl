@@ -251,7 +251,10 @@ def main(argv=None):
         if "rng" in src:
             rng.bit_generator.state = src["rng"]
         deal_seed = src.get("deal_seed", args.seed)
-        cands = (src.get("season") or {}).get("cands", {})
+        season = src.get("season") or {}                 # mid-season: so a pause doesn't change selection
+        cands = {i: h for i, h in season.get("cands", {}).items()      # --select-paired plays entry q < H: a fork's
+                 if not paired or len(h) == H}                           # other --candidates draws that deck's anew
+        pairs = {i: v for i, v in season.get("pairs", {}).items() if paired and i in cands}   # older: none
         if fork and args.reseed is not None:
             rng, deal_seed = np.random.default_rng(args.reseed), args.reseed
             torch.manual_seed(args.reseed)
@@ -418,7 +421,7 @@ def main(argv=None):
                               **({"paired": {"slots": round(float(np.mean(slots)), 2),
                                              "stay_low_n": sum(1 for n_ in slots if n_ < 2)}} if paired else {}),
                               **({"held_back": held_back} if args.select_z > 0 else {})}
-                cands = {}
+                cands, pairs = {}, {}                            # the checkpoint saves them together
 
             # 6. turnover
             turnover, type_sizes = [], None
@@ -489,7 +492,7 @@ def main(argv=None):
             state = {"net": net.state_dict(), "opt": opt.state_dict(), "drafter": drafter.state(), "config": net.config(),
                      "population": [{**a, "deck": pool.names(a["deck"])} for a in pop], "next_id": next_id,
                      "iter": it, "round": it, "rng": rng.bit_generator.state, "deal_seed": deal_seed,
-                     "season": {"cands": cands},
+                     "season": {"cands": cands, "pairs": pairs},
                      "agents": [{"id": a["id"], "deck": pool.names(a["deck"])} for a in pop]}
             tmp = ckpt.with_suffix(".tmp")
             torch.save(state, tmp)

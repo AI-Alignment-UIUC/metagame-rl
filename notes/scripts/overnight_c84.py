@@ -28,6 +28,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "notes" / "scripts"))
 import loop                                              # noqa: E402
+import gpu_hold                                          # noqa: E402  row 73's hold (shared with queue_c90)
 
 D = ROOT / "runs" / "probe" / "C84-overnight"
 PY = str(ROOT / ".venv" / "Scripts" / "python.exe")
@@ -42,8 +43,8 @@ ARMS = {
 }
 QUEUE = D / "extra_arms.json"         # arms added after launch (C89 on Evan's yes): {name: {commit, dir, new_arch, bands}}
 C91 = ("C91-round479k-s5", "C91-round479k-s6")   # round479 on K with the gate, launched beside C85 by queue_c90 (#293)
-GPU_PAUSE = ROOT / "runs" / "GPU-PAUSE"   # Evan's pause (333-10 creates and removes it): arms checkpoint and wait (22:25)
 PAUSED = 5                            # ar_milestone's exit code for a run paused at an iteration boundary
+REFUSED, TRIES = 4, 60                # ar_milestone's exit code for a refusal (blocked()); a resumed arm retries every 2 minutes
 MOVE, CLEAR, X1_CLEAR = 0.01, 0.02, -0.02
 
 
@@ -63,27 +64,35 @@ def alive(name) -> bool:
     return bool(e) and loop.alive(e["pid"], e.get("ctime"))
 
 
-def hold():
-    """Row 73: wait while runs/GPU-PAUSE exists, free RAM < 2 GB or GPU memory > 80%."""
-    while True:
-        free, _ = loop.ram_gb()
-        out = subprocess.run(["nvidia-smi", "--query-gpu=memory.used,memory.total", "--format=csv,noheader,nounits"],
-                             capture_output=True, text=True).stdout.split(",")
-        u, t = int(out[0]), int(out[1])
-        if not GPU_PAUSE.exists() and free >= 2 and u <= 0.8 * t:
-            return True
-        if stopped():
-            return False
-        log(f"holding: {'GPU-PAUSE, ' if GPU_PAUSE.exists() else ''}free RAM {free:.1f} GB, GPU {u} of {t} MiB")
-        time.sleep(120)
+def hold() -> bool:
+    """Row 73 (gpu_hold.hold): True once clear, False on STOP (checked on every pass); nvidia-smi unreadable holds too."""
+    return gpu_hold.hold(log, stopped)
+
+
+def result(folder):
+    """result.json if the run trained and was scored, else None: ar_milestone also writes one on a crash (exit 1,
+    "crash") or an abort (exit 3, "aborted"), without "trained"."""
+    r = folder / "result.json"
+    res = json.load(open(r)) if r.exists() else {}
+    return res if "trained" in res and not res.get("crash") and not res.get("aborted") else None
+
+
+def refusal() -> str:
+    """ar_milestone's reason for exit 4: its last "refusing: ..." line in stdout.log (blocked(): ar/PAUSE absent, an
+    ar/ experiment still running, powershell or nvidia-smi unreadable, or the GPU over 4000 MiB)."""
+    f = D / "stdout.log"
+    with open(f, "rb") as h:
+        h.seek(max(0, f.stat().st_size - 8192))
+        why = [l for l in h.read().decode("utf-8", "ignore").splitlines() if l.startswith("refusing: ")]
+    return why[-1][len("refusing: "):] if why else "no reason in stdout.log"
 
 
 def read(dirname, arm, seed):
     """(M on fresh deals, X1 three-group U - G or None) of one arm and seed, or None if it has no result."""
-    r = ROOT / dirname / f"{arm}-s{seed}" / "result.json"
-    if not r.exists():
+    res = result(ROOT / dirname / f"{arm}-s{seed}")
+    if res is None:
         return None
-    m = json.load(open(r))["trained"]["forward"]["M"]
+    m = res["trained"]["forward"]["M"]
     x = ROOT / dirname / f"{arm}-s{seed}" / "x1.json"
     x1 = json.load(open(x))["readout"]["U-G"]["three"]["diff"] if x.exists() else None
     return m, x1
@@ -125,8 +134,11 @@ def c88_band(dm, g):
 
 def milestone(commit, dirname, arm, seed):
     out = ROOT / dirname / f"{arm}-s{seed}"
-    if (out / "result.json").exists():
-        return True
+    if (out / "result.json").exists():                   # a crash's or abort's too (a rerun would be refused: exit 2)
+        if result(out) is None:
+            log(f"{arm} s{seed}: result.json without a trained score (crash or abort): no result")
+        return result(out) is not None
+    refused = 0
     while True:                                          # a paused run (exit 5) waits, then continues from its checkpoint
         if not hold():
             return False
@@ -138,8 +150,19 @@ def milestone(commit, dirname, arm, seed):
                             *resume], cwd=ROOT, env={**__import__("os").environ, "PYTHONPATH": str(ROOT)},
                            stdout=open(D / "stdout.log", "a"), stderr=subprocess.STDOUT)
         log(f"{arm} s{seed}: exit {r.returncode}")
+        if r.returncode == REFUSED:
+            retry = bool(resume) and refused < TRIES     # a resumed arm keeps its ckpt.pt: retried; a fresh arm is dropped
+            refused += 1                                 # at once, as before, so it can't hold up the C85 screen
+            log(f"{arm} s{seed}: refused ({refusal()}){f'; retry {refused} of {TRIES} in 2 minutes' if retry else ''}")
+            if retry:
+                if stopped():
+                    return False
+                time.sleep(120)
+                continue
         if r.returncode != PAUSED:
-            return (out / "result.json").exists()
+            if result(out) is None:
+                log(f"{arm} s{seed}: no trained result{f' (refused {refused} times)' if r.returncode == REFUSED and refused > 1 else ''}")
+            return result(out) is not None
         log(f"{arm} s{seed}: paused (GPU-PAUSE); waiting to resume")
 
 
@@ -255,8 +278,8 @@ def main():
     if stopped():
         log("STOP before the screen")
         return
-    if not dec["screen"]:
-        screen(dec)
+    if not dec["screen"] and not screen(dec):
+        return
     if dec["moved"]:
         if not wait_screens(dec["screen"]["name"]):
             log("STOP before the seed 2s")
@@ -300,23 +323,37 @@ def wait_screens(name) -> bool:
         time.sleep(120)
 
 
-def screen(dec):
-    """C85 on the baseline pilot (333-10, 23:07: the screens before any seed 2, so no arm has cleared yet)."""
+def screen(dec) -> bool:
+    """C85 on the baseline pilot (333-10, 23:07: the screens before any seed 2, so no arm has cleared yet). Through
+    loop.py launch after the row-73 hold; a refusal (or a crash before the spawn) is retried every 2 minutes.
+    dec["screen"] is recorded once the launch is accepted; False on STOP."""
     pilot, label = "runs/pilot/C49-sd/model_it00199.pt", "C49-sd 199 (baseline)"
     name = "C85-R1-K-base"
     run = ROOT / "runs" / "screens" / name
-    run.mkdir(parents=True, exist_ok=True)
-    (run / "record.md").write_text(SCREEN_RECORD.format(name=name, cand="C85", now=f"{datetime.now():%Y-%m-%d %H:%M}",
-                                                        pilot=pilot, pilot_label=label), encoding="utf-8")
-    (run / "chain.sh").write_text(SCREEN_CHAIN.format(name=name, pilot=pilot), encoding="utf-8", newline="\n")
+    if not (run / "launch.log").exists():                # launch.log: launched before a restart (a relaunch is refused)
+        run.mkdir(parents=True, exist_ok=True)
+        (run / "record.md").write_text(SCREEN_RECORD.format(name=name, cand="C85", now=f"{datetime.now():%Y-%m-%d %H:%M}",
+                                                            pilot=pilot, pilot_label=label), encoding="utf-8")
+        (run / "chain.sh").write_text(SCREEN_CHAIN.format(name=name, pilot=pilot), encoding="utf-8", newline="\n")
+        while True:
+            if not hold():
+                log(f"STOP before the screen {name} launched")
+                return False
+            r = subprocess.run([PY, "notes/scripts/loop.py", "launch", name, "--candidate", "C85", "--record",
+                                f"runs/screens/{name}/record.md", "--run", f"runs/screens/{name}", "--kind", "screen",
+                                "--start", "prevention", "--from", "fresh", "--evan-row", "78", "--", "sh",
+                                f"runs/screens/{name}/chain.sh"], cwd=ROOT, capture_output=True, text=True)
+            out = (r.stdout + r.stderr).strip()
+            log(f"screen {name} from {label}: {out[-300:]}")
+            if r.returncode == 0 or (run / "launch.log").exists():   # accepted: spawned (launch.log is opened just
+                break                                    # before the spawn); a refusal (exit 2) or a crash before it retries
+            if stopped():                                # hold() checks STOP again after the sleep
+                log(f"STOP before the screen {name} launched")
+                return False
+            time.sleep(120)
     dec["screen"] = {"name": name, "pilot": pilot}
     json.dump(dec, open(D / "decisions.json", "w"), indent=1)
-    hold()
-    r = subprocess.run([PY, "notes/scripts/loop.py", "launch", name, "--candidate", "C85", "--record",
-                        f"runs/screens/{name}/record.md", "--run", f"runs/screens/{name}", "--kind", "screen", "--start",
-                        "prevention", "--from", "fresh", "--evan-row", "78", "--", "sh", f"runs/screens/{name}/chain.sh"],
-                       cwd=ROOT, capture_output=True, text=True)
-    log(f"screen {name} from {label}: {(r.stdout + r.stderr).strip()[-300:]}")
+    return True
 
 
 if __name__ == "__main__":

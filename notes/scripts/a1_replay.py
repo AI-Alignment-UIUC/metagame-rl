@@ -3,8 +3,9 @@
 A1 (#267) stored 488 decisions from the start pilot's self-play with every answer's Q-hat (32 rollouts to the game's
 end). This reruns a trained pilot on the same stored rows (no games) and compares its greedy answer's Q-hat with the
 start pilot's: dG = mean over decisions of Q-hat(trained greedy) - Q-hat(start greedy), SE over decisions; also the
-within-decision Spearman of the trained logits with Q-hat. Valid for pilots that read the same observation (the chain
-head reads rows A1's chain-0 observations lack, so a chain pilot's dG is reported as not valid). Evaluation only.
+within-decision Spearman of the trained logits with Q-hat. Valid only for pilots that read A1's encoding (A1_ENC): any
+other canon / chain / history reads rows A1's observations were not encoded with, so its dG is reported as not valid
+(with the reason in "why"). Evaluation only.
 
 Run: PYTHONPATH=. .venv/Scripts/python notes/scripts/a1_replay.py --pilot <trained pilot.pt> --out <json>
 """
@@ -20,8 +21,12 @@ import torch
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from probe_target_signal import offline, prepare, spearman, zpool   # noqa: E402
 from rl.gpu_matrix import load_policy                                 # noqa: E402
+from rl.remote import enc_of                                          # noqa: E402
 
 NAMED = ("Computer Search", "Super Energy Removal", "Energy Removal", "Energy Retrieval", "Gust of Wind")
+# The encoding of A1's stored observations (rl/remote.py enc_of). a1.json records only its pilot (args.pilot,
+# ar/data/start.pt), and GpuMatrix.play encoded the games with that pilot's options: the default ones.
+A1_ENC = {"canon": 0, "chain": 0, "history": 0}
 
 
 def greedy_q(model, probes, device):
@@ -57,10 +62,11 @@ def main():
     a = ap.parse_args()
     probes = [p for p in json.loads(gzip.open(a.raw, "rt").read())["probes"] if not np.isnan(prepare(dict(p))["Q"]).any()]
     trained, _ = load_policy(a.pilot, a.device)
-    if trained.config().get("chain", 0):
-        res = {"pilot": a.pilot, "valid": False, "why": "chain pilot: A1's observations have no chain rows"}
+    start, _ = load_policy(a.start, a.device)
+    bad = {n: enc_of(m) for n, m in (("pilot", trained), ("start", start)) if enc_of(m) != A1_ENC}
+    if bad:
+        res = {"pilot": a.pilot, "valid": False, "why": f"encoding {bad} differs from A1's observations' {A1_ENC}"}
     else:
-        start, _ = load_policy(a.start, a.device)
         t, s = greedy_q(trained, probes, a.device), greedy_q(start, probes, a.device)
         rows = [{"dG": tq - sq, "lg": tl, "Q": Q, "stratum": p["stratum"]} for (tq, tl, Q), (sq, _, _), p in zip(t, s, probes)]
         st = [r["stratum"] for r in rows]

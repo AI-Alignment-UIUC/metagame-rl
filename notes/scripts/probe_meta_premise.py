@@ -1,7 +1,7 @@
 """C78 (log #243): how far below the human lists are a population's best decks under the frozen pilot? The premise of the
 metagame autoresearch loop (arm/): it can only close a gap its judge can see. Evaluation only.
 
-Each population's 12 best decks (by their judged score, sum / n, as trainer_value.py --decks reads them) play the 24 human
+Each population's 12 best decks (by rl/metagame.py recent_score: judged, else sum / n, else the last window's) play the 24 human
 lists, the same pilot on both seats, greedy, the 2000 round rule 20-45, 8 games a pair with seats alternating, fixed
 deals. The readout is the mean over the 288 pairs of the deck's share of decisive games (arm/'s metric M).
 
@@ -18,6 +18,7 @@ import torch
 from rl import limits
 from rl.decks import Pool, archived_decks
 from rl.gpu_matrix import GpuMatrix, load_policy
+from rl.metagame import recent_score
 from rl.remote import RemotePool
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -25,8 +26,8 @@ ROOT = Path(__file__).resolve().parents[2]
 
 def best_decks(path: str, top: int) -> list:
     st = torch.load(ROOT / path, map_location="cpu", weights_only=False)
-    score = lambda a: a["sum"] / a["n"] if a.get("n") else 0.0
-    return [{"name": f"a{a['id']}", "cards": a["deck"]} for a in sorted(st["population"], key=lambda a: -score(a))[:top]]
+    # recent_score falls back to a['last']: turnover zeroes sum and n just before a turnover checkpoint is saved
+    return [{"name": f"a{a['id']}", "cards": a["deck"]} for a in sorted(st["population"], key=lambda a: -recent_score(a, 0.0))[:top]]
 
 
 def main():

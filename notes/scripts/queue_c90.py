@@ -26,6 +26,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "notes" / "scripts"))
 import loop                                              # noqa: E402
+import gpu_hold                                          # noqa: E402  row 73's hold (shared with overnight_c84)
+from gpu_hold import GPU_PAUSE                           # noqa: E402  Evan's pause (333-10 creates and removes it; 22:25)
 from aa_window import dist                               # noqa: E402  the top-12 distance from the human medians (G1)
 
 D = ROOT / "runs" / "probe" / "C90-pairedselect"
@@ -34,7 +36,6 @@ PATCH, PRE = D / "metagame_c90_c91.py", D / "metagame_pre_c90.py"
 LIVE = ROOT / "rl" / "metagame.py"
 BASE_SHA = (D / "metagame_base.sha256")                  # the sha256 of the rl/metagame.py the patch was made from
 PY = str(ROOT / ".venv" / "Scripts" / "python.exe")
-GPU_PAUSE = ROOT / "runs" / "GPU-PAUSE"                  # Evan's pause (333-10 creates and removes it; 22:25)
 C91 = ROOT / "runs" / "screens" / "C91-round479k"
 C91_FROM = "runs/screens/scr-resetcap/population_it0479.pt"
 C91_CHAIN = """#!/bin/sh
@@ -76,16 +77,8 @@ def sha(p: Path) -> str:
 
 
 def hold():
-    """Row 73: wait while runs/GPU-PAUSE exists, free RAM < 2 GB or GPU memory > 80%."""
-    while True:
-        free, _ = loop.ram_gb()
-        out = subprocess.run(["nvidia-smi", "--query-gpu=memory.used,memory.total", "--format=csv,noheader,nounits"],
-                             capture_output=True, text=True).stdout.split(",")
-        u, t = int(out[0]), int(out[1])
-        if not GPU_PAUSE.exists() and free >= 2 and u <= 0.8 * t:
-            return
-        log(f"holding: {'GPU-PAUSE, ' if GPU_PAUSE.exists() else ''}free RAM {free:.1f} GB, GPU {u} of {t} MiB")
-        time.sleep(120)
+    """Row 73 (gpu_hold.hold): waits until clear; nvidia-smi unreadable holds too. No stop here."""
+    gpu_hold.hold(log)
 
 
 class Screen:
