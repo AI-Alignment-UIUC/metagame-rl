@@ -1108,6 +1108,75 @@ def check_lab_loop(failures):
           f"is rebased with its decision rule ({runs2[-1]}); a scratch card counts its own iterations, unforked and not rebased; a held pass is not adopted; a warm card forks from its warm start")
 
 
+def check_p1(failures):
+    """BENCH-P1 (cand_latent 3, card_content, emb_scale, cand_origin; runs/probe/BENCH/P1/record.md): (a) with every option off, a
+    model built from ar/data/start.pt has the config, state_dict keys, logits and value saved before the options existed
+    (runs/probe/BENCH/P1/start_baseline.pt: the first 1536 rows of runs/probe/C95-qhead-candidates/smoke_S.pt, torch.equal);
+    (b) the folded P1 model: fold error < 1e-4, the content read keeps >= 0.95 on the option's own card, a swap of two listed
+    PROMPT tokens' outputs swaps their options' logits; (c) its options go through token_net and load_policy."""
+    import importlib.util
+    from rl.gpu_matrix import load_policy
+    from rl.remote import trim_inputs
+    from rl.train import model_inputs, token_net
+    base, rows = Path("runs/probe/BENCH/P1/start_baseline.pt"), Path("runs/probe/C95-qhead-candidates/smoke_S.pt")
+    if not (base.exists() and rows.exists() and Path("ar/data/start.pt").exists()):
+        print("P1: start.pt, the baseline or the rollout rows are missing here; the check is skipped")
+        return
+    ref = torch.load(base, weights_only=False)
+    ins = [torch.from_numpy(x[:ref["n"]]) for x in model_inputs(torch.load(rows, map_location="cpu", weights_only=False)["batch"], "tokens")]
+    start, _ = load_policy("ar/data/start.pt", "cpu")
+    if start.config() != ref["cfg"] or list(start.state_dict()) != ref["keys"]:
+        failures.append("P1: with every option off the config or the state_dict keys changed")
+    with torch.no_grad():
+        outs = [start(*trim_inputs([x[s:s + 256] for x in ins], start)) for s in range(0, ref["n"], 256)]
+    lg = torch.cat([F.pad(o[0], (0, 1000 - o[0].shape[1]), value=-1e9) for o in outs])
+    if not (torch.equal(lg, ref["logits"]) and torch.equal(torch.cat([o[1] for o in outs]), ref["value"])):
+        failures.append("P1: with every option off the outputs are not bit-identical to the baseline")
+    spec = importlib.util.spec_from_file_location("p1_gates", "notes/scripts/p1_gates.py")
+    g = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(g)
+    m, err = g.build_p1("ar/data/start.pt")
+    if not err < 1e-4 or m.card_resid is not None or any("card_resid" in k for k in m.state_dict()):
+        failures.append(f"P1: fold error {err}, or card_resid kept")
+    new = {"cand_latent": 3, "cand_latent_zone": 1, "card_content": 1, "emb_scale": 0.1, "cand_origin": 1, "count_features": True}
+    if any(m.cfg.get(k) != v for k, v in new.items()):
+        failures.append(f"P1: config {m.cfg}")
+    x = [t[:64] for t in ins]
+    x = trim_inputs(x, m)
+    tc, tk, ta = (t.long() for t in x[:3])
+    verb, card, s1, s2, name, extra = x[5].long().view(64, -1, 6).unbind(-1)
+    with torch.no_grad():
+        h, mask = m.encode(*x[:5])[:2]
+        _, found, att = m.content_read(h, mask, tc, tk, ta, verb, card, s1, s2)
+        own = (att * (tc[:, None, :] == card[..., None])).sum(-1)[found]
+        if not (found.any() and float(own.min()) >= 0.95):
+            failures.append(f"P1: own-card attention min {float(own.min()) if found.any() else None}")
+        # the stored rows hold no search, so swap two HAND tokens read by two Trainer plays of one state (verb 5, slot 14 = hand)
+        lg0 = m.heads(h, mask, x[5], x[6], None, None, tc, tk, ta)[0]
+        hits = 0
+        for b in range(64):
+            ops = [j for j in range(verb.shape[1]) if int(verb[b, j]) == 5 and int(card[b, j]) and int(s1[b, j]) == 0 and found[b, j]]
+            if len(ops) < 2 or int(card[b, ops[0]]) == int(card[b, ops[1]]):
+                continue
+            pos = [int(torch.nonzero(mask[b] & (tk[b] == 6) & (tc[b] == card[b, j])).flatten()[0]) for j in ops[:2]]
+            h2 = h.clone()
+            h2[b, pos[0]], h2[b, pos[1]] = h[b, pos[1]].clone(), h[b, pos[0]].clone()
+            lg2 = m.heads(h2, mask, x[5], x[6], None, None, tc, tk, ta)[0]
+            hits += abs(float(lg2[b, ops[0]] - lg0[b, ops[1]])) < 1e-3 and abs(float(lg2[b, ops[1]] - lg0[b, ops[0]])) < 1e-3
+        if not hits:
+            failures.append("P1: no state offered two Trainers to check a token swap on")
+    cfg = m.config()
+    info = {"tokens": {"names": cfg["n_names"], "globF": cfg["glob_f"], "slotF": cfg["slot_f"], "maxTok": cfg["max_tok"], "maxCand": cfg["max_cand"]}}
+    if token_net(cfg, info).config() != cfg:
+        failures.append("P1: token_net drops an option")
+    with tempfile.TemporaryDirectory() as td:
+        torch.save({"config": cfg, "model": m.state_dict()}, Path(td) / "p1.pt")
+        if load_policy(str(Path(td) / "p1.pt"), "cpu")[0].config() != cfg:
+            failures.append("P1: load_policy drops an option")
+    print(f"P1: options off = bit-identical to the saved start.pt outputs ({ref['n']} rows); folded P1: fold error {err:.1e}, own-card "
+          f"attention min {float(own.min()):.4f}, {hits} swapped Trainer pairs follow their tokens; token_net and load_policy keep the options")
+
+
 def main():
     failures = []
     table = json.load(open("notes/data/cards/pool.json", encoding="utf-8"))["cards"]
@@ -1128,6 +1197,7 @@ def main():
     check_recent_score(failures)
     check_topk(failures, tiny_pilot(table, text), np.random.default_rng(3))
     check_chain(failures, table, text, np.random.default_rng(4))
+    check_p1(failures)
     for f in failures[:20]:
         print("FAIL", f)
     print("FAIL" if failures else "PASS")

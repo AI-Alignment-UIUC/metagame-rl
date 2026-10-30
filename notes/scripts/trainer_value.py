@@ -25,6 +25,7 @@ import torch
 
 from rl import limits
 from rl.decks import Pool, archived_decks
+from rl.metagame import recent_score
 from rl.gpu_matrix import GpuMatrix, load_policy
 from rl.remote import RemotePool
 from rl.train import round_turns
@@ -41,6 +42,25 @@ GROUPS = {
 }
 
 
+def energy_shift(card: dict, cards: list, fill: str, g: str, deck: int) -> list:
+    """C103's variant: +K turns K of the deck's Trainers, chosen at random, into its most common basic Energy (`fill`); -K
+    turns K of its basic Energy into copies of Trainers it runs, chosen at random within the 4-copy limit. Seeded by (deck,
+    sign, K, replicate)."""
+    k, r = (int(x) for x in g[7:].split("#"))
+    rng = np.random.default_rng([deck, g[6] == "+", k, r])
+    cards = list(cards)
+    if g[6] == "+":
+        for i in rng.choice([i for i, x in enumerate(cards) if card[x]["superType"] == 2], k, replace=False):
+            cards[i] = fill
+        return cards
+    runs = sorted({x for x in cards if card[x]["superType"] == 2})
+    basic = [i for i, x in enumerate(cards) if card[x]["superType"] == 3 and card[x]["energyType"] == 0]
+    for i in rng.choice(basic, k, replace=False):
+        ok = [t for t in runs if cards.count(t) < 4]
+        cards[i] = ok[rng.integers(len(ok))]
+    return cards
+
+
 def variants(pool: Pool, decks: list, groups: list) -> tuple:
     """[base decks] + [each base with a group's Trainers replaced by its most common basic Energy], and the pairs
     (base, variant, group, base index); a group the deck does not play makes no pair."""
@@ -52,7 +72,20 @@ def variants(pool: Pool, decks: list, groups: list) -> tuple:
             continue
         fill = basics.most_common(1)[0][0]
         for g in groups:
-            hit = (lambda c: c["superType"] == 2) if g == "all" else (lambda c, names=GROUPS[g]: c["name"] in names)
+            if g.startswith("plus:"):                   # C105: one basic Energy -> one more copy of the named card, if under 4
+                have = [x for x in d["cards"] if card[x]["name"] == g[5:]]
+                if have and len(have) < 4:
+                    cards = list(d["cards"])
+                    cards[cards.index(fill)] = have[0]
+                    pairs.append({"base": k, "variant": len(out), "group": g, "replaced": 1})
+                    out.append({"name": f"{d['name']}-{g}", "cards": cards})
+                continue
+            if g.startswith(("energy+", "energy-")):    # C103: "energy+K#r" / "energy-K#r", replicate r of a K-card move
+                cards = energy_shift(card, d["cards"], fill, g, k)
+                pairs.append({"base": k, "variant": len(out), "group": g, "replaced": int(g[7:].split("#")[0])})
+                out.append({"name": f"{d['name']}-{g}", "cards": cards})
+                continue
+            hit = (lambda c: c["superType"] == 2) if g == "all" else (lambda c, names=GROUPS.get(g, (g,)): c["name"] in names)
             cards = [fill if hit(card[x]) else x for x in d["cards"]]
             n = sum(a != b for a, b in zip(cards, d["cards"]))
             if n:
@@ -95,7 +128,7 @@ def play_simplebot(decks: list, pairs: list, games: int, seed: int, workers: int
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("--decks", default="archived", help="archived, or a metagame checkpoint (its best --top decks)")
+    ap.add_argument("--decks", default="archived", help="archived, a deck file (.json, [{name, cards}]), or a metagame checkpoint (its best --top decks by recent_score)")
     ap.add_argument("--top", type=int, default=12)
     ap.add_argument("--players", nargs="+", required=True, help="checkpoints (.pt) and/or simplebot")
     ap.add_argument("--groups", nargs="+", default=["all", "draw", "search", "disrupt", "tempo"])
@@ -119,9 +152,11 @@ def main(argv=None):
     pool = Pool()
     if args.decks == "archived":
         decks = [{"name": n, "cards": pool.names(v)} for n, v in archived_decks(pool)]
+    elif args.decks.endswith(".json"):                   # a deck file of [{name, cards}] (the bench decks, runs/probe/BENCH)
+        decks = json.load(open(ROOT / args.decks, encoding="utf-8"))
     else:
         st = torch.load(ROOT / args.decks, map_location="cpu", weights_only=False)
-        score = lambda a: a["sum"] / a["n"] if a.get("n") else 0.0
+        score = lambda a: recent_score(a, 0.0)          # sum / n alone reads 0 after a turnover (ultrareview finding 1)
         best = sorted(st["population"], key=lambda a: -score(a))[:args.top]
         decks = [{"name": f"a{a['id']}", "cards": a["deck"]} for a in best]
     alld, pairs = variants(pool, decks, args.groups)
@@ -134,8 +169,10 @@ def main(argv=None):
         for g in args.groups:
             x = np.array([v for v, p in zip(s, pairs) if p["group"] == g])
             if len(x):
-                se = float(x.std(ddof=1) / np.sqrt(len(x))) if len(x) > 1 else 0.5
-                rows[g] = {"decks": len(x), "score": round(float(x.mean()), 4), "ci": [round(float(x.mean() - 1.96 * se), 4),
+                m = float(x.mean())                      # one deck (a bench deck): binomial SE over its games
+                se = float(x.std(ddof=1) / np.sqrt(len(x))) if len(x) > 1 else float(np.sqrt(m * (1 - m) / args.games))
+                rows[g] = {"decks": len(x), "se_basis": "decks" if len(x) > 1 else "games", "score": round(m, 4),
+                           "ci": [round(float(x.mean() - 1.96 * se), 4),
                            round(float(x.mean() + 1.96 * se), 4)], "replaced": round(float(np.mean(
                            [p["replaced"] for p in pairs if p["group"] == g])), 1)}
         out["players"][pl] = {"by_group": rows, "per_pair": [round(v, 4) for v in s]}

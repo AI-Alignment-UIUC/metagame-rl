@@ -14,6 +14,16 @@
 //                      other than 'cancel'; whether and when to play the Trainer stays the pilot's.
 //   --pace attack      X4 (must attack if able): when the pilot picks 'pass' at a main-phase decision that offers an
 //                      attack, the seat takes instead the attack the pilot rates highest among the attack options.
+//   --timing-card NAME  C99 (runs/probe/C99-cs-timing/record.md): the follow-through log. Each play of the card NAME by either
+//                      seat is logged in switchStats.ft: the fetched card (name, type), the two discards, whether the fetched
+//                      card is played, attached or evolved into before the turn ends, the pilot's value V at the decision that
+//                      played it and at the seat's next decision after the turn (the result if the game ended first).
+//   --timing-oracle 1   C99's timing oracle T (with --timing-card): at the seat's own main-phase decisions where playing the
+//                      card is legal, PromptOracle's routine searches two candidates, the pilot's pick and playing the card (the
+//                      pilot's next most likely action if its pick already plays it), in the same dets re-dealt copies
+//                      (Game.clone), to the end of the turn; the better mean is played, a tie keeps the pilot's. Counts: tSearched,
+//                      tUnsearchable, tPlays (played the card when the pilot would not have), tHolds (held it when the pilot
+//                      would have played it), tGainSum.
 // Every "games" reply carries switchStats (counted with the switches off too): decisions asked, prompts inside the
 // seat's own Trainers by Trainer name, how many were randomized and how many of those differ from the pilot's answer,
 // main-phase decisions offering an attack and how many the pilot attacked at, passes, passes with an attack on offer,
@@ -127,12 +137,33 @@ class RemotePilot {
 
 // ---- The probe switches (this copy only; header above) ----
 const SWARG = process.argv.slice(2);
-const swFlag = name => { const i = SWARG.indexOf('--' + name); return i === -1 ? null : SWARG[i + 1]; };
-const SW = { prompts: swFlag('prompts'), pace: swFlag('pace') };
-if (![null, 'random', 'search'].includes(SW.prompts) || ![null, 'attack'].includes(SW.pace)) throw new Error('bad switches ' + SWARG.join(' '));
-const swNum = (name, d) => { const v = swFlag(name); return v === null ? d : Number(v); };
-const ORACLE = { cap: swNum('cap', 8), dets: swNum('dets', 4), maxSteps: swNum('max-steps', 60), check: swNum('oracle-check', 0) };
-SW.oracle = SW.prompts === 'search' ? ORACLE : null;
+// C109: "--side-b" splits the command line: the switches before it are model slot 0's (the lists' side), those after it slot 1's
+// (the copies' side); without it every slot has the same switches. The follow-through log (--timing-card) is global: both seats.
+const SIDE = SWARG.indexOf('--side-b');
+const mkCfg = argv => {
+  const swFlag = name => { const i = argv.indexOf('--' + name); return i === -1 ? null : argv[i + 1]; };
+  const swNum = (name, d) => { const v = swFlag(name); return v === null ? d : Number(v); };
+  const SW = { prompts: swFlag('prompts'), pace: swFlag('pace') };
+  if (![null, 'random', 'search'].includes(SW.prompts) || ![null, 'attack'].includes(SW.pace)) throw new Error('bad switches ' + argv.join(' '));
+  const ORACLE = { cap: swNum('cap', 8), dets: swNum('dets', 4), maxSteps: swNum('max-steps', 60), check: swNum('oracle-check', 0) };
+  // C102 --oracle-prompts fetch|discard (default all): the oracle answers only prompts with this message (inside the seat's own
+  // Trainer, as always); the others stay the pilot's. oracleBy counts the prompts it answered, by message.
+  const OPROMPTS = swFlag('oracle-prompts') || 'all';
+  if (!['all', 'fetch', 'discard'].includes(OPROMPTS)) throw new Error('bad switches ' + argv.join(' '));
+  // C107 --oracle-trainer NAME (default off): the oracle answers only prompts opened while this Trainer (of the deciding seat) is
+  // resolving, matched on game.chain's key as the timing card is ("Gust of Wind" matches "Gust of Wind BS"); with --oracle-prompts both apply.
+  const OTRAINER = swFlag('oracle-trainer');
+  const isOTrainer = name => OTRAINER === null || name === OTRAINER || name.startsWith(OTRAINER + ' ');
+  SW.oracle = SW.prompts === 'search' ? ORACLE : null;
+  const TIM = { card: swFlag('timing-card'), oracle: swNum('timing-oracle', 0) };   // C99 (header); off: nothing below runs
+  return { SW, ORACLE, OPROMPTS, isOTrainer, TIM };
+};
+const CFGS = SIDE === -1 ? [mkCfg(SWARG)] : [mkCfg(SWARG.slice(0, SIDE)), mkCfg(SWARG.slice(SIDE + 1))];
+const cfgOf = slot => CFGS[slot] || CFGS[0];
+const { SW } = CFGS[0];
+const TIM = { card: CFGS.map(c => c.TIM.card).find(c => c) || null, oracle: Math.max(...CFGS.map(c => c.TIM.oracle)) };
+if (CFGS.some(c => c.TIM.card && c.TIM.card !== TIM.card)) throw new Error('the sides need one --timing-card');
+const OMSG = { fetch: 'CHOOSE_CARD_TO_HAND', discard: 'CHOOSE_CARD_TO_DISCARD' };
 // The oracle's counts (X1b): prompts searched, left to the pilot because no copy could be built (unsearchable), lines,
 // line decisions sent to the pilot, lines ended by an engine error, lines cut at maxSteps (scored by the value there),
 // the summed score gain of the pick over the pilot's pick (gainSum), prompts whose candidates all scored the same (flat),
@@ -141,9 +172,10 @@ SW.oracle = SW.prompts === 'search' ? ORACLE : null;
 // oracle's (oracleRounds), and the worker's milliseconds inside the oracle (wall clock).
 const newSwitchStats = () => ({ asked: 0, trainerPrompts: 0, randomized: 0, changed: 0, byTrainer: {}, attackOffered: 0,
                                 attacked: 0, passes: 0, passWithAttack: 0, passToAttack: 0,
-                                searched: 0, unsearchable: 0, lines: 0, lineAsked: 0, lineErrors: 0, capped: 0, gainSum: 0,
+                                searched: 0, oracleBy: {}, unsearchable: 0, lines: 0, lineAsked: 0, lineErrors: 0, capped: 0, gainSum: 0,
                                 flat: 0, clear: 0, tier_full: 0, tier_oppHandSeen: 0, tier_ownDeckSeen: 0, tier_bothSeen: 0,
-                                tier_none: 0, replayExact: 0, replayDiff: 0, acts: 0, oracleRounds: 0, oracleMs: 0, searchCalls: 0 });
+                                tier_none: 0, replayExact: 0, replayDiff: 0, acts: 0, oracleRounds: 0, oracleMs: 0, searchCalls: 0,
+                                ...(TIM.oracle ? { tSearched: 0, tUnsearchable: 0, tPlays: 0, tHolds: 0, tGainSum: 0 } : {}) });
 let swStats = newSwitchStats();
 
 // ---- X1b: the prompt oracle (--prompts search) ----
@@ -244,19 +276,37 @@ function copyAtPrompt(live, me, seed, tier, liveOptions) {
 // turn after maxSteps is scored by the value where it stopped (PolicySearchAgent scores it 0). The best mean wins; a tie
 // keeps the earlier candidate, so the pilot's pick first.
 class PromptOracle {
-  constructor(slot) { this.pilot = new RemotePilot(slot, ORACLE.cap); }
+  constructor(slot) { this.O = cfgOf(slot).ORACLE; this.pilot = new RemotePilot(slot, this.O.cap); }
 
   async searchAll(items, st) {
-    const t0 = Date.now();
+    const t0 = Date.now(), ORACLE = this.O;
     const top = await this.pilot.evaluate(items.map(x => x.b), ORACLE.cap);
     st.oracleRounds++; st.searchCalls++;     // searchCalls: oracleRounds / searchCalls is the round trips a search adds (sizing)
     const lines = [];
     const probs = items.map((x, pi) => {
       const b = x.b, live = b.env.game, me = b.env.current.playerId, opts = b.env.current.options;
-      const order = [x.pick, ...top[pi].order.filter(a => a !== x.pick)].slice(0, ORACLE.cap);
+      let order = [x.pick, ...top[pi].order.filter(a => a !== x.pick)].slice(0, ORACLE.cap);
+      if (x.cs !== undefined) {      // C99: the timing card's decision, two candidates
+        const other = x.pick === x.cs ? top[pi].order.find(a => a !== x.pick) : x.cs;
+        if (other === undefined) return null;
+        order = [x.pick, other];
+      }
       const cands = order.map(a => opts[b.legal.indexOf(a)].key);
       const srng = new Rng((live.rng.clone().u32() ^ Math.imul(live.steps + 1, 0x9e3779b1) ^ 0x0b1e5eed) >>> 0);
       const seeds = Array.from({ length: ORACLE.dets }, () => srng.u32());
+      if (x.cs !== undefined) {      // a main-phase decision: Game.clone's re-deal, nothing replayed
+        const mine = lines.length;
+        for (let ci = 0; ci < cands.length; ci++) for (let r = 0; r < seeds.length; r++) {
+          const env = new Env(tokens, { showOpponentDecklist: b.env.showOpponentDecklist, u8: b.env.u8 });
+          env.game = live.clone(new Rng(seeds[r]), me);
+          env.decklists = b.env.decklists;
+          env.observe();
+          const j = env.current.options.findIndex(o => o.key === cands[ci]);
+          if (j === -1) { lines.length = mine; return null; }      // a copy lacks the move: the pilot's pick stands
+          lines.push({ pi, ci, r, env, t: env.step(env.current.legal[j]), score: null, n: 0 });
+        }
+        return { me, order, startTurn: live.state.turn };
+      }
       if (ORACLE.check) {
         const g = copyAtPrompt(live, me, seeds[0], TIERS[TIERS.length - 1], opts);
         const ids = new Map();
@@ -308,6 +358,7 @@ class PromptOracle {
       const m = sc.map(row => row.reduce((a, b) => a + b, 0) / row.length);
       let best = 0;
       for (let c = 1; c < m.length; c++) if (m[c] > m[best]) best = c;
+      if (items[pi].cs !== undefined) { st.tGainSum += m[best] - m[0]; return { action: p.order[best], gain: m[best] - m[0] }; }
       st.gainSum += m[best] - m[0];
       if (Math.max(...m) - Math.min(...m) < 1e-6) st.flat++;            // every candidate scored the same
       if (best !== 0) {    // the pick's lead over the pilot's, paired by copy: clear if over 2 SE of the copies' differences
@@ -322,18 +373,131 @@ class PromptOracle {
   }
 }
 
+// ---- C99: the follow-through log (--timing-card) ----
+// C106 (runs/probe/C106-pluspower-timing/record.md), with --timing-card PlusPower: the knockout-conversion log, swStats.pp. The
+// engine's own damage: store.reduceEffect of a live game is wrapped, and each PutDamageEffect on the Defending Pokemon is logged after
+// the engine resolved it (Weakness, Resistance and PlusPower's +10 already in): base (after Weakness and Resistance, before cards
+// change it), dmg (final), plus (PlusPowers on the attacker), inHand (PlusPowers in its hand), left (the Defending Pokemon's HP left
+// before the hit). Whether it was knocked out is read at the steps after (koOff: turns after the hit's own turn, null if not).
+// C107, with --timing-card "Gust of Wind": each play's entry also has target {slot (the bench index), card, left} and koOff.
+const liveGames = new WeakSet();
+const sameTurnKo = (g, ft, turn0) => {      // koOff of the watched Pokemon: found in their owner's discard pile; turn0 is the turn the step began in
+  ft.watch = ft.watch.filter(w => {            // (an attack ends the turn before its knockout is checked, so the step's own turn counts)
+    if (cardsOf(g, w.owner, 'discard').includes(w.card)) { w.rec.koOff = turn0 - w.turn; return false; }
+    return !g.done && turn0 - w.turn <= 1;
+  });
+};
+// C106 pipeline check: the attack options legal at decision d, the Active's Energy count and each attack's printed cost size.
+function atkView(g, d) {
+  const me = g.state.players.find(p => p.id === d.playerId), card = me.active.getPokemonCard();
+  return { attacks: d.options.map(o => o.key).filter(k => k.startsWith('attack|')), energy: me.active.energies.cards.length, enames: me.active.energies.cards.map(c => c.name), sp: me.active.specialConditions, mon: card && card.name, first: g.state.turn <= 2,
+           costs: card ? Object.fromEntries(card.attacks.map(a => [a.name, a.cost.length])) : {}, opts: d.options.map(o => o.key) };
+}
+function hookDamage(g) {
+  const store = g.store, orig = store.reduceEffect;
+  store.reduceEffect = function (state, effect) {
+    const r = orig.call(this, state, effect);
+    if (effect.type === 'PUT_DAMAGE_EFFECT' && effect.target === effect.opponent.active && effect.target.getPokemonCard()) {
+      const t = effect.target, card = t.getPokemonCard(), dmg = Math.max(0, effect.damage), cnt = cs => cs.filter(c => c.name === 'PlusPower').length;
+      const rec = { game: g.uid, seat: effect.player.id, turn: state.turn, attacker: effect.source.getPokemonCard().name, attack: effect.attack.name,
+                    printed: effect.attack.damage, def: card.name, hp: card.hp, left: card.hp - (t.damage - dmg), base: effect.baseDamage, dmg,
+                    plus: cnt(effect.source.trainers.cards), inHand: cnt(effect.player.hand.cards), att: effect.source.trainers.cards.map(c => c.fullName), atkTypes: effect.source.getPokemonCard().cardTypes,
+                    weak: card.weakness, resist: card.resistance, koOff: null };
+      swStats.pp.push(rec);
+      g.ft.watch.push({ rec, card, owner: effect.opponent.id, turn: state.turn });
+    }
+    return r;
+  };
+}
+// Game.step is wrapped for the live games (those a SwitchAgent has seen; search copies are never in liveGames). A play of the
+// timing card opens an entry {seat, turn, V}; when its prompts are done the fetched card (the hand's gain) and the discards
+// (the discard pile's gain, less the card itself) are read off the zones; then a play, attach or evolve of a card of the fetched
+// card's name by that seat in that turn marks it used. V is the pilot's value at the playing decision (followValue, called
+// from SwitchAgent.act), after at the seat's first asked decision in a later turn, or the seat's reward if the game ended.
+const isTiming = key => TIM.card && (key.startsWith('trainer|' + TIM.card + '|') || key.startsWith('trainer|' + TIM.card + ' '));   // keys carry the full name ("Computer Search BS")
+const cardsOf = (g, id, zone) => g.state.players.find(p => p.id === id)[zone].cards;
+const bag = cs => { const m = new Map(); for (const c of cs) m.set(c.fullName, (m.get(c.fullName) || 0) + 1); return m; };
+const gain = (now, before) => {      // the cards of `now` beyond `before` (multiset difference)
+  const m = bag(before), out = [];
+  for (const c of now) { if (m.get(c.fullName) > 0) m.set(c.fullName, m.get(c.fullName) - 1); else out.push(c); }
+  return out;
+};
+const TYPES = ['none', 'Pokemon', 'Trainer', 'Energy'];
+function followValue(g, seat, v) {
+  liveGames.add(g);
+  g.ftV = v;
+  for (const e of (g.ft ? g.ft.all : [])) if (e.after === null && e.seat === seat && g.state.turn > e.turn) e.after = v;
+}
+if (TIM.card) {
+  const origStep = Game.prototype.step;
+  Game.prototype.step = function (i) {
+    if (!liveGames.has(this) || this.done) return origStep.call(this, i);
+    const ft = this.ft || (this.ft = { all: [], cur: null, watch: [] });
+    if (TIM.card === 'PlusPower' && !ft.hooked) { ft.hooked = true; hookDamage(this); }
+    const d = this.decision(), opt = d && d.options[i];
+    if (opt && !ft.cur && !d.prompt && isTiming(opt.key)) {
+      const e = { game: this.uid, seat: d.playerId, turn: this.state.turn, V: this.ftV, after: null, fetched: null, type: null, discards: null, used: null };
+      ft.cur = { e, hand: cardsOf(this, e.seat, 'hand').slice(), disc: cardsOf(this, e.seat, 'discard').slice() };
+      if (TIM.card === 'Gust of Wind') {      // C107: the Defending Pokemon and the bench's, to name the target after
+        const o = this.state.players.find(p => p.id !== e.seat);
+        ft.cur.opp = { active: o.active.getPokemonCard(), bench: o.bench.map(s => s.getPokemonCard()) };
+      }
+      if (TIM.card === 'PlusPower') e.pre = atkView(this, d);
+      ft.all.push(e); swStats.ft.push(e);
+    } else if (opt && !d.prompt) {
+      if (TIM.card === 'PlusPower') for (const e of ft.all) if (e.post && e.chose === undefined && e.seat === d.playerId) e.chose = opt.key;
+      const [kind, name] = opt.key.split('|');
+      for (const e of ft.all) if (e.used === false && e.seat === d.playerId && e.turn === this.state.turn && name === e.fetched &&
+                                 (kind === 'basic' || kind === 'evolve' || kind === 'attach' || kind === 'trainer')) e.used = true;
+    }
+    const turn0 = this.state.turn, r = origStep.call(this, i);
+    const nd = this.done ? null : this.decision();
+    if (ft.cur && (!nd || !nd.prompt)) {      // the card's prompts are over
+      const { e, hand, disc } = ft.cur, cur = ft.cur;
+      ft.cur = null;
+      if (TIM.card === 'PlusPower') {
+        const me = this.state.players.find(p => p.id === e.seat);
+        e.post = nd ? atkView(this, nd) : null;
+        e.attached = me.active.trainers.cards.filter(c => c.name === 'PlusPower').length;
+        e.discardedPP = cardsOf(this, e.seat, 'discard').filter(c => c.name === 'PlusPower').length;
+      }
+      const got = gain(cardsOf(this, e.seat, 'hand'), hand), dis = gain(cardsOf(this, e.seat, 'discard'), disc);
+      const self = dis.findIndex(c => c.name === TIM.card);
+      if (self !== -1) dis.splice(self, 1);
+      if (got.length) { e.fetched = got[0].fullName; e.type = TYPES[got[0].superType]; e.used = false; }
+      e.discards = dis.map(c => c.name);
+      if (TIM.card === 'Gust of Wind') {
+        const o = this.state.players.find(p => p.id !== e.seat), card = o.active.getPokemonCard();
+        if (card && card !== cur.opp.active) {
+          e.target = { slot: cur.opp.bench.indexOf(card), card: card.name, left: card.hp - o.active.damage };
+          e.koOff = null;
+          ft.watch.push({ rec: e, card, owner: o.id, turn: this.state.turn });
+        }
+      }
+    }
+    sameTurnKo(this, ft, turn0);
+    if (this.done) for (const e of ft.all) if (e.after === null) e.after = this.reward(e.seat);
+    return r;
+  };
+}
+
 // Wraps a model seat (RemoteAgent): asks the pilot for every decision as usual, then applies the switches to its answers.
 // A random prompt answer is drawn from a fresh Rng seeded by the game's own RNG state (cloned, so the game's flips and
 // shuffles are untouched) and its step count: the same state gives the same draw, on every worker.
 class SwitchAgent {
-  constructor(inner) { this.inner = inner; this.slot = inner.slot; this.oracle = SW.oracle ? new PromptOracle(inner.slot) : null; }
+  constructor(inner) {
+    this.inner = inner; this.slot = inner.slot; this.cfg = cfgOf(inner.slot);
+    this.oracle = this.cfg.SW.oracle ? new PromptOracle(inner.slot) : null;
+    this.tOracle = this.cfg.TIM.oracle ? new PromptOracle(inner.slot) : null;      // C99's timing oracle
+  }
 
   forget(game) { this.inner.forget(game); }
 
   async act(batch) {
     const out = await this.inner.act(batch);
-    const st = swStats, redo = [], search = [];
+    const st = swStats, redo = [], search = [], tsearch = [];
     st.acts++;
+    if (TIM.card) batch.forEach((b, i) => followValue(b.env.game, b.env.current.playerId, out[i].value));
     batch.forEach((b, i) => {
       const g = b.env.game, opts = b.env.current.options, key = a => opts[b.legal.indexOf(a)].key;
       st.asked++;
@@ -343,8 +507,12 @@ class SwitchAgent {
         const name = g.chain.key.split('|')[1];
         const t = st.byTrainer[name] || (st.byTrainer[name] = { prompts: 0, randomized: 0, changed: 0, searched: 0, unsearchable: 0 });
         t.prompts++; st.trainerPrompts++;
-        if (this.oracle) { search.push({ i, b, t }); return; }   // X1b: searched below, all of this batch's at once
-        if (SW.prompts !== 'random') return;
+        const msg = String(g.decision().prompt.message);
+        if (this.oracle) {      // X1b: searched below, all of this batch's at once (C102: only the --oracle-prompts kind)
+          if ((this.cfg.OPROMPTS === 'all' || msg === OMSG[this.cfg.OPROMPTS]) && this.cfg.isOTrainer(name)) search.push({ i, b, t, msg });
+          return;
+        }
+        if (this.cfg.SW.prompts !== 'random') return;
         const ok = b.legal.filter(a => key(a) !== 'cancel');
         if (!ok.length) return;
         const a = ok[new Rng((g.rng.clone().u32() ^ Math.imul(g.steps + 1, 0x9e3779b1)) >>> 0).int(ok.length)];
@@ -354,11 +522,15 @@ class SwitchAgent {
       } else {
         const attacks = b.legal.filter(a => key(a).startsWith('attack|')), chose = key(out[i].action);
         if (attacks.length) { st.attackOffered++; if (chose.startsWith('attack|')) st.attacked++; }
+        if (this.tOracle) {      // C99: the timing card is a legal option
+          const cs = b.legal.find(a => isTiming(key(a)));
+          if (cs !== undefined) tsearch.push({ i, b, cs });
+        }
         if (chose !== 'pass') return;
         st.passes++;
         if (!attacks.length) return;
         st.passWithAttack++;
-        if (SW.pace === 'attack') redo.push({ i, item: { ...b, legal: attacks } });
+        if (this.cfg.SW.pace === 'attack') redo.push({ i, item: { ...b, legal: attacks } });
       }
     });
     if (redo.length) {      // the pilot's greedy pick with only the attacks legal: its top-rated attack
@@ -373,8 +545,18 @@ class SwitchAgent {
       const res = await this.oracle.searchAll(search.map(x => ({ b: x.b, pick: out[x.i].action })), st);
       search.forEach((x, k) => {
         if (!res[k]) { st.unsearchable++; x.t.unsearchable++; return; }
-        st.searched++; x.t.searched++;
+        st.searched++; x.t.searched++; st.oracleBy[x.msg] = (st.oracleBy[x.msg] || 0) + 1;
         if (res[k].action !== out[x.i].action) { st.changed++; x.t.changed++; }
+        out[x.i] = { ...out[x.i], action: res[k].action };
+      });
+    }
+    if (tsearch.length) {   // C99: the timing oracle's pick replaces the pilot's
+      const res = await this.tOracle.searchAll(tsearch.map(x => ({ b: x.b, pick: out[x.i].action, cs: x.cs })), st);
+      tsearch.forEach((x, k) => {
+        if (!res[k]) { st.tUnsearchable++; return; }
+        st.tSearched++;
+        const was = out[x.i].action;
+        if (res[k].action !== was) { if (was === x.cs) st.tHolds++; else st.tPlays++; }
         out[x.i] = { ...out[x.i], action: res[k].action };
       });
     }
@@ -428,6 +610,8 @@ async function games(cmd) {
   // A recorded seat plays as 'r<slot>', an unrecorded one as 'o<slot>': the same model slot, but only the
   // 'r' names are recorded.
   swStats = newSwitchStats();                          // probe copy: this command's switch counts
+  if (TIM.card) swStats.ft = [];                       // C99: this command's timing-card plays
+  if (TIM.card === 'PlusPower') swStats.pp = [];       // C106: its damage hits
   const pilot = (i, rec) => {
     const slot = cmd.slots ? cmd.slots[i] : 0;
     const name = (rec ? 'r' : 'o') + slot;
@@ -515,7 +699,7 @@ async function games(cmd) {
   const cpu = process.cpuUsage(cpu0);                  // X1b copy: CPU ms and wall ms of this command, for sizing
   return { ok: true, games: results.length, seconds: (Date.now() - t0) / 1000, results,
            ...(cmd.out ? { out: cmd.out, transitions: out.rec.action.length } : {}), ...(js ? { searchStats } : {}),
-           ...(probes ? { probes } : {}), switches: SW,
+           ...(probes ? { probes } : {}), switches: SW, ...(SIDE === -1 ? {} : { switchesB: CFGS[1].SW }),
            switchStats: { ...swStats, cpuMs: Math.round((cpu.user + cpu.system) / 1000), wallMs: Date.now() - t0 } };
 }
 

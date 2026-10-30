@@ -181,6 +181,8 @@ def main(argv=None):
     ap.add_argument("--lam", type=float, default=0.95, help="GAE lambda")
     ap.add_argument("--lam-turn", type=float, default=None,
                     help="GAE lambda between decisions of the same game turn (log #96; default: --lam everywhere)")
+    ap.add_argument("--gamma-turn", type=float, default=None,
+                    help="GAE discount per game turn between a seat's decisions (C121: 0.98; default: none)")
     ap.add_argument("--practice-games", type=int, default=0,
                     help="games an iteration between fresh wide random decks, for PPO only (log #127)")
     ap.add_argument("--stop-file", default="", help="end cleanly after the iteration in which this file appears")
@@ -340,7 +342,7 @@ def main(argv=None):
             batch = concat(rolls)
             recorded = len(batch["action"])
             batch["reward"] = shape_rewards(batch, lam, prize_glob)
-            batch["adv"], batch["ret"] = advantages(batch, 1.0, args.lam, args.lam_turn)
+            batch["adv"], batch["ret"] = advantages(batch, 1.0, args.lam, args.lam_turn, args.gamma_turn)
             n_b = len(batch["action"])
             if args.ppo_transitions and n_b > args.ppo_transitions:
                 batch = subset(batch, np.sort(rng.choice(n_b, args.ppo_transitions, replace=False)))

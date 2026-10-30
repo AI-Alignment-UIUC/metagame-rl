@@ -149,7 +149,7 @@ def needs(probes: list, args) -> dict:
 
 def play(model, args, device) -> dict:
     """Batches of games on the practice matchups until the quotas fill or --max-games."""
-    matchups = json.loads((ROOT / "ar" / "data" / "practice.json").read_text())
+    matchups = json.loads((ROOT / args.matchups).read_text())
     rng = np.random.default_rng(args.seed)
     rounds = round_turns(args.round_turns)
     rp = ProbePool(args.workers)
@@ -187,6 +187,10 @@ def play(model, args, device) -> dict:
             c = counts(probes)
             print(f"batch {batch}: {n} games {time.time() - t0:.0f}s, probes {len(probes)} {json.dumps(c)}, lines {st.get('lines', 0)}, "
                   f"lineErrors {st.get('lineErrors', 0)}, game errors {errors}", flush=True)
+            if args.save_partial:                        # a crash keeps the batches so far (BENCH O_B, 12:22)
+                with gzip.open(str(ROOT / args.out) + ".probes.partial.json.gz", "wt") as f:
+                    json.dump({"probes": probes, "stats": st, "games": games, "results": results, "game_errors": errors,
+                               "log": log, "seconds": round(time.time() - t_start, 1), "m_final": m}, f)
             if st.get("lines", 0) >= 200 and st.get("lineErrors", 0) > 0.01 * st["lines"]:
                 log.append(f"KILL: engine errors {st['lineErrors']} of {st['lines']} rollouts (over 1%)")
                 print(log[-1], flush=True)
@@ -450,6 +454,8 @@ def clean(o):
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--pilot", default="ar/data/start.pt")
+    ap.add_argument("--matchups", default="ar/data/practice.json", help="the practice matchups, [[deckA, deckB], ...]")
+    ap.add_argument("--save-partial", action="store_true", help="rewrite <out>.probes.partial.json.gz after every batch")
     ap.add_argument("--max-games", type=int, default=3000, help="stop the batches here if the quotas are not full")
     ap.add_argument("--batch-games", type=int, default=6, help="games a worker a batch (after the timing batch)")
     ap.add_argument("--per-trainer", type=int, default=50, help="decisions each of the 5 named Trainers at least")

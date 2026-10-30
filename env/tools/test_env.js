@@ -13,7 +13,9 @@
 // 2 an answer since it, 3 an earlier move, 4 an earlier answer); a census of the rows; and three scripted turns (Computer
 // Search, Super Energy Removal, Gust of Wind) whose rows are checked against the picks the script made and printed.
 //
-// Run: node env/tools/test_env.js [--games 200] [--tokens] [--history W] [--chain K] [--hash-out hashes.json]
+// --origin: the origin flag (rl/token_model.py cand_origin): a pick_card row's extra is its source zone, 0-3, and a census of the codes.
+//
+// Run: node env/tools/test_env.js [--games 200] [--tokens] [--history W] [--chain K] [--origin] [--hash-out hashes.json]
 'use strict';
 const crypto = require('crypto');
 const fs = require('fs');
@@ -28,12 +30,14 @@ const argv = process.argv.slice(2);
 const flag = (name, dflt) => { const i = argv.indexOf('--' + name); return i === -1 ? dflt : argv[i + 1]; };
 const GAMES = Number(flag('games', 200));
 const CHAIN = Number(flag('chain', 0)), HISTORY = Number(flag('history', 0));
-const TOKENS = argv.includes('--tokens') || flag('chain', null) !== null || flag('history', null) !== null;
+const ORIGIN = argv.includes('--origin');
+const TOKENS = argv.includes('--tokens') || ORIGIN || flag('chain', null) !== null || flag('history', null) !== null;
 const HASH_OUT = flag('hash-out', null);
+const originCensus = [0, 0, 0, 0];
 
 const decks = archivedDecks();
 const enc = TOKENS ? new TokenEncoder() : new Encoder([...new Set(decks.flatMap(d => d.cards))]);
-if (TOKENS) { enc.history = HISTORY; enc.chain = CHAIN; }
+if (TOKENS) { enc.history = HISTORY; enc.chain = CHAIN; enc.origin = ORIGIN ? 1 : 0; }
 const failures = [];
 const fail = msg => { if (failures.length < 20) failures.push(msg); };
 
@@ -153,6 +157,13 @@ function play(g, count = true) {
     if (TOKENS) {
       for (const b of tokenBuffers(t.obs)) h.update(b);
       h.update(`${t.obs.nTok},${t.obs.nCand}`);
+      if (ORIGIN && count) {
+        for (let i = 0; i < t.obs.nCand; i++) {
+          const r = t.obs.cand.subarray(i * 6, i * 6 + 6);
+          if (r[0] === VERB.pick_card && r[1]) { if (r[5] > 3) fail(`game ${g} step ${steps}: pick_card origin ${r[5]}`); else originCensus[r[5]]++; }
+          else if (r[5] !== 0 && r[0] !== VERB.res_select) fail(`game ${g} step ${steps}: row of verb ${r[0]} has extra ${r[5]}`);
+        }
+      }
     } else {
       for (const v of t.obs) {
         const b = v * 48;
@@ -299,6 +310,7 @@ const all = crypto.createHash('sha1').update(hashes.join(',')).digest('hex');
 console.log(`${GAMES} games, ${steps} decisions in ${((Date.now() - t0) / 1000).toFixed(1)}s; ` +
   (TOKENS ? `token observations (history ${HISTORY}, chain ${CHAIN})` : `obs ${enc.obsSize}, actions ${enc.actionSize}, largest feature byte ${maxByte}`));
 console.log(`obs hash ${all}`);
+if (ORIGIN) console.log(`origin codes of pick_card rows naming a card (0 other, 1 hand, 2 deck, 3 discard): ${originCensus}`);
 if (HASH_OUT) fs.writeFileSync(HASH_OUT, JSON.stringify({ games: GAMES, tokens: TOKENS, history: HISTORY, chain: CHAIN, all, hashes }, null, 1));
 if (CHAIN > 0) {
   const c = census;

@@ -5,7 +5,7 @@ Loads probe_target_signal's raw probes (<out>.probes.json.gz), reruns the pilot 
 (probe_target_signal.offline: the probabilities, the input of model.score at every answer, V0), and saves one torch file
 of per-probe records: the state (obs), legal ids, answers, Trainer, stratum, per-rollout returns R[a, j] (nan where a
 rollout is not valid; the two halves are j's parity), Q and the half means Qh, the option embeddings, V0 and the pilot's
-probabilities over the answers. Also prints the oracle's split-half R (Spearman-Brown) on the named five and on all.
+probabilities over the answers, and each rollout's later values of the seat (vals). Also prints the oracle's split-half R (Spearman-Brown) on the named five and on all.
 
   PYTHONPATH=. .venv/Scripts/python notes/scripts/oracle_pack.py --raw runs/probe/C94-oracle/oracle.json.probes.json.gz \
       --out runs/probe/C94-oracle/oracle.pt
@@ -52,8 +52,9 @@ def main():
         R = np.array([[np.nan if x is None else x for x in row] for row in p["rew"]], float)
         recs.append({"game": p["game"], "turn": p["turn"], "seat": p["seat"], "trainer": p.get("trainer"),
                      "stratum": p.get("stratum"), "prompt": p.get("prompt"), "type": p.get("type"), "obs": p["obs"],
-                     "legal": p["legal"], "answers": p["answers"], "taken": q["taken"], "greedy": q["greedy"],
-                     "R": R, "Q": q["Q"], "Qh": q["Qh"], "emb": q["emb"], "V0": p.get("V0off", p["V0"]), "pi": q["pi"]})
+                     "legal": p["legal"], "keys": p.get("keys"), "answers": p["answers"], "taken": q["taken"], "greedy": q["greedy"],
+                     "R": R, "Q": q["Q"], "Qh": q["Qh"], "emb": q["emb"], "V0": p.get("V0off", p["V0"]), "pi": q["pi"],
+                     "vals": p["vals"]})                  # per answer and rollout: the seat's later values (C95's bootstrap targets)
     named = [r for r in recs if r["trainer"] and any(r["trainer"].startswith(n) for n in NAMED)]
     rel = {"named5": split_half(named), "all": split_half(recs), "probes": len(recs), "named5_probes": len(named),
            "m": int(probes[0]["m"]) if probes else None}

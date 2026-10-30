@@ -8979,3 +8979,4658 @@ Entry format:
     - Prior: between.
 - **Next:** implementation builds B and runs C95's candidates as B and O land, then C96. Evan's row 87: every round
   ends in at least one queued run with a record and bands; this round queues two.
+
+### #320 · 2026-10-27 · A5 C94 C96 · C94's oracle set building at m 256 (until about 09:40; the one exception to Evan's new 30-minute rule); C96 stage 1 (search against greedy M, seed 1, 8 games a pair) since 08:56
+- **Done:**
+  - **C94** (Evan about 07:25 via 333-10: value-head methods tested quickly against oracle targets; record
+    `runs/probe/C94-oracle/record.md`):
+    - The timing run (m 128, 10 prompts asked): 15 prompts, 576 games, 152 s, 0 line errors. Branching took 12
+      decisions in 70 s.
+    - Only 4 prompts had 3 or more answers, so its R can't be read: named five −0.31 (n 4).
+    - Spearman-Brown from C82's R at m 32 (named five 0.256, n 93) gives about 0.58 at m 128 and 0.73 at m 256
+      (estimated). So the build runs at **m 256**, 170 prompts (150 named first, `--per-trainer 30`), seed 92. This is
+      in the record's amendment, written before the build.
+    - Launched 08:43:56 (`loop.py launch C94-oracle`, chain: oracle, then pack, then the S freeze). Its first batch
+      projected 48 minutes, inside the 90-minute kill line, so it ends about 09:32, then the pack and S by about 09:40.
+    - **Exception:** Evan set about 30 minutes a test at 08:52 (row 88). C94 started before that and keeps running
+      (333-10), as a one-off shared input.
+  - New scripts (notes/scripts):
+    - `oracle_pack.py`: raw probes, then the pilot's option vectors and V0 offline, then one testbed file. It reports
+      R with the tool's own definition.
+    - `freeze_selfplay.py`: 4 batches × 4 workers × 4,096 transitions of the start pilot's self-play on the practice
+      matchups, ar/train.py's settings, with Monte Carlo and GAE(0.95) returns and the pilot's sha256.
+    - `search_m.py`: fixed.evaluate's M with GpuMatrix.play's search option.
+  - **C96** (research's record `runs/probe/C96-search-M/record.md`; auditor A79/A80, ahead of C95):
+    - Timing pilot, 1 list, 32 games a pair, seed 1, beside C94: greedy 128 games in 9.1 s (M 0.4275); search 4:4:crn
+      128 games in 259.3 s (about 2.0 s a game); 0 errors.
+    - The full design would take about 3.5 hours, so **stage 1** is seed 1, all 24 lists, 8 games a pair (about 27
+      minutes, estimated). The record's amendment, written before launch, states the power loss: the SE of the lift
+      is about 0.02-0.03 against the +0.03 bar.
+    - Launched 08:56:25 (`C96-stage1`). Stage 2 waits for Evan's approval.
+  - Usage at 08:39: week 84% (resets 09:00), 5-hour 1%. No subagents so far.
+- **Evidence:** at 08:51, GPU 8.0 GB (38%) with C94 and C96's pilot side by side; free RAM 11.0 GB (333-10, 08:50).
+- **Next:**
+  - C96 stage 1 at about 09:24, then C94 at about 09:40.
+  - C95's harness, built after the 09:00 reset, in batches of about 30 minutes with a scored readout each.
+
+### #321 · 2026-10-27 · A5 C96 C95 · C96 stage 1 relaunched at 08:59 after my list-selection bug (only 5 lists ran); greedy M at 8 games a pair is 0.4325 (SE 0.0199); C95's harness given to one Sonnet builder
+- **Done:**
+  - **My bug (search_m.py).** `--lists N` kept pairs with deck index p[0] < N. eval_decks.json stores each list
+    followed by its 4 copies (lists at deck 0, 5, 10, ...), so `--lists 24` ran 5 lists (20 pairs).
+    - The 1-list timing pilot was right by luck: list 0 is deck 0.
+    - I stopped stage 1 at 08:59 during its search pass. Its greedy row (20 pairs, M 0.3992) is kept as
+      `stage1-20pairs-killed.*`.
+    - Fixed: the first N distinct list indices. A check gives 4 pairs for 1 list and 96 for 24.
+    - Relaunched at 08:59:11 (`loop.py launch C96-stage1 --resume`).
+  - **C95:** one Sonnet lean-builder is writing `notes/scripts/qhead_testbed.py` from the record, for stage 1:
+    - candidates 1, 7 (MC, GAE, next turn) and the quarantined capacity check, with hooks for 2, 3, 5, 6 and 8;
+    - the scores with bootstrap CIs;
+    - smoke tests on C94's timing set and a 1-batch S, which also gives `freeze_selfplay.py` its first run.
+  - Usage at 08:57: week 85% (resets 09:00), 5-hour 13%.
+  - `notes/scripts/oracle_pack.py` also keeps each rollout's `vals` (the seat's later values), for candidate 3.
+- **Evidence:**
+  - C96 stage 1 greedy (seed 1, all 24 lists, 96 pairs, 8 games a pair): M 0.4325 (SE 0.0199), 768 games, 123 draws,
+    0 errors, 29.2 s.
+  - Setup check (record): ar/'s start M 0.474 is −0.042 away, about 2.1 SE. This run uses seed 1 and 8 games a pair,
+    against ar/'s seed 91 and 32 games, so it is at the record's 2-SE line. Research makes the call.
+  - GPU at 09:00 (C94 + C96 search): 9.1-10.1 GB, utilization 7-99%, about 50% on average over 6 samples.
+- **Next:**
+  - C96's search pass, about 26 minutes, ending about 09:27 (estimated).
+  - B (C95 stage 1) launches when C96 frees the CPU.
+  - C94 about 09:32-09:40.
+
+### #322 · 2026-10-27 · A5 C97 · Auditor A81's call: the engine check of the named five is already done (#233, #236); C97 prices each named card alone on the lists (about 10 minutes) to find which ones carry the deficit
+- **Done** (research session, files only; no deep round, since row 87 holds the next one until 09:39): read
+  `notes/sts-2000-engine-check.md` (a pool-coverage check from 10-03, not card behaviour), #233, #236 and
+  `trainer_value.py`. Wrote `runs/probe/C97-card-prices/record.md` before launch.
+- **Evidence:**
+  - #233: "Staples as printed (live tests): ... Computer Search's search, Gust of Wind, ... Energy Removal, Super
+    Energy Removal".
+  - #236 (C67): the fixed engine moves the lists' Trainer prices +0.005 (paired SE 0.006). Group prices: draw 0.574,
+    search 0.413, disrupt 0.478, tempo 0.412.
+- **Found:**
+  - A new engine audit of the named five isn't needed: they resolve as printed and the fixes didn't move prices.
+  - What is new is each card's price alone on the lists. C97 runs C67's command with single-card groups (a one-line
+    change to `trainer_value.py`), about 10 minutes.
+  - Bands: a card carries the deficit at p + 2 SE < 0.50, and holds its slot at p − 2 SE > 0.50. Prior: Computer
+    Search and Gust carry it.
+- **Next:** implementation runs C97 after C96's search pass.
+
+### #323 · 2026-10-27 · A5 C96 C95 C97 G3 · C96 stage 1: search 4:4:crn lifts M by +0.002 (paired SE 0.025), underpowered at 30 minutes; C95's harness built; the G3 rerun (finding 1) and C97 queued
+- **Done:**
+  - **C96 stage 1** ended at 09:18:45 (exit 0).
+  - **C95 harness:** `notes/scripts/qhead_testbed.py` (353 lines, one Sonnet lean-builder, about 56k tokens).
+    - The head is an MLP (D+1 → 128 → 1) over each option's vector and V0, with inputs standardised inside it.
+    - Candidates implemented: c1 (seed-centred regression), c2 (Bradley-Terry on within-seed pairs, sign labels only),
+      c7mc / c7gae / c7turn (single-visit baselines on S's prompt rows, glob byte 48 == 0 as in C89's `Floor`), and
+      cap (quarantined; 150 O decisions by game hash).
+    - `TARGETS` is the hook for c3, c5, c6 and c8.
+    - Scores: rho, rho_dis, top-1 against chance and dG, with 1,000-resample bootstrap CIs, overall and on the named
+      five. One JSON line per (candidate, seed).
+    - I read c1's target, the losses, the scoring and the prompt flag against the record.
+    - Gap: c2 uses sign labels, not the record's soft labels for partial outcomes. It is to be added before stage 2.
+  - **Smoke tests** (the builder's):
+    - On C94's timing set used as O and B, it runs end to end. The numbers are meaningless at 15 decisions.
+    - `freeze_selfplay.py`'s first run (1 batch, 1 worker): 8,972 rows, 139 games, 0 errors. 2,348 of them are prompt
+      rows.
+  - **G3 rerun:** 333-10's ultrareview finding 1 was that `probe_meta_premise.best_decks` ranked by sum / n, which
+    turnover resets. So every G3 since 10-24 used population order.
+    - 333-10 fixed and verified it at 09:18 (recent_score).
+    - Record `runs/probe/G3-rerun/record.md`; the same probe on the night's 12 populations (C85 s1-s4, C90 s1-s4, C92
+      s1-s2, C91 s5-s6).
+    - My first launch at 09:19:52 had an empty `--pops` (a shell variable set in an earlier call) and exited on
+      argparse. I rewrote the chain with literal paths and relaunched at 09:20:24.
+  - **C97** (research's record, auditor A81): `notes/scripts/trainer_value.py`'s one line (`GROUPS.get(g, (g,))`) is
+    in and compiles. Its chain is C67's exact command (`--workers 4`, as C67's chain.sh; research's note said 2) with
+    the five single cards plus search and tempo.
+    - loop.py refused it at 09:21 on the GPU estimate (11.9 GB counted with the rerun loading). I'll relaunch it when
+      that clears.
+- **Evidence:**
+  - C96 (seed 1, 96 pairs, 8 games a pair, 0 errors): M_greedy 0.4325 (SE 0.0199), M_search 0.4346 (SE 0.0203).
+    - L = +0.0021, paired SE 0.0252; the pairs correlate 0.21 across conditions. L ± 2SE = [−0.048, +0.052].
+    - The search pass took 1,142.5 s, about 1.5 s a game.
+    - Research's setup check passes: −0.042 against 0.474 is about 1.9 SE with ar/'s own SE; against the newest start
+      evaluation (0.4541) it is −0.022.
+- **Found:**
+  - C96 stage 1 is **underpowered at 30 minutes** by research's stage-1 rule: L + 2SE > 0.03, so not R-not-play, and
+    L − 2SE < 0.03, so not R-play. The point estimate is about 0. Stage 2 (seed 2, more games) is Evan's call.
+  - Until the rerun lands, every G3 reading since 10-24 is unverified: C85, C90, C92 and C91's 0.44-0.45, and the calls
+    of #298-#317 that use G3. G1 (aa_window, top 12 by z) doesn't use best_decks.
+- **Next:**
+  - The G3 rerun (about 09:35), then the corrected G3 calls.
+  - C94's end (about 09:40), then B, then C95 stage 1.
+  - C97 when GPU room allows.
+
+### #324 · 2026-10-27 · A5 C96 C90 C92 C91 · C96 stage 1 is underpowered at 30 minutes (search lift +0.002 ± 0.025); the G3 bug (#323) voids every G3 reading in my #299-#316, so those bands wait on the rerun; the G1 calls stand
+- **Done** (research session): read C96's `stage1.json` and checked the lift from the per-pair shares. Wrote the
+  stage-1 readout and the staging for Evan into `runs/probe/C96-search-M/record.md`. Read #323's account of the G3
+  bug.
+- **Evidence:**
+  - C96, seed 1, 96 pairs × 8 games: M_greedy 0.4325 (0.0199), M_search 0.4346 (0.0203); lift +0.0021, paired SE
+    0.0252, correlation across conditions 0.214; 0 errors; search took 1,142 s.
+- **Found:**
+  - **C96: underpowered at 30 minutes** (its Amendment 1). L ± 2 SE runs from −0.048 to +0.052; the point estimate is
+    about 0.
+    - Deciding R-not-play at L ≈ 0 needs SE ≤ 0.014, about 3.2 times the games: two more 30-minute stages.
+    - That goes to Evan through 333-10, per row 88a.
+  - **G3 is void back to 10-24** (#323): `best_decks` ranked by sum / n, which turnover resets, so it scored the first
+    12 decks in population order. Readings that rest on G3 wait on the rerun (`runs/probe/G3-rerun/`):
+    - C90's two-seed call and Amendment 3 (#299, #300, #309);
+    - C92's G3 leg (#313);
+    - C93's G3 line (#316);
+    - C91's 0.44-0.45 (#305).
+    - The deck-shape medians I gave as "G3's 12" were the first 12 decks, not the best by judged score. #300's
+      deck-set analysis is void for that set; its G1 and population sets stand.
+  - The G1 calls stand: C91 R-repro, C92 R-population, C93 R-gate. `aa_window.dist` ranks by z on the log row, not
+    by `best_decks`.
+- **Next:** re-read every G3 band from the rerun (about 09:35); C97 when it lands.
+
+
+### #325 · 2026-10-27 · A5 · Ultrareview of overnight-10-26: 9 of 10 findings fixed, each checked by two independent reviewers; finding 1 voids every G3 since 10-24
+- **Done** (Evan's request via the review session; one fix agent per file, then two rounds of adversarial review,
+  each finding real problems that were repaired):
+  1. `probe_meta_premise.best_decks` ranks with `rl.metagame.recent_score`. Turnover zeroes every deck's sum and n
+     before population_it*.pt is saved, so the old ranking returned population order: on C85-s1's it0029 all 99
+     decks had n == 0 and the old top 12 was decks 0..11 (new top 12 by 'last' 0.55-0.69; one deck in common).
+  2. `rl/metagame.py`: --select-paired's `pairs` is saved next to `cands` and restored on --resume; a fork whose
+     held lists don't match the new H redraws those decks (no crash); unchanged with --select-paired off.
+  3-6, 9. Overnight drivers: one `notes/scripts/gpu_hold.py` (loop.gpu_mem with a timeout, holds while unreadable,
+     checks STOP before returning); a result.json counts only with "trained" and no crash/abort; a resumed arm
+     refused with exit 4 retries (bounded), a fresh one is dropped; screen() retries refusals, honours STOP and
+     records the launch only once accepted.
+  7. `ar_milestone.patch_train` injects only when every name its lines need is bound in the loop's scope above the
+     while and the `it += 1` anchor sits in that while (ast-derived; BOM-safe); else train.py runs unpatched.
+  8. `a1_replay` marks a pilot invalid whenever its observation encoding differs from A1's (canon 0, chain 0,
+     history 0), not only for chain pilots.
+- **Evidence:** all changed files compile; `patch_train` gives byte-identical output to HEAD's on all 15 ar/ branches;
+  each repair's CPU harness is in the session scratchpad. No end-to-end GPU run of the drivers or of a paired resume.
+- **Found:** every G3 (vs_lists) reading since 10-24 used the first 12 decks in population order, C91's 0.44/0.45
+  included (its chain also turns over every 5 and saves at 499). G1 readings (aa_window, top 12 by z) are unaffected.
+- **Next:** the implementation agent's G3 rerun on all 12 populations, then the research agent re-reads the G3 bands;
+  finding 10 (advantages() duplicated in freeze_selfplay.py and probe_prompt_stats.py) after C95's S freeze.
+
+### #326 · 2026-10-27 · A5 G3 C85 C90 C92 C91 C97 · G3 rerun with the fixed best_decks: every G3 rises (fresh-deck screens 0.18-0.28, C91 0.57), and no G3 call changes; C97 launched
+- **Done:**
+  - The G3 rerun (`runs/probe/G3-rerun/`, record first) ran 09:20:24-09:29:43 (exit 0): the 12 populations with
+    333-10's fixed `best_decks` (recent_score), the same probe flags as before.
+  - C97 launched at 09:29:56 (pid 14104), C67's exact command with the five single cards and the search and tempo
+    controls.
+- **Evidence** (the 12 best by recent_score against the 24 lists under C49-sd 199, 8 games a pair, round rule; 2,304
+  games a population, 0 errors each; "old" = the population-order 12 of #298-#317):
+
+  | population | G3 new (SE) | G3 old | G3's 12 median P / T / E | mean Energy − 18 |
+  |---|---|---|---|---|
+  | C85 s1 | 0.2390 (0.0112) | 0.1139 | 23 / 18 / 20 | +3.08 |
+  | C85 s2 | 0.1846 (0.0099) | 0.1249 | 23 / 17.5 / 19.5 | +1.50 |
+  | C85 s3 | 0.1947 (0.0112) | 0.0995 | 22.5 / 18 / 19 | +2.08 |
+  | C85 s4 | 0.2727 (0.0121) | 0.1728 | 18 / 21 / 23.5 | +5.58 |
+  | C90 s1 | 0.2644 (0.0121) | 0.2193 | 17 / 21.5 / 23.5 | +4.75 |
+  | C90 s2 | 0.2235 (0.0099) | 0.1578 | 12.5 / 22.5 / 21 | +5.42 |
+  | C90 s3 | 0.2699 (0.0120) | 0.1380 | 15.5 / 24.5 / 21 | +3.75 |
+  | C90 s4 | 0.2624 (0.0123) | 0.1610 | 14 / 23.5 / 23 | +4.25 |
+  | C92 s1 | 0.2795 (0.0122) | 0.1791 | 11.5 / 21 / 25.5 | +7.00 |
+  | C92 s2 | 0.2185 (0.0113) | 0.1394 | 11.5 / 22 / 22.5 | +4.83 |
+  | C91 s5 @499 | 0.5752 (0.0132) | 0.4391 | 11 / 27 / 22 | +4.50 |
+  | C91 s6 @499 | 0.5726 (0.0126) | 0.4536 | 10 / 27 / 20 | +3.33 |
+
+- **Found** (the records' bands on the corrected numbers):
+  - **C90 (Amendment 3):** C90 − C85 is +0.025 at s1 and +0.039 at s2, against the +0.08 both need. No G3 gain, as
+    before.
+  - **C93 (G3 leg):** +0.075 at s3 and −0.010 at s4. No G3 gain, as before. The four-seed mean is +0.032 (0.255
+    against 0.223).
+  - **C92:** C92 − C90 is +0.015 and −0.005. No G3 gain, as before.
+  - **C91:** its best 12 at 499 win 0.57 of decisive games against the lists under the frozen pilot (SE 0.013 each).
+    They beat the human lists by 0.07 above even. With Trainers at 27 (lists 28), Energy is still +3.3 to +4.5 above.
+  - Fresh-deck screens are at 0.18-0.28, so the gap between them and C91 is about 0.3, not 0.3-0.35.
+  - The G1 calls (C91 R-repro, C92 R-population, C93 R-gate) don't use best_decks and stand.
+- **Next:**
+  - C97 (about 10 minutes).
+  - C94's end, then B and C95 stage 1.
+  - The research session re-reads the G3 legs with these numbers.
+
+### #327 · 2026-10-27 · A5 C90 C93 C92 C91 · G3 bands re-read on the corrected probe (#326): C90 becomes R-small (+0.032, was between); no G3 gain from the gate or the pilot swap; C91's best 12 beat the lists (0.57) while still carrying +3 to +4.5 Energy
+- **Done** (research session): checked #326's numbers from `runs/probe/G3-rerun/vs_lists.json` (all match, 0 errors).
+  Re-read every G3 band; wrote C90's re-read into its record.
+- **Evidence** (G3 with SE about 0.010-0.013; G3's 12 median P / T / E):
+  - C85 s1-s4: 0.239, 0.185, 0.195, 0.273; median about 18-23 / 17.5-21 / 19-23.5.
+  - C90 s1-s4: 0.264, 0.224, 0.270, 0.262; median 12.5-17 / 21.5-24.5 / 21-23.5.
+  - C92 s1-s2: 0.280, 0.219.
+  - C91 s5 and s6: 0.575 and 0.573; medians 11 / 27 / 22 and 10 / 27 / 20; mean Energy +4.5 and +3.3 over 18.
+- **Found:**
+  - **C90 two-seed: R-small** (mean +0.032, inside 0.04). It was "between" on the faulty G3. Amendment 3's gain isn't
+    met. R-pilot's Trainer leg fails: gated best decks hold about 4 more Trainers.
+  - **C93's G3 line:** no gain (+0.075, −0.010). Four-seed mean +0.032. The gate moves G1 and shape (#316), not G3.
+  - **C92's G3 leg:** no gain (+0.015, −0.005). R-population stands.
+  - **C91:** its near-list best decks beat the lists, 0.57 of decisive games under C49-sd 199, the G3 target's 0.5.
+    They still run about +4 Energy and −3 Pokémon against the lists' medians.
+    - Under this pilot the lists are not optimal, which matches M < 0.5.
+    - By the ground-truth rule, that points at the pilot's play (C96 underpowered; C97 running), not at the draft.
+  - **Reproduced 333-10's caveat:** whether C49-sd 199 counts as the G3 definition's "qualified pilot" isn't settled
+    here.
+- **Next:** C97's per-card prices (launched 09:29:56).
+
+### #328 · 2026-10-27 · A5 C94 C95 · C94's oracle set is usable, just (R 0.503 on the named five at m 256, against the 0.5 bar); S frozen (147,278 rows); B and C95 stage 1a started
+- **Done:**
+  - C94's chain finished: oracle 08:43:56-09:35:29, pack 09:35:34, S freeze 09:37:09 (each exit 0).
+  - `runs/probe/C94-oracle/oracle.pt` (58.6 MB, evaluation only) and `selfplay.pt` (443.5 MB).
+  - Launched `C95-B` (the record's command, A1's tool at seed 191, m 8; then oracle_pack) at 09:37:47.
+  - Launched `C95-stage1a` at 09:38:05: c7mc, c7gae and c7turn on S, and the quarantined cap on O, at seeds 1 and 2.
+    c1 follows on B.
+  - Told 333-10 that finding 10 (freeze_selfplay.py) is safe to edit.
+- **Evidence:**
+  - Oracle: 245 prompts (each of the named five at its 30 quota; the total ran past 170 while Energy Removal and Gust
+    filled), m 256, 840 games, 0 game errors, 205,568 rollout lines, 0 line errors, capped share 0.00008, 0 dropped
+    copies, V0 offline within 1e-3, 3,071 s.
+  - Its split-half R (the tool's): named five **0.5033** (n 64 prompts with 3 or more answers), all prompts 0.529
+    (n 106).
+    - Computer Search 0.693 (26), Gust of Wind 0.641 (18), other 0.566 (42), Energy Removal 0.271 (5), Energy
+      Retrieval 0.083 (13), Super Energy Removal −0.897 (2).
+  - S: 147,278 rows, 2,304 games, 0 errors, pilot sha256 13c8f0da....
+- **Found:**
+  - **Usable**, by C94's band (R >= 0.5 on the named five at the chosen m), and with no margin. The estimate from C82
+    (0.73 at m 256) was too high.
+  - The signal is in Computer Search and Gust of Wind (R 0.64-0.69). Energy Retrieval and Super Energy Removal carry
+    almost none.
+  - So C95's disattenuated scores lean on those cards. Candidates should be read on the named five overall and on
+    Computer Search and Gust.
+  - Exception noted: C94 ran 51 minutes, past Evan's 30-minute rule (row 88). It started before the rule, as a one-off
+    shared input (333-10).
+- **Next:** C95 stage 1a's readout (about 10:00), B (about 10:00), then c1 on B (stage 1b), then the stage-1 stop rule.
+  C97 at about 09:40.
+
+### #329 · 2026-10-27 · A5 C97 C95 · C97: Computer Search alone carries the lists' Trainer deficit (p 0.447, CI to 0.470); Energy Removal holds its slot (0.536); Gust, SER and Energy Retrieval are between. C95 stage 1a: the single-visit baselines show no signal (the pipeline check passes); capacity is unreadable
+- **Done:**
+  - C97 ran 09:29:56-09:40:09 (exit 0). limits capped `--workers 4` to 2, so it matches research's 2.
+  - C95 stage 1a ran 09:38:05-09:40:30. I added the Computer Search + Gust stratum to `qhead_testbed.py` (research's
+    Amendment 2) after it ran, kept the first output as `*_nocsg.*`, and reran stage 1a at 09:41.
+- **Evidence:**
+  - **C97** (C67's command with single-card groups; the archived lists under C49-sd 199, greedy, round rule, 64 games
+    a pair, seed 91; 8,832 games, 0 errors, 611 s). Price p = the list's share against its copy with that card turned
+    into Energy, with the tool's 95% CI:
+
+    | card | lists holding it | p | 95% CI | band |
+    |---|---|---|---|---|
+    | Computer Search | 23 | 0.4474 | [0.4252, 0.4695] | carries the deficit |
+    | Gust of Wind | 23 | 0.4752 | [0.4503, 0.5001] | between (the upper end is 0.5001) |
+    | Super Energy Removal | 17 | 0.4825 | [0.4540, 0.5111] | between |
+    | Energy Retrieval | 11 | 0.5163 | [0.4875, 0.5452] | between |
+    | Energy Removal | 17 | 0.5358 | [0.5071, 0.5646] | holds its slot |
+    | search (control) | 23 | 0.4147 | [0.3847, 0.4448] | C67 0.413: reproduced |
+    | tempo (control) | 24 | 0.4105 | [0.3822, 0.4388] | C67 0.412: reproduced |
+
+  - **C95 stage 1a** (no stratum; 2 training seeds; O = C94's 245 prompts):
+    - c7mc, c7gae, c7turn (S's 40,468 prompt rows): every rho CI includes 0 (rho −0.30 to −0.04).
+    - Their dG is negative at both seeds, −0.007 to −0.017, up to about 3 SE. The heads pick worse answers than the
+      pilot's greedy.
+    - cap (quarantined; 150 O prompts fitted, 95 held out): rho_dis 0.351 [−0.332, 1.263] and −0.060 [−0.799, 0.683];
+      dG +0.003 / +0.007.
+- **Found:**
+  - **C97:** of the five named, only Computer Search carries the deficit alone. Gust is at the line. Energy Removal is
+    worth more than an Energy.
+    - By the record's reading, the deficit is a play fault in the pilot's use of Computer Search, possibly also Gust,
+      not the engine (#233).
+    - It fits C94: Computer Search and Gust are where the oracle's per-answer values are most reliable (R 0.69, 0.64).
+  - **C95 pipeline check passes.** No baseline shows signal, as C83, C88 and C89 found online.
+  - The baselines' negative dG repeats C88's harm: a value fitted to single returns picks against the pilot.
+  - **Capacity is unreadable at this size** (CIs about ±1). The record's stop rule ("capacity under 0.3 → candidate 5
+    first") can't be applied from it. I'll report the two-seed mean (0.15) with that caveat; the research session
+    decides.
+- **Next:** stage 1a's rerun with the Computer Search + Gust stratum (about 09:44); B (about 10:00); then c1 on B and
+  the stage-1 readout.
+
+### #330 · 2026-10-27 · A5 C97 C95 · C97: of the named five, only Computer Search loses clearly to Energy on the lists (0.447, CI to 0.470); C95 stage 1a: the single-visit controls are null (the pipeline check passes) and the quarantined capacity check is unreadable at 95 held-out decisions, so it moves to 5-fold cross-fitting
+- **Done** (research session): read #329. Wrote C97's readout into its record. Gave the call on C95's capacity stop
+  rule.
+- **Evidence:**
+  - C97 (8,832 games, 0 errors): Computer Search 0.447 [0.425, 0.470]; Gust 0.475 [0.450, 0.500]; Super Energy Removal
+    0.483 [0.454, 0.511]; Energy Retrieval 0.516 [0.488, 0.545]; Energy Removal 0.536 [0.507, 0.565]. The controls
+    reproduce C67 (search 0.415, tempo 0.411).
+  - C95 stage 1a, 2 seeds:
+    - single-visit targets on S (40,468 prompt rows): ρ −0.30 to −0.04, with every CI including 0; ΔG_O −0.007 to
+      −0.017, up to about 3 SE, C88's harm again;
+    - the capacity check: ρ_dis 0.351 [−0.33, 1.26] and −0.060 [−0.80, 0.68].
+- **Found:**
+  - **C97:** Computer Search carries the lists' deficit under C49-sd; Energy Removal holds its slot. Since the engine
+    resolves Computer Search as printed (#233), it is the pilot's use of the card.
+  - **C95's pipeline check passes:** the single-visit targets reproduce the nulls and harm of p23 and C88 offline.
+  - **The capacity rule can't be applied** at a CI of about ±1, so it doesn't divert stage 2. The capacity check
+    becomes 5-fold cross-fitting by game over all 245 O decisions, pooled. It stays quarantined.
+- **Next:** candidate 1 on B (about 10:00), read with the Computer Search stratum first.
+
+### #331 · 2026-10-27 · A5 C95 · B restarted at a 1,200-game cap to fit the 30-minute rule; the cross-fitted capacity check (cap5) is unreadable (every CI includes 0, point estimates near 0)
+- **Done:**
+  - **B:** its first launch (09:37:47) projected 44 minutes, and its named quotas (200 each) wouldn't fill, so it
+    would have run to the 3,000-game cap (about 48 minutes).
+    - I stopped it at 09:42 (the tool writes probes only at the end) and restarted it with `--max-games 1200`, about 20
+      minutes. That is the record's implementation amendment, written before B's data, under Amendment 1's "smaller,
+      stated".
+    - Its first log is kept as `B-3000cap-killed.log`.
+    - The process list showed only the new B tree (started 09:42:14).
+  - **qhead_testbed.py:**
+    - The Computer Search + Gust stratum is scored (Amendment 2) and shown first in the table (research, after C97).
+    - `cap5`: the quarantined capacity check as 5-fold cross-fitting by game over all of O, pooled, each prompt held out
+      once (research #330).
+    - Row writing moved into one helper.
+  - Ran cap5 (`loop.py launch C95-cap5`, CPU) at 09:43.
+- **Evidence:** cap5 (O = C94's 245 prompts; 2 training seeds; rho_dis with its bootstrap 95% CI):
+
+  | seed | all (245) | named five (150) | Computer Search + Gust (60) | dG all (SE) |
+  |---|---|---|---|---|
+  | 1 | −0.253 [−0.643, +0.120] | −0.225 [−0.731, +0.247] | −0.210 [−0.674, +0.303] | −0.004 (0.004) |
+  | 2 | +0.103 [−0.305, +0.516] | −0.039 [−0.579, +0.518] | +0.086 [−0.488, +0.644] | −0.014 (0.006) |
+
+- **Found:**
+  - **Unreadable**, by research's rule (CI includes 0), at both seeds and in every stratum.
+  - Fitted to O's own values, the head doesn't predict held-out O prompts better than chance at this size: point
+    estimates −0.25 to +0.10, top-1 at chance.
+  - Not tested: whether a regularised or smaller head reads differently. The head is the builder's default (MLP 128, 60
+    epochs, no regularisation), and tuning it on O would select on the evaluation set.
+- **Next:** B (about 10:03), then c1 on B with the stratum, then stage 1's stop rule (research reads it).
+
+### #332 · 2026-10-27 · A5 C98 C91 · Auditor A82's call: why Computer Search prices below an Energy. Prior data weigh against the round rule (untimed prices are lower) and the hidden pick order (fixed); C98 tests it in about 30 minutes; G3 now carries the pilot-exploitation caveat
+- **Done** (research session, files only): read C59's t49 and t49u, C73 (#246), #233 and `env/legal.js`. Wrote
+  `runs/probe/C98-cs-why/record.md` before launch, and the G3 caveat into C91's record.
+- **Evidence:**
+  - C59 (C49-sd, 24 lists): search group 0.4117 [0.382, 0.442] under the rule against 0.375 [0.339, 0.411] untimed;
+    all Trainers 0.558 against 0.456; draw 0.589 against 0.398.
+  - C73: S − G on the search group +0.063 (0.013).
+  - #233's hidden order is fixed. `legal.js` multiSpace says "Picks come in any order (log #233)".
+- **Found:**
+  - At group level, removing the turn cap makes Trainers look worse, so the round rule is unlikely to be what
+    underprices Computer Search. Untested for the card alone.
+  - Better prompt answers help the group (+0.063). The open rival is the pilot's choices.
+  - C98 tests Computer Search alone under the rule (seed 2), untimed and under oracle prompt answers (evaluation
+    only), plus a one-time dump of the search prompt. About 30 minutes.
+    - Prior: R-clock refuted, R-choice partial, R-view no.
+  - A82's G3 caveat is accepted. Under a pilot with M 0.43-0.45, G3 can't separate rediscovery from exploiting the
+    pilot. It is added to C91's record.
+- **Next:** implementation runs C98. C95's c1 on B is next in its queue.
+
+### #333 · 2026-10-27 · A5 C95 · C95 capacity read: a ridge head on the option vectors holds the per-answer value (ρ_dis 0.33-0.45 on Computer Search and Gust, CIs above 0); the MLP overfits and a card constant reads nothing; ridge heads pre-registered for every target candidate
+- **Done** (research session): read the implementation session's ridgecap and cardcap (09:56,
+  `scores_ridgecap.jsonl`). Wrote C95 Amendment 3 before any candidate on B was scored.
+- **Evidence** (quarantined, nested CV, 5 folds by game, pooled):
+  - ridge ρ_dis on Computer Search and Gust 0.449 [0.129, 0.816] and 0.332 [0.048, 0.691]; named five 0.326 and
+    0.310; all prompts 0.339 and 0.262;
+  - λ chose 1000 (the top of the grid) in every fold;
+  - card × Trainer one-hot: every CI includes 0.
+- **Found:**
+  - The pilot's option vectors carry a readable share of the oracle's per-answer value on held-out prompts. The
+    representation isn't the barrier, at least linearly.
+  - The default MLP's null (cap5) was overfitting.
+  - So every target candidate also gets a ridge head, with λ chosen on B alone from a grid extended to 10^5. A
+    candidate meets the band with either head at both seeds.
+  - This capacity check is quarantined: it shows what the representation can hold, and is never trained into the
+    method.
+- **Next:** c1 and c1r on B (about 10:04), read with Computer Search and Gust first.
+
+### #334 · 2026-10-27 · A5 C98 · C98 step 4 (the view check): the Computer Search prompt identifies every deck card by a card-name id and the discard pair is a free choice (R-view no), but options are bare ids with no pointer to their state tokens, and the pair is credited as two picks
+- **Done** (research session): read the implementation session's dump of C94's 30 live Computer Search prompts.
+  Wrote the step-4 readout into C98's record. Forwarded it to 333-10's card-identity workflow.
+- **Evidence:**
+  - Prompts: 10 discards at step 0, 8 at step 1, 12 search picks; no 'done' option.
+  - Option rows [11, card-name id, 0, 0, 0, 0]; 83 names on 83 ids on these prompts; 129 names on 117 ids over
+    all 245.
+  - The search pick offers each distinct deck card once (e.g. 29 options).
+- **Found:**
+  - R-view no: identity is visible, and the discard is order-free (#235's fix holds).
+  - For a card-token design:
+    - the option carries only a name id, no copy count and no pointer to its state token;
+    - a one-set choice is two separately credited picks.
+- **Next:** C98's games (about 10-15 minutes, beside c1); c1 and c1r on B.
+
+### #335 · 2026-10-27 · A5 C95 · C95 stage 1 read: c1 misses its band at both heads (MLP null; ridge leans positive, CIs include 0); c1r already sits near the oracle-fitted ridge capacity, a lean that the limit is capacity and oracle precision, not target noise; stage 2 approved as recorded
+- **Done** (research session): read the implementation session's stage-1 scores (10:01:54, `scores_stage1b.jsonl`).
+  Approved stage 2 as recorded, and asked for each ridge candidate to be shown beside ridgecap.
+- **Evidence** (2 seeds):
+  - B: 1,619 prompts at m 8, 1,200 games, 0 errors, 18.6 minutes.
+  - c1 MLP: ρ_dis on Computer Search and Gust −0.29 and −0.19; ΔG_O −0.007 to −0.019.
+  - c1r ridge (λ 1000 by inner CV on B):
+    - Computer Search and Gust 0.135 [−0.218, 0.511] and 0.257 [−0.151, 0.799];
+    - named five 0.276 and 0.338;
+    - all prompts 0.210 and 0.200;
+    - ΔG_O −0.001 to −0.003; top-1 at chance.
+  - Extended-grid ridgecap (quarantined, λ mostly 1e4): Computer Search and Gust 0.294 [0.002, 0.657] and 0.223; all
+    prompts 0.291 and 0.195. Readable at seed 1 only.
+- **Found:**
+  - c1 misses its band at both heads. The single-visit controls are null, capacity isn't diverted, and stage 2 runs
+    as recorded.
+  - A lean, not a result (CIs about ±0.4): ridge trained on self-play seed-centred targets reaches about the level
+    the oracle-fitted ridge does. If stage 2's targets land there too, the bottleneck is representation capacity and
+    oracle precision, not target noise. Stage 3 would then weigh candidate 5 and representation work (333-10's
+    card-identity workflow) over more targets.
+  - ΔG_O is about 0 for every candidate: no candidate yet picks answers better than the pilot's greedy.
+- **Next:** stage 2 (about 15 minutes of fits); C98's games (since 10:01:31).
+
+### #336 · 2026-10-27 · A5 C95 C98 · Implementation side of #333-#335: the testbed's ridge heads and capacity variants, O re-packed with option keys, B built (1,619 prompts), stage 1 run; stage 2 and C98's games started
+- **Done:**
+  - `oracle_pack.py` keeps each option's `keys` (the card name). O was re-packed at 09:54; v1 is kept as
+    `oracle_v1_nokeys.pt`. A check found Q and emb unchanged on all 245 prompts.
+  - `qhead_testbed.py`, all quarantined unless stated:
+    - `ridgecap` and `cardcap` (research #330): nested-CV ridge by game, pooled over 5 folds. ridgecap is on the centred
+      option vectors; cardcap is on a one-hot of (answer card, Trainer).
+    - The ridge grid is `LAMS` = 1 ... 1e5 (Amendment 3).
+    - The "r" ridge head, not quarantined (Amendment 3): λ by inner CV by game on B only, the seed's 80% subsample.
+      Targets: c1r, c2r (the mean within-seed pairwise sign), and c3h1r / c3h2r / c3h4r / c3l5r / c3l8r.
+    - c2's loss uses soft labels p = 0.5 + (R[a,j] − R[b,j]) / 4 (BCE, ties skipped), replacing sign labels.
+    - c3: the seat's value at its h-th own later decision (the reward if the game ended first), and λ-returns (γ 1) over
+      `vals` then the reward. Both seed-centred.
+    - Smoke tests on the C94 timing set passed for every new kind.
+  - `probe_prompt_oracle.py`: `--groups` accepts single card names (C98; `trainer_value.variants` already did after
+    C97's change).
+  - **B** (09:42:14-10:01; `--max-games 1200`): 1,619 prompts (Computer Search 221, Super Energy Removal 179, Energy
+    Retrieval 146, Energy Removal 63, Gust 39), m 8, 1,200 games, 0 errors, 0 line errors, 1,116 s. Its own split-half
+    R is −0.46 on the named five and −0.43 on all (halves of 4 rollouts).
+  - **Stage 1b** (10:01:31-10:01:54): c1 and c1r at 2 seeds. Numbers and the reading are in research's #335.
+  - **Stage 2** launched at 10:03:48: c2, c2r, and c3h1/h2/h4/l5/l8, each with MLP and ridge heads, 2 seeds.
+  - **C98's games** launched at 10:01:31. The trainer_value runs for Computer Search alone: rule at seed 2, then
+    untimed at 91 and 2. Then probe_prompt_oracle G/S at seeds 91 and 2, 16 games a pair. The first ended at 10:03:00.
+    - I skipped the 1-list timing pilot. C97 (about 90 s a card) and X1b (S arm 8.3 games/s) give about 10-15 minutes
+      in all (estimated).
+    - Step 4 came from C94's raw probes without games (research's #334).
+- **Evidence:**
+  - Extended-grid ridgecap (λ mostly 1e4), Computer Search + Gust: 0.294 [0.002, 0.657] / 0.223 [−0.086, 0.552]. All:
+    0.291 [0.069, 0.608] / 0.195 [−0.038, 0.478].
+  - On the 1-1000 grid (all folds at 1000): 0.449 [0.129, 0.816] / 0.332 [0.048, 0.691] and 0.339 / 0.262.
+  - cardcap: every CI includes 0.
+  - c1r chose λ 1000 at both seeds, on 1,285 / 1,281 prompts.
+- **Found:**
+  - Extending the grid past 1000 made the inner CV choose 1e4 in most folds, and the readings fell about 0.1. The 1e3
+    grid's "readable at both seeds" doesn't hold on the pre-registered extended grid (seed 1 only).
+- **Next:**
+  - Stage 2's readout, with each ridge row beside the same stratum's and seed's extended-grid ridgecap (research,
+    10:03).
+  - C98's readout.
+
+### #337 · 2026-10-27 · A5 · Card ids in prompt options are global (117 names on 117 ids, one-to-one across 245 prompts and many decks); id 0 is shared only by 12 board-slot and unknown-card keys, so Gust and Energy Removal targets are named by slot index, not card identity
+- **Done** (research session, 333-10's request, files only): mapped every pick option in
+  `runs/probe/C94-oracle/oracle.pt` (245 prompts, 951 pick options) from its key to its `obs.cand` row.
+- **Evidence:**
+  - 117 card names map to 117 ids, one-to-one. No name has more than one id across the many games and decks in O.
+  - The one shared id is 0, used by 12 non-card keys:
+    - '?' (kind 11, id 0; 14 options, an unidentified card pick);
+    - the board slots A, B0-B3, oA and oB0-oB4 (kind 12, id 0, with field 2 the slot index: 1 = own Active, 2-6 own
+      bench, 7 = opponent's Active, 8-12 opponent's bench).
+  - The implementation session's "129 names on 117 ids" counted those 12 keys as names.
+  - Slot options appear in 73 prompts: Gust 30, Energy Removal 15, Computer Error 14, Super Energy Removal 7,
+    Defender 4, and one each for Potion, Super Potion and Switch. No two slot options in a prompt share a cand row.
+  - All 951 option ids appear among the state's `tok_card` values, so one vocabulary is shared.
+- **Found:**
+  - Card ids are global, not deck-relative, on this data.
+  - Computer Search's picks carry the card's id but no pointer to its state token.
+  - Gust's and the Energy Removals' target picks carry only a slot index, no card identity. The model must join the
+    slot to the board's tokens itself.
+  - Both are inputs to 333-10's card-identity workflow (Evan rows 89-90).
+
+### #338 · 2026-10-27 · A5 C95 C98 · C95 stage 2: no candidate meets its band and ΔG_O <= 0 throughout; only the ridge heads on seed-centred and pairwise targets sit, steadily, at the oracle-fitted capacity. C98: the Computer Search deficit replicates (0.443) and untimed prices it lower (0.40), so the round rule is refuted; both pause for Evan's priority
+- **Done** (research session): read the implementation session's stage-2 scores and C98's conditions 1-2. Wrote both
+  readouts into their records.
+- **Evidence:**
+  - C95 stage 2, ρ_dis on Computer Search and Gust / all prompts, seeds 1 and 2:
+    - c2r 0.186 / 0.384 and 0.221 / 0.218;
+    - the extended ridgecap 0.294 / 0.223 and 0.291 / 0.195;
+    - MLP rows swing up to 0.7 between seeds; ridge on the c3 targets at or below 0;
+    - ΔG_O −0.020 to +0.003.
+  - C98 (Computer Search alone): the rule at seed 2 0.443 [0.420, 0.465]; untimed 0.402 [0.381, 0.423] and 0.398
+    [0.369, 0.427].
+- **Found:**
+  - C95: no target beats the representation's linear capacity, and none picks better answers than the pilot.
+    - Lean (CIs about ±0.4): the limit is capacity plus oracle precision. That points stage 3 at candidate 5 and
+      Evan's card-identity line, not at more targets.
+  - C98: the deficit replicates. R-clock is refuted at 2 seeds (untimed is about 0.045 lower). R-choice
+    (condition 3) is untested.
+- **Next:** everything waits for Evan's card-identity priority (rows 89-90). Then: C95 stage 3, C98 condition 3 and
+  C96's later stages, each on Evan's or 333-10's word.
+
+### #339 · 2026-10-27 · A5 · Switch to Evan's priority (row 90, about 10:08: content-based card embeddings): runs stopped at boundaries; the card ids are global (code), and the content table and content embeddings already exist (rl/token_model.py, pool.json)
+- **Done:**
+  - **Runs.** C95 stage 2 had ended at 10:05:24; research's #338 has the reading.
+    - I stopped C98 at 10:07:17 at a step boundary, after its three trainer_value runs and before its two prompt-oracle
+      runs. The first oracle run had started 8 s earlier and was cut.
+    - C95 stage 3, C96 stage 2 and C98's oracle runs wait (333-10: no new experiments).
+    - Nothing of mine runs now.
+  - **(a) Card ids, in code.** A kind-11 (pick_card) option's id is `card(item) = this.cardId.get(name) || 0`
+    (`env/tokens.js:303`, used at `:336`).
+    - `cardId` maps each card's fullName to its id in one global table, `notes/data/cards/pool.json`
+      (`env/tokens.js:72-74`; `id()` at `:89`).
+    - The same card has the same id in every deck and game. An unidentified pick ('?') and names outside the table get
+      0.
+    - This confirms research's data reading (#337).
+  - **(b) The content table already exists.** `notes/data/cards/pool.json` was built from the engine's card
+    definitions by `env/tools/card_features.js` (plan A4.2, commit 74a3f7b).
+    - 277 cards (225 Pokémon, 42 Trainers, 10 Energy): the whole Base / Jungle / Fossil / Rocket / Promo format.
+    - Fields: superType, stage, evolvesFrom, hp, types, weakness, resistance, retreat, attacks (name, cost vector,
+      damage, damageText, text), powers (name, text, inPlay), trainerType, provides / provideAmount / energyType, and a
+      full rules-text description.
+    - `notes/data/cards/text_emb.npy` holds frozen all-MiniLM-L6-v2 embeddings of the descriptions (`rl/card_text.py`).
+      `ability_text.npz` holds per-attack and per-Power text.
+    - No human decklists or strategy are in it.
+  - **The pilot already embeds cards by content.**
+    - `rl/token_model.py:395-400`: card_emb(id) = card_resid(id) + card_struct(card_feats[id]) +
+      card_text(text_emb[id]), with C49-sd at card_inputs "all".
+    - card_resid is a learned per-id embedding, zero-initialised outside "ids" mode (`:200-204`). It exists in every
+      mode.
+    - State tokens use it (`:424`), and so does every option row (`:606`: verb + card_emb(card) + slot refs + name +
+      extra).
+    - `cand_latent` (Evan's rows 65-66, the card-token keys; `:17`, `:363-371`, `card_tokens()` `:561`) lets an option
+      also read the encoder output of the state tokens holding its card. C49-sd has it off; key 1 was tested as C87
+      (null, #286).
+- **Evidence:**
+  - C98's three runs, Computer Search alone (the tool's 95% CI):
+    - rule at seed 2: 0.4426 [0.4203, 0.4649], against C97's 0.4474 at seed 91;
+    - untimed at seed 91: 0.4022 [0.3814, 0.4229];
+    - untimed at seed 2: 0.3981 [0.3688, 0.4274].
+  - Sent to 333-10 (10:09) and research (10:07).
+- **Found:**
+  - Evan's premise that the id refers to a different card in a different deck doesn't hold in the code. The ids are
+    global, and the model already maps each one to its card's content.
+  - What the code lacks, for the design:
+    1. a content-only card vector: card_resid always adds a per-id residual that can memorise a card regardless of its
+       content, and no flag removes it;
+    2. a copy count on options;
+    3. a card reference on slot-target picks (Gust, the Energy Removals, Defender), which carry only a slot index.
+  - C98: Computer Search is priced lower untimed, not higher, at two seeds, so R-clock (the round rule cuts games
+    before consistency pays) goes against the data.
+- **Next:** 333-10's design workflow (within the hour), then build to it.
+
+### #340 · 2026-10-27 · A5 · Row 90 groundwork, from the code: the state carries the deck's remaining contents with copy counts, and slot-target options are already bound to their target's board token
+- **Done:** read env/tokens.js and rl/token_model.py for 333-10's two questions, while the design phase runs.
+- **Evidence:**
+  - **Remaining deck contents.**
+    - `env/tokens.js:158-170` builds MY_UNSEEN: the seat's decklist minus every visible card of its own (hand,
+      discard, stadium, supporter, all board Pokémon, Energy and Trainers). It gives one token per distinct card left
+      in deck or prizes, with aux = copies left, capped at 31 (`:13-19`).
+    - `:174` adds OPP_DECKLIST, the opponent's full list with counts.
+    - A search prompt also lists its cards as PROMPT tokens with copy counts (`:15-19`; with state_canon, as flags on
+      the MY_UNSEEN token).
+    - With deck_mode "cross" (C49-sd), the deck tokens get their own encoder, and the board cross-attends to them once
+      (`rl/token_model.py:235-247`, `:468-481`).
+    - Options cross-attend over all tokens, deck stream included (`:619`).
+  - **Slot targets.** `slot_ref` (`rl/token_model.py:592-597`) gives a slot-1..12 option the encoder output of
+    that board SLOT token (the top Pokémon with its HP and attached Energy). The option rows add it at `:606`.
+- **Found:**
+  - Slot-target picks (Gust, the Energy Removals, Defender) are already bound to their target's board token. #339's
+    third gap ("only a slot index") was wrong at the model level. It holds only for the raw option row.
+  - The real gaps:
+    1. the always-on per-id residual (`:200-204`);
+    2. a search option's copy count, reachable only through generic attention unless cand_latent is on (off in C49-sd;
+       key 1 null in C87);
+    3. the discard pair as two forced sequential picks.
+- **Next:** 333-10's design, built on card_emb and cand_latent.
+
+### #341 · 2026-10-27 · A5 C98 · C98 condition 3 (the one exception to the row-90 pause, Evan's "Sure" to A83): the prompt oracle lifts Computer Search's price by +0.050 over the pilot's own answers (two seeds), still under an Energy; by C98's bands R-choice partial, R-clock refuted, R-view no
+- **Done:** launched `runs/probe/C98-cs-why/chain3.sh` (`loop.py launch C98-cs-why --resume`) at 10:17:03.
+  probe_prompt_oracle ran with arms G and S on the Computer Search group, seeds 91 and 2, 16 games a pair, cap 8, dets
+  4, max-steps 60, round rule. It ended 10:19:34 (exit 0), about 80 s a seed. Nothing else restarted.
+- **Evidence** (23 lists, 368 games an arm, 0 errors):
+
+  | seed | G (SE) | S (SE) | S − G paired by list (SE) | answers changed | clear share of changes | mean gain |
+  |---|---|---|---|---|---|---|
+  | 91 | 0.3954 (0.0235) | 0.4701 (0.0186) | +0.0747 (0.0223) | 48.5% | 84.9% | 0.028 |
+  | 2 | 0.4253 (0.0216) | 0.4497 (0.0243) | +0.0245 (0.0288) | 47.4% | 83.9% | 0.027 |
+
+  - Two-seed means: G 0.410, S 0.460, S − G +0.050 (SE about 0.018).
+  - The tool's own band line ("no reading") and control_ok false assume its three-group design, so they don't apply
+    to one card.
+- **Found** (C98's bands; research makes the formal reading):
+  - **R-choice partial.** S − G is at least +0.03, but S (0.46) is under 0.50. Answering Computer Search's prompts the
+    oracle's way lifts its price by about 0.05 but doesn't make it worth an Energy. The record's prior was partial.
+  - **Replication:** condition 1 (0.4426) is inside C97's CI.
+  - **R-clock refuted:** untimed 0.402 / 0.398 are at or below the rule's 0.447 / 0.443 (#339).
+  - **R-view no:** identities are in the tokens, and the discard pair is a free choice of two cards (#334).
+  - So about a third of Computer Search's deficit (0.05 of about 0.15 below even) is in its prompt answers. The rest
+    lies elsewhere: when it is played, or what follows.
+  - G under this harness at 16 games (0.41) reads below trainer_value's 0.44-0.45 at 64 games. The paired S − G is
+    the comparison.
+- **Next:** research's reading. The row-90 design is still the priority.
+
+### #342 · 2026-10-27 · A5 C98 · C98 condition 3 (auditor A83, Evan's "Sure"): oracle-chosen answers lift Computer Search's price by +0.050 (2 seeds) but leave it under 0.5 (0.46): R-choice partial. Better targeting has a real but partial ground-truth payoff
+- **Done** (research session): checked condition 3's files and wrote C98's verdict into its record.
+- **Evidence:**
+  - S − G paired by list: +0.0747 (0.0223) at seed 91 and +0.0245 (0.0288) at seed 2; mean +0.050 (about 0.018).
+  - S 0.470 and 0.450; G 0.395 and 0.425; 368 games an arm; 0 errors.
+  - The oracle changed about 48% of the searched answers, 84% of them clearly.
+- **Found:**
+  - **C98:** R-clock refuted, R-choice partial, R-view no.
+  - Better prompt choices recover about +0.05 of Computer Search's price and leave it below an Energy. The rest of
+    the deficit is outside the prompt answers (when it is played, and the play around it).
+  - So a card-targeting architecture (rows 89-90) has a payoff ceiling of about +0.05 on this price at the oracle's
+    choice quality. That is worth having, but it won't close the Computer Search deficit alone.
+- **Next:** 333-10's card-identity records, with this +0.05 as the payoff bound alongside C95's ridge yardstick.
+
+### #343 · 2026-10-27 · A5 C99 · Evan's differential (about 10:20): C99 recorded, a timing oracle for Computer Search at the main phase with follow-through logged, to test whether playing it at the right moment closes the rest of its deficit; with 333-10 for Evan's approval, nothing built
+- **Done** (research session): read `env/tools/probe_oracle_worker.js` (PromptOracle searches only Trainer prompts,
+  gated by `g.decision().prompt`; its search routine takes any decision item). Wrote
+  `runs/probe/C99-cs-timing/record.md` before any build.
+- **Found:**
+  - C99 adds a timing oracle T (an evaluation-tool change only). At the seat's main-phase decisions where playing
+    Computer Search is legal, T compares playing it now against the pilot's action, on 4 CRN copies to the end of the
+    turn, by the pilot's value. Arms: G, S, T and ST, on C98's design at 2 seeds.
+  - Follow-through is logged: the fetched card, the discards, and whether the fetched card is used the same turn.
+  - Bands: R-timing if T or ST − 2 SE >= 0.50; partial if T − G or ST − S >= +0.03; R-elsewhere otherwise. Prior:
+    partial.
+  - Build about 30-45 minutes, run under 10 (estimates).
+- **Next:** 333-10 puts C99 to Evan. When 333-10's card-identity report lands, its proposals become 30-minute records
+  carrying Evan's differential.
+  - The value target would be the paired turn-end value of the Computer Search play and its fetch and discards, with a
+    pointer from each option to its state token.
+  - What differs from C81's chain head: C81 gave the head this turn's context under PPO's single-visit credit. The
+    new design gives a paired turn-end credit for the whole chain.
+
+### #344 · 2026-10-27 · A5 BENCH · The single-deck pilot bench recorded (Evan about 10:30, "Yea"): primary deck C91 s6/763, variety set and fixed opponents from C91's populations, four readouts (Trainer prices, a bench oracle, a card-value probe, play strength), 30-minute arms; handed to implementation
+- **Done** (research session): read the six candidate decks from C91's population_it0499 files (P / T / E,
+  Trainer and Pokémon counts, recent_score). Wrote `runs/probe/BENCH/record.md` before any build or run.
+- **Evidence** (score, P / T / E, Computer Search copies):
+  - s6 763: 0.579, 12 / 24 / 24, Computer Search 2;
+  - s5 283: 0.557, 8 / 27 / 25, Computer Search 3;
+  - s6 346: 0.529, 10 / 26 / 24, Computer Search 4;
+  - s6 843: 0.528, 8 / 32 / 20, 19 Trainer kinds;
+  - s5 527: 0.526, 12 / 27 / 21;
+  - s5 796: 0.522, 9 / 32 / 19.
+- **Found:**
+  - Primary B1 = s6 763: the strongest, the Pokémon count closest to the lists, four of the named five, a coherent
+    build. Variety set V = 763, 283 and 346. Fixed opponents O = 527, 796 and 843.
+  - Readouts:
+    1. Trainer prices per card (C97's method), with every Trainer at 0.50 or more as the bench goal;
+    2. ΔG_B against a bench oracle (A1's tool on B1's games, built once);
+    3. a card-value probe: the pilot's ΔV against the playout-measured value of adding each card at real states;
+    4. head-to-head and against-O play strength, plus X1 and M as transfer.
+  - Arm 0 (plain PPO on bench matchups, 2 seeds) comes first and calibrates the noise. An effect must beat it by
+    more than twice the measured noise and the fixed bars, at both seeds.
+- **Next:** implementation builds the bench (about 1.5-2 hours, estimated), then arm 0. The card-identity designs,
+  Evan's differential with chain credit, and C99's timing check move onto B1 as later arms, each with its own record.
+
+### #345 · 2026-10-27 · A5 BENCH · Bench groundwork: C91's top decks exported and the decks and matchups files built; trainer_value reads a deck file with a per-game SE for one deck (and its checkpoint branch's G3-style bug is fixed); one builder on the training and eval entries; Evan switches the bench to human lists (10:35)
+- **Done** (333-10's (a)-(d), about 10:30; research's BENCH record, 10:33):
+  - **Decks.** C91's top 3 by recent_score per seed (s5: 283, 527, 796; s6: 763, 346, 843, as 333-10 named them):
+    - in `runs/probe/BENCH/decks/`, with `index.json` (shapes, Trainers);
+    - `decks.json` (the record's B1 = s6 763, V = {763, 283, 346}, O = {527, 796, 843}, with source sha256);
+    - `decks_{B1,V,O}.json`, and `bench_matchups.json` (B1 against each of V ×3, plus all of V × V: 18 pairs, B1 in
+      14).
+  - **`trainer_value.py`:**
+    - `--decks` also takes a JSON deck file.
+    - With one deck, the CI is binomial over its games (`se_basis` "games"); several decks keep the SE over decks.
+    - Its checkpoint branch ranked by sum / n with no fallback, the same bug as ultrareview finding 1. It now uses
+      recent_score. Every past chain used `--decks archived` (7 chains grepped), so no result was affected.
+  - **Smoke:** trainer_value on one bench deck (4 games a pair, Computer Search): runs, with a games-based CI.
+  - **Builder:** one Sonnet lean-builder is building `bench_train.py` (ar_milestone-style, a 30-minute wall-clock
+    budget, the bench matchups, pausable, MODEL_OVERRIDES arms), `bench_eval.py` (readouts 1, 2 and 4 through
+    trainer_value, a1_replay and probe_matchups) and `probe_target_signal.py --matchups` (for O_B). Each gets a smoke
+    test.
+  - Usage at 10:32: 5-hour 59% (resets 12:10), week 6%. One builder at a time.
+- **Change (Evan, about 10:35, via 333-10):** "Play a human deck instead."
+  - The bench's primary deck becomes one of the 24 STS 2000 lists, with 2 more lists for variety, and lists plus C91's
+    763 as fixed opponents.
+  - Research's amendment adds a quarantine: pilots trained on human lists are bench artifacts only and never seed
+    drafting or ar/.
+  - This is Evan's explicit exception to the standing rule that the lists are evaluation only.
+  - The deck files above are rebuilt from the archived lists (`rl.decks.archived_decks`, the source fixed.py and the
+    evaluation read) once research names them. The builder's code reads the files by path.
+- **Next:** research's amended deck choice, then the deck files, the builder's smokes, O_B, and the card-value probe
+  (the next builder).
+
+### #346 · 2026-10-27 · A5 BENCH · Bench amended to a human primary deck (Evan about 10:35): list 3, Alvin Osborn (Haymaker, 13 / 29 / 18, all five named); variety lists 10 and 1; opponents lists 0, 5, 17 and C91 763; bench pilots quarantined from drafting
+- **Done** (research session): tabulated the 24 lists (P / T / E, Trainer kinds, the named five, C97's per-list
+  prices for Computer Search, Energy Removal, Gust, search and tempo), read four candidates' full lists, and wrote
+  Amendment 1 to `runs/probe/BENCH/record.md` before any build.
+- **Evidence:**
+  - Lists with all five named Trainers and Computer Search at 2 or more: 2, 3, 10, 12, 20, 21 and 23. Per-list
+    prices carry about ±0.06 of noise at 64 games.
+  - List 3: 13 / 29 / 18, 13 Trainer kinds, search 0.406, tempo 0.391.
+  - List 10: Computer Search 0.398, Gust 0.312.
+- **Found:**
+  - B1 = list 3 (Alvin Osborn, Haymaker): the lists' median shape, every named Trainer, the most Trainer kinds among
+    the candidates, and a clear deficit. V adds list 10 (the same archetype, larger deficits) and list 1 (Wigglytuff,
+    Computer Search 4). O = lists 0, 5 and 17, plus C91 763.
+  - Quarantine: bench pilots never seed drafting or ar/. The architecture retrains human-free when drafting resumes
+    (rows 51 and 60). M and X1 are reported on the 20 lists outside V and O.
+- **Next:** implementation builds the bench on these decks, then arm 0.
+
+### #347 · 2026-10-27 · A5 BENCH · Bench amended again (Evan about 10:38): the pilot practises on 4 human lists chosen for Trainer interactions (lists 3, 1, 21 and 2), all with Computer Search; opponents lists 0, 5 and 17 plus C91 763; every readout per list and pooled; the quarantine stands
+- **Done** (research session): read the full lists of candidates 1, 2, 3, 7, 12, 20 and 21. Wrote Amendment 2 to
+  `runs/probe/BENCH/record.md` before any build.
+- **Found:**
+  - P = lists 3, 1, 21 and 2. Each list's interactions are named in the record.
+  - Every interaction Evan named is covered at least twice: Computer Search in all four; Item Finder in three; the
+    Energy Retrieval and Energy Removal economy in three; Oak with Bill in three; Gust with an attacker in all four;
+    Super Energy Removal's cost in three.
+  - O = lists 0, 5 and 17, plus C91 763, evaluation only. Training is P × P.
+  - Bands apply to the pooled readouts; per-list results are reported. Transfer readouts use the 17 lists outside P
+    and O.
+- **Next:** implementation builds the bench on P and O, then arm 0.
+
+### #348 · 2026-10-27 · A5 BENCH-S0 BENCH-P2 BENCH-P1 · 333-10's card-identity report turned into bench records: Step 0 (a CPU gate, runs now), P2 (key 1 opened from zero, picks only) and P1 (content-keyed cross-attention, warm-started) as 30-minute bench arms after arm 0; Evan's Computer Search differential added to the readouts
+- **Done** (research session): read `research_notes/Card identity and full-deck targeting/report.md` (333-10's
+  workflow; one checkpoint, small samples). Wrote `runs/probe/BENCH/S0/record.md`, `P2/record.md` and
+  `P1/record.md` before any build or launch. Handed them to implementation.
+- **Found** (from the report, not re-measured here):
+  - an option's attention on its own token is 1.01x the others';
+  - fetches follow ids (permuting ids TV 0.967) and ignore counts (TV 0.009);
+  - zone, count and verb embeddings (norm about 16) drown card_emb (2.6);
+  - 40 of 42 Trainers share one feature row;
+  - C87's gate stayed shut, so binding was never tested.
+- **Records:**
+  - **S0:** the ridge on C94/A1 Computer Search prompts with the own-token latent, counts and shuffled counts (CPU);
+    zeroing card_resid, priced on the bench.
+  - **P2 and P1:** 30-minute bench arms after arm 0's noise calibration, with the report's mechanism gates and kill
+    rules, bench readouts 1-4 per list and pooled, and Evan's Computer Search differential (price, same-turn
+    follow-through, the pilot's own V differential). C98's +0.05 ceiling is stated.
+  - Outcome bands sit on top of mechanism and need more than twice arm 0's seed noise at both seeds.
+  - Priors: S0 unreadable; P2 and P1 pass on mechanism, with no outcome gain at 30 minutes.
+- **Next:** S0 (a) on CPU now; arm 0, then P2, then P1. Promotion to 110 iterations × 2 seeds needs Evan's OK
+  through 333-10, and the full-deck fetch oracle first.
+
+### #349 · 2026-10-27 · A5 BENCH · Plan trimmed for the 12:10 usage window: arm 0 first (readouts 1, 4 and the Computer Search differential), then P2, then P1 (built while P2 runs); S0 deferred because no reading of it changes the order; O_B and the card-value probe run later on saved pilots
+- **Done** (research session): on the implementation session's usage hold (the 5-hour window at 69% of its 75% cap,
+  resetting 12:10), trimmed the bench plan and noted S0's deferral in its record.
+- **Found:**
+  - S0's decision value is low. Its table sends every reading but "it's the count" to P2 first, and (b) only grades
+    one of P1's pieces. P2's live path ratio and latent-shuffle TV test the same question.
+  - Order after 12:10:
+    1. arm 0 (2 seeds; readouts 1 and 4 plus the Computer Search differential);
+    2. P2;
+    3. P1 (built while P2 runs).
+  - O_B (m 128 if 256 doesn't fit) and the card-value probe come later on saved pilots; arm 0 doesn't wait for them.
+
+### #350 · 2026-10-27 · A5 C99 BENCH · Auditor A84: C99 moved onto the bench's P lists, to test whether any Computer Search play reaches 0.5 under this pilot family; the bench quarantine extended to weights, tuned hyperparameters and data
+- **Done** (research session): C99 Amendment 1 (P lists 3, 1, 21 and 2; Computer Search alone → Energy; 64 games a
+  pair; seeds 91 and 2; G, S, T and ST; the start pilot, then arm 0's). BENCH Amendment 3 (the quarantine).
+- **Found:**
+  - C99's ST arm (oracle choices plus oracle timing) is the test of A84's question. If ST − 2 SE stays under 0.50
+    pooled, the bench's "every Trainer >= 0.5" goal is marked not reachable for Computer Search by choices and timing
+    under C49-sd-family pilots. What remains then lies in the play the fetched card enables.
+  - It is a bench evaluation step under 30 minutes, so it is approved under the bench line. Implementation sequences
+    it within its usage window.
+  - Quarantine: no weights, bench-tuned hyperparameters or data cross into drafting or ar/. Only an architecture's
+    code and its pre-bench defaults may, retrained human-free.
+
+### #351 · 2026-10-27 · A5 BENCH C100 · Bench built on Amendment 2 (four human lists, P × P) and smoke-tested; arm 0 launched at 10:45 (2 seeds × 30 minutes, one at a time); O_B (Evan "Sure", 10:50) queued behind it
+- **Done:**
+  - **Deck files on Amendment 2** (`runs/probe/BENCH/`):
+    - `decks.json`: P = lists 3, 1, 21 and 2; O = lists 0, 5 and 17, plus C91 s6 763; each with list index, shape,
+      Trainer kinds and sha256; transfer = the 17 others.
+    - `decks_P.json`, `decks_P0..P3.json` and `decks_O.json`.
+    - `bench_matchups.json` and `ob_matchups.json`, each the 16 ordered P × P pairs.
+    - The Amendment-1 and C91 versions are kept in `a1/` and `c91/`.
+  - **The builder's three pieces** (one Sonnet lean-builder, about 76k tokens):
+    - `notes/scripts/bench_train.py`: ar_milestone's functions by import, ar/ HEAD's train.py, the bench matchups,
+      wall clock as the budget, pausable, `--model-overrides`.
+    - `notes/scripts/bench_eval.py`: readout 1 (15 single-card groups on P, per list and pooled), 2 (a1_replay on
+      O_B) and 4 (each P mirror at 128 games, P × O at 64), per list and pooled.
+    - `probe_target_signal.py --matchups` (default unchanged).
+    - I read bench_train's override (it sets `practice_matchups` on the fixed module train.py imports) and the
+      smoke's result.
+  - **Arm 0** launched at 10:45:14 (`loop.py launch BENCH-arm0`, candidate **C100**; BENCH had no C-number):
+    1. the start pilot's readout 1 (the calibration);
+    2. seed 1 (30 minutes) and its readouts 1 and 4;
+    3. seed 2 and its readouts 1 and 4.
+    - The seeds run one at a time, because ar_milestone's `blocked()` refuses while the GPU holds over 4 GB. Running
+      them side by side would also cut each wall-clock arm's training.
+    - `RL_GPU_SHARE` is 0.25; the builder found 0.1 runs out of memory.
+  - **O_B** (`BENCH-OB`, `runs/probe/BENCH/ob.sh`): it waits until arm 0's chain ends, GPU-PAUSE is absent and the
+    GPU is at 80% or less. Then A1's tool runs on the start pilot's P × P games: m 256, 240 prompts (the named five at
+    30 each first), seed 93; then oracle_pack.
+- **Evidence** (the builder's smokes):
+  - bench_train, 1 minute: 1 iteration, 446 games, 0 errors, 89 s, worktree removed, exit 0. It ran before the
+    Amendment-2 deck rebuild, which doesn't matter for a smoke.
+  - bench_eval at a 0.03 game scale: end to end, about 3 minutes. Readout 2 is skipped, since O_B doesn't exist yet.
+  - probe_target_signal with `--matchups`: 7 probes, exit 0.
+- **Found:**
+  - Readout 2 can only be pooled for now. Raw probes don't record each game's deck, so per-list scores need the deck
+    stored per probe (a later small change).
+  - The Computer Search differential readouts (ii) follow-through share and (iii) ΔV aren't in bench_eval yet. They
+    need game records, a small build after the 12:10 usage reset, to be backfilled on arm 0's saved pilots.
+  - Usage at 10:43: 5-hour 69% (resets 12:10), week 7%. No new builds until the reset.
+  - Bench-tuned settings live only in `runs/probe/BENCH/` files and bench_train's command line, so nothing crosses
+    into drafting or ar/ by default (Amendment 3).
+- **Next:** arm 0 (about 12:10, estimated), then O_B (about 50 minutes), then P2's build. C99's timing hook and the
+  card-value probe's JS worker come after the reset.
+
+### #352 · 2026-10-27 · A5 BENCH C100 · Bench calibration: the start pilot prices the four practice lists' Trainers at 0.501 pooled; Item Finder (0.435) and Computer Search (0.467) sit clearly below an Energy, so the bench goal fails at the start on the search and recovery cards
+- **Done** (research session): checked `runs/probe/BENCH/eval-start/bench_eval.json` (15 single-card groups, 64 games
+  a pair, seed 91, the round rule, 2,752 games, 0 errors) and wrote the calibration into the BENCH record.
+- **Evidence:**
+  - Pooled mean 0.501 (SE 0.018).
+  - Item Finder 0.435 [0.399, 0.471] and Computer Search 0.467 [0.435, 0.498] have CIs below 0.5.
+  - Gust 0.463, Lass 0.482 and PlusPower 0.487 have CIs spanning it.
+  - Professor Oak 0.560 and Energy Removal 0.549 sit above.
+- **Found:** the start pilot plays most of the practice lists' Trainers at about an Energy's worth. The clear deficits
+  are the deck-search and recovery cards (Computer Search, Item Finder), the cards whose value is in what they fetch.
+  That matches C97 and the card-identity report's binding gap. Arm 0 (C100) seed 1 readouts are due about 11:22
+  (estimated).
+
+### #353 · 2026-10-27 · A5 BENCH C100 · Arm 0 (plain ar/train.py on the human bench, 2 seeds × 30 minutes) is done: head-to-head against the start pilot 0.636 / 0.594 in the mirrors; Trainer prices move little (pooled mean 0.520 / 0.505 against 0.501), and Computer Search is noisy (0.514 / 0.463); O_B started
+- **Done:** arm 0's chain ran 10:45:14-11:52:43:
+  - the start pilot's readout 1;
+  - seed 1, trained 10:46:56-11:16:48, then readouts 1 and 4;
+  - seed 2, trained 11:19:50-11:49:41, then readouts 1 and 4.
+  - Pilots are in `runs/probe/BENCH/arm-arm0-s{1,2}/` (quarantined); readouts in `eval-start/` and
+    `eval-arm0-s{1,2}/`.
+  - O_B started at 11:53:43 (`BENCH-OB`).
+- **Evidence:**
+  - Training: seed 1 21 iterations, 9,336 games; seed 2 21 iterations, 9,321 games; 0 errors.
+  - Readout 1 (15 single-card groups on the 4 P lists, 64 games a pair, seed 91; pooled = mean over lists):
+
+    | pilot | pooled mean (SE) | min | Computer Search [95% CI] | Item Finder | Professor Oak |
+    |---|---|---|---|---|---|
+    | start | 0.501 (0.018) | 0.435 (Item Finder) | 0.467 [0.435, 0.498] | 0.435 | 0.560 |
+    | arm 0 s1 | 0.520 (0.013) | 0.432 (PlusPower) | 0.514 [0.480, 0.547] | 0.503 | 0.644 |
+    | arm 0 s2 | 0.505 (0.025) | 0.414 | 0.463 | — | — |
+
+    - Seed 2's per list (mean / min / CS): Osborn 0.434 / 0.336 / 0.375; Lieu 0.548 / 0.438 / 0.500; Graham 0.533 /
+      0.438 / 0.492; Neathery 0.506 / 0.414 / 0.484.
+  - Readout 4 (the arm's pilot's share; pooled SE across lists):
+    - mirrors, 128 games each: s1 0.590 / 0.707 / 0.598 / 0.648, pooled 0.636 ± 0.027; s2 0.574 / 0.668 / 0.555 /
+      0.578, pooled 0.594 ± 0.025;
+    - against O (start-piloted), 256 games each: s1 pooled 0.559 ± 0.052; s2 0.558 ± 0.064.
+  - Arm 0's noise (|s1 − s2|): mean price 0.015; Computer Search 0.051; mirror head-to-head 0.042; against O 0.001.
+- **Found:**
+  - Against the record's prior (readout 4 up 0.02-0.05; 1-3 null): head-to-head rose more (two-seed 0.615, at least
+    0.55 at both seeds).
+  - Trainer prices moved little: a two-seed mean of 0.5125, against the start's 0.501.
+  - Computer Search's price varies 0.051 between seeds, so a later arm's effect on it must beat about 0.10 (twice the
+    noise).
+  - The bench goal (every Trainer's p − 2 SE ≥ 0.50) is not met at either seed.
+- **Next:**
+  - O_B (about 12:45), then readout 2 on arm 0's pilots.
+  - After the 12:10 usage reset: the Computer Search differential backfill ((ii) follow-through, (iii) ΔV), then P2's
+    build and run.
+
+### #354 · 2026-10-27 · A5 BENCH C100 · Arm 0 read: 30 minutes of plain PPO on the practice lists makes the pilot clearly stronger (mirror 0.615 vs start) but leaves Trainer prices null (0.5125); Amendment 4 sets a noise floor and re-prices Computer Search at 256 games, since its 64-game bar (0.10) exceeds the +0.05 ceiling
+- **Done** (research session): read arm 0's two seeds against the BENCH bands, and wrote the readout and Amendment 4
+  before P2 runs.
+- **Evidence** (seeds 1 / 2):
+  - mean price 0.520 / 0.505 (start 0.501);
+  - Computer Search 0.514 / 0.463 (start 0.467);
+  - mirror head-to-head 0.636 / 0.594;
+  - against O 0.559 / 0.558.
+- **Found:**
+  - Arm 0 is stronger at play (mirror +0.09 to +0.14, beyond 2 SE at both seeds; more than the prior expected). Its
+    Trainer prices don't move (mean +0.012, inside the noise). The pilot gets stronger without valuing its Trainers
+    more.
+  - Amendment 4:
+    - a readout's noise is the larger of its seed gap and √2 × its per-seed SE (the "against O" gap of 0.001 was
+      chance);
+    - the Computer Search price at 64 games has a two-seed bar of about 0.10, above C98's +0.05 ceiling, so P2 and P1
+      price Computer Search and Item Finder at 256 games a pair, with arm 0's pilots re-priced to match;
+    - primary outcomes: mechanism, the mean price, head-to-head against arm 0, ΔG_B, and the Computer Search
+      differential (ii)-(iii).
+
+### #355 · 2026-10-27 · A5 BENCH C100 · At 256 games a pair, Computer Search prices 0.441 (start) and 0.459 (arm 0, seed gap 0.012): arm 0 is null on it, and its bar drops to about 0.03, so it is banded again for P2 and P1 within the +0.05 ceiling
+- **Done** (research session): read the 256-game re-pricing (implementation's `eval256-*`) and wrote it into the
+  BENCH record.
+- **Evidence:**
+  - Computer Search: start 0.441 [0.421, 0.461]; arm 0 0.464 and 0.453.
+  - Item Finder: start 0.449; arm 0 0.434 and 0.463.
+- **Found:**
+  - Arm 0 leaves Computer Search unmoved (+0.018, inside its about 0.03 bar). Seed 1's 64-game 0.514 was noise.
+  - With the bar at about 0.03, the Computer Search price is a banded readout for P2 and P1 again: +0.03 over arm 0
+    at both seeds, inside C98's ceiling. Item Finder (bar about 0.06) stays reported.
+- Also (implementation): O_B crashed at about 12:22 (a worker socket write failed). Nothing was saved, since the tool
+  writes probes at the end; it will save after every batch before the rerun. C99 has run since 12:32:28. P2 is built
+  and gate-checked on CPU.
+
+### #356 · 2026-10-27 · A5 BENCH C99 C100 · 256-game re-pricing (Computer Search under every pilot: 0.441 start, 0.464 / 0.453 arm 0); O_B crashed at 12:22 and is queued again with per-batch saving; C99's timing hook built and running; P2 built, step-0 gates pass, queued
+- **Done:**
+  - **bench_eval (Amendment 4):**
+    - `--only 1f` and part of readout 1: Computer Search and Item Finder at 256 games a pair, per list and pooled.
+    - `--ref`: P mirrors against a reference pilot (arm 0's of the same seed), 128 games each.
+    - The smoke ran.
+  - **Re-pricing at 256 games** (`BENCH-reprice256`, 12:17-12:23): the start pilot and arm 0's two pilots.
+  - **O_B crashed** at about 12:22, after batch 3 (122 of 240 prompts, 29 minutes). A node probe worker's socket write
+    failed ("write UNKNOWN", errno −4094), and Python saw "rollout worker 2 exited". The tool saved probes only at the
+    end, so nothing was kept (log: `runs/probe/BENCH/ob-crash-1222.log`).
+    - `probe_target_signal.py --save-partial` now rewrites `<out>.probes.partial.json.gz` after every batch. It's off
+      by default.
+    - The rerun (`BENCH-OB`) uses it, packs the partial file if the run dies, and waits for P2's end.
+  - **C99** (one Sonnet builder, about 92k tokens):
+    - `probe_oracle_worker.js` +101 lines: the timing oracle T (`--timing-oracle`; at main-phase decisions where the
+      card is playable, PromptOracle's routine on {greedy, play the card}) and a follow-through log (`--timing-card`:
+      the fetched card and its type, the two discards, same-turn use, V before and at the next own decision).
+    - `probe_prompt_oracle.py` +49: arms T and ST, and `--decks`.
+    - Smoke: G and S are unchanged with the options off; all four arms run with 0 errors.
+    - Launched on the bench at 12:32:28 (`C99-bench`): the 4 P lists, Computer Search alone, 64 games a pair, seeds
+      91 and 2, arms G / S / T / ST, the start pilot first and then arm 0's two pilots if the start took ≤ 10 minutes.
+  - **P2:**
+    - `rl/token_model.py` +18 / −2: opt-in `cand_latent_pick` (key 1 on pick rows only, lat_proj zero-initialised,
+      g_lat a buffer fixed at 1) and `cand_latent_center` (L centred over the decision's pick rows). Both are recorded
+      in the config only when on.
+    - `rl/train.py` and `rl/gpu_matrix.py` pass them through. `load_policy` had its own key list; my first gate
+      check found the flags weren't reaching the model there.
+    - `notes/scripts/p2_gates.py`: the record's four mechanism readouts, through hooks on lat_proj, in four passes.
+    - `runs/probe/BENCH/P2/chain.sh` (`BENCH-P2`, queued behind C99): 30 minutes a seed, with the kill watcher. Then
+      bench_eval 1 and 4 with `--ref` arm 0, the Computer Search follow-through (G arm, seeds 91 and 2), and the gates
+      on C94's prompts until O_B exists.
+  - The ar/ frozen hash changes again with rl/ (the re-setup was already pending).
+- **Evidence:**
+  - Re-pricing at 256 games (pooled [95% CI]):
+
+    | pilot | Computer Search | Item Finder |
+    |---|---|---|
+    | start | 0.4409 [0.4209, 0.4609] | 0.4486 [0.4047, 0.4925] |
+    | arm 0 s1 | 0.4644 [0.4431, 0.4856] | 0.4342 [0.4042, 0.4643] |
+    | arm 0 s2 | 0.4526 [0.4103, 0.4949] | 0.4629 [0.4342, 0.4916] |
+
+  - P2 gates on CPU (2,048 rows of a self-play smoke set, 373 with a pick option):
+    - step-0 logits equal the start pilot's (max |diff| 0.0);
+    - lat_proj's gradient norm is 0.093;
+    - g_lat is a buffer with no gradient;
+    - the start config carries none of the new keys.
+  - p2_gates smoke on C94's prompts:
+    - a zero projection reads 0 on every gate;
+    - a random 0.02 projection reads path ratio 0.050, logit-sd ratio 0.21 and TV 0.19 on 12 Computer Search fetches.
+  - Arm 0's per-iteration KL: mean 0.034, max 0.054, 2 of 21 iterations over 0.05 at each seed, never 2 in a row. So
+    P2's "2 iterations over 0.05" kill doesn't fire on the baseline. Entropy averaged 0.397, so the floor is 0.199.
+- **Found:**
+  - At 256 games Computer Search sits under 0.5 for every pilot (CI tops 0.461-0.495). Arm 0's seed-1 0.514 at 64
+    games was noise. Arm 0 adds +0.018 over the start (two-seed 0.459, seed gap 0.012).
+  - P2's halfway kill rule (path ratio < 0.01 at 15 minutes) isn't live. The gates run at the end of each seed.
+- **Next:** C99 (about 12:55), P2's two seeds (about 14:15, estimated), then O_B (about 45 minutes).
+
+### #357 · 2026-10-27 · A5 C99 BENCH · C99 on the bench: oracle choices plus timing put Computer Search at 0.50-0.54 for three pilots, every CI spanning 0.50 ("between"); timing itself adds nothing (T − G about 0); arm 0 plays Computer Search half as often as the start, with 0.92-0.98 same-turn follow-through; P2 seed 1 started 12:50
+- **Done:** C99-bench ran 12:32:28-12:49:12 (exit 0, 0 tracebacks).
+  - The start pilot took 335 s, so arm 0's two pilots ran too.
+  - Each pilot: the 4 P lists with Computer Search alone turned into Energy, 64 games a pair, seeds 91 and 2, arms G /
+    S / T / ST, the follow-through log on.
+  - P2 seed 1 started at 12:50:10 (`BENCH-P2`).
+- **Evidence:**
+  - Prices, pooled over the P lists (seed 91 / seed 2):
+
+    | pilot | G | S | T | ST | two-seed ST (SE), 95% CI |
+    |---|---|---|---|---|---|
+    | start | 0.467 / 0.447 | 0.510 / 0.486 | 0.498 / 0.434 | 0.510 / 0.508 | 0.509 (0.016), [0.476, 0.542] |
+    | arm 0 s1 | 0.514 / 0.490 | 0.549 / 0.514 | 0.484 / 0.473 | 0.533 / 0.547 | 0.540 (0.021), [0.499, 0.581] |
+    | arm 0 s2 | 0.463 / 0.451 | 0.486 / 0.477 | 0.434 / 0.486 | 0.500 / 0.494 | 0.497 (0.019), [0.460, 0.535] |
+
+  - Paired two-seed means:
+    - T − G: +0.009 / −0.023 / +0.003;
+    - ST − S: +0.011 / +0.009 / +0.016;
+    - ST − G: about +0.05 / +0.04 / +0.04.
+  - Timing counts (start, seed 91): T searched 2,193 decisions, played Computer Search 184 times against the greedy,
+    held 125.
+  - Follow-through, G arm (plays, same-turn use, ΔV with its SE):
+
+    | pilot | seed 91 | seed 2 |
+    |---|---|---|
+    | start | 218, 0.73, −0.170 (0.014) | 205, 0.76, −0.155 (0.014) |
+    | arm 0 s1 | 95, 0.97, −0.030 (0.015) | 89, 0.98, −0.018 (0.016) |
+    | arm 0 s2 | 82, 0.93, −0.037 (0.017) | 92, 0.92, −0.069 (0.019) |
+
+    - Under T the start plays more (252 / 267), uses more (0.80 / 0.82), and its ΔV is −0.11 / −0.12.
+- **Found** (C99's bands, Amendment 2; research reads them formally):
+  - **Between** for all three pilots: ST's CI spans 0.50. No Computer Search target is claimed, so P2 and P1 are read
+    on the other Trainers and their mechanism gates (the record's default).
+  - On timing, **R-elsewhere**: T − G and ST − S are under +0.03. The gain over G (about +0.04 to +0.05) comes from
+    the prompt choices, as in C98.
+  - Arm 0's plain training changed how Computer Search is played: half as often, the fetched card almost always used
+    at once, and far less value lost over the play. The price didn't clear 0.5.
+- **Next:** P2's two seeds (to about 14:15, estimated), then O_B.
+
+### #358 · 2026-10-27 · A5 C99 BENCH · C99 on the bench: oracle choices plus timing put Computer Search at about 0.50-0.54 (between for all three pilots), and timing adds nothing; plain PPO (arm 0) already plays it selectively with same-turn follow-through (92-98%), yet its price stays at an Energy
+- **Done** (research session): checked C99's six bench files and wrote the readout into C99's record. Amended P2's
+  and P1's outcome bands (the follow-through route removed) after P2 seed 1 began training at 12:50:10 and before any
+  readout.
+- **Evidence:**
+  - ST two-seed: start 0.509 [0.476, 0.542]; arm 0 0.540 [0.499, 0.581] and 0.497 [0.460, 0.535].
+  - T − G: −0.023 to +0.009. ST − S: +0.009 to +0.016.
+  - Follow-through (plays / same-turn use / dV): start about 210 / 0.73-0.76 / −0.16; arm 0 about 90 / 0.92-0.98 /
+    −0.02 to −0.07.
+- **Found:**
+  - ST is between for every pilot: no target claim. Timing is R-elsewhere: it adds nothing beyond the choices
+    (+0.03 to +0.04).
+  - Arm 0 learned Evan's differential through plain PPO. It plays Computer Search about half as often, nearly always
+    with the fetched card used the same turn, with a much smaller value drop. The price still sits at about an Energy
+    (0.459 at 256 games).
+  - What is left is Computer Search's two-card cost against its best use under these pilots, not the fetch, timing
+    or follow-through.
+  - So P2 and P1 are read on mechanism, the mean Trainer price, head-to-head against arm 0, and the Computer Search
+    price at +0.03 over arm 0 (256 games). Follow-through is reported only, since arm 0 is at its ceiling.
+
+### #359 · 2026-10-27 · A5 BENCH-P2 · P2 seed 1 (key 1 at picks, opened from zero): even with arm 0 (mirror 0.501 ± 0.028), Trainer prices unchanged (Computer Search 0.451 at 256 games, arm 0 0.464), 16 iterations against arm 0's 21; its path is small in norm (0.008-0.019) but moves the policy at picks (logit-sd ratio 0.34-0.40, TV 0.13-0.31)
+- **Done:** P2 seed 1 trained 12:50:10-13:19:15 (exit 0; the KL / entropy watcher never fired). Its evaluation ended
+  13:24:52: bench_eval 1 and 4 with `--ref` arm 0 s1, the follow-through at seeds 91 and 2, and the gates on C94's
+  prompts. Seed 2 started 13:24:52.
+- **Evidence** (one seed; arm 0 s1 in brackets):
+  - 16 iterations [21]: P2 is slower per iteration (111 s against about 85 s), so it trained about 25% less in the same
+    30 minutes. Last iteration: entropy 0.407, KL 0.028.
+  - Readout 1 at 64 games: pooled mean 0.521 (SE 0.025) [0.520]; min 0.469.
+  - At 256 games: Computer Search 0.451 [0.407, 0.495] [0.464]; Item Finder 0.452 [0.434].
+  - Readout 4:
+    - mirror against start 0.613 ± 0.020 [0.636];
+    - against O 0.559 ± 0.054 [0.559];
+    - mirror against arm 0 s1: 0.504, 0.562, 0.426, 0.512, pooled 0.501 ± 0.028.
+  - Computer Search follow-through (G arm, seeds 91 / 2): plays 120 / 113 [95 / 89]; same-turn use 0.966 / 0.964
+    [0.97 / 0.98]; ΔV −0.056 / −0.032 [−0.030 / −0.018].
+  - Gates (interim, C94's prompts):
+    - Computer Search fetches (n 12): path ratio 0.019, logit-sd ratio 0.340, TV 0.311;
+    - all picks (n 204): 0.008, 0.401, 0.128;
+    - |cos| 0.085.
+- **Found:**
+  - On outcomes, P2 seed 1 is level with arm 0: head-to-head 0.50, prices within noise. That's the record's prior, a
+    path with no outcome gain in 30 minutes.
+  - The mechanism gates disagree with each other. The path ratio is under R-dead's 0.05, while the logit-sd ratio and
+    the TV clear R-bind's bars. The research session reads them.
+  - Wall-clock arms with different per-iteration costs train different amounts. P2 got about 25% fewer iterations.
+- **Next:** P2 seed 2 (to about 14:00), then O_B; P1's build (the builder resumed after its turn limit, and applies to
+  rl/ only now that seed 2 has started).
+
+### #360 · 2026-10-27 · A5 BENCH P2 · P2 seed 1 (interim): R-dead by the letter (fetch path ratio 0.019 < 0.05), though the logit-sd ratio (0.34) and latent-shuffle TV (0.31) say the path moves the policy; outcomes null with no harm (head-to-head against arm 0 0.501); 16 iterations against arm 0's 21
+- **Done** (research session): read P2 seed 1 against its record and wrote the interim readout there.
+- **Evidence:**
+  - Gates (C94's prompts; 12 fetches, 204 picks): path ratio 0.019 (0.008); logit-sd ratio 0.340 (0.401); shuffle TV
+    0.311 (0.128); |cos| 0.085.
+  - Outcome: mean price 0.521 [0.520]; Computer Search (256 games) 0.451 [0.464]; head-to-head against arm 0 0.501 ±
+    0.028.
+- **Found:**
+  - By the bands as written, R-dead (path ratio). Not a kill, not a C87 repeat.
+  - The liveness readouts conflict. The path's logit share and shuffle TV are far above their bars, and the path
+    ratio is depressed by the inflated embedding norm the card-identity report described. Flagged, not reinterpreted.
+  - Outcome null, no harm. P2 trained 16 iterations to arm 0's 21 in the same 30 minutes, a budget confound.
+- **Next:** seed 2 (training since 13:24:52); the gates again on the P lists' prompts once O_B is rebuilt.
+
+### #361 · 2026-10-27 · A5 BENCH · Amendment 5 (Evan about 13:20): the bench goal is per card, every Trainer >= 0.5 against an Energy within its noise; default reading "not clearly below" (p + 2 SE >= 0.50); at the start Computer Search and Item Finder miss it; arms read per card, those two first
+- **Done** (research session): BENCH Amendment 5, written before P2's two-seed readout (seed 2 training).
+- **Found:**
+  - The goal is per card. A card meets it at p + 2 SE >= 0.50 (the default reading, flagged to Evan); "clearly
+    above" is reported.
+  - At the start, Computer Search (0.441 at 256 games) and Item Finder (0.449) miss it; every other Trainer's CI
+    reaches 0.50.
+  - Arms are read per card against arm 0 of the same seed, Item Finder and Computer Search first. A change counts
+    beyond twice the card's noise at both seeds: about 0.03 for Computer Search and about 0.06 for Item Finder.
+
+### #362 · 2026-10-27 · A5 BENCH-P2 BENCH-P1 · P2 seed 2 died of a CUDA out-of-memory after 1 iteration (13:28, GPU contention from the P1 build's tests; my sequencing) and reruns after O_B; P1's architecture is applied and passes its build tests (bit-identical off), not yet distilled; a per-card goal report (Amendment 5)
+- **Done:**
+  - **P2 seed 2** started 13:24:52 and died at 13:28:23: `torch.AcceleratorError: CUDA error: out of memory` in the
+    backward pass, after 1 iteration.
+    - It's an out-of-memory on the device, not the share cap. The likely cause is the P1 builder's test run (rl.tests
+      with an ONNX check) taking the GPU while the arm trained. I let a builder test on the GPU beside a wall-clock arm.
+    - The failed folder is kept as `arm-p2-s2-oom-1328`.
+    - The chain then logged "P2 end", which started O_B's rerun at 13:28:58.
+    - Seed 2 is queued again behind O_B (`P2/chain_s2.sh`, `BENCH-P2 --resume`), with the iteration-8 checkpoint
+      copied for the halfway gates.
+  - **P2's code path is unchanged by P1.** `card_tokens()` gained a `region` argument, but key 1 calls it without it,
+    and the result then equals the old one. P2's embed lines are intact. My step-0 check still gives identical logits and
+    a lat_proj gradient norm of 0.0928.
+  - **P1** (one Sonnet builder; it hit its 60-turn limit once and was resumed; about 290k tokens in all). It applied to
+    rl/ only after "P2 s2 train start", as asked.
+    - `rl/token_model.py` +141 / −24 (with P2's lines): `cand_latent 3` (content-keyed cross-attention from each
+      option to the state tokens), `card_content` with `fold_card_content` (card_resid folded into the content maps,
+      then dropped), `emb_scale`, `cand_origin`, and `card_tokens(region=)`.
+    - `rl/train.py` and `rl/gpu_matrix.py` pass them through.
+    - `rl/tests.py` `check_p1` (+70).
+    - `env/tokens.js` +13: an `origin` encoder flag (a pick row's extra = its source zone), off by default.
+    - `env/tools/test_env.js` `--origin`.
+    - `notes/scripts/p1_gates.py` (block 1's gates).
+  - **`notes/scripts/bench_cards.py`** (Amendment 5): per card, the price with its 95% CI, the goal status (clearly
+    above p − 2 SE ≥ 0.50; meets p + 2 SE ≥ 0.50; misses) and the change over arm 0 of the same seed. Item Finder and
+    Computer Search come first, at 256 games.
+- **Evidence** (the builder's, except where noted):
+  - `rl.tests` passes, including `check_p1`: with every option off, start.pt's logits and value are `torch.equal`
+    to those saved before the change on 1,536 rows, with the same config and state_dict keys.
+  - Fold error 4.8e-7; own-card attention ≥ 0.9998; 4 swapped Trainer-token pairs had their logits follow; ONNX within
+    3e-6 of torch.
+  - `test_env.js --tokens` gives the same obs hash (56276e96...).
+  - Un-distilled P1 against start: TV 0.32, argmax agreement 0.67.
+  - At emb_scale 0.1: HAND-vs-PROMPT cosine 0.869, two-Trainer cosine 0.98 (0.975 at 0.03, 0.974 at 0.01).
+  - Mine: bench_cards on P2 seed 1 against arm 0 s1 (256-game focus and 64-game rest). Item Finder 0.452 misses
+    (+0.018), Computer Search 0.451 misses (−0.014), Professor Oak 0.668 clearly above. Lass, Nightly Garbage Run and
+    Super Energy Removal miss; the other 9 meet.
+- **Found:**
+  - The two-Trainer cosine stays above the report's 0.9 at every emb_scale tried. Two Trainers look alike through their
+    shared structural features, not the shrunk embeddings.
+  - Not done for P1:
+    1. the distillation to T0 (`rl/warmstart.py` reads metagame checkpoints, not ar/'s start.pt format, so it needs an
+       adapter);
+    2. the origin code's plumbing in env/remote_worker.js and env/env.js (rollouts don't send it yet; its embedding is
+       zero-initialised);
+    3. any GPU smoke.
+  - Builders' GPU tests must wait while a wall-clock arm trains.
+- **Next:**
+  - O_B (since 13:28:58, about 45 minutes), then P2 seed 2 (30 minutes plus evaluation, to about 15:00, estimated).
+  - P1's distillation adapter and block 1 after that.
+
+### #363 · 2026-10-27 · A5 BENCH P1 P2 · P1 is built and passes its structural gates, but two Trainers still read cosine 0.98 (bar 0.9), because 40 of 42 share one feature row; pool-centred content is to be checked on CPU before block 1. P2 seed 2 died of an OOM beside a GPU test and reruns after O_B
+- **Done** (research session): read the implementation session's report. Wrote P1 Amendment 2 (pool-centred
+  content, with its pass conditions) before block 1.
+- **Evidence:**
+  - P1 off: bit-identical; fold error 4.8e-7; own-card attention >= 0.9998; swap 4/4; ONNX within 3e-6.
+  - HAND-vs-PROMPT 0.869. Two-Trainer cosine 0.98, and 0.975 and 0.974 at smaller emb_scale.
+  - Un-distilled T0: TV 0.32 against start, argmax 0.67. The adapter is still to build.
+  - P2 s1 per card against arm 0 s1: Item Finder 0.452 (+0.018) misses; Computer Search 0.451 (−0.014) misses;
+    Professor Oak 0.668 clearly above. Lass 0.479, Nightly Garbage Run 0.469 and Super Energy Removal 0.484 miss at
+    64 games. The other 9 meet.
+  - P2 s2 died at 13:28:23 of a CUDA OOM beside the P1 builder's GPU test. It reruns after O_B (about 14:15-14:45).
+- **Found:**
+  - Scaling down the zone embeddings doesn't separate Trainers. Their content vectors are near-identical because the
+    structured features are shared.
+  - Pool-centring the content is the small fix to check first. If it fails, P1 runs with the gate recorded as missed,
+    which bounds what it can show between Item Finder and Computer Search.
+  - Process: no GPU tests while an arm trains.
+
+### #364 · 2026-10-27 · A5 BENCH · Amendment 6 (Evan about 13:30): Trainers priced and read per list only where they are run (Item Finder in lists 3, 1, 2; Computer Search in all four); Item Finder's and Computer Search's targets logged with their own prices, so an inherited low price can be traced; turn-level planning noted as the next candidate, waiting on Evan
+- **Done** (research session): BENCH Amendment 6, before P2's two-seed readout. Counts read from the decklists:
+  - Computer Search: Osborn 3, Lieu 4, Graham 3, Neathery 2;
+  - Item Finder: Osborn 3, Lieu 3, Neathery 3; none in Graham.
+- **Found:**
+  - The goal is read per (card, list), never pooled across lists.
+  - Every arm logs what Item Finder recovers and what Computer Search fetches, with each target's own price, so a low
+    price can be traced to the card or to its targets.
+  - Turn-level planning in training (crediting Trainer chains within a turn) is the noted next candidate if P2 and P1
+    leave the two cards unmoved. It waits on Evan.
+
+### #365 · 2026-10-27 · A5 BENCH-P1 BENCH · P1's pool-centred content fails its gate (the two-Trainer cosine rises to 0.99), so P1 runs as built; the warm-start adapter and bench_train --start are built and smoked; per-list Item Finder / Computer Search context (Amendment 6) built; the queue is O_B, then P2 s2, then context, gates and P1 block 1
+- **Done:**
+  - **P1, research's Amendment 2 test.** I tried pool-centred and per-dimension-standardised card content (`card_emb`
+    under card_content, monkeypatched in a scratch script) against the record's report gate, on token input vectors as
+    p1_gates measures them.
+  - **`rl/warmstart.py`** +28 / −8, the P1 adapter:
+    - it reads ar/'s `{model, config}` teacher and writes the student back in that format;
+    - `--decks` plays a deck file in every ordered pair, mirrors too;
+    - `--round-turns` passes the round rule to the games;
+    - `--fold-card-content` starts the student from `fold_card_content(teacher)`, not load_grown.
+  - **`notes/scripts/bench_train.py`** `--start`: train from a given pilot (P1's T0). The default is unchanged.
+  - **`notes/scripts/bench_ctx.py`** (Amendment 6): for each P list that runs Item Finder or Computer Search, the
+    G arm of `probe_prompt_oracle.py` on that list alone at 256 games, with the follow-through log.
+    - It reports the per-(card, list) price, CI and status, each play's target (Item Finder's is the Trainer it
+      recovers; the log's generic "hand's gain") and the two discards.
+    - Each target is joined to its own readout-1 price in the same list under the same pilot.
+    - One run per list keeps games and logs apart by list, with no worker change.
+  - **Queue** (`BENCH-post`, `runs/probe/BENCH/post/chain.sh`), waiting for P2 seed 2's rerun:
+    1. bench_ctx for the start, arm 0 s1 / s2 and P2 s1 / s2;
+    2. P2's gates on O_B's prompts, and on seed 2's iteration-8 pilot;
+    3. P1 block 1: T0 by rl.warmstart (2,000 P × P games, 3 epochs, the fold), p1_gates on T0, and T0's head-to-head
+       against start (bench_eval 4).
+  - The O_B rerun started 13:28:58; its timing projects 45 minutes (about 14:14).
+- **Evidence:**
+  - Cosines (Computer Search HAND-vs-PROMPT / two Trainers Computer Search-Item Finder / pairs mean):
+
+    | content | emb_scale 0.1 | emb_scale 0.03 |
+    |---|---|---|
+    | as built | 0.874 / 0.983 / 0.921 | 0.983 / 0.975 / 0.883 |
+    | pool-centred | 0.926 / 0.991 / 0.954 | 0.991 / 0.987 / 0.935 |
+    | standardised | 0.911 / 0.987 / 0.936 | 0.989 / 0.981 / 0.909 |
+
+  - warmstart smoke (CPU, 8 games, 1 epoch, P1's options):
+    - an ar-format pilot `{model, config, warm}`, config P1, no card_resid;
+    - the new weights: lat_logt, count_proj, lat_qverb, lat_origin;
+    - 821 states; KL 2.28 to 1.60, value MSE 0.093 to 0.060.
+  - bench_ctx smoke (CPU, 4 games, arm 0 s1): Item Finder priced in lists 3, 1 and 2 (3 copies each), Computer Search
+    in all four (3, 4, 3, 2 copies), with targets and their prices joined.
+- **Found:**
+  - Centring or standardising the content raises the two-Trainer cosine. Removing the pool's mean, which is mostly
+    Pokémon, leaves the Trainers' shared structure dominant. By the amendment's rule, P1 runs as built (emb_scale 0.1),
+    with the report gate (two Trainers ≤ 0.9) recorded as missed.
+  - A centring within the supertype would target that shared row directly. It's untested; it would be research's
+    call.
+- **Next:** O_B (about 14:14), P2 seed 2 (about 14:15-14:55), then the post chain (about 45 minutes, estimated).
+
+### #366 · 2026-10-27 · A5 BENCH P1 · P1's pool-centred content fails (it raises the two-Trainer cosine, 0.983 → 0.991); centring within supertype is pre-registered as the last variant before block 1, on the same pass conditions; otherwise P1 runs as built
+- **Done** (research session): read the implementation session's check of P1 Amendment 2. Wrote P1 Amendment 3.
+- **Evidence** (Computer Search HAND-vs-PROMPT / Computer Search vs Item Finder / pairs mean):
+  - emb_scale 0.1: as built 0.874 / 0.983 / 0.921; centred 0.926 / 0.991 / 0.954; standardised 0.911 / 0.987 /
+    0.936.
+- **Found:**
+  - The pool mean is Pokémon-heavy, so centring on it leaves the Trainers' shared feature row. Supertype-centring
+    targets that row directly. It is the last variant tried; if it fails, P1 runs as built with the gate recorded as
+    missed.
+- Also built (implementation): the start.pt warm-start adapter (CPU smoke: KL 2.28 → 1.60) and bench_ctx.py
+  (Amendment 6's per-list context readout).
+- **Queue:** O_B to about 14:14; P2 s2 about 14:15-14:55; then the post chain (bench_ctx backfill, P2 gates, P1
+  block 1).
+
+### #367 · 2026-10-27 · A5 BENCH-P1 · P1 Amendment 3 (supertype-centred content) fails its pass rule on Computer Search against Item Finder (0.976, bar 0.9); P1 runs as built at emb_scale 0.1, the report gate recorded as missed
+- **Done:** research's last pre-registered variant, on CPU (a scratch monkeypatch of `card_emb` under card_content).
+  Each card's content minus its supertype's mean (Pokémon, Trainer, Energy), cosines on token inputs as p1_gates
+  measures them. No code change.
+- **Evidence** (HAND-vs-PROMPT for Computer Search (Trainers mean) / two Trainers, Computer Search against Item Finder /
+  pairs mean (max)):
+  - emb_scale 0.1: 0.827 (0.832) / 0.976 / 0.891 (0.991);
+  - emb_scale 0.03: 0.978 (0.979) / 0.966 / 0.852 (0.987).
+- **Found:**
+  - The pairs mean and HAND-vs-PROMPT pass. Computer Search against Item Finder doesn't: their texts read alike ("discard
+    2 of the other cards from your hand in order to ...") and their structural rows are identical.
+  - By the amendment's rule (both two-Trainer cosines ≤ 0.9), it fails. P1 runs as built (emb_scale 0.1), with the
+    report gate recorded as missed. There are no more variants.
+- **Next:** unchanged: O_B, P2 seed 2, then the post chain with P1 block 1.
+
+### #368 · 2026-10-27 · A5 BENCH P1 · Supertype-centring fails too (Computer Search vs Item Finder 0.976): their content is near-identical by construction, so P1 runs as built with the two-Trainer gate missed, and their separation rests on learned maps
+- **Done** (research session): recorded the implementation session's CPU check of P1 Amendment 3.
+- **Evidence** (emb_scale 0.1): HAND-vs-PROMPT 0.827; Computer Search vs Item Finder 0.976; pairs mean 0.891 (maximum
+  0.991).
+- **Found:**
+  - Computer Search and Item Finder share an identical structural row and near-identical text ("discard 2 of the other
+    cards from your hand in order to ..."). No fixed-content centring separates them.
+  - P1 runs as built with the report gate missed. Telling them apart depends on what training writes into the folded
+    content maps.
+
+### #369 · 2026-10-27 · A5 BENCH · Auditor A90: a 30-minute bench arm trains on roughly 8,000-15,000 Computer Search fetches (estimated), 20-40x short of PPO's about 290k visits for a 0.02 per-pick signal, so the architecture arms' outcome nulls can't speak to architecture; their mechanism readouts can
+- **Done** (research session, files only): looked for per-Trainer pick counts in arm 0's training logs
+  (`result.json`, `arm0.log`). There are none (`train.games` 9,336 and `iterations` 21 only). Estimated from C99's
+  follow-through counts.
+- **Evidence** (estimated):
+  - Computer Search plays per game per seat: start about 0.85 (218 plays in 256 C99 games), arm 0 about 0.37 (95
+    and 82-92).
+  - All four P lists run Computer Search, so about 0.7-1.7 plays a game across both seats. Over 9,336 training games
+    that is about 8,000-15,000 fetches an arm, each with 2 discard picks.
+  - Item Finder (3 of 4 lists) is probably fewer; not counted.
+  - A1: median n* about 290k visits for PPO's single-visit sign. Paired re-deals at d 0.20: about 8,000 seeds per
+    answer pair at one decision (#319).
+- **Found:**
+  - A90 holds. Through PPO's per-visit credit, a 30-minute arm sees 20-40x too few Computer Search picks to learn a
+    0.02 per-pick value. P2's and P1's outcome readouts (prices, head-to-head) are underpowered by construction, and
+    a null there says nothing about the architecture.
+  - What the arms can show is mechanism: whether the path is live and binds cards.
+  - A denser per-pick signal (a value over answers from the pilot's own paired re-deals, row 83, pooled through a
+    regularised head as in C95's c1r and c2r) is the precondition for an outcome test. It needs its own record.
+    C89's null at 110 iterations on ar used an MLP Q head, which C95 found overfits.
+  - Row 73: P2 s2's OOM at 13:28 was a hold miss. No GPU work runs beside an arm (the implementation session's rule).
+- **Next:** ask implementation for exact per-Trainer pick counts per iteration in bench_train. Propose the
+  dense-signal arm to 333-10 for Evan.
+
+### #370 · 2026-10-27 · A5 BENCH-P4 · P4 recorded (A90, 333-10's go): a value over prompt answers from the pilot's own paired re-deals, a closed-form ridge head and a prompt-advantage swap, on top of the binding arm that passes; at 30 minutes it reads mechanism only (about 300-1,000 branched prompts a seed); the informative version is about 2-3 hours and goes to Evan
+- **Done** (research session): wrote `runs/probe/BENCH/P4/record.md` before any build, with the budget note first.
+- **Found:**
+  - At 30 minutes a seed, P4 gets about 300-1,000 branched prompts (m 8; C89's rates). C95's ridge on 1,619 such
+    prompts reached only capacity-level ranking, with no argmax gain.
+  - So the arm can show Q learning (ρ_dis >= 0.2 on O_B) and the policy following (greedy-equals-Q-argmax +0.10). An
+    outcome null reads as underpowered.
+  - The informative version, about 5,000 branched prompts (4-6 chained segments, 2-3 hours a seed), goes to Evan
+    through 333-10.
+  - Design choices from the evidence:
+    - a ridge head, not an MLP (C95; likely part of C89's null);
+    - a swap of PPO's advantage at prompts, not an all-action gradient (C83 and C88's harm);
+    - no exploration floor;
+    - the Computer Search fetch's options stratified over the run (the report's cap-8 coverage gap).
+
+### #371 · 2026-10-27 · A5 BENCH-P4 · Evan (14:03): keep experimenting without waiting on approval. P4's longer version now runs automatically if its 30-minute mechanism read passes at both seeds, in chained 30-minute segments with a matched base and stop rules after each
+- **Done** (research session): P4 Amendment 1, written before any build.
+- **Found:**
+  - The longer version runs on a pass of both 30-minute mechanism bands at both seeds. That is up to 5 more segments
+    a seed (about 5,000 branched prompts), with the base continued in parallel for a matched comparison.
+  - Stop rules after each segment: the harm guard, Q's ρ_dis below 0.1, two segments with no gain in Q-argmax
+    agreement, or the kill rules.
+  - Standing (333-10, Evan 14:03): approvals aren't a gate for now. The bench focus, the per-card goal, the quarantine,
+    bands before runs, the null rule, 30-minute stages with stop rules, and the deep-research skill for any research
+    all stay. If P2, P1 and P4 leave Item Finder and Computer Search unmoved, the turn-level planning design (row 99)
+    gets a record and goes to implementation.
+
+### #372 · 2026-10-27 · A5 · Hourly deep research (Evan about 14:05): round 4 started at 14:07 through the deep-research skill, on multiplying the training signal for rare Trainer decisions (A90's bottleneck); the hourly timer is set
+- **Done** (research session):
+  - Usage at 14:07: 5-hour 42%, week 15%, so the round runs.
+  - Started round 4 through `anthropic-skills:deep-research` (Evan rows 92 and 100: all research goes through it,
+    every hour). Notes go to `research_notes/Rare decision training signal/`, the report to `reports/`.
+  - Set a one-shot hourly timer, re-armed after each round.
+- **Topic:** A90 showed a 30-minute arm sees 20-40x too few Computer Search and Item Finder picks for PPO's credit.
+  The round asks for human-free ways to multiply the training signal for rare decision states, and their biases:
+  - restart distributions from saved states (Kakade & Langford, Backplay, Go-Explore, reverse curricula);
+  - prioritised or stratified decision-type sampling in on-policy updates;
+  - self-imitation learning;
+  - game-AI evidence.
+  - Prior rounds didn't cover it; chains and per-move search targets were covered in
+    `Dense training signals for Trainer play/`.
+- **Next:** turn the report into 30-minute bench records with bands and hand them to implementation.
+
+### #373 · 2026-10-27 · A5 C99 · Auditor A91: Item Finder's oracle ceiling recorded as C99 Amendment 3 (oracle prompt answers, Item Finder alone, lists 3, 1 and 2, about 15 minutes) before P4's long segments; usage flag taken, no fan-outs until the 5-hour window resets about 17:10
+- **Done** (research session):
+  - C99 Amendment 3 (bands as Amendment 2: reached, not reached or between on the pooled S; S − G against +0.03), with
+    Item Finder's recovered targets logged (Amendment 6).
+  - Usage at 14:15: 5-hour 48% (from 42% at 14:07), week 16%.
+- **Found:**
+  - If Item Finder's S tops out near 0.5 as Computer Search's ST did (0.50-0.54), P4's per-card target sits at the edge
+    of these pilots, and its long segments are read on mechanism and ΔG_B.
+  - Usage: round 4's four researchers finish, with only the report writer added. No fan-outs until about 17:10. The
+    15:08 round is skipped if the window is over 75%, otherwise one researcher at most.
+
+### #374 · 2026-10-27 · A5 BENCH · O_B, the bench oracle, is built: 259 prompts at m 256 on the start pilot's P × P games, split-half R 0.775 on the named five (C94 on the lists: 0.503); P2 seed 2's rerun started 14:16; Item Finder's oracle ceiling queued; Evan's 14:03 "keep experimenting"
+- **Done:**
+  - **O_B rerun** (`BENCH-OB`): probes 13:28:58-14:15:55, packed at 14:16:09 into `runs/probe/BENCH/O_B.pt`
+    (82 MB, evaluation only). With `--save-partial`, the partial file was saved after every batch.
+  - P2 seed 2's rerun started training at 14:16:19.
+  - **Item Finder's oracle ceiling** (C99 Amendment 3, auditor A91; `C99-IF`) is queued after the post chain. It runs
+    G and S on Item Finder in lists 3, 1 and 2 (`decks_P_IF.json`), 64 games a pair, seeds 91 and 2, the start
+    pilot then arm 0 s1, with the follow-through log.
+  - **Decision (Evan, 14:03, via 333-10):** "Keep experimenting for awhile, don't wait on my approval right now." The
+    bench program runs end to end (S0, P2, P1, P4, P4's chained segments by its Amendment 1, research's next
+    proposals). The focus, the per-card goal, the quarantine, records with bands, 30-minute stages, the usage caps and
+    the GPU holds all stay.
+  - Usage at 14:15: 5-hour 42% (resets about 17:10), week 15%.
+- **Evidence:**
+  - O_B: 259 prompts (Computer Search 96, Super Energy Removal 39, Energy Retrieval 37, Energy Removal 30, Gust 30),
+    228 games, 0 errors, 0 line errors, 2,788 s.
+  - Split-half R: named five 0.7753 (n 117 prompts with 3 or more answers); all 0.7189 (n 132).
+  - By card: Computer Search 0.735 (70), Gust 0.945 (20), Energy Retrieval 0.514 (20), Super Energy Removal 0.595 (5),
+    Energy Removal 0.983 (2), other −0.094 (15).
+- **Found:**
+  - On the bench's own games the oracle is much more reliable than C94's on the lists: R 0.775 against 0.503 on the
+    named five, Computer Search 0.735 against 0.693, with 70 of its prompts carrying 3 or more answers.
+  - Item Finder isn't one of A1's named five. Its prompts fall under "other" (R −0.094, n 15), so O_B says little
+    about Item Finder.
+- **Next:**
+  - P2 seed 2 (to about 14:55 with its evaluation).
+  - The per-Trainer pick counter (rollout worker, log-only; its edit is safe now that P2's workers have spawned).
+  - Then the post chain, Item Finder's ceiling, and P1.
+
+### #375 · 2026-10-27 · A5 BENCH · The per-Trainer pick counter (auditor A90) is built: log-only in the rollout worker behind a message flag, aggregated per iteration by bench_train; on from P1's block 2; env/'s frozen hash changes again
+- **Done** (one Sonnet lean-builder, about 64k tokens, CPU only; edited after P2 seed 2's workers had spawned at 14:16):
+  - `env/remote_worker.js` +16 in `collect`. With `cmd.trainerCounts`, every decision taken while a prompt is
+    open is counted by "<resolving Trainer>|<prompt message>|<seat>", as {prompts, picks}. The Trainer comes from
+    `game.chain.key`, and "none" covers non-Trainer prompts, setup included. The counts go into the reply only when
+    the flag is on.
+  - `notes/scripts/bench_train.py` +38: `wrap_collect(out)` puts the flag on each collect message, sums the replies
+    and appends `{"iteration", "counts"}` to `<out>/trainer_counts.jsonl`, plus a `tc` line per iteration.
+    `--no-trainer-counts` turns it off.
+  - I read the worker diff: with the flag off, `onDecision` is the same probe hook as before and the reply is
+    unchanged.
+  - **The ar/ loop's frozen hash covers env/*.js**, so this is one more reason for the pending `ar/fixed.py --setup`
+    and `--calibrate` (with #293's and #325's rl/ changes and today's P2 and P1 model changes).
+- **Evidence** (the builder's, CPU):
+  - (a) Flag-off identity: with torch seeded, the pre-edit file and the edited file give identical rollouts (5,668,736
+    bytes, sha256 944462675fc4eaf3) and replies. Unseeded, two runs of even the old file differ (server-side sampling).
+  - (b) Flag on, the bench matchups, one collect: "Computer Search|CHOOSE_CARD_TO_HAND|1" 36 prompts / 36 picks,
+    "Computer Search|CHOOSE_CARD_TO_DISCARD|1" 56 / 56, "Item Finder|CHOOSE_CARD_TO_HAND|2" 12 / 12.
+  - (c) The wrapper on a real RemotePool: one jsonl line and the tc line (Computer Search 166 / 166, Item Finder
+    48 / 48).
+- **Found:** the builder's CPU tests ran beside P2 seed 2's wall-clock arm, with 1-2 workers for a few minutes. That's
+  a small load to note when reading P2 s2's iteration count.
+- **Next:** P2 seed 2 (to about 14:55), the post chain, Item Finder's ceiling, then P1 block 2 with the counter on.
+
+### #376 · 2026-10-27 · A5 BENCH-P1 · P1 block 2 is queued behind block 1's kill gates (two 30-minute seeds from T0, the per-Trainer counter on), with a CPU readout chain for R-bind's count-shuffle TV, the per-card goal and the post-training gates
+- **Done** (no GPU; written while P2 seed 2's arm trains, nothing run beside it):
+  - `runs/probe/BENCH/P1/block2.sh` (registry BENCH-P1b2, launched 14:21:49, waiting for "IF ceiling end"). It reads
+    `P1/gates_T0.json` and `eval-p1-T0/bench_eval.json` and runs only if every block 1 kill gate passes: fold < 1e-4,
+    own-card attention >= 0.95, swap >= 0.9, TV <= 0.03, agreement >= 0.95, and T0's pooled mirror against start
+    >= 0.47. Then per seed (1, 2): `bench_train --minutes 30 --start P1/T0.pt` (T0 carries P1's config, so no
+    overrides), `bench_eval --only 1,4 --ref arm-arm0-s<seed>` (readout 1 includes the 256-game focus), and `bench_ctx`.
+    It honours GPU-PAUSE and bench_train's pause exit (5).
+  - `notes/scripts/count_shuffle.py` (new, about 80 lines, CPU): the record's R-bind readout. On O_B's deck-search rows
+    (CHOOSE_CARD_TO_HAND), it permutes the listed cards' copy counts among their tokens (8 permutations a row) and
+    reports the mean TV over legal options, for any pilot. The research report's start value was 0.009 (on C94's rows).
+    `p1_gates.py` had no such field.
+  - `runs/probe/BENCH/P1/block2_read.sh` (registry BENCH-P1b2-read, 14:25:23, CPU only, waiting for "P1 block2 end"):
+    count_shuffle on start, T0, T s1/s2 and arm 0 s1/s2; `bench_cards` per seed against arm 0 (`--ref-focus
+    eval256-arm-arm0-s<seed>`); `p1_gates` on each T.
+- **Not verified:** count_shuffle.py has not run yet. Its test waits for P2 seed 2's training to end (about 14:46), so
+  nothing CPU-heavy runs beside the wall-clock arm.
+- **Next:** test count_shuffle on start and arm 0 s1 after 14:46; then P2 s2's readout, the post chain, Item Finder's
+  ceiling, P1 block 1's gates; build P4 (one builder) while they run.
+
+### #377 · 2026-10-27 · A5 BENCH P6 P4 · Research round 4 done (deep-research skill): reweighting, prioritising and self-imitation add no signal; vine branching was the top method, but on the bench it carries about 3.5x less information per rollout than PPO's GAE; correction to #369: on the bench Computer Search's n* is about 2,600 visits, not 290k, so 30-minute arms are powered for it if GAE is unbiased
+- **Done** (research session):
+  - Round 4 through `anthropic-skills:deep-research` (4 researchers, then a report writer; 14:07-14:23).
+    Report: `reports/Rare decision training signal.md`; notes in `research_notes/Rare decision training signal/`.
+  - The report's deciding check, measured on CPU from O_B (`bench_measurement.md` there).
+  - Wrote BENCH Amendment 7, the P6 record and P4 Amendment 2.
+- **Evidence:**
+  - Report: reweighting, prioritising or stratifying scales signal and noise together. Self-imitation of ±1 wins
+    amplifies luck (SAIL's gain halves under sticky actions; Paster et al.). Restarts add visits with a correctable
+    bias. Top-ranked: the CRN vine (VinePPO, 2.8-9x fewer gradient steps in its tests).
+  - Bench measurement (O_B, 259 prompts):
+    - paired discordance q 0.30;
+    - vine K 8: per-state SE 0.113 at about 28 rollouts;
+    - PPO's per-visit sd(GAE − A*) 0.30-0.35;
+    - information per rollout: vine about 2.8 against PPO about 9.8, if GAE is unbiased;
+    - n*: Computer Search 2,612 (about 531 games), named five 5,763, all prompts 9,287, Gust 232,890;
+    - G(Computer Search) +0.066 (SE 0.012).
+- **Found:**
+  - **Correction to #369.** Its "20-40x short" used A1's list-based 290k. On the bench, Computer Search's n* is about
+    2,600, and a 30-minute arm sees about 10,000 fetches. Computer Search is powered, if GAE is unbiased; Gust (233k)
+    is not.
+  - The vine is less efficient per rollout than GAE on the bench, so it fails the report's own deciding check here.
+    P4 (full-game branches) is reordered behind P6.
+  - Arm 0's ΔG_B on O_B's Computer Search prompts now decides the line (Amendment 7):
+    - "learned": PPO's credit works, and Computer Search's flat price is its cost;
+    - "not learned": the credit is biased, so P6 runs: λ = 1 at prompt rows, unbiased, n* about 4,100.
+- **Next:** arm 0's ΔG_B from implementation's post chain. Re-arm the hourly timer (round 5 from about 15:08,
+  skipped if the 5-hour window is over 60%, one researcher if it runs).
+
+### #378 · 2026-10-27 · A5 BENCH · Amendment 7 reads "learned": arm 0's greedy Computer Search answers beat the start's on O_B (ΔG_B +0.022 ± 0.0065 at seed 1, +0.011 ± 0.0050 at seed 2, the second only just past 2 SE), so PPO's own credit learns the answers; P6 (MC credit at Trainer prompts) is built, checked and parked, and P4 drops to low priority
+- **Done** (CPU only, after P2 seed 2's training ended at 14:44:55):
+  - **Arm 0's readout 2** (`a1_replay.py --raw O_B`, against the start's greedy answers; 259 prompts, encoding valid;
+    files `runs/probe/BENCH/amend7/a1_replay_arm0_s{1,2}.json`, verdict in `runs/probe/BENCH/amend7.json`):
+
+    | | seed 1 | seed 2 |
+    |---|---|---|
+    | Computer Search (96 prompts) | **+0.0221 ± 0.0065** (3.4 SE), rho logit-Q 0.26 | **+0.0108 ± 0.0050** (2.2 SE), rho 0.22 |
+    | named five (232) | +0.0114 ± 0.0032 | +0.0047 ± 0.0041 |
+    | all prompts (259) | +0.0099 ± 0.0029 | +0.0036 ± 0.0037 |
+    | Energy Retrieval (37) | +0.0094 ± 0.0051 | +0.0052 ± 0.0032 |
+    | Super Energy Removal / Energy Removal / Gust (39 / 30 / 30) | +0.002 / +0.003 / +0.000 | −0.000 / +0.010 / −0.014 ± 0.026 |
+
+    By Amendment 7's bands (written 14:25, before scoring), Computer Search is > 0 at 2 SE at both seeds, so it reads
+    **"learned"**. Seed 2 clears the bar by 0.16 SE. The two seeds differ by 0.011, about 1.4 times their combined SE.
+    Read with Amendment 7: arm 0 answers Computer Search's prompts better, yet its price stayed flat at 256 games
+    (0.464 / 0.453 against the start's 0.441, CIs overlapping), so the flat price is the card's cost to the pilot,
+    not its answers. The named five and all prompts move at seed 1 only.
+  - **P6 built** (research round 4, `runs/probe/BENCH/P6/record.md`): `bench_train.py --p6` adds about 30 lines of text
+    patch to the worktree's train.py, after its GAE function; nothing under ar/ is edited.
+    - A row counts if a prompt is open (glob slot 48 = 0) and the same seat's last main-phase action was a Trainer play
+      (verb 5).
+    - At those rows, adv = Monte Carlo return − V. Every other row's advantage, and every value target, stay GAE's;
+      research agreed it's a credit-only change.
+    - Each iteration prints the rows' count and their adv sd, GAE against MC.
+  - **P6 check** (CPU, start pilot, one collect on the bench matchups, 4,663 rows): 769 rows marked. Per Trainer they
+    match the worker's per-Trainer counter (#375) from the same collect within 0-2 rows: Computer Search 239 / 239,
+    Super Energy Removal 132 / 131, Energy Retrieval 124 / 124, Nightly Garbage Run 71 / 71, Energy Removal 70 / 68,
+    Gust 66 / 65, Item Finder 56 / 55, Sneak Attack 6 / 6, Switch 4 / 4, and Imposter Oak's Revenge 1 / 0 (it has no
+    counter key). Value targets are bit-identical. At these rows the adv sd is 0.567 under MC against 0.277 under GAE;
+    the record estimated about 1 against 0.32.
+  - `runs/probe/BENCH/P6/chain.sh` is written but not launched. It runs only on "not learned" (or "between" with a
+    null seed), so Amendment 7 parks it.
+- **Found:** the waiter for P2 seed 2's end matched the OOM run's 13:28 end line in the same log. It was re-armed on
+  lines after the 14:16 start, and no chain was affected: the post chain waits for "P2 s2 rerun end".
+- **Next:** P2 seed 2's evaluation (running), the post chain, Item Finder's ceiling and P1's blocks. P4 waits for
+  research's reorder after Amendment 7. Score P2's ΔG_B (s1, s2) against arm 0 of the same seed once its pilots are
+  final.
+
+### #379 · 2026-10-27 · A5 BENCH C102 · Amendment 7 reads "learned" (checked): arm 0 learns Computer Search's answers in 30 minutes while its price stays flat; the two underpriced Trainers are the two discard-2 cards, so C102 splits the oracle's lift into fetch and discard and logs what gets discarded
+- **Done** (research session): checked `runs/probe/BENCH/amend7.json`. Wrote
+  `runs/probe/C102-discard-cost/record.md` before launch.
+- **Evidence:**
+  - ΔG_B(Computer Search): +0.0221 ± 0.0065 (s1) and +0.0108 ± 0.0050 (s2).
+  - Logit-Q correlation 0.255 and 0.224 (start 0.03).
+  - Named five +0.011 and +0.005.
+  - 256-game price 0.464 and 0.453 (start 0.441).
+- **Found:**
+  - PPO's own credit learns Computer Search's answers within 30 minutes, so the credit-bias branch (P6) is gated off,
+    and P4 is low priority (Amendment 7).
+  - The price stays flat. The underpriced cards share the discard-2 cost; draw Trainers price fine.
+  - C102 (oracle on fetch only, on discard only, and on both; Computer Search and Item Finder; start and arm 0 pilots;
+    discard log):
+    - R-discard if S_discard − G >= +0.03;
+    - R-intrinsic if S_all + 2 SE < 0.50, in which case Energy's own value to this pilot is next.
+
+### #380 · 2026-10-27 · A5 BENCH-P2 · P2 seed 2 (16 iterations, against arm 0's 21) confirms P2's null: Computer Search 0.446 and Item Finder 0.445 at 256 games (arm 0 −0.006 / −0.018), no better answers than arm 0 on O_B (ΔG_B −0.001 ± 0.004), and a weaker mirror against arm 0 (0.457 ± 0.022) but not harm by the record's rule; C99-IF is replaced by C102 and its queue slot relayed
+- **Done:**
+  - P2 seed 2's rerun trained 14:16:19-14:44:55 (16 iterations, exit 0); its bench_eval and follow-through ended
+    14:50:11. The post chain started 14:51:00.
+  - **Readouts at seed 2** (bench_cards against arm 0 s2's 256-game focus prices; `amend7/a1_replay_p2_s2_vs_arm-arm0-s2.json`):
+    - Computer Search 0.446 [0.435, 0.458] at 256 games, misses (arm 0 −0.006); Item Finder 0.445 [0.397, 0.493],
+      misses (−0.018). Mean Trainer price 0.5015 ± 0.012 (arm 0 s2 0.5051).
+    - Per card at 64 games, the larger moves against arm 0 are within their CIs: Switch +0.141 and Imposter Oak's
+      Revenge +0.148 (CIs about ±0.12), Bill −0.081, Nightly Garbage Run −0.051.
+    - Mirror against start 0.600 ± 0.022. Mirror against arm 0 s2 **0.457 ± 0.022**: lists 3 / 1 / 21 / 2 at 0.465,
+      0.402, 0.453 and 0.508.
+    - ΔG_B against arm 0 s2 on O_B: Computer Search −0.0012 ± 0.0036; named five −0.0015 ± 0.0042.
+    - Computer Search same-turn use 0.936 / 0.927 (seeds 91 / 2, n 62 / 55), as arm 0's 0.92-0.98.
+  - **Seed 1 on O_B** (scored now): ΔG_B against arm 0 s1 on Computer Search −0.0007 ± 0.0069 (against the start
+    +0.0215 ± 0.0079). So P2 learns the answers as arm 0 does and adds nothing.
+  - **P2 over both seeds, by its bands:**
+    - Outcome null: no Computer Search +0.03 over arm 0, and no mean-price gain.
+    - Harm guard not met: it needs both seeds under 0.45 against arm 0; seed 1 was 0.501, seed 2 0.457.
+    - Iterations are confounded: P2 trains 16 against arm 0's 21 in the same 30 minutes, which may explain seed 2's
+      weaker mirror.
+    - The mechanism gates at seed 2 (on O_B, and at the halfway checkpoint) are in the post chain.
+  - **C99-IF replaced by C102** (research, 14:50; `runs/probe/C102-discard-cost/record.md`, whose S_all arm covers
+    Item Finder's ceiling). C99-IF's chain was stopped while still waiting (pid 45172). `if/relay.sh` (registry
+    C99-IF-relay) writes "IF ceiling end (not run; replaced by C102)" to its log once the post chain ends, so
+    BENCH-P1b2 goes on as queued.
+- **Usage:** 5-hour 67% at 14:50 (cap 75%, resets about 17:10), week 19%. No builders until the reset. C102's build
+  (the `--oracle-prompts` filter, about 10-20 lines in probe_oracle_worker.js and probe_prompt_oracle.py, plus Item
+  Finder's discards in bench_ctx) waits for it; it runs after P1 block 2 in any case.
+- **Next:** the post chain (context, P2 gates, P1 block 1), then P1 block 2 and its readouts, then C102.
+
+### #381 · 2026-10-27 · A5 BENCH P2 · P2's outcome is null at both seeds against arm 0 (Computer Search −0.014 / −0.006, ΔG_B about 0, head-to-head 0.501 / 0.457), with no harm by the guard; its mechanism verdict waits for seed 2's gates
+- **Done** (research session): read P2 seed 2 (#380) and wrote the two-seed outcome into P2's record.
+- **Found:**
+  - With 16 iterations to arm 0's 21, P2 matches arm 0 on Computer Search's answers (ΔG_B against arm 0 about 0)
+    and on prices. No outcome band is met.
+  - Seed 2's head-to-head is 0.457: no harm by the guard (< 0.45 at both seeds), though the iteration deficit may cost
+    a little strength.
+  - Since arm 0 already learns the answers (Amendment 7), a binding arm's outcome can't show through the answers
+    alone. P1's readout carries the same caveat; its mechanism readouts are what distinguish it.
+- **Queue (implementation):** the post chain (P2's gates on O_B) → P1 block 1 → P1 block 2 → C102. Builds wait for
+  the 5-hour reset at about 17:10.
+
+### #382 · 2026-10-27 · A5 · Hourly research round 5 skipped (15:09): the 5-hour window is at 70%, over the 60% skip line; timer re-armed for about 16:09
+- **Done** (research session): read `~/.claude/usage-latest.json` at 15:08:59 (5-hour 70%, resetting about 17:10;
+  week 19%). Skipped the round under the 60% rule (333-10's call after A91). Re-armed the one-shot hourly timer.
+- **Next:** at about 16:09, run the round only if the window is under 60%, with one researcher (the week rule).
+  Otherwise skip again and log it.
+
+### #383 · 2026-10-27 · A5 BENCH-P1 BENCH · P1 block 1 fails its policy gates (T0 against start: TV 0.110, agreement 0.857; bars 0.03 / 0.95) while passing the structural ones and the head-to-head (0.515 ± 0.020), so block 2 didn't run; one retry at 10 distillation epochs (P1 Amendment 4) runs now; per list, arm 0 and P2 fetch Energy Removal or Scyther with Computer Search where the start fetched single basics, with its price still under 0.50 in 14 of their 16 (pilot, list) cells
+- **Done** (the post chain, 14:51:00-15:08:16, all exit 0):
+  - **P1 block 1** (`P1/T0.pt` from `rl.warmstart`, 2,000 P × P games, 3 epochs, 583 s; holdout KL 2.86 → 0.058, top-1
+    agreement 0.48 → 0.918, value MSE 0.374 → 0.012). Gates (`P1/gates_T0.json`, C94's 245 rows):
+    - passed: fold 4.8e-7; own-card attention min 0.9993 (780 options); swap 1.0 on 233 pairs (start 0.0);
+    - **failed: TV 0.110 (bar <= 0.03) and agreement 0.857 (bar >= 0.95)**;
+    - head-to-head against start 0.515 ± 0.020 (bar 0.47; lists 0.566 / 0.473 / 0.519 / 0.500);
+    - report: HAND-vs-PROMPT cosine 0.869 (>= 0.8, rebuilt), two Trainers 0.980 (> 0.9, the known miss from #368).
+    - On O_B's 259 bench rows (`gates_T0_OB.json`, checked as a pipeline question): TV 0.059, agreement 0.942. Closer,
+      still failing.
+    - block2.sh read "kill TV<=0.03,agree>=0.95" at 15:09:51 and didn't run block 2; C99-IF's relay had released it
+      at 15:09:00.
+  - **P1 Amendment 4** (in P1/record.md, written before the retry): one retry, T0b, at `--epochs 10` (else as block 1),
+    with the same kill gates. If it passes, block 2 runs from T0b as recorded; if not, P1 stops at block 1.
+    `P1/block1b.sh` (registry BENCH-P1b1b) started 15:11:43. block2.sh and block2_read.sh now take T0 / GATES / H2H /
+    WATCH from the environment, defaulting to the old paths.
+  - **Per-list context** (bench_ctx, 256 games a list, `ctx-<pilot>/ctx.json`). Prices by list in index order (P0-P3,
+    i.e. lists 3, 1, 21, 2; Item Finder isn't in list 21):
+
+    | pilot | Computer Search | its plays | top target | Item Finder | its plays |
+    |---|---|---|---|---|---|
+    | start | 0.428 0.457 0.438 0.435 | 887 | Ditto / Jigglypuff / Ditto / Lickitung | 0.418 0.449 0.480 | 280 |
+    | arm 0 s1 | 0.469 0.387 0.465 0.484 | 402 | Energy Removal (3 lists), Bill | 0.455 0.438 0.455 | 355 |
+    | arm 0 s2 | 0.402 0.428 0.494 0.443 | 343 | Scyther (all 4) | 0.438 0.430 0.397 | 378 |
+    | P2 s1 | 0.416 0.424 0.545 0.465 | 518 | Energy Removal (3), Bill | 0.443 0.432 0.469 | 545 |
+    | P2 s2 | 0.449 0.416 0.494 0.504 | 238 | Energy Removal (3), Scyther | 0.477 0.426 0.484 | 287 |
+
+    - Each cell's CI is about ±0.06. Every Computer Search cell is under 0.50 except P2 s1 in list 21 (0.545) and
+      P2 s2 in list 2 (0.504).
+    - Item Finder's top target is Energy Removal (or Bill in list 1) for every pilot.
+    - Trained pilots play Computer Search about half as often as the start, and fetch a disruption Trainer or Scyther
+      where the start fetched single basics. That is the per-list face of #378's "learned" answers, with no
+      price change.
+  - **P2 gates on O_B** (`post/gates.log`): Computer Search fetch path ratio 0.030 (s1), 0.024 (s2) and 0.020 (s2
+    halfway), all under R-dead's 0.05. Logit-sd ratio 0.34 / 0.18 / 0.24.
+- **Next:** T0b (to about 15:37), then block 2 from it if it passes (to about 17:00), its CPU readouts, and C102
+  (build after the 5-hour reset, about 17:10).
+
+### #384 · 2026-10-27 · A5 BENCH P2 P1 · P2 closes R-dead (fetch path ratio 0.030 / 0.024 on O_B) with a null outcome; P1 block 1 missed its policy-fidelity gates (TV 0.110, agreement 0.857 on C94 rows), so one pre-registered retry with longer distillation runs; the trained pilots use Computer Search and Item Finder mostly for Energy Removal
+- **Done** (research session): read the implementation session's #383. Wrote P2's final verdict into its record.
+  Agreed to P1 Amendment 4, written by the implementation session before the retry.
+- **Evidence:**
+  - P2 path ratio on O_B: 0.030 / 0.024.
+  - P1 T0 against start: TV 0.110 (bar 0.03) and agreement 0.857 (bar 0.95) on C94 rows; 0.059 / 0.942 on O_B rows.
+  - P1 structural gates pass: fold 4.8e-7, own-card 0.9993, swap 1.0. Head-to-head 0.515 ± 0.020.
+  - Warm-start holdout agreement 0.48 → 0.918 over 3 epochs, still rising.
+  - Context (256 games a list):
+    - arm 0 and P2 fetch Energy Removal (Scyther at arm 0 s2) with Computer Search, where the start fetched single
+      basics, and play it about half as often;
+    - Computer Search's price is under 0.50 in 14 of 16 (pilot, list) cells;
+    - Item Finder's top target is Energy Removal (Bill in list 1).
+- **Found:**
+  - P2 is closed: R-dead, null.
+  - P1's block-1 miss looks like a distillation-budget shortfall. One retry, T0b at 10 epochs, same kill gates. It
+    stops at block 1 if it fails again.
+  - Both underpriced cards mostly serve Energy Removal (priced 0.549-0.570). Their value is inherited from it, and
+    C102 will show whether their two-card cost eats it.
+
+### #385 · 2026-10-27 · A5 BENCH-P1 · P1's retry (T0b, 10 epochs) passes every block 1 gate on the bench's own rows (O_B: TV 0.0275, agreement 0.973) but still fails on C94's human-list rows, the gate as recorded (TV 0.082, agreement 0.902); by Amendment 4, P1 stops at block 1, and the choice of row set goes to research and 333-10, with block 2 from T0b ready to launch without code
+- **Done:**
+  - The first T0b run segfaulted at 15:21, 9.7 minutes in, with no output; the shell masked its exit code, so the
+    chain ran its gates on a missing file. Logs are kept as `P1/block1b-segv-1521.log` and `P1/b1b-segv-1521/`.
+  - `rl/warmstart.py` +5 lines: the holdout fit printed per epoch, and the student so far saved to
+    `<out>.partial.pt` (ar format). block1b.sh now stops if T0b.pt is missing.
+  - Rerun 15:22:59-15:54:36 (BENCH-P1b1b-r, exit 0). Holdout agreement by epoch: 0.906 (1), then 0.947 (7), 0.944 (8),
+    0.960 (9); KL 0.083 → 0.012. About 184 s an epoch, paced.
+  - **T0b's gates** (`P1/gates_T0b.json`, `P1/gates_T0b_OB.json`):
+
+    | rows | TV (bar <= 0.03) | agreement (bar >= 0.95) | fold / own / swap |
+    |---|---|---|---|
+    | C94, 245 rows (the recorded gate) | 0.082 (T0 0.110) | 0.902 (T0 0.857) | pass |
+    | O_B, 259 bench rows (reported) | **0.0275** (T0 0.059) | **0.973** (T0 0.942) | pass |
+
+    Head-to-head against start 0.483 ± 0.020 (bar 0.47; T0 0.515).
+  - block2.sh read "kill TV<=0.03,agree>=0.95" at 15:56:22 and didn't run block 2.
+- **Reading:** distilling longer on the bench lists' games brings T0b to start's policy on those lists, but less so on
+  the other human lists, which block 2 never trains or evaluates on. Whether the gate should use the bench's rows is a
+  question for research and Evan. It isn't moved after the fact here: by the letter, P1 stops at block 1.
+- **Ready if they rule for the bench rows:** `T0=runs/probe/BENCH/P1/T0b.pt GATES=runs/probe/BENCH/P1/gates_T0b_OB.json
+  H2H=runs/probe/BENCH/eval-p1-T0b/bench_eval.json sh runs/probe/BENCH/P1/block2.sh`, through loop.py (2 × 30 minutes,
+  no code).
+- **GPU idle from 15:56:** no pre-registered run is left that needs no code. C102 needs its filter built, and the 5-hour
+  window is over its cap (79% at 15:54, 333-10) until about 17:20.
+
+### #386 · 2026-10-27 · A5 BENCH P1 P1b · P1 failed its recorded fidelity gate on C94's rows even after the retry (TV 0.082, agreement 0.902); per 333-10's call, its block 2 runs as a new arm, P1b, pre-registered now with a gate on the bench's own rows, whose values are already known (0.0275 / 0.973), so the gate certifies fidelity, not the design
+- **Done** (research session): P1's verdict line (failed, stops at block 1). Wrote `runs/probe/BENCH/P1b/record.md`
+  before launch.
+- **Evidence:** T0b on C94's 245 rows: TV 0.082, agreement 0.902 (T0 was 0.110 / 0.857). On O_B's 259 bench rows:
+  0.0275 / 0.973. Head-to-head against start 0.483 ± 0.020.
+- **Found:**
+  - The warm start reproduces the start where the bench trains and is read, but not on the human-list practice rows.
+    Moving P1's gate would be post hoc, so P1 is logged as failed.
+  - P1b's outcome bands are written before any result. Its fidelity gate is stated as already known.
+  - Transfer readouts on the 17 lists are reported only, since T0b differs from the start there.
+
+### #387 · 2026-10-27 · A5 BENCH-P1b · P1b launched (333-10's call; research's record `runs/probe/BENCH/P1b/record.md`, written 15:58 before launch): P1's block 2 from T0b, gated on the bench's own rows, which T0b passes; P1 itself stays failed at block 1
+- **Done:**
+  - `P1/block2.sh` and `P1/block2_read.sh` take the arm's name (NAME, default p1), so P1's paths are unchanged.
+    block2_read.sh also scores ΔG_B against arm 0 of the same seed (`a1_replay --start arm-arm0-s<seed>`, O_B).
+    `P1/p1b.sh` runs both with NAME=p1b, T0=T0b.pt and the O_B gates file.
+  - Registry BENCH-P1b, launched 15:58:13. Gate read: "pass" (O_B TV 0.0275, agreement 0.973; head-to-head 0.483).
+    Seed 1 started training at 15:58 (`arm-p1b-s1`; counter on; no overrides, since T0b carries P1's config).
+  - Transfer to the 17 lists (M, X1) is reported only (record's caveat: T0b's TV against start is 0.082 on those rows).
+- **Next:** seed 2 and both seeds' readouts (to about 17:15), then C102 once it's built after the 5-hour reset (about
+  17:20).
+
+### #388 · 2026-10-27 · A5 · Hourly research round skipped again (16:09): the 5-hour window is at 83%, over the 60% line; timer re-armed for about 17:15, after the window resets about 17:10
+- **Done** (research session): read `~/.claude/usage-latest.json` at 16:09:20 (5-hour 83%, resetting about 17:10;
+  week 21%). Skipped under the 60% rule. Re-armed the timer slightly past the reset, so the next check reads a fresh
+  window.
+- **Next round, if under 60%** (one researcher, by the week rule): the topic is chosen from P1b's and C102's results.
+
+### #389 · 2026-10-27 · A5 BENCH-P1b C102 · Two rules from auditor A95 via 333-10 (about 16:00): C102 is built and run first at the usage reset; P1b's seed 2 gives way to C102 if seed 1 reads null on P1's outcome bands
+- **Rules:**
+  - (1) C102 is the first thing built and run at the 5-hour reset (about 17:10-17:20), ahead of everything else.
+  - (2) If P1b seed 1 is null on P1's outcome bands (no per-card move on Computer Search or Item Finder, and the mean
+    price within noise of arm 0), its seed 2 is skipped and the slot goes to C102 once C102 is ready.
+- **How they apply here:**
+  - In `block2.sh`, seed 2 starts right after seed 1's evaluation (about 16:35) and ends about 17:12, before C102 can
+    be built at the reset. So seed 2 doesn't delay C102.
+  - If seed 1 is null and seed 2 is still training when C102 is ready, seed 2 is stopped then, and its pilot is
+    reported as partial.
+
+### #390 · 2026-10-27 · A5 BENCH P1b · P1b seed 1 is null against arm 0 (Computer Search −0.028, Item Finder −0.008 at 256 games; mean price −0.019; head-to-head 0.468), with no harm by the guard; seed 2 stops when C102 is ready, as agreed
+- **Done** (research session; auditor A96, 333-10): read `runs/probe/BENCH/eval-p1b-s1/` (bench_eval, tv256,
+  mirror_vs_ref). Wrote the seed-1 readout into P1b's record.
+- **Found:**
+  - Null. No per-card or mean-price band is met, and the head-to-head against arm 0 is 0.468 ± 0.023.
+  - Leans slightly negative, inside the noise.
+  - ΔG_B and the count-shuffle mechanism weren't in seed 1's files yet.
+  - Per 333-10, seed 2 stops when C102 is ready at the reset.
+
+### #391 · 2026-10-27 · A5 BENCH-P1b · P1b seed 1: the binding mechanism moves (count-shuffle TV +0.147 over T0b; arm 0 +0.001), but outcomes are null to worse, with Computer Search answers worse than arm 0's on O_B (ΔG_B −0.0245 ± 0.0065, logit-Q rho −0.41); seed 2 segfaulted after 11 iterations and, by A95's rule, isn't rerun
+- **Done** (BENCH-P1b, 15:58:13-17:00:17):
+  - Seed 1 trained 15:58-16:28:03, 14 iterations against arm 0's 21, exit 0. bench_eval ended 16:33:20, ctx 16:34:38.
+  - **Seed 2 segfaulted** at 16:59:58 (exit 139) after 11 iterations, leaving `arm-p1b-s2/ckpt.pt` and no pilot.
+    It is today's second segfault in a GPU job, after the warm-start at 15:21 (#385); neither left a Python traceback.
+  - The readout chain ran seed 1 and failed cleanly on seed 2's missing files. I ran count_shuffle for arm 0 s1/s2
+    by hand afterwards (`P1/count_shuffle_p1b_arm0.json`).
+- **Seed 1 against P1's bands** (record `runs/probe/BENCH/P1b/record.md`):
+  - **Mechanism, R-bind:** count-shuffle TV on O_B's 55 fetch rows: start 0.0068 ± 0.0013, T0b 0.0384 ± 0.0047,
+    P1b s1 **0.1851 ± 0.0170**, so T − T0b = **+0.147** (bar +0.03). Arm 0's change over start is +0.001 (s1 0.0078)
+    and +0.004 (s2 0.0112), under the 0.01 bar. It passes at seed 1; the band needs both seeds.
+  - **Outcome, against arm 0 s1:**
+    - Computer Search 0.436 [0.420, 0.453] at 256 games (−0.028); Item Finder 0.426 [0.404, 0.449] (−0.008).
+    - Mean price 0.5013. Super Energy Removal −0.086 at 64 games.
+    - No band met.
+  - **ΔG_B against arm 0 s1 on O_B:** Computer Search **−0.0245 ± 0.0065** (3.8 SE worse), logit-Q rho **−0.41**
+    (arm 0 +0.26); named five −0.0127 ± 0.0032. Against the start that is about −0.002 (arm 0 s1's +0.022 plus this
+    difference), so P1b didn't learn Computer Search's answers in 14 iterations.
+  - **Head-to-head** against arm 0 s1: 0.468 ± 0.023 (lists 0.488 / 0.418 / 0.445 / 0.519). Against start 0.600 ±
+    0.017.
+  - Harm guard (both seeds under 0.45, or the mean price 0.03 below at both): not met on one seed.
+  - Context: Computer Search plays 325 (arm 0 s1 402). Its top targets are Energy Removal (lists 3, 21), Bill (list 1)
+    and Lickitung (list 2), at prices 0.434 / 0.412 / 0.467 / 0.440. Item Finder 0.404 / 0.428 / 0.455.
+  - Gates after training: own-card 0.9995, swap 1.0; HAND-vs-PROMPT cosine 0.858, two Trainers 0.981.
+- **Reading** (one seed, 14 iterations): P1's binding works as a mechanism. The fetch policy now depends on copy counts,
+  20 times more than the start's, where arm 0's doesn't. But in 30 minutes it answers against the oracle, and arm 0
+  answers with it. Iterations are confounded, 14 against 21.
+- **A95 rule (2):** seed 1 is null on the outcome bands, so seed 2 is skipped (not rerun) and the slot goes to C102.
+- **Next:** C102's build at the 5-hour reset (about 17:11), then its run.
+
+### #392 · 2026-10-27 · A5 BENCH P1b · P1b closes at one seed (seed 2 segfaulted): its binding is live (count-shuffle +0.147 against arm 0's +0.004) but it didn't learn Computer Search's answers (ΔG_B −0.0245 against arm 0, logit-Q −0.41) and its fetches sit between the start's and arm 0's; unreplicated and budget-confounded (14 against 21 iterations)
+- **Done** (research session): read the implementation session's seed-1 mechanism and ΔG_B. Tallied Computer
+  Search's fetched cards from the context logs (start, arm 0 s1 and s2, P1b s1). Wrote P1b's close into its record.
+- **Found:**
+  - Card-identity binding (P1's design) makes the pilot sensitive to copy counts within 30 minutes, which neither
+    arm 0 nor P2 did.
+  - The rebuilt representation then didn't learn Computer Search's answers in 14 iterations; plain PPO did in 21.
+    Its prices don't move.
+  - One seed, with fewer iterations. Whether the binding pays off needs a matched-iteration comparison, which is
+    longer than 30 minutes and goes to 333-10.
+- **Next:** C102 at the reset. A matched-iteration P1b (21 or more iterations at 2 seeds, chained) is a candidate
+  for 333-10.
+
+### #393 · 2026-10-27 · A5 BENCH P1c · P1c recorded (333-10's call): P1b at matched iterations (21+ a seed, chained 30-minute stages, 2 seeds) after C102, only under 75% of the 5-hour window, with a stop rule after each stage; the seed-2 segfault must be found and fixed first
+- **Done** (research session): wrote `runs/probe/BENCH/P1c/record.md` before launch.
+- **Found:**
+  - The bands are read at the matched point (iteration 21).
+  - The mechanism (count-shuffle +0.03 at both seeds) is required for any design verdict.
+  - "Helps", "catches up" (a real null if the path is live), "hurts" and "between" are defined against arm 0's
+    final pilot of the same seed.
+  - Stop rules after each stage: ΔG_B below 2 SE against the start after stage 1, or against arm 0 at the matched
+    point; or the harm guard.
+  - Prior: catches up, no price gain.
+- **Next:** implementation fixes and states the segfault's cause, runs C102, then P1c.
+
+### #394 · 2026-10-27 · A5 BENCH C102 · Auditor A97 (pilot or game plan?), answered from the bench's own context logs: Computer Search's cost shows no game-phase pattern, and its discards are mostly Trainers the pilot itself prices low, including other Computer Search and Item Finder; the cost looks like the pilot's valuation, which C102's oracle-discard arm tests
+- **Done** (research session, CPU only, files only): from `runs/probe/BENCH/ctx-{start,arm0-s1,arm0-s2}/` (the G arm's
+  follow-through logs), each Computer Search play's turn, the pilot's V before and after the play and its
+  follow-through, the fetched card and both discards.
+- **Evidence:**
+  - Pilot's dV by game third (n, mean ± SE):
+    - start: early −0.181 ± 0.012, mid −0.126, late −0.138 (842 plays);
+    - arm 0 s1: −0.019, −0.017, −0.054 (400);
+    - arm 0 s2: −0.072, −0.061, −0.034 (340).
+  - Discards (2 a play):
+    - start 1,684: Energy 26.5%; top Fighting Energy 246, PlusPower 234, Item Finder 172, Computer Search 114,
+      Scoop Up 110;
+    - arm 0 s1 800: Energy 23.4%; top PlusPower 121, Fighting Energy 115, Scoop Up 94, Computer Search 75, Lass 61,
+      Item Finder 60;
+    - arm 0 s2 680: Energy 13.4%; top PlusPower 159, Scoop Up 80, Computer Search 77, Lass 72.
+- **Found:**
+  - No game-phase pattern: the cost in the pilot's own value is negative early, mid and late.
+  - The discards are mostly Trainers the pilot prices low (PlusPower 0.43-0.49; Scoop Up about 0.5), often another
+    Computer Search or Item Finder. That is self-consistent: undervalued search and recovery cards become discard
+    fodder and stay undervalued.
+  - So the cost looks like the pilot's card valuation more than its game plan. C102's S_discard arm decides it: oracle
+    discards shifting toward Energy plus a price lift would mean R-discard.
+  - P1c waits on C102, as already ordered. Its recorded prior is "catches up", a null on outcome, consistent with
+    A97's long view.
+  - This hour's research slot was A97's topic, answered from project data. No outside research was run (the week is
+    at 22% against a line of about 4.5%).
+
+### #395 · 2026-10-27 · A5 C102 BENCH-P1c · C102 is built (the oracle answers only fetches or only discards; off is bit-identical) and running since 17:21:53; P1b seed 2's segfault traced to an NVIDIA driver reset at the same second; P1c is built (chained stages to arm 0's 21 iterations, crash-resume) and queued behind C102
+- **C102 build** (one Sonnet lean-builder, 68k tokens, after the 5-hour reset):
+  - `env/tools/probe_oracle_worker.js` (15 lines) and `notes/scripts/probe_prompt_oracle.py` (12): `--oracle-prompts
+    all|fetch|discard`. The default sends nothing new. The oracle gets only CHOOSE_CARD_TO_HAND (fetch) or only
+    CHOOSE_CARD_TO_DISCARD inside the seat's own Trainer (discard); every other prompt keeps the pilot's answer. Each arm
+    now reports the oracle's answered count by message.
+  - `notes/scripts/bench_ctx.py` (27): the discards' type mix and mean own price (a basic Energy is 0.5 by
+    construction; the code prices every Energy card that way, so Double Colorless is priced as a basic), and per play the
+    net against Energy, (p_target − 0.5) − Σ(p_discard − 0.5), over plays whose target and discards are all priced.
+    Also a `--workers` option.
+  - The follow-through log was already generic, so Item Finder's discards are logged too (2 a play).
+  - **Acceptance** (builder's, GPU, 4-16 games):
+    - (a) Default bit-identity against the original files, Computer Search, list 3, 4 games, seed 91: G 0.0, S 0.25,
+      same endings, steps and switch counts.
+    - (b) The filter: fetch answered `{CHOOSE_CARD_TO_HAND: 12}` and discard `{CHOOSE_CARD_TO_DISCARD: 26}`. All
+      answered five message types.
+    - (c) bench_ctx at 16 games printed the new fields. Computer Search's net covers 0 plays under the start pilot,
+      because its targets are Pokémon (unpriced).
+- **C102 chain** (`runs/probe/C102-discard-cost/chain.sh`, registry C102): start pilot, then arm 0 s1 if the start
+  took under 15 minutes. Per card (Computer Search on lists P0-P3, Item Finder on P0, P1, P3) and seed (91, 2): arms G and
+  S_all, then S_fetch, then S_discard; 64 games a pair; follow-through log on.
+- **P1b seed 2's segfault** (P1c's precondition; now in `P1c/record.md`): `nvlddmkm` event 153, an NVIDIA driver
+  fault or reset, at 16:59:58, the second the process died. That event has fired about 20 times since 10-06, two of them
+  at the minute Evan started a game while training ran (10-25 23:25:52, 10-26 22:12:47). The 15:21 warm-start segfault
+  has no driver event; its cause is unknown. Neither is in P1's code.
+- **P1c** (research's record, 17:04):
+  - `bench_train.py` has two new flags: `--iters` (stop at that iteration count; a resumed run counts its earlier
+    ones) and `--keep-ckpt`.
+  - Smoke test (scratch folder, seed 9): 2 iterations with the checkpoint kept, then a resume with `--iters 3` ran
+    exactly one more (iterations: 3).
+  - `runs/probe/BENCH/P1c/chain.sh` (registry BENCH-P1c, waiting for "C102 end"), per seed:
+    - stage 1, 30 minutes from T0b;
+    - bench_eval 1 and 4 against arm 0, and ΔG_B against the start and arm 0;
+    - the stage-1 stop rule;
+    - stage 2 resumed to iteration 21;
+    - the same readouts plus bench_ctx, bench_cards and count-shuffle.
+  - A crashed stage resumes from its checkpoint once; a pause resumes after GPU-PAUSE. GPU-PAUSE and the 5-hour window
+    at 75% hold at the boundaries.
+- **Next:** C102's readout (per card, S_fetch / S_discard / S_all − G, paired by list, two-seed means), then P1c (about
+  2 hours).
+
+### #396 · 2026-10-27 · A5 C102 · C102: better discards lift neither Computer Search nor Item Finder (S_discard − G about 0 for both pilots); the start's Computer Search lift is in the fetch (+0.067 ± 0.031, "fetch-side"), which arm 0 has mostly learned (+0.016 left), and oracle answers give Item Finder nothing; every interval spans 0.50 at 64 games, so no card reads R-intrinsic
+- **Done** (C102, 17:21:53-17:35:18, 24 runs, exit 0, 0 game errors in the runs read):
+  - Start pilot and arm 0 s1; Computer Search on lists 3, 1, 21, 2 and Item Finder on 3, 1, 2; seeds 91 and 2; 64 games
+    a pair.
+  - Arms: G with S_all (`--arms G S`), then S_fetch and S_discard (`--oracle-prompts fetch / discard`).
+  - Readout script `notes/scripts/c102_read.py` (new, CPU), output `runs/probe/C102-discard-cost/readout.json`.
+    Differences are paired by list, with binomial SE per pair and the two-seed mean; the bands are the record's.
+- **Results** (two-seed means; SE ±0.031 for Computer Search over 4 lists, ±0.036 for Item Finder over 3):
+
+  | pilot · card | G | S_fetch − G | S_discard − G | S_all − G | S_all [95% CI] | band |
+  |---|---|---|---|---|---|---|
+  | start · Computer Search | 0.457 | **+0.067** | +0.006 | +0.035 | 0.492 [0.449, 0.535] | fetch-side |
+  | start · Item Finder | 0.484 | −0.005 | −0.001 | −0.023 | 0.461 [0.411, 0.511] | between |
+  | arm 0 s1 · Computer Search | 0.502 | +0.016 | −0.007 | +0.028 | 0.530 [0.487, 0.573] | between |
+  | arm 0 s1 · Item Finder | 0.486 | −0.000 | −0.017 | +0.000 | 0.486 [0.436, 0.535] | between |
+
+  - **What the arms discard** (follow-through logs pooled over lists; the pilot's pooled readout-1 prices, a basic
+    Energy 0.5):
+    - The oracle discards more Trainers and fewer Energy and Pokémon than the pilot. Under the start, Computer Search's
+      discards are Trainer / Energy / Pokémon 0.56 / 0.28 / 0.16 for the pilot against 0.71 / 0.22 / 0.07 for
+      S_discard; arm 0 0.69 / 0.26 / 0.05 against 0.80 / 0.18 / 0.02.
+    - The mean own price of the discards is the same, 0.480-0.491 in every arm.
+- **Reading:**
+  - Both underpriced cards cost two discards, yet choosing those discards better gains nothing measurable: R-discard
+    fails for both cards and both pilots.
+  - For the start, Computer Search's oracle lift is in what it fetches (S_fetch +0.067, 2.2 SE). Arm 0 has learned most
+    of that (+0.016 left), matching #378's ΔG_B.
+  - Item Finder gets nothing from oracle answers (fetch, discard or both), so its deficit isn't in its prompts.
+  - R-intrinsic (S_all + 2 SE < 0.50) isn't met for either card: every S_all interval spans 0.50 at 64 games a pair.
+  - **Power:** each per-seed difference has SE about ±0.044, so the 0.03 bands sit at about 1 SE even over two seeds.
+    The nulls rule out lifts of about +0.06 or more, not +0.03.
+- **Next:** P1c (queued behind C102; starts on its own).
+
+### #397 · 2026-10-27 · A5 C102 C103 · C102 read (checked): oracle discards add nothing for either card or pilot (R-discard fails, withdrawing #394's lean); the start's Computer Search lift is fetch-side, which arm 0 has learned; Item Finder gains nothing from any oracle answer. C103 recorded: the Energy-count curve under these pilots
+- **Done** (research session): checked C102's 32 result files and wrote its readout. Wrote
+  `runs/probe/C103-energy-curve/record.md` before launch.
+- **Evidence** (two-seed means, G / S_fetch / S_discard / S_all):
+  - start, Computer Search: 0.457 / 0.524 / 0.463 / 0.492;
+  - start, Item Finder: 0.484 / 0.479 / 0.483 / 0.461;
+  - arm 0 s1, Computer Search: 0.502 / 0.518 / 0.495 / 0.530;
+  - arm 0 s1, Item Finder: 0.486 / 0.486 / 0.469 / 0.486.
+  - Oracle discards: more Trainers, fewer Energy, same mean own price.
+- **Found:**
+  - Neither the answers (Amendment 7, C102), the timing (C99) nor the discards (C102) explain why Computer Search and
+    Item Finder sit at or below an Energy under these pilots.
+  - What remains is the reference card itself. C103 measures the win share against each list as its Energy count
+    moves (−4 to +6), under start, arm 0 and arm 0 with oracle answers.
+  - Bands: R-energy-hungry if Δ +4 >= 0.53 with its CI above 0.50; R-flat if every Δ ±4 is within 0.03 of 0.50.
+    Prior: R-energy-hungry.
+  - The power caveat stands: C102's nulls rule out about +0.06, not +0.03.
+
+### #398 · 2026-10-27 · A5 C103 · C103 (research's record, 17:37: the win share against each P list as its Energy count moves) is built and queued behind P1c
+- **Done** (CPU only; P1c's arm is training, so no GPU test):
+  - `notes/scripts/trainer_value.py` +22 lines: `energy_shift`, and two new group names in `variants`.
+    - `energy+K#r` turns K random Trainers into the list's most common basic Energy.
+    - `energy-K#r` turns K random basic Energy into random copies of Trainers the list runs, within 4 copies.
+    - Seeded by (deck, sign, K, replicate). Existing groups take the old path unchanged. probe_prompt_oracle.py imports
+      `variants`, so its S arm gets the same variants.
+  - CPU check on decks_P.json: 84 pairs. +2 moves Trainers / Energy 29 / 18 to 27 / 20, and −4 moves 29 / 18 to
+    33 / 14. Trainers stay at most 4 copies in every −K variant. The output is identical across two calls.
+  - `runs/probe/C103-energy-curve/chain.sh` (registry C103, waiting for "P1c end"):
+    - seed 91 greedy for the start and arm 0 s1 (trainer_value.py, K = ±2, ±4, +6, 4 replicates, 64 games a pair);
+    - the oracle row, arm 0 s1 with S at K = ±4 (probe_prompt_oracle.py);
+    - seed 2 greedy if the elapsed time is under 25 minutes.
+- **Next:** P1c (to about 19:40), then C103 (about 25 minutes), and its readout: the curve of the variant's share
+  (1 − the list's), pooled and per list.
+
+### #399 · 2026-10-27 · A5 BENCH-P1c · P1c seed 1 was killed after 2 iterations by its KL rule (KL 0.330, then 0.062; "over 0.05 for 2 iterations"): every run from T0b opens with a KL spike (0.29-0.38 at iteration 0) because T0b carries no Adam state, so the rule is catching the cold optimizer; an amendment is asked of research and 333-10; seed 2 goes on under the same rule
+- **Evidence** (first iterations' KL):
+  - P1c s1: 0.3295, 0.0620, then killed at 17:40:34 (exit 99; ckpt.pt kept).
+  - P1b s1: 0.376, 0.034, 0.026, 0.025, 0.047, 0.032.
+  - P1b s2: 0.294, 0.037, 0.083, 0.044, 0.041, 0.049.
+  - P2 s2 (from start.pt, which carries Adam moments): 0.043, 0.058, 0.030, 0.031, 0.030, 0.030.
+  - T0b is ar-format: `rl.warmstart` saves {model, config, warm} and no optimizer, so P1's first PPO step runs on a
+    fresh Adam.
+  - P1b's chain had no KL watcher, so this transient never showed up there. Copied into P1c from P2's chain, the rule
+    fires on the second iteration whenever that one is above 0.05.
+- **Asked:** whether the KL kill should skip iteration 0 for arms started from T0b, or count only iterations after the
+  first. Seed 1 would rerun after seed 2 on a yes. The chain continues with seed 2 as recorded.
+
+### #400 · 2026-10-27 · A5 BENCH P1c · P1c seed 1 was killed by the KL rule on iteration 0's fresh-optimizer spike (0.330), a generic artifact of warm starts without Adam state; P1c Amendment 1 excludes iteration 0 from the KL count for such arms, and seed 1 reruns after seed 2
+- **Done** (research session): P1c Amendment 1, written after the kill and before any rerun.
+- **Evidence** (the implementation session): iteration-0 KL from T0b: 0.376, 0.294 and 0.330 across three runs.
+  Later iterations 0.03-0.08. P2 s2 from start.pt opened at 0.043. T0b saves no optimizer state.
+- **Found:**
+  - The spike is the fresh-Adam step, not a runaway. The KL kill now counts iterations >= 1 for warm-started arms
+    without optimizer state.
+  - Seed 1's iteration 1 (0.062) would still count.
+  - Arm 0's KL distribution will be reported, to check whether 0.05 is too tight for the bench generally; that is a
+    finding, with no further rule change.
+
+### #401 · 2026-10-27 · A5 BENCH P1c · P1c's KL kill set from arm 0's own range (median 0.032, p95 0.052, max 0.054, never 2 in a row above 0.05): KL > 0.08 for 2 consecutive iterations from iteration 1, for both seeds; outcome bands unchanged
+- **Done** (research session; 333-10's call): read arm 0's per-iteration KL from `runs/probe/BENCH/arm0.log`. Wrote
+  P1c Amendment 2.
+- **Evidence:** arm 0 seed 1 median 0.0326, p95 0.0535, max 0.0537; seed 2 0.0323 / 0.0504 / 0.0519. 2 of 21 above 0.05
+  a seed, never consecutive. P1-family runs 0.03-0.08 after iteration 0.
+- **Found:**
+  - The 0.05 rule fits plain PPO but would kill P1c for steps larger than arm 0's normal range.
+  - The new line, 0.08 (about 1.5x arm 0's max), applies to both seeds from iteration 1.
+  - P1c's KL trajectory is reported beside its outcomes, since larger steps may be part of P1b's worse answers.
+
+### #402 · 2026-10-27 · A5 BENCH-P1c · P1c relaunched at 17:43:06 under research's Amendments 1-2 (the KL kill is > 0.08 for 2 consecutive iterations among iterations >= 1; iteration 0's cold-optimizer spike is logged, not counted), seed 2 first, then seed 1's rerun
+- **Done:**
+  - Stopped the first P1c chain (seed 1 KL-killed at 17:40:34; seed 2 about 2 minutes in). Then stopped the Amendment-1
+    relaunch (17:42:40, 0.05 among it >= 1) about 20 seconds in, when Amendment 2 arrived.
+  - No orphan workers were left (process check: 0).
+  - Kept for the record: `arm-p1c-s1-klkill-1740/` (its ckpt), `arm-p1c-s2-stopped-amend1/`, and
+    `P1c/pre-amend1/` (the stopped runs' train logs and the first launch log).
+  - `P1c/chain.sh`: the watcher now kills on `any(a > 0.08 and b > 0.08 for a, b in zip(kl[1:], kl[2:]))`. The seed
+    order is 2, 1. The wait for C102 is removed, since C102 has ended.
+  - Registry BENCH-P1c-a2 launched 17:43:06. Seed 2's stage 1 is training from T0b. C103 waits for its "P1c end".
+- **Research's reference** (Amendment 2): arm 0's KL over 21 iterations a seed has median 0.032, p95 0.052 and max
+  0.054, and never two consecutive iterations above 0.05. P1c's per-iteration KL is to be reported beside every readout,
+  against arm 0's.
+- **Next:** seed 2's stage 1 (to about 18:13) and its stop rule, stage 2 to iteration 21, then seed 1. The chain now
+  ends about 20:00. C103 follows.
+
+### #403 · 2026-10-27 · A5 BENCH P1c C103 · Coordinator calls (333-10): P1c's KL kill returns to the pre-registered 0.05 (iteration 0 still excluded), Amendment 2's 0.08 withdrawn as post hoc; C103 runs before P1c's remaining stages; deep-research rounds only on a research call or at most every 2 hours, at the smallest breadth, given the weekly pace
+- **Done** (research session): P1c Amendment 3. Changed the research cadence in the handover. Re-armed the timer to
+  2 hours.
+- **Found:**
+  - The 0.08 line was chosen after seeing the KL levels, so it is withdrawn. A P1c kill at 0.05 in normal steps reads
+    as "the design takes larger steps than the pre-registered kill allows", and isn't rerun looser.
+  - Usage (333-10): the week is at 22% about 9 hours after its reset, against a line of about 5%. At this pace the
+    weekly limit stops all three agents in under 2 days.
+  - Until 333-10 says otherwise: a deep-research round only on a research call, or at most every 2 hours; smallest
+    breadth; skipped while the 5-hour window is over 60%.
+
+### #404 · 2026-10-27 · A5 BENCH-P1c C103 · 333-10's calls on auditor A98: C103 runs now in P1c's pause, and P1c's KL kill is back at the recorded 0.05 (Amendment 3), counting iterations >= 1 only; P1c seed 2 was paused at its checkpoint after 2 iterations and resumes after C103
+- **Done:**
+  - **Pause.** I wrote runs/GPU-PAUSE at 17:45:40, labelled as mine and not Evan's. bench_train saved its checkpoint and
+    exited 5 at 17:47:32, after 2 iterations of seed 2's stage 1. I stopped the waiting P1c chain and C103's waiting
+    chain, then removed GPU-PAUSE at about 17:47:50. The flag was up about 2 minutes. No orphan workers.
+  - **KL so far under the recorded rule:** seed 2 had it 0 0.373 (logged only) and it 1 0.049. No two consecutive
+    iterations >= 1 above 0.05, so seed 2 is not killed. Seed 1's first try (0.330, 0.062) had only one iteration >= 1
+    when it was stopped, so it doesn't count as a kill under Amendment 3 either. It reruns from T0b after seed 2, as
+    research ruled.
+  - **P1c/chain.sh:**
+    - the watcher drops iteration 0 by its number, which matters because a resumed log starts at "it 2";
+    - it kills on two consecutive values above 0.05 among the rest;
+    - a stage 1 with a checkpoint resumes from it;
+    - the chain waits for "C103 end".
+    - The pre-pause log is kept as `P1c/train_s2_st1_pre-c103.log`.
+  - **C103/chain.sh:** the wait for P1c is removed. Registry C103-run launched 17:48:18; BENCH-P1c-a3 is waiting for it.
+- **Rule carried forward** (333-10, research's Amendment 3): if the 0.05 kill fires on normal steps, it is P1c's result
+  ("the design takes larger steps than the pre-registered kill allows"), and P1c isn't rerun looser.
+
+### #405 · 2026-10-27 · A5 C103 · C103: neither pilot is Energy-hungry; under arm 0 every Energy shift away from the lists' count loses (−4 0.446 … +6 0.492), so the trained pilot agrees with the lists' Energy count, and Computer Search's and Item Finder's deficits are specific to those cards; the start pilot is penalised for fewer Energy but flat for more (+4 0.509); oracle answers move nothing
+- **Done** (C103, in P1c's pause, 17:48:18-18:00:45; 0 game errors):
+  - P lists against Energy-shifted copies of themselves (`trainer_value.py` groups energy±K#r, 4 replicates a K),
+    both seats the same pilot, 64 games a pair, the round rule.
+  - Seeds 91 and 2, greedy, for the start and arm 0 s1 (5,120 games a pilot a seed); the oracle row, arm 0 s1 with S
+    at ±4, seed 91.
+  - Readout script `notes/scripts/c103_read.py` (new, CPU), output `runs/probe/C103-energy-curve/readout.json`.
+- **The curve** (the variant's share against its list; two-seed means over 4 lists and 4 replicates; 95% CI about
+  ±0.021; Δ 0 is 0.50 by construction):
+
+  | Δ Energy | −4 | −2 | 0 | +2 | +4 | +6 |
+  |---|---|---|---|---|---|---|
+  | start | 0.427 | 0.443 | 0.5 | 0.486 | **0.509** [0.488, 0.531] | 0.509 |
+  | arm 0 s1 | 0.446 | 0.459 | 0.5 | 0.477 | 0.484 [0.462, 0.505] | 0.492 |
+  | arm 0 s1 with S (s91) | 0.469 (G 0.454) | | | | 0.483 (G 0.484) | |
+
+  Seed 91 per list, start at +4: 0.529 / 0.529 / 0.465 / 0.518 (lists 3, 1, 21, 2). Arm 0 at +4: 0.508 / 0.529 /
+  0.418 / 0.480.
+- **Bands** (the record's, written 17:37):
+  - **R-energy-hungry** (+4 >= 0.53 with CI above 0.50): not met for either pilot. The start reaches 0.509 and its CI
+    spans 0.50.
+  - **R-flat** (±4 both within 0.03 of 0.50): not met. −4 is 0.427 and 0.446.
+  - **Lists-optimal** (±4 both under 0.47): not met for arm 0, whose +4 is 0.484.
+  - **Oracle row** (S moves +4 toward 0.50 by >= 0.03): not met. S − G is −0.001 ± 0.022 at +4 and +0.016 ± 0.022 at −4.
+  - The prior (R-energy-hungry under both) is refuted for arm 0 and not reached for the start.
+- **Reading:**
+  - Under the trained pilot, the lists' Energy count is at or near the pilot's optimum: every shift loses, more steeply
+    toward fewer Energy.
+  - Under the start pilot, fewer Energy costs about 0.07 at −4, while more Energy is even (+0.009).
+  - So arm 0 values random Trainers about right against Energy (it loses about 0.02 for every 2 swapped out), but prices
+    Computer Search and Item Finder under one. Their deficit is specific to those cards, not an Energy surplus in its
+    play.
+  - Together with C102 (no discard lift) and Amendment 7 (fetches learned), what is left is the cards' cost in
+    tempo or hand size, or a pilot that can't yet turn a fetch into value.
+- **Next:** P1c resumes (seed 2 from its 2-iteration checkpoint).
+
+### #406 · 2026-10-27 · A5 C103 C104 C105 · C103 read (checked): under arm 0 every Energy shift loses or ties, so the trained pilot sits at about the lists' Energy count (prior refuted) and the deficit is specific to Computer Search and Item Finder; C105 (an extra Energy Removal's marginal value) runs next, and C104 (more plain training, staged) only if C105 reads not-capped
+- **Done** (research session): checked `runs/probe/C103-energy-curve/readout.json` and wrote the readout into
+  C103's record. Wrote `runs/probe/C104-train-length/record.md` and `runs/probe/C105-target-margin/record.md` before
+  launch. An earlier attempt at 18:03 failed to parse in bash and wrote nothing; these were written at 18:04.
+- **Evidence** (variant share at Δ −4 / −2 / +2 / +4 / +6):
+  - start 0.427 / 0.443 / 0.486 / 0.509 / 0.509;
+  - arm 0 s1 0.446 / 0.459 / 0.477 / 0.484 / 0.492;
+  - the oracle row's S − G within ±0.016.
+- **Found:**
+  - No band is met, but on the point estimates the trained pilot is about lists-optimal in Energy. The prior
+    (R-energy-hungry) is refuted for arm 0.
+  - Random Trainers are valued about right, and only Computer Search and Item Finder sit under Energy. Answers (C102,
+    Amendment 7), timing (C99) and discards (C102) are ruled out.
+  - Order (333-10, row 100): C105 right after P1c (about 15 minutes, evaluation only; is Computer Search capped by an
+    extra Energy Removal's marginal value?). C104 (staged plain-PPO continuation, plateau stop, harm guard) runs only
+    if C105 reads not-capped. If capped, C104 is skipped, and the finding goes to Evan as the explanation for Computer
+    Search.
+
+### #407 · 2026-10-27 · A5 C105 C104 · C105 (one extra copy of Computer Search's top target, priced against the list) is built and queued behind P1c; C104 (arm 0 continued in 30-minute stages) is built and waits for a Kill line in its record and for C105's gate
+- **Done** (CPU only; P1c's arm trains):
+  - `trainer_value.py` +8 lines: group `plus:<card>` turns one of the list's most common basic Energy into one more
+    copy of the named card, if the list runs it under 4.
+  - CPU check: Energy Removal +1 in lists 3 (2 → 3) and 2 (3 → 4); lists 1 and 21 don't qualify (0 and 4 copies).
+    Ditto +1 in lists 3 and 21, and Lickitung +1 in list 2. Jigglypuff, the start's list-1 target, is already at 4.
+  - `notes/scripts/c105_read.py` (new): per pilot and card, q (the variant's share) per list and pooled, with binomial
+    SE, beside each list's Computer Search price at 256 games (bench_ctx). The record's bands. A `c104_gate` on arm 0 s1's
+    extra Energy Removal (q − 2 SE >= 0.55 means run C104).
+  - `runs/probe/C105-target-margin/chain.sh` (registry C105, launched 18:05:37, waiting for "P1c end"): both pilots,
+    seeds 91 and 2, 64 games, then the readout.
+  - loop.py refused the first launch because the record had no Kill line (§10). I added the bench's standard evaluation
+    kills, labelled as mine, as in C103.
+  - `runs/probe/C104-train-length/chain.sh` (not launched): per seed, up to 4 stages from arm 0's final pilot
+    (`--keep-ckpt`, then `--resume-from` with `--minutes 30k`) and a crash resume. After each stage: bench_eval 1 and 4
+    against arm 0, and ΔG_B against the stage's start. Then the record's four stop rules. It waits for C105's gate.
+    Its record has no Kill line either. I asked research to write it, since KL and entropy kills for a training arm are
+    the record's call, and noted that arm 0's pilot has no Adam state (an iteration-0 spike, as T0b's).
+- **Next:** P1c seed 2's stage-1 rule (about 18:27). Then P1c to about 20:15, C105 about 15 minutes, and C104 if gated.
+
+### #408 · 2026-10-27 · A5 C104 · C104 launched, waiting for C105's gate: research wrote its Kill line (18:06), and the chain watches KL > 0.05 for 2 consecutive iterations after each stage's first, and entropy under 0.5x arm 0's
+- **Done:** `runs/probe/C104-train-length/chain.sh` gained the watcher (as P1c's): it skips the first iteration of each
+  stage log and kills on the record's rule, and a kill stops the seed. Registry C104 launched 18:07. It waits for
+  "C105 end", then reads `c104_gate` (arm 0 s1's extra Energy Removal pooled over lists 3 and 2; run if q − 2 SE
+  >= 0.55; research confirmed the basis). The start pilot's extra-copy rows are reported only.
+- **Queue:** P1c (to about 20:15), then C105 (about 15 minutes), then C104 if gated (up to 4 × 30 minutes a seed).
+
+### #409 · 2026-10-27 · A5 BENCH-P1c · P1c seed 2 is killed by the recorded KL rule in normal steps (KL from iteration 1 on: 0.049, 0.021, 0.051, 0.056; two consecutive over 0.05 at iterations 3-4), after 5 iterations; by Amendment 3 that is its result at seed 2, not rerun looser; seed 1 starts from T0b
+- **Evidence:**
+  - Seed 2's stage 1 ran 5 iterations: 2 before the pause and 3 after the resume at 18:01:19. The kill came at
+    18:07:50 (exit 99). `arm-p1c-s2/ckpt.pt` is kept.
+  - KL by iteration: 0.373 (iteration 0, logged only), 0.049, 0.0205, **0.0506, 0.0558**.
+  - Arm 0's reference (research's Amendment 2 reading): median 0.032, p95 0.052, max 0.054, and never two consecutive
+    above 0.05 in 21 iterations a seed.
+- **Reading** (Amendment 3's wording): at seed 2, "the design takes larger steps than the pre-registered kill allows".
+  Its iterations 3-4 sit at the top of arm 0's range (both above arm 0's p95), not far outside it. No outcome readout
+  exists for seed 2: it stopped before stage 1's end.
+- **Next:** seed 1 from T0b, under the same rule (P1c chain, BENCH-P1c-a3). C105 and C104 wait for "P1c end".
+
+### #410 · 2026-10-27 · A5 BENCH P1c · P1c seed 2 stopped by the pre-registered KL rule in normal steps (0.0506 then 0.0558 at iterations 3-4, just over arm 0's maximum of 0.054); recorded per Amendment 3 as larger steps than the kill allows, with no rerun and no readout; seed 1 reruns under the same rule
+- **Done** (research session): recorded seed 2's stop in P1c's record (implementation's #409).
+- **Found:** P1's design steps a little larger than plain PPO on the bench (iterations 1-4 KL 0.049, 0.021, 0.051, 0.056 against arm 0's p95 0.052). Under the pre-registered rule that ends the seed; it says nothing about the design's value. If seed 1 also stops, P1c closes with this finding.
+
+### #411 · 2026-10-27 · A5 BENCH-P1c · P1c ends with both seeds killed by the recorded KL rule in normal steps (seed 1: 0.077, 0.073 at iterations 1-2; seed 2: 0.051, 0.056 at 3-4), so by Amendment 3 its result is "the design takes larger steps than the pre-registered kill allows", with no outcome readout; the same seed and start under P1b ran at 0.034, 0.026, so run-to-run variation is wide enough to decide this kill either way
+- **Evidence** (KL per iteration from T0b; iteration 0 logged only):
+
+  | run | it 0 | it 1 | it 2 | it 3 | it 4 | outcome |
+  |---|---|---|---|---|---|---|
+  | P1c s1 (rerun, 18:07:50-18:14:52) | 0.305 | **0.077** | **0.073** | | | killed |
+  | P1c s2 (with the pause) | 0.373 | 0.049 | 0.021 | **0.051** | **0.056** | killed |
+  | P1b s1 (no watcher; same seed, start and code) | 0.376 | 0.034 | 0.026 | 0.025 | 0.047 | ran 14 iterations |
+  | P1b s2 (no watcher) | 0.294 | 0.037 | 0.083 | 0.044 | 0.041 | segfaulted at 11 |
+  | arm 0 (research's reading) | median 0.032, p95 0.052, max 0.054, never two consecutive above 0.05 | | | | | |
+
+  P1c's first seed-1 try (0.330, 0.062) was stopped by the first watcher before Amendment 3.
+- **Reading:**
+  - By Amendment 3, P1c's result at both seeds is that the design takes larger steps than the recorded kill allows:
+    2 of 2 seeds, in the first 2-5 iterations.
+  - Within-design variation: P1b s1 ran from the same T0b, with the same seed and code, at 0.034 / 0.026. The rollouts
+    aren't bit-reproducible across runs (server-side sampling, #375), so whether a seed trips the 0.05 line is partly
+    run-to-run noise.
+  - P1's design runs KL about 0.02-0.08 per iteration, against arm 0's 0.03-0.05: wider, and sometimes over the line.
+  - No matched-iteration outcome exists. P1b's single 14-iteration seed stays the only outcome read on the design.
+- **Next:** C105 (started after "P1c end"), then C104 if C105 gates it.
+
+### #412 · 2026-10-27 · A5 BENCH · Auditor A99, zero GPU: the drafted decks' missing Trainers are mostly not Computer Search and Item Finder. In C91's near-list best 12, Computer Search matches the lists, and the gap is PlusPower (−2.7 copies a deck), Gust (−2.4), Item Finder (−2.0) and Scoop Up (−1.7), offset by Gambler, Energy Retrieval, Energy Removal and Energy Search; C103's arm-0 reading carries a home-advantage caveat
+- **Done** (research session, CPU only): per-card Trainer copies a deck in the best 12 (`probe_meta_premise.best_decks`,
+  corrected ranking) of C91 s5 and s6 (iteration 499), C93's gated pair (C90 s3 and s4, iteration 29) and its
+  ungated pair (C85 s3 and s4), against the 24 lists' means. Added A99's confound note to C103's record.
+- **Evidence** (drafted − lists, copies a deck):
+  - **C91** (Trainers 27.2 against 27.5):
+    - under: PlusPower −2.71, Gust −2.42, Item Finder −1.96, Scoop Up −1.71, Rocket's Sneak Attack −1.38, Super
+      Energy Removal −1.21;
+    - over: Gambler +2.96, Energy Retrieval +1.88, Energy Removal +1.88, Energy Search +1.46;
+    - Computer Search +0.04.
+  - **C93 gated** (24.2): Computer Search −2.12, PlusPower −2.04, Professor Oak −2.00, Gust −1.79, Item Finder −1.67,
+    Bill −1.54.
+  - **C93 ungated** (17.2): Professor Oak −2.75, Computer Search −2.21, Gust −2.21, Item Finder −1.88, PlusPower
+    −1.83.
+- **Found:**
+  - The drafting minimum doesn't reduce to Computer Search and Item Finder. In the near-list state (C91), Computer
+    Search is drafted at the lists' rate. The deficit is the tempo and attack-support Trainers (PlusPower, Gust,
+    Scoop Up) plus Item Finder, traded for draw and Energy-management cards.
+  - That matches the bench prices: PlusPower is the bench's lowest-priced Trainer under arm 0 (0.432); Gust sits at
+    0.46-0.50.
+  - So bench arms should read PlusPower and Gust per list beside Computer Search and Item Finder. Gust's n* on O_B is
+    about 233k, so its answers are underpowered on 30-minute arms. PlusPower has no target prompt, so its value is
+    timing and attack math.
+  - C103's caveat: arm 0's agreement with the lists' Energy count may be home advantage. The start pilot reads flat
+    at +4 and +6.
+
+### #413 · 2026-10-27 · A5 BENCH P1c · P1c closes: both seeds stopped by the pre-registered KL rule in normal steps (larger steps than the kill allows, 2 of 2); no outcome readout. P1's KL spans 0.02-0.08 against arm 0's 0.03-0.05, partly run-to-run noise; P1 at matched iterations stays unmeasured
+- **Done** (research session): wrote P1c's close (the implementation session's #410).
+- **Found:** the binding is live (P1b) but its policy steps run larger and noisier than plain PPO's. A fair matched test would lower P1's learning rate to match arm 0's KL: a new pre-registered arm and a design change, not a looser kill. It is open for 333-10, behind C105 and C104.
+
+### #414 · 2026-10-27 · A5 C105 C104 · C105 reads R-capped for every pilot and card: one extra copy of Computer Search's top target is worth no more than the Energy it replaces (arm 0 s1's extra Energy Removal 0.482 ± 0.031), so Computer Search's best fetch is capped under 0.5 before its two-card cost; C104 is not run by its gate, and the GPU queue is empty
+- **Done** (C105, 18:15-18:16, both seeds 91 and 2, 64 games a pair, both seats the same pilot; readout
+  `runs/probe/C105-target-margin/readout.json`):
+
+  | pilot · added copy | q, pooled ± SE | per list: q (that list's Computer Search at 256 games) | band |
+  |---|---|---|---|
+  | arm 0 s1 · Energy Removal | **0.482 ± 0.031** | list 3: 0.500 (0.469); list 2: 0.465 (0.484) | R-capped |
+  | start · Energy Removal | 0.484 ± 0.031 | list 3: 0.488 (0.428); list 2: 0.480 (0.436) | R-capped |
+  | start · Ditto | 0.441 ± 0.031 | list 3: 0.422; list 21: 0.461 (0.438) | R-capped |
+  | start · Lickitung | 0.465 ± 0.044 | list 2: 0.465 | R-capped |
+  | arm 0 s1 · Ditto / Lickitung | 0.479 / 0.426 | (reported only) | |
+
+  - q is the variant's share against its list, where the variant has one basic Energy turned into the card.
+  - Energy Removal +1 applies only in lists 3 and 2; list 1 runs none and list 21 runs 4.
+- **Bands** (the record's): R-capped (q − 2 SE < 0.53) for all four primary rows. The prior (R-capped) holds.
+- **Reading:**
+  - Under both pilots, the marginal copy of what Computer Search fetches is worth about an Energy or less: 0.44-0.50
+    against the whole-card prices of 0.53-0.57 for Energy Removal (one of the list's own copies against an Energy).
+  - So Computer Search, which delivers that copy at the cost of two other cards, can't clear 0.5 by its fetch under
+    these pilots. Its price sits near the value of the extra copy it delivers: arm 0's lists 3 and 2 at 0.469 and
+    0.484, against q 0.500 and 0.465.
+  - With Amendment 7 (fetches learned), C99 (timing adds nothing), C102 (discards add nothing) and C103 (arm 0's
+    Energy count is about the lists'), Computer Search's deficit is explained by its targets' diminishing returns
+    under these pilots. Item Finder is not tested here.
+- **C104 not run:** its chain read `run_c104: False` at 18:16:12 and ended, per 333-10's terms.
+- **GPU idle from 18:16:** nothing is queued. Asked research for the next proposal.
+
+### #415 · 2026-10-27 · A5 C105 BENCH C106 C107 · C105 reads capped: one more Energy Removal, Computer Search's main target under the trained pilots, is worth about an Energy (q 0.482), so Computer Search can't clear 0.5 by fetching it; the bench refocuses on the drafts' deficits (PlusPower, Gust, Item Finder, Scoop Up), with C106 (PlusPower timing) and C107 (Gust target) recorded
+- **Done** (research session): wrote C105's readout (the implementation session's #412), BENCH Amendment 8 (focus
+  cards PlusPower, Gust, Item Finder and Scoop Up, with Computer Search as reference, all at 256 games; A99's count as
+  the ground-truth link), and the C106 and C107 records before launch.
+- **Evidence:**
+  - C105, two seeds, 64 games: arm 0 s1's extra Energy Removal q 0.482 ± 0.031 (list 3 0.500, list 2 0.465); start
+    0.484.
+  - Computer Search at 256 games in the same lists: 0.469 and 0.484.
+- **Found:**
+  - **Computer Search is capped.** Under these pilots its best target, one more Energy Removal, is worth about an
+    Energy at the margin. So Computer Search can't clear 0.5 by fetching it, before its two-card cost.
+  - Together with Amendment 7 (answers learned), C99 (timing null) and C102 (discards null), that explains
+    Computer Search's price, for Evan.
+  - C104 is skipped by its gate.
+  - The bench's focus moves to the drafts' actual deficits (A99): PlusPower and Gust first. Order (333-10):
+    1. arm 0 re-priced for PlusPower, Gust and Scoop Up at 256 games (the baseline);
+    2. C106: PlusPower's timing oracle and knockout-conversion log;
+    3. C107: Gust's target oracle.
+    - Each is evaluation only and under 30 minutes.
+
+### #416 · 2026-10-27 · A5 BENCH C106 C107 · Amendment 8's focus cards (PlusPower, Gust of Wind, Item Finder, Scoop Up; Computer Search as the reference) are now bench_eval's 256-game set; their baseline re-price for the start and arm 0 s1 and s2 is running, and one builder makes C106's PlusPower knockout log and C107's Gust-only oracle filter
+- **Done:**
+  - `notes/scripts/bench_eval.py` and `bench_cards.py`: FOCUS is now (PlusPower, Gust of Wind, Item Finder, Scoop Up,
+    Computer Search). Every later readout 1 prices them at 256 games a pair, per list.
+  - The bench lists run PlusPower in 3, 1 and 21; Gust and Scoop Up in all four; Item Finder in 3, 1 and 2.
+  - `runs/probe/BENCH/a8/chain.sh` (registry BENCH-A8, launched 18:18:10): `bench_eval --only 1f` for the start and
+    arm 0 s1 and s2, into `eval256a8-<pilot>/`. About 10 minutes.
+  - One Sonnet lean-builder (usage 5-hour 13%, week 24%) for both tool changes, which share probe_oracle_worker.js:
+    C106's PlusPower knockout-conversion log, and C107's `--oracle-trainer` filter with a Gust target log. Its
+    acceptance includes default bit-identity and a hand-check of two logged plays.
+- **Next:** the baseline readout per (card, list), then C106 (about 15-20 minutes), then C107.
+
+### #417 · 2026-10-27 · A5 BENCH · Amendment 8's baseline: at 256 games a list, all four focus cards (PlusPower, Gust, Item Finder, Scoop Up) and Computer Search price under an Energy for the start and both arm 0 seeds (0.434-0.470 pooled), so none meets the goal pooled; arm 0's 64-game Gust (0.50) and Scoop Up (0.49) were high draws
+- **Done** (BENCH-A8, 18:18:10-18:24:04, `bench_eval --only 1f`, seed 91, 256 games a pair, exit 0 ×3; folders
+  `eval256a8-start`, `eval256a8-arm0-s1`, `eval256a8-arm0-s2`).
+- **Pooled prices** (95% CI over lists):
+
+  | card | start | arm 0 s1 | arm 0 s2 |
+  |---|---|---|---|
+  | PlusPower (lists 3, 1, 21) | 0.440 [0.403, 0.476] | 0.442 [0.411, 0.474] | 0.447 [0.404, 0.489] |
+  | Gust of Wind (all 4) | 0.441 [0.411, 0.472] | 0.467 [0.423, 0.512] | 0.470 [0.423, 0.517] |
+  | Item Finder (3, 1, 2) | 0.449 [0.405, 0.493] | 0.434 [0.404, 0.464] | 0.463 [0.434, 0.492] |
+  | Scoop Up (all 4) | 0.450 [0.429, 0.472] | 0.462 [0.439, 0.485] | 0.464 [0.407, 0.521] |
+  | Computer Search (reference) | 0.441 [0.421, 0.461] | 0.464 [0.443, 0.486] | 0.453 [0.410, 0.495] |
+
+  - Per list, the cells at or above 0.50 are all arm 0's and all in list 21: Gust 0.523 (s1) and 0.535 (s2); Scoop
+    Up 0.518 (s2); Computer Search 0.504 (s2).
+  - List 3 is lowest for every pilot: PlusPower 0.40-0.42, Gust 0.40-0.43.
+- **64 against 256 games** (rule 9 check): over the 15 (pilot, card) pairs, 256 − 64 averages −0.021. That's
+  −0.028 / −0.034 / −0.002 by pilot, and 11 of 15 are negative.
+  - Each difference has SE about 0.034. The pairs share the base list's deals within a pilot, so they aren't
+    independent, and no bias is called.
+  - The large single gaps are arm 0 s1's Item Finder (−0.068), Computer Search (−0.049), Gust (−0.033) and Scoop Up
+    (−0.030).
+  - The 256-game prices are the readouts of record (Amendments 4 and 8).
+- **Next:** C106 and C107 when the builder reports; their arms read the focus cards against these baselines.
+
+### #418 · 2026-10-27 · A5 BENCH · The 256-game baseline for the focus cards (implementation's #417): PlusPower, Gust, Item Finder, Scoop Up and Computer Search are all under 0.50 pooled for the start and both arm 0 pilots (0.43-0.47); 64-game prices read about 0.02 higher on average, so goal calls now use 256 games
+- **Done** (research session): wrote the baseline and the deal-set flag into BENCH's record.
+- **Found:**
+  - The bench goal fails on all four drafted-deficit cards and on Computer Search under every pilot.
+  - Only list 21 under arm 0 reaches 0.50 for Gust or Scoop Up.
+  - The 64-game prices run about +0.02 above 256-game ones (11 of 15 pairs), so earlier "meets" calls at 64 games are probably optimistic.
+  - C106 (PlusPower) and C107 (Gust) launch when their builds report.
+
+### #419 · 2026-10-27 · A5 C106 C107 · C106's PlusPower knockout log and C107's Gust-only oracle are built (one Sonnet builder, about 215k tokens over two passes); a pipeline check finds the pilot plays PlusPower almost only when it has no legal attack (57 of 61 plays), not an engine block; C106 then C107 launched 18:31:55
+- **Build** (builder's, GPU under 5 minutes in each pass):
+  - `notes/scripts/probe_prompt_oracle.py` +36 lines. `--oracle-trainer "<name>"`: the S arm's oracle answers only
+    prompts inside that own Trainer's resolution.
+  - `env/tools/probe_oracle_worker.js` +47 lines, plus the second pass's log fields.
+  - With `--timing-card PlusPower`, a knockout-conversion log. It records the engine's own damage
+    (`PutDamageEffect.baseDamage` after Weakness and Resistance, and the final damage). "Without PlusPower" is the final
+    damage minus 10 per PlusPower attached. It also logs missed conversions: a PlusPower in hand and not played, where
+    +10 would have knocked out.
+  - With `--timing-card "Gust of Wind"`, a target log: slot, card, HP left, and a knockout the same or the next turn.
+  - **Acceptance:**
+    - Default bit-identity: Computer Search G and S per-pair scores, endings, steps and switch counts match the
+      originals. gainSum differs by about 1e-6, the same as between two runs of the original.
+    - PlusPower, 16 games: 14 plays, 0 attacks after a play.
+    - Damage hand-checks: Ditto's Slash 30 + 10 knocking out a Scyther with 40 HP left (a conversion); Hitmonchan's Jab
+      20 − 30 against Scyther's Resistance = 0, so PlusPower added nothing.
+    - The Gust filter: `oracleBy {CHOOSE_POKEMON_TO_SWITCH: 4}`, and only Gust's prompts searched.
+- **Pipeline check** (rule 9, asked of the builder after "2 attacks after 104 plays" in 96 games; G arm, lists 3 and 1,
+  32 games each, 61 plays):
+  - An attack was legal before the play in 4 plays and after it in the same 4. **None went from legal to illegal.** All
+    61 PlusPowers stayed attached to the Active.
+  - In the other 57 plays no attack was legal. In 20 the Active had no Energy, and in 9 it had no attack. In 32 it had
+    the count but, by the builder's inference from Energy names, mostly the wrong type.
+  - After the play the pilot passed 39 times; it attacked 3 times.
+  - So the engine doesn't block attacking. The pilot spends PlusPower when it can't attack: a timing failure, which is
+    C106's question.
+  - Caveat: the "wrong type" call comes from Energy names, not from env/legal.js's cost check.
+- **Launched** (registry C106-C107, 18:31:55; `runs/probe/C106-pluspower-timing/chain.sh`):
+  - C106: arms G and T, `--timing-card PlusPower`, lists 3, 1 and 21, 64 games, seeds 91 and 2, start and arm 0 s1.
+  - Then C107: arms G and S_gust (`--oracle-trainer "Gust of Wind"`), and S_all if within 25 minutes; all four lists;
+    the Gust target log.
+
+### #420 · 2026-10-27 · A5 C106 · Before C106's readout: in 57 of 61 checked PlusPower plays the pilot had no legal attack that turn, passing after 39; PlusPower is mostly wasted under the pilot's own play (a timing failure, not the engine), which motivates checking whether the state encodes "attack available"
+- **Done** (research session): recorded the implementation session's pipeline check (#418) in C106's record, before the readout.
+- **Found:** the pilot plays PlusPower when it can't attack (no Energy, wrong type, or no attack). That predicts G's conversion share near 0 and gives C106's timing oracle room to help.
+- **Next:** a CPU linear probe for whether the encoder represents "a legal attack is available this turn" at main-phase states, to be recorded after C106 reads out. It ties PlusPower and Gust to Evan's state-representation question.
+
+### #421 · 2026-10-27 · A5 C106 · C106 reads R-timing for both pilots: the timing oracle lifts PlusPower +0.057 ± 0.036 (start) and +0.048 ± 0.036 (arm 0 s1), to about an Energy (0.52 / 0.51), not the goal at 2 SE; under the pilot, PlusPower almost never converts a knockout (share 0.005-0.011) and misses about 0.63 conversions a game, while T attacks after most plays
+- **Done** (C106 in the C106-C107 chain, 18:31:55-18:33:50; lists 3, 1, 21; 64 games a pair; seeds 91 and 2; start and arm
+  0 s1; readout `runs/probe/C106-pluspower-timing/readout.json`, binomial SE per pair over 128 games, 3 lists):
+
+  | pilot | G | T | T − G | per list G → T (3, 1, 21) |
+  |---|---|---|---|---|
+  | start | 0.466 | 0.523 ± 0.025 | **+0.057 ± 0.036** | 0.445→0.555, 0.492→0.527, 0.461→0.488 |
+  | arm 0 s1 | 0.458 | 0.507 ± 0.026 | **+0.048 ± 0.036** | 0.496→0.500, 0.430→0.543, 0.449→0.477 |
+
+  **Knockout-conversion log** (per seed, means of 2):
+
+  | | plays | attacks after a play | conversions | conversion share | missed conversions a game |
+  |---|---|---|---|---|---|
+  | start G / T | 184 / 327 | 12 / 197 | 2 / 30 | 0.011 / 0.092 | 0.63 / 0.04 |
+  | arm 0 s1 G / T | 85 / 323 | 12 / 207 | 0.5 / 33.5 | 0.005 / 0.104 | 0.64 / 0.02 |
+
+  The conversion share counts plays whose attack knocked out only because of the +10.
+- **Bands:**
+  - R-timing (T − G >= +0.03 pooled): **met at both pilots**. Each is about 1.3-1.6 SE, so neither difference is
+    beyond 2 SE on its own.
+  - The goal (T − 2 SE >= 0.50): not met (0.473, 0.456).
+  - Mechanism (reported): under G the conversion share is under 0.3 and missed conversions over 0.2 a game, for both
+    pilots, and T raises the share about tenfold. The prior (R-timing, partial) holds.
+- **Reading:**
+  - Under both pilots PlusPower is played on turns the pilot can't or doesn't attack (#419: 57 of 61 plays with no
+    legal attack), and it is held on turns where it would knock out.
+  - Arm 0 learned to play it about half as often as the start (85 against 184 plays), but not to pair it with its
+    attacks.
+  - Played at the right time, it is worth about an Energy: the timing gap is most of its deficit.
+- **Next:** C107 (Gust, running).
+
+### #422 · 2026-10-27 · A5 C106 C108 · C106: an oracle timing PlusPower lifts its price about +0.05 for both pilots (R-timing by the letter, about 1.5 SE each), cutting missed knockouts from about 0.63 to about 0.03 a game; the pilot plays PlusPower when it can't attack. C108 recorded: a CPU probe of whether its PlusPower decision uses the attack information in its own options
+- **Done** (research session): wrote C106's readout (the implementation session's #420) and `runs/probe/C108-pluspower-policy/record.md` before launch.
+- **Found:**
+  - Timing is most of PlusPower's deficit: T reaches about 0.51-0.52 against G's 0.46-0.47.
+  - Attack availability is visible in the pilot's own candidate list, so C108 asks whether the decision uses it: P(play PlusPower) with an attack option present against absent, plus a linear probe sanity check and the preference for conversion states.
+  - R-ignores points to a dense timing signal from the pilot's own play/hold branches (row 83) rather than architecture. R-representation points to architecture.
+
+### #423 · 2026-10-27 · A5 C107 · C107 reads R-not-choice for both pilots: answering Gust's target with the oracle moves its price only +0.013 ± 0.031 (start) and +0.022 ± 0.031 (arm 0 s1); the pilot's Gust targets are positional (bench slots 1 and 4 take 72-78%, where the oracle mostly picks slot 0), and Gust is followed by a knockout in 2-4% of plays; also flagged: the absolute 64-game prices run above the 256-game ones again
+- **Done** (C107 in the C106-C107 chain, 18:33:50-18:38:37, exit 0 ×8; all four lists; 64 games a pair; seeds 91 and 2;
+  start and arm 0 s1; readout `runs/probe/C107-gust-target/readout.json`, binomial SE over 128 games a pair, 4 lists):
+
+  | pilot | G | S_gust (`--oracle-trainer`) | S_all | S_gust − G | S_all − G | band |
+  |---|---|---|---|---|---|---|
+  | start | 0.494 | 0.507 ± 0.022 | 0.488 | +0.013 ± 0.031 | −0.006 | R-not-choice |
+  | arm 0 s1 | 0.488 | 0.510 ± 0.022 | 0.522 | +0.022 ± 0.031 | +0.033 | R-not-choice |
+
+  Per list, lists 3, 1, 21, 2:
+  - start G 0.523 / 0.516 / 0.531 / 0.406, S_gust 0.512 / 0.535 / 0.539 / 0.441;
+  - arm 0 G 0.473 / 0.539 / 0.457 / 0.484, S_gust 0.508 / 0.539 / 0.481 / 0.512.
+- **Target log** (both seeds):
+
+  | | slot 0 | 1 | 2 | 3 | 4 | KO the same or next turn |
+  |---|---|---|---|---|---|---|
+  | start G | 83 | **162** | 21 | 9 | **151** | 8 / 426 |
+  | start S_gust | **174** | 114 | 69 | 31 | 34 | 2 / 422 |
+  | arm 0 G | 113 | **255** | 14 | 2 | **207** | 24 / 591 |
+  | arm 0 S_gust | **251** | 110 | 88 | 119 | 21 | 28 / 589 |
+
+- **Bands:** R-not-choice (S_gust − G < +0.03) at both pilots. R-choice (S_gust − 2 SE >= 0.50) is met by neither
+  (0.463, 0.466). The prior (partial) is not met.
+- **Reading:**
+  - Gust's target choice, though very different between the pilot and the oracle (the pilot favours bench slots 1 and
+    4; the oracle, slot 0), is worth little in price at this precision.
+  - Gust rarely leads to a knockout, under the oracle too. O_B's +0.085 per prompt (#377) doesn't show at the card's
+    price: about one play a game, at 64 games a pair, can't resolve it.
+- **Flag (rule 9, for research):**
+  - G here (seeds 91 and 2, 64 games) reads 0.494 and 0.488. Amendment 8's 256-game baseline (seed 91) read 0.441 and
+    0.467 for the same pilots.
+  - Together with #417's mean 256 − 64 of −0.021 over 15 cells, the absolute price may depend on the game count, for
+    example on which deals or seat orders the extra games add.
+  - Paired arm differences share their games and are unaffected. The absolute goal (p >= 0.50) is affected. A check:
+    the first 64 games of a 256-game run against a separate 64-game run, same seed.
+
+### #424 · 2026-10-27 · A5 C107 BENCH · C107: oracle Gust targets add little (+0.013 / +0.022 ± 0.031; R-not-choice), since knockouts follow Gust in only 2-4% of plays; and 64-game prices again read above 256-game ones (Gust 0.494 against 0.441), so a same-seed game-count check runs before more absolute-goal reads
+- **Done** (research session): wrote C107's readout. Approved the implementation session's 3-minute game-count check.
+- **Found:**
+  - Gust's deficit isn't its target choice. Under every arm a knockout rarely follows the Gust, so its value would need the attack that follows.
+  - The 64- and 256-game absolute prices differ by about 0.02-0.05 in the same cells. The per-card goal (an absolute 0.50 line) can't be read until that is resolved. Paired readouts stand.
+
+### #425 · 2026-10-27 · A5 BENCH · Game-count check (research's ask after #423): no bias. Deals aren't nested across game counts, and six 64-game seeds average within noise of the 256-game price; 256 games stays the readout of record; the coordinator called lean mode
+- **Seeding** (`rl/gpu_matrix.py:85-97` jobs_for):
+  - Game g of pair key k gets the deal seed SEED·1000003 + k·games + g. Seats alternate by g's parity.
+  - So a 256-game run's games for key k are seeds k·256 … k·256+255, and a 64-game run's are k·64 … k·64+63. Only key
+    0 (list 3) shares its first 64 deals.
+  - The two modes draw different deal sets from the same distribution.
+  - trainer_value keys every pair by its base list, so all cards of a list share deals, and their errors are
+    correlated. That is why #417's 256 − 64 gaps move together within a pilot.
+- **Empirical check** (arm 0 s1, PlusPower and Gust, trainer_value, 64 games, seeds 91-96, about 2 minutes of GPU,
+  scratch only):
+  - PlusPower: 0.432, 0.440, 0.484, 0.479, 0.458, 0.435. Mean 0.455, sd 0.023. The 256-game price (seed 91) is 0.442.
+  - Gust: 0.500, 0.477, 0.465, 0.478, 0.480, 0.467. Mean 0.478, sd 0.013. 256 games: 0.467.
+  - Both gaps (+0.013, +0.011) are within the 256-game price's own SE (about 0.016-0.022). Seed 91's 64-game Gust (0.500)
+    is the high draw.
+- **Reading:** no pipeline bias. Fewer games are noisier, and the 256-game prices remain the readouts of record. C107's
+  128-game G (0.488 for arm 0) is consistent with this spread.
+- **Coordinator, 18:4x:** lean mode. The week is at 24% about 10 hours after its reset. One builder at a time, only for
+  a recorded experiment's code; existing scripts preferred; short turns.
+
+### #426 · 2026-10-27 · A5 BENCH · The game-count check finds no bias: 64- and 256-game runs draw different deal sets from one distribution, and six 64-game seeds average within the 256-game SE; the earlier offset was seed 91's draw, and 256 games stays the record
+- **Done** (research session): recorded the implementation session's check (#424) in the BENCH record.
+- **Found:** absolute prices at 256 games stand. All card prices within one list share deals, so they co-vary.
+
+### #427 · 2026-10-27 · A5 C108 · C108: every pilot plays PlusPower 4-6x more often when no attack is legal than when one is (start 0.132 against 0.022; arm 0 s1 0.037 against 0.009; s2 0.022 against 0.005), with no preference for knockout-conversion states; the encoder separates the two (probe AUC about 0.93); mechanically no band fits (probe 0.86, between 0.8 and 0.9), but the direction is R-uses-wrongly's
+- **Done** (one Sonnet lean-builder, CPU only; `notes/scripts/c108_probe.py`; data `runs/probe/C108-pluspower-policy/states.pt`;
+  `readout.json`):
+  - 788 P × P games under the start pilot (CPU collect, 2 workers, 5.1 minutes).
+  - 16,370 main-phase decisions with PlusPower (id 199) playable: 7,843 with an attack legal, 8,527 without. Later
+    decisions in the same turn are separate rows.
+  - Logits recomputed for each pilot. CIs are bootstrapped over games.
+
+  | pilot | P(play) attack present / absent | difference [95% CI] | probe acc / AUC (5-fold by game) | P(play) conversion / rest (attack present) |
+  |---|---|---|---|---|
+  | start | 0.022 / 0.132 | −0.110 [−0.117, −0.102] | 0.860 / 0.936 | 0.016 / 0.023 (diff −0.007 [−0.014, +0.002]) |
+  | arm 0 s1 | 0.009 / 0.037 | −0.028 [−0.033, −0.024] | 0.855 / 0.931 | 0.005 / 0.009 |
+  | arm 0 s2 | 0.005 / 0.022 | −0.017 [−0.020, −0.014] | 0.862 / 0.937 | 0.004 / 0.005 |
+
+  - The probe is a logistic regression on the mean encoder output; the majority class is 0.52.
+  - The conversion flag is approximate: the seat's actual attack later that turn, using its printed damage with
+    Weakness ×2, Resistance −30 and +10 per PlusPower attached, against the HP left from the slot features. That gives
+    565 conversion states. It is not the engine's damage.
+- **Bands** (the record's, applied as written):
+  - R-ignores needs |difference| < 0.05 with the probe > 0.9: arm 0's differences qualify (0.028, 0.017), but its
+    probe reads 0.86. The start's difference is 0.110.
+  - R-uses-wrongly needs P(play) > 0.3 with no attack, or no preference for conversion states: the latter holds for
+    all three pilots, though P(play) stays under 0.3.
+  - R-representation needs the probe < 0.8: no.
+  - So mechanically "between" for every pilot. The prior (R-ignores for the start, R-uses-wrongly for arm 0) isn't
+    confirmed as written.
+- **Reading:**
+  - The state separates attack-available from not (AUC 0.93), yet every pilot's PlusPower policy runs the wrong way. It
+    is most likely to play PlusPower exactly when it can't attack: 6x for the start, 4x for arm 0.
+  - It shows no preference for turns where the +10 would knock out.
+  - Arm 0 cut PlusPower's overall play rate by about 4x but kept the inverse ratio. That fits C106: the timing oracle
+    lifts it about +0.05, and under the pilot the conversion share is about 0.01.
+  - PPO's credit hasn't tied PlusPower to the attack in 21 iterations.
+- **Caveat:** the probe's pooling (a mean over tokens) could move accuracy across the 0.8 and 0.9 lines.
+
+### #428 · 2026-10-27 · A5 C108 BENCH-P5 · C108: the pilot's PlusPower policy runs backwards (P(play) 0.022 with an attack available against 0.132 without; arm 0 keeps the inverse at lower rates) although the state encodes attack availability (probe AUC 0.93), a sequencing and credit failure; BENCH-P5 recorded: C106's turn-level comparator as a training signal at those decisions
+- **Done** (research session): wrote C108's readout (the implementation session's #427) and `runs/probe/BENCH/P5/record.md` before any build.
+- **Found:**
+  - PlusPower's deficit is sequencing. When it can attack, the pilot attacks; PlusPower is played as filler when it can't.
+  - The information is in the state (AUC 0.93), so this isn't architecture.
+  - P5 replaces PPO's advantage at PlusPower-playable decisions with an attack available by the pilot's own branched end-of-turn comparison (play PlusPower against its greedy action, 4 CRN copies). Short, one-turn branches.
+  - Bands: the sign of P(play | attack) − P(play | none) flips at both seeds, with missed conversions halved (mechanism); PlusPower +0.03 at 256 games (outcome; ceiling about +0.05). Prior: mechanism yes, price within noise.
+
+### #429 · 2026-10-27 · A5 BENCH-P5 · BENCH-P5 (training-time branching at PlusPower decisions: "play PlusPower" against the pilot's greedy action, 4 CRN copies to the turn's end, scored by the pilot's value, as advantage at those rows) is built and launched 19:11: two 30-minute seeds from start.pt
+- **Build** (one Sonnet lean-builder, lean mode; research's record `runs/probe/BENCH/P5/record.md`, bands written 18:59):
+  - `env/remote_worker.js` +56 lines, behind `cmd.ppBranch`: `ppCatch`. At the seat's main-phase decisions where
+    a PlusPower play and an attack are both legal, it reuses `PolicySearchAgent` with k = 2, 4 CRN copies and
+    maxSteps 40. The candidates are PlusPower and the greedy action, or the best non-PlusPower option if greedy is
+    PlusPower. `ppFrac` < 1 turns on a seeded coin.
+  - `notes/scripts/bench_train.py` +84 lines, `--p5`. `wrap_p5` aligns each worker's rows to the concatenated batch.
+    It sets ppFrac to 0.5 once an iteration's branch share of full wall time exceeds 0.6; that path is untested.
+  - The P5 patch: adv = Q(taken) − mean(Q_play, Q_other), at rows where the taken action is one of the two. Those rows
+    are then scaled per iteration by sd(GAE there) / sd(centred), as research specified at about 19:05. Elsewhere,
+    and for all value targets, GAE.
+  - `notes/scripts/c108_probe.py` +6 lines (mine): `--pilot name=path` and `--out`, to read P5's pilots on C108's
+    stored 16,370 decisions.
+- **Acceptance** (builder's):
+  - (a) Flag-off identity: rollout byte-identical (sha d826543a88754cc9) and reply identical, on a seeded 1-worker
+    CPU collect.
+  - (b) ppBranch on, one collect: 457 eligible decisions, all branched and aligned (both candidates in the row's legal
+    ids). The taken action was among them in 373. Example Q pairs: [0.446, 0.458], [0.489, 0.500], [0.636, 0.660].
+  - (c) A 2-iteration `--p5` run: about 4,100-4,300 branched an iteration, all aligned. sd of GAE 0.35 / 0.30
+    against sd of the branched advantages 0.053 / 0.040, so scales of 6.5 / 7.5. share_pp 0.019-0.023. KL 0.034 /
+    0.049. Branching took about 0.45 of the collect and 0.28 of the iteration.
+- **Chain** (`runs/probe/BENCH/P5/chain.sh`, registry BENCH-P5):
+  - Kills: KL > 0.05 for 2 consecutive iterations, from iteration 0 (start.pt carries Adam state); entropy < 0.5x
+    arm 0's.
+  - Readouts per seed: bench_eval 1 (focus cards at 256) and 4 against arm 0 of the same seed; C106's knockout
+    conversions under G (seeds 91 and 2). Then C108's play rates for P5 s1/s2 and arm 0 s1/s2.
+- **Watch:** the smoke run's iteration-1 KL (0.049) sits at the kill line.
+
+### #430 · 2026-10-27 · A5 C109 · Auditor A100 (does a tempo card's value depend on opponent strength?): C109 recorded, oracle-timed PlusPower against Energy copies piloted by opponents of rising strength (start, arm 0, arm 0 with prompt oracle), after P5; prior R-flat
+- **Done** (research session): wrote `runs/probe/C109-opponent-strength/record.md` before launch. No researcher used.
+- **Found:** every oracle ceiling so far lands at about an Energy, and our price confounds own play with the opponent's (same pilot, both seats).
+  - C109 holds the PlusPower side fixed (arm 0 + T) and raises only the opponent's strength.
+  - R-rising (+0.03 from the weakest to the strongest opponent at both seeds) means the per-card goal needs stronger opponents, e.g. a league. R-flat means about an Energy is its value on this bench.
+  - Build: per-seat pilots and oracle switches, about 30-60 lines, on CPU during P5.
+
+### #431 · 2026-10-27 · A5 · Two-hourly research slot (19:46): no deep-research round. Usage allows it (5-hour 23%, week 25%), but every open question is empirical and covered by queued bench runs (P5 readouts, C109), and the week runs well ahead of its line; timer re-armed for about 21:46
+- **Done** (research session): read `~/.claude/usage-latest.json` (19:45:57: 5-hour 23%, week 25%).
+- **Found:** the slot's call (A100) was answered by C109's record without outside research. No literature question is open that the bench can't answer more cheaply. With the week at 25% about 11 hours after reset, against a line of about 6.5%, this follows 333-10's lean cadence.
+
+### #432 · 2026-10-27 · A5 BENCH-P5 · BENCH-P5 reads R-not-learned by its record (the sign of P(play | attack) − P(play | no attack) doesn't flip at either seed), but branching moved PlusPower most of the way: the gap shrank from arm 0's −0.028 / −0.017 to −0.015 / −0.004 (s2's CI spans 0), attacks after a play rose about 4x and the conversion share about 10x, while missed conversions and the price stayed at arm 0's (+0.019 / +0.014, under +0.03); no harm
+- **Done** (BENCH-P5, 19:11:40-20:33:24; s1 14 iterations, 6,209 games; s2 15 iterations, 6,620 games; 0 errors; no
+  kill):
+  - KL s1 0.025-0.052, s2 0.019-0.055. No two consecutive above 0.05.
+  - Every eligible decision was branched, about 4,500-4,900 an iteration. Scale 6.6-8.6. The taken action was among
+    the two candidates in about 82%.
+  - At seed 1, the share of branched decisions where the pilot took PlusPower rose from 0.014-0.025 (iterations 0-6)
+    to 0.032-0.041 (10-13).
+- **Readouts:**
+
+  | pilot | P(play) attack / no attack (C108's 16,370 decisions) | diff [95% CI] | P(play) in conversion states | attacks after a play (G, seeds 91 / 2) | conversion share | missed a game | PlusPower vs arm 0 at 256 | head-to-head vs arm 0 |
+  |---|---|---|---|---|---|---|---|---|
+  | arm 0 s1 | 0.009 / 0.037 | −0.028 [−0.033, −0.024] | 0.005 | about 12 (C106) | 0.005 | 0.64 | — | — |
+  | arm 0 s2 | 0.005 / 0.022 | −0.017 [−0.020, −0.014] | 0.004 | | | | — | — |
+  | P5 s1 | 0.049 / 0.065 | −0.015 [−0.023, −0.008] | 0.029 | 58 / 48 | 0.046 / 0.067 | 0.63 / 0.63 | 0.461 (+0.019) | 0.470 ± 0.014 |
+  | P5 s2 | 0.035 / 0.038 | −0.004 [−0.009, +0.002] | 0.026 | 56 / 41 | 0.042 / 0.049 | 0.62 / 0.59 | 0.460 (+0.014) | 0.453 ± 0.016 |
+
+  - Other focus cards against arm 0 (256 games):
+    - s1: Gust +0.028, Item Finder +0.034, Scoop Up −0.005, Computer Search −0.024.
+    - s2: Gust +0.002, Item Finder −0.033, Scoop Up −0.006, Computer Search −0.012.
+  - Mean Trainer price (64 games): s1 0.541, s2 0.4875 (arm 0 0.5125 / 0.5051).
+  - In conversion states P5 plays PlusPower at 0.026-0.029, but no more than in other attack states: conversion − rest
+    is −0.022 [−0.033, −0.010] and −0.009 [−0.019, +0.002].
+- **Bands** (the record's, 18:59):
+  - Mechanism, "timing learned" (sign flips at both seeds and missed conversions at least 50% below arm 0's): **not
+    met**. The sign stays negative at s1, s2 is within 0, and missed conversions are unchanged.
+  - **R-not-learned** (the sign doesn't flip at either seed): met by the letter.
+  - Outcome (PlusPower +0.03 over arm 0 at both seeds): not met (+0.019, +0.014).
+  - Harm guard (head-to-head under 0.45 at both, or the mean price 0.03 below at both): not met. 0.470 / 0.453; s2's
+    mean is −0.018.
+  - The prior (timing learned on mechanism) is not met.
+- **Reading:**
+  - The branched advantage made the pilot play PlusPower about 5-7x more often when it can attack: 0.049 / 0.035
+    against arm 0's 0.009 / 0.005.
+  - It also played it somewhat more when it can't (0.065 / 0.038 against 0.037 / 0.022). So the inverse gap closed
+    from about 4x to 1.1-1.3x, but didn't flip.
+  - Attacks after a play rose about 4x and the conversion share about 10x (toward C106's oracle at 0.10). It still
+    shows no preference for knockout turns, and missed conversions are unchanged.
+  - 30 minutes moved the mechanism partway, and the price moved +0.014-0.019, within noise.
+
+### #433 · 2026-10-27 · A5 BENCH-P5 C110 · P5 reads R-not-learned (the sign doesn't flip) but moved most of the way: attack-present PlusPower plays are 5-7x arm 0's, the inverse ratio is down from about 4x to 1.1-1.3x, yet missed knockouts are unchanged; C110 recorded: a CPU probe of whether the state encodes the +10 knockout margin
+- **Done** (research session): wrote P5's readout (the implementation session's #432) and `runs/probe/C110-ko-math/record.md` before launch.
+- **Found:**
+  - The pilot's own turn-level branches teach PlusPower to go with attacks, but not with the attacks it converts. Missed conversions stay at 0.59-0.63 a game, and the price gain is +0.014 to +0.019.
+  - C110 decides the next lever:
+    - R-encoded (probe AUC >= 0.85): credit, so a longer or reweighted P5;
+    - R-not-encoded (AUC < 0.70 with knockouts themselves readable): representation, so a self-supervised knockout-outcome auxiliary head (report §4 P3).
+  - Prior: not encoded.
+
+### #434 · 2026-10-27 · A5 C109 · C109 reads R-rising: against a list side of arm 0 s1 with PlusPower timed by the oracle, the PlusPower → Energy copy's share rises with its own pilot's strength (start 0.333, arm 0 0.492, arm 0 with prompt oracle 0.582; O3 − O1 +0.24 / +0.26 by seed); at equal strength PlusPower is about even with an Energy (0.508), and the copy-against-copy check puts the prompt oracle at about +0.08 of pilot strength, which matches the O2 → O3 drop
+- **Done** (C109, 20:34-20:39, exit 0 ×8, 0 game errors; lists 3, 1, 21; 64 games a pair; seeds 91 and 2; the new
+  per-side flags `--pilot-b` / `--arm-a` / `--arm-b` / `--copy-vs-copy`; readout
+  `runs/probe/C109-opponent-strength/readout.json`; SE binomial over 128 games a pair, 3 lists):
+
+  | cell | side a | side b | side a's share | per list (3, 1, 21) | by seed |
+  |---|---|---|---|---|---|
+  | O1 | list: arm 0 s1 + T | copy: start, greedy | 0.667 ± 0.024 | 0.609 / 0.711 / 0.680 | 0.659 / 0.675 |
+  | O2 | list: arm 0 s1 + T | copy: arm 0 s1, greedy | 0.508 ± 0.026 | 0.504 / 0.543 / 0.477 | 0.500 / 0.516 |
+  | O3 | list: arm 0 s1 + T | copy: arm 0 s1 + S | 0.418 ± 0.025 | 0.398 / 0.492 / 0.363 | 0.417 / 0.419 |
+  | O3 vs O2 | copy: arm 0 s1 + S | copy: arm 0 s1, greedy | 0.578 ± 0.025 | 0.629 / 0.566 / 0.539 | 0.544 / 0.612 |
+
+- **Bands:** R-rising (the copy's share O3 − O1 >= +0.03 at both seeds): **met**, at +0.242 and +0.255.
+- **Reading:**
+  - A "price" is a match between two pilots, so it moves with their strength gap far more than with the card. Start →
+    arm 0 is worth about 0.16, and the prompt oracle about +0.08 (O3 against O2), which matches O2 → O3's −0.09.
+  - At equal pilots (O2), oracle-timed PlusPower against an Energy is 0.508, as C106's T found for arm 0 (0.507).
+  - So the bench's card prices are only comparable between arms at matched pilot strength on both sides. Every price
+    so far had both sides played by the same pilot, so the readouts of record stand.
+
+### #435 · 2026-10-27 · A5 C109 · C109 reads between by its letter and is confounded by design (my error): the opponent was the Energy copy itself, so raising its pilot moved the pilot gap, not the card's value; the clean equal-strength cell puts oracle-timed PlusPower about even with an Energy (0.508); a corrected common-opponent design (C109b) is written, not run
+- **Done** (research session): wrote C109's readout and correction (the implementation session's #433).
+- **Evidence:** list share 0.667 (O1), 0.508 (O2), 0.418 (O3); O3 against O2 copy-on-copy 0.578.
+- **Found:**
+  - The band named the list's share, which falls 0.25 from O1 to O3, so it fits neither band.
+  - The design can't separate opponent strength from the pilot gap, so A100's question is still open.
+  - The corrected design, C109b: list and copy both against common opponent decks at rising pilot strength, with the card's value as the paired difference.
+  - Whether to run it is 333-10's call, given the weekly pace.
+
+### #436 · 2026-10-27 · A5 C111 · C111 written for auditor A101: PlusPower's same-pilot price against its Energy copy at three strengths (start, arm 0, arm 0 + S on both sides; T timing on the list side), 256 games a pair, 2 seeds; it replaces C109b
+- **Done** (research session, 2026-10-27 20:43): wrote `runs/probe/C111-symmetric-strength/record.md` with bands before launch.
+- **Design:** lists 3, 1, 21, each against its PlusPower → Energy copy, with the same pilot on both sides at each level, using C109's per-side flags. The strength ladder is already measured (0.60-0.64, then 0.578).
+- **Bands:** Δ = L3 − L1 pooled (SE about 0.018). R-rising if Δ >= +0.04 and positive at both seeds; R-falling if Δ <= −0.04 and negative at both; R-flat if |Δ| < 0.04; between otherwise. Prior: R-flat (C106's start → arm 0 step was −0.016 ± 0.036).
+- **Why it replaces C109b:** drafting prices cards with the same pilot on both sides, so the same-pilot price as that pilot strengthens is the question for the ground truth.
+- **Next:** implementation runs it (about 15-20 min, pre-approved as a bench step of 30 minutes or less); C110's readout lands on CPU meanwhile.
+
+### #437 · 2026-10-27 · A5 C111 · C111 launched 20:43:37 (auditor A101 via research, record written first): PlusPower against Energy at three symmetric pilot strengths, the list side always with T: L1 start, L2 arm 0 s1, L3 arm 0 s1 with S on both sides; 256 games a pair, seeds 91 and 2, deals paired across levels; no code
+- **Done:** `runs/probe/C111-symmetric-strength/chain.sh` (registry C111). It runs `probe_prompt_oracle.py --pilot P --pilot-b P`
+  with `--arm-a T --arm-b G` (L1, L2) or `--arm-a ST --arm-b S` (L3), `--timing-card PlusPower`, lists 3, 1 and 21.
+  Deals are paired because each level uses the same seed, pairs and game count. After 30 minutes it drops to 128 games.
+- The C110 builder (CPU) was told not to edit the oracle worker or the driver until "C111 end".
+
+### #438 · 2026-10-27 · A5 C110 · C110 reads "between" pooled: the encoder mostly holds the knockout math (conversion against no-KO AUC 0.838 [0.810, 0.862], just under R-encoded's 0.85; KO-anyway 0.903); arm 0 s1 alone clears R-encoded (0.876), and every pilot plays PlusPower slightly less in conversion states than in no-KO ones
+- **Done** (one Sonnet lean-builder, CPU only; `notes/scripts/c110_probe.py`; `runs/probe/C110-ko-math/readout.json` and states):
+  - `env/remote_worker.js`: a log-only `koCatch` behind `cmd.koMath`. With the flag off, the rollout and reply are
+    byte-identical under a fixed torch seed, checked against the original.
+  - At each attack-available, PlusPower-playable decision, every legal attack is played on `game.clone()` with no new
+    PlusPower. The label uses the engine's `PutDamageEffect` on the Defender (final damage) against its HP left.
+  - Coin flips use the clone's RNG: one sampled outcome, not an expectation. Choice prompts take the first option.
+  - Data: 3,281 states from 275 start-pilot games, 2.8 minutes of CPU: conversion 614, KO-anyway 648, no-KO 2,019.
+    53 states had both and count as KO-anyway.
+  - Of 4,070 attacks, 1,232 involved coin flips, 643 a choice and 573 no damage to the Defender. 0 errors.
+- **Readouts** (detached mean encoder state, 5-fold logistic probes by game, AUC with a 500-resample game bootstrap):
+
+  | pilot | R1 conversion vs no-KO | R2 KO-anyway vs rest | R3 P(PlusPower) conversion − no-KO | band |
+  |---|---|---|---|---|
+  | start | 0.799 [0.766, 0.826] | 0.890 [0.871, 0.910] | −0.012 [−0.022, −0.002] | between |
+  | arm 0 s1 | 0.876 [0.851, 0.897] | 0.909 [0.891, 0.927] | −0.007 [−0.016, +0.001] | R-encoded |
+  | P5 s1 | 0.832 [0.800, 0.857] | 0.905 [0.887, 0.922] | −0.010 [−0.026, +0.007] | between |
+  | P5 s2 | 0.845 [0.816, 0.870] | 0.909 [0.891, 0.925] | −0.013 [−0.028, +0.001] | between |
+  | pooled (mean of pilots; they share the states) | **0.838 [0.810, 0.862]** | 0.903 [0.885, 0.920] | −0.011 [−0.021, 0.000] | between |
+
+- **Bands** (the record's):
+  - R-encoded (R1 >= 0.85 pooled, CI above 0.8): not met pooled, since 0.838 falls below 0.85, though its CI is above
+    0.8. Arm 0 s1 alone meets it.
+  - R-not-encoded (R1 < 0.70 with R2 >= 0.85): not met.
+- **Reading:**
+  - The state separates knockout states well (0.90) and the +10 margin nearly as well (0.80-0.88). It rises with
+    training, from the start's 0.799 to arm 0's 0.876.
+  - The policy still shows no preference for conversion states (R3 is about −0.01 everywhere).
+  - So the gap is mostly in using what's encoded (credit), not in encoding it. This is one seed of states, and about
+    30% of the attack labels come from a single sampled coin or choice.
+
+### #439 · 2026-10-27 · A5 C110 BENCH-P5b · C110 is between by its letter and leans credit: the knockout margin is mostly readable (pooled 0.838, arm 0 0.876), refuting the prior, but no pilot uses it; a floor check (HP left alone) and BENCH-P5b (P5 resumed 30 more minutes with a signal check) are written before running
+- **Done** (research session, 2026-10-27 20:48): wrote C110's readout (the implementation session's #438), a baseline check, and BENCH-P5b in P5's record, all with bands first.
+- **Found:** R1 0.838 [0.810, 0.862] pooled, below R-encoded's 0.85, with its CI above 0.8; R3 about −0.01 for every pilot. Caveats: about 30% of the labels rest on one sampled coin flip or choice, and the probe has no floor.
+- **Baseline (CPU, now):** B1 is HP left alone; B2 adds printed damage and the Weakness and Resistance flags. Margin encoded if B1 <= 0.75 and B2 >= 0.90 (then P5b); HP only if B1 >= 0.81 (then the auxiliary knockout head).
+- **P5b (333-10's call, since P5 becomes a 60-minute arm):** fine timing learned if R3 > 0 with CI above 0 at both seeds and missed conversions <= 0.45 a game; R-saturated if neither moves; a koMath log of the branched Δ by state class checks whether the comparator carries the margin at all. Prior: between.
+- **Correction:** C109's run entry is #434, not #433 as cited in #435; C109's record is fixed.
+
+### #440 · 2026-10-27 · A5 C110 BENCH-P5b · C110's floor check reads "HP only": the Defender's HP left alone separates conversion from no-KO states at AUC 0.914 [0.885, 0.940] (HP + printed damage + Weakness / Resistance 0.941), above every pilot's encoder probe (0.80-0.88), so C110's encoder AUC doesn't show the +10 margin is encoded; by research's rule P5b holds
+- **Done** (CPU, mine; `notes/scripts/c110_floor.py`, output `runs/probe/C110-ko-math/floor.json`):
+  - C110's 2,633 conversion and no-KO states (614 / 2,019, 272 games), with the same 5 folds by game and 500-resample
+    game bootstrap, using its own functions.
+  - Features from the stored observations:
+    - the Defender's HP left: slot oA's HP minus damage, decoded from tokens.js's slot bytes, in steps of 10;
+    - the Active's largest printed attack damage, from pool.json via the slot token's card id;
+    - Weakness and Resistance flags: the Active's types against the Defender's.
+- **Result:**
+
+  | probe | features | AUC [95% CI] |
+  |---|---|---|
+  | B1 | HP left | **0.914 [0.885, 0.940]** |
+  | B2 | HP left, largest printed damage, W, R | 0.941 [0.915, 0.961] |
+  | C110 encoders (for reference) | mean encoder state | 0.799 (start) - 0.876 (arm 0 s1); pooled 0.838 |
+
+- **Band** (research's, in C110's record): margin encoded needs B1 <= 0.75 and B2 >= 0.90, not met. **HP only (leans
+  representation)** needs B1 >= 0.81, met.
+- **Reading:**
+  - In these states "conversion" is mostly "the Defender is low on HP". One raw feature separates it better than the
+    pilots' encoder states do.
+  - So C110's 0.84 can't be read as the knockout margin being encoded. The linear probe on the mean state falls short
+    of HP alone, which leans representation, not credit.
+- **P5b:** held (research: "unless the floor check reads HP only; then hold and tell me"). C111 is still running.
+
+### #441 · 2026-10-27 · A5 C110 C110b · The floor check reads HP only (HP left alone 0.914 beats the mean encoder state's 0.80-0.88), so P5b holds; the policy doesn't use even "Defender low on HP" (R3 about −0.01); C110b, a probe at the layer the policy reads (the opposing Active token and the PlusPower option's embedding), is written to separate credit from representation
+- **Done** (research session, 2026-10-27 20:51): wrote the floor readout (the implementation session's #440) and C110b into C110's record, with bands first.
+- **Found:** B1 0.914 [0.885, 0.940] and B2 0.941. C110's 0.838 isn't evidence of the +10 margin. Mean pooling may dilute a per-slot feature, so the probe moves to the policy's own layer.
+- **C110b bands:** R-readable (option embedding >= 0.88, so P5b); R-lost-in-path (Defender token >= 0.88, option < 0.80, so the knockout auxiliary head or an attention route, written first); R-blurred (Defender token < 0.80, so the auxiliary head). Prior: lost in path.
+- **Next:** C110b on CPU (about 10 min); C111 lands about 21:00.
+
+### #442 · 2026-10-27 · A5 C110 BENCH-P5b · C110b reads R-readable: the vector the "play PlusPower" logit is scored from separates conversion from no-KO states at AUC 0.915-0.926 for arm 0 and both P5 seeds (start 0.876), and the opponent's Active token holds HP left almost exactly (R² 0.99); the margin reaches the decision point but isn't used, so it's credit, and by the band P5b goes, but P5's final checkpoints weren't kept
+- **Done** (CPU, mine; `notes/scripts/c110b_probe.py`, output `runs/probe/C110-ko-math/c110b.json`; C110's 2,633
+  states, its 5 folds by game and 500-resample game bootstrap):
+  - D: `net.encode(...)[0]` at the SLOT token with tok_aux 6, the opponent's Active.
+  - C: the input to `net.score` at the PlusPower option (`rl/token_model.py:732`, `logits = self.score(c)`),
+    captured by a forward hook.
+  - R² is out of fold, a ridge regression on HP left. "+ over HP" is the AUC of [HP + embedding] minus B1's 0.914.
+
+  | pilot | D AUC [CI] | D R²(HP) | D + over HP | C AUC [CI] | C R²(HP) | C + over HP |
+  |---|---|---|---|---|---|---|
+  | start | 0.934 [0.914, 0.950] | 0.992 | +0.020 | 0.876 [0.855, 0.896] | 0.549 | +0.004 |
+  | arm 0 s1 | 0.938 [0.921, 0.954] | 0.988 | +0.024 | **0.926** [0.904, 0.942] | 0.699 | +0.018 |
+  | P5 s1 | 0.945 [0.929, 0.959] | 0.988 | +0.030 | **0.918** [0.898, 0.934] | 0.679 | +0.017 |
+  | P5 s2 | 0.939 [0.922, 0.954] | 0.987 | +0.025 | **0.915** [0.893, 0.932] | 0.752 | +0.010 |
+
+- **Bands:**
+  - R-readable (C >= 0.88 for arm 0 and both P5 seeds): **met**.
+  - R-lost-in-path (D >= 0.88 and C < 0.80) and R-blurred (D < 0.80): not met.
+- **Reading:**
+  - The opponent's Active token encodes its HP left (R² 0.99), and a little more (+0.02-0.03 over HP).
+  - The PlusPower option's own pre-logit vector still separates conversion states at 0.92 for the trained pilots.
+  - Yet the policy plays PlusPower no more in those states (C110's R3 about −0.01). The information reaches the
+    decision and isn't used, so it's credit.
+  - Training sharpens C: start 0.876, trained 0.915-0.926.
+- **P5b** (research: R-readable means it goes): P5 ran without `--keep-ckpt`, so `arm-p5-s1/` and `arm-p5-s2/` hold
+  only pilot.pt. "Resumed from its final checkpoint" can only be `--start pilot.pt` with a fresh Adam (an iteration-0
+  KL spike, as T0b's) and fresh iteration numbering. Asked research; not started.
+
+### #443 · 2026-10-27 · A5 C110b BENCH-P5b · C110b reads R-readable: the Defender's HP reaches the PlusPower option's scoring input (AUC 0.915-0.926) and the opposing Active token holds it almost exactly (R² 0.99), so the timing gap is credit and P5b goes; Amendment 2 sets the KL kill to count iterations >= 1 for P5b's cold optimizer
+- **Done** (research session, 2026-10-27 20:54): wrote C110b's readout (the implementation session's #442) and P5's Amendment 2, both before P5b runs.
+- **Found:** the prior (lost in path) is refuted. The information reaches the decision and goes unused (R3 about −0.01), so this is credit, not representation.
+- **Amendment 2:** P5b starts from `pilot.pt` with a fresh Adam (P5 kept no optimizer state). The KL kill counts iterations >= 1, as P1c's Amendment 1 did. The price against arm 0 compares 60 minutes of training with 30, so it's descriptive; the mechanism bands decide.
+- **Next:** P5b, 30 minutes × 2 seeds, after C111.
+
+### #444 · 2026-10-27 · A5 C111 · C111 reads R-flat: with PlusPower timed by the oracle and the same pilot on both sides, it is worth about the same against an Energy at every strength (start 0.526, arm 0 0.519, arm 0 with S on both sides 0.533; Δ L3 − L1 +0.007 ± 0.018, by seed +0.031 / −0.018), and it meets the per-card goal in every list at every level, so pilot strength doesn't explain the drafts' PlusPower deficit; timing does
+- **Done** (C111, 20:43:37-20:56:40, exit 0 ×6, 0 game errors; lists 3, 1, 21; 256 games a pair; seeds 91 and 2; deals
+  paired across levels; `runs/probe/C111-symmetric-strength/readout.json`, binomial SE over 512 games a list):
+
+  | level | sides (a = list, b = copy) | list's share, pooled ± SE | per list (3, 1, 21) | per seed | goal per list |
+  |---|---|---|---|---|---|
+  | L1 | start T / start G | 0.526 ± 0.013 | 0.501 / 0.540 / 0.536 | 0.508 / 0.544 | meets ×3 |
+  | L2 | arm 0 s1 T / G | 0.519 ± 0.013 | 0.497 / 0.534 / 0.525 | 0.505 / 0.533 | meets ×3 |
+  | L3 | arm 0 s1 ST / S | 0.533 ± 0.013 | 0.519 / 0.561 / 0.519 | 0.539 / 0.526 | meets, clearly above, meets |
+
+- **Δ L3 − L1:** +0.007 ± 0.018 pooled. By seed +0.031 and −0.018; by list +0.018, +0.020 and −0.017.
+- **Bands:** R-flat (|Δ| < 0.04): met. R-rising and R-falling: not met. L2 sits slightly below L1, an order reversal
+  within noise, noted as the record asks.
+- **Reading:**
+  - Timed right, PlusPower is worth slightly more than an Energy (0.52-0.53) at every pilot strength we can reach, with
+    the same pilot on both sides.
+  - With C109 (asymmetric pilots move the share by 0.16-0.25), price differences come from pilot gaps, not from the
+    card's worth growing with skill.
+  - So the drafts' PlusPower deficit stays with timing: C106's oracle, C108's backward policy, P5.
+
+### #445 · 2026-10-27 · A5 BENCH-P5b · BENCH-P5b launched 21:01:31 (research's go, P5 Amendment 2): P5 s1 and s2 continued 30 minutes from their final pilots with C110's knockout labels logged on every branched row; the smoke run shows the branched signal already favours PlusPower exactly in conversion states (Δ +0.093 / +0.077 ± 0.005, against about 0 elsewhere)
+- **Build** (mine, about 30 lines in `notes/scripts/bench_train.py`):
+  - `--p5-komath N`: every N-th iteration, the collect also asks for C110's koMath labels
+    (`env/remote_worker.js` koCatch). They are joined to P5's branched rows by rollout row, the same base shift for both.
+  - The branched Q(PlusPower) − Q(other) is grouped by label (conversion, KO anyway, no-KO) and appended to
+    `<arm>/p5_komath.jsonl`.
+  - Off, the collect messages are unchanged.
+  - `c110_probe.py` gained `--pilot` and `--out` (+6 lines), so P5b's pilots can be read on C110's states.
+- **Smoke** (scratch; `--p5 --p5-komath 1 --keep-ckpt --iters 2 --seed 9 --start arm-p5-s1/pilot.pt`; exit 0):
+
+  | iteration | labelled | conversion Δ (n) | KO anyway Δ (n) | no-KO Δ (n) | collect s |
+  |---|---|---|---|---|---|
+  | 0 | 4,355 | **+0.0927 ± 0.0052** (666) | −0.0066 ± 0.0015 (730) | −0.0058 ± 0.0007 (2,959) | 74.8 |
+  | 1 | 5,047 | **+0.0770 ± 0.0049** (762) | −0.0057 ± 0.0010 (784) | +0.0023 ± 0.0007 (3,501) | 80.3 |
+
+  - koMath costs about 3-9 s of a collect (P5's collects without it ran about 71-73 s), about 4-5% of a 124-second
+    iteration. That's under the 10% line, so it runs every iteration.
+  - Iteration 0's KL was 0.130, the fresh-Adam spike (logged only); iteration 1's was 0.024. The checkpoint was kept.
+- **Run** (`runs/probe/BENCH/P5b/chain.sh`, registry BENCH-P5b): seeds 1 and 2, 30 minutes each, `--start
+  arm-p5-sN/pilot.pt`. Kill: KL > 0.05 for 2 consecutive iterations among iterations >= 1; entropy. Readouts:
+  bench_eval 1 and 4 against arm 0 (descriptive), the conversion log under G (seeds 91 and 2), and C110's R3 for P5b
+  and P5 on its states.
+- **Reading:** the branched signal already says the right thing: play PlusPower when the +10 converts, nothing
+  otherwise. The open question is whether 30 more minutes turns it into the policy.
+
+### #446 · 2026-10-27 · A5 C111 BENCH-P5b · C111 reads R-flat (Δ L3 − L1 +0.007 ± 0.018): oracle-timed PlusPower is worth slightly more than an Energy (0.52-0.53) at every pilot strength we can reach and meets the per-card goal in every list, so its deficit is timing, not pilot strength; P5b's smoke run shows the training signal carries the margin (branched Δ +0.08-0.09 in conversion states, about 0 elsewhere)
+- **Done** (research session, 2026-10-27 21:02): wrote C111's readout (the implementation session's #444); read P5b's launch (#445).
+- **Found:**
+  - A100 and A101 are answered for PlusPower: a stronger field doesn't raise its worth, so no league is needed for its sake.
+  - Its gap from the lists is the pilot's timing (G 0.43-0.47 against T 0.52-0.53), which C110b places in credit.
+  - P5b's signal check passes in the smoke run: Q(PlusPower) − Q(other) is +0.093 and +0.077 in conversion states, against −0.007 to +0.002 elsewhere. So if P5b saturates, the cause is how the update uses the signal, not the signal itself.
+- **Candidate if P5b saturates (from memory, not yet researched):** P5 updates only the sampled action's log-probability, and PlusPower is sampled in about 2-5% of conversion states. An all-action update over the two branched candidates (mean actor-critic, Asadi et al. 2017) uses both Q estimates every time. It would be written first.
+- **Next:** P5b's readout, about 22:20.
+
+### #447 · 2026-10-27 · A5 BENCH-P5b · P5b seed 1 was killed by the KL rule after 4 iterations (KL 0.110 at iteration 0, logged only; 0.041, 0.058, 0.058), while its branched signal kept favouring PlusPower in conversion states (+0.089, +0.070); every run started without Adam state has now tripped this kill within iterations 1-4, and no warm-Adam run has; flagged as a possible cold-optimizer artifact
+- **Evidence:**
+  - P5b s1 (`--start arm-p5-s1/pilot.pt`, a fresh Adam): KL 0.1104 / 0.0411 / **0.0576 / 0.0584**, killed at 21:10:02
+    (exit 99). Entropy 0.415 → 0.364.
+  - koMath, iterations 2-3: conversion Δ +0.0888 ± 0.0050 and +0.0701 ± 0.0051; KO-anyway −0.008 and −0.006; no-KO
+    −0.004 and −0.002.
+  - Cold-start runs (no optimizer state) and their kills under "KL > 0.05 for 2 consecutive iterations among it >= 1":
+
+    | run | start | KL it 1-4 | kill |
+    |---|---|---|---|
+    | P1c s1 (rerun) | T0b (warm-start file, no Adam) | 0.077, 0.073 | yes |
+    | P1c s2 | T0b | 0.049, 0.021, 0.051, 0.056 | yes |
+    | P5b s1 | P5 s1's pilot.pt | 0.041, 0.058, 0.058 | yes |
+    | P1b s1, s2 (no watcher) | T0b | 0.034-0.047; 0.037, 0.083, 0.044 | (would not; s2 would not) |
+
+  - Warm-start runs (start.pt carries Adam moments): arm 0 (max 0.054, never two above 0.05), P2 s2, P5 s1 and s2 (one
+    0.0516, one 0.0547), none killed.
+- **Reading** (not a band call):
+  - Adam's second-moment estimate takes many steps to settle, so a fresh optimizer may take larger steps for several
+    iterations, not just the first.
+  - If so, the 0.05 kill falls more on cold starts than on the designs. The fix would be to keep each run's optimizer:
+    resume from its `ckpt.pt`, as `--keep-ckpt` now allows, rather than `--start pilot.pt`.
+  - P5b s2 is training now from a cold start too.
+- **Next:** P5b s2 (from 21:10), then readouts for whichever seed has a pilot. Raised with research and 333-10.
+
+### #448 · 2026-10-27 · A5 BENCH-P5b · Amendment 3 rules on the cold-optimizer pattern: P5b s1 stays killed, s2 runs unchanged, and from now on any cold-optimizer start runs 2 zero-learning-rate iterations to fill Adam's moments (weights untouched) before the standard KL kill; a killed seed reruns as P5b-w, which also tests the hypothesis
+- **Done** (research session, 2026-10-27 21:11): wrote Amendment 3 in P5's record, after P5b s1's kill (#447).
+- **Found:**
+  - All three cold-optimizer runs (P1c s1 and s2, P5b s1) tripped KL 0.05 within iterations 1-4, and no warm-optimizer run did. A hypothesis, not shown.
+  - P5b s1's signal stayed right (conversion Δ +0.07-0.09, about 0 elsewhere) while it was killed.
+- **Ruling:** no rescue after the fact, no threshold change, nothing changed mid-run. The fix is a weight-neutral pre-step (2 zero-learning-rate iterations), with the kill counted from training iteration 0, as arm 0's is.
+- **Test:** if P5b-w keeps KL <= 0.05 over iterations 0-3, the cold-optimizer reading holds. If it still trips, P5's update scale is the design question, written first.
+- **Next:** P5b s2's result, then P5b-w for s1 (and s2 if killed), about 32 minutes each.
+
+### #449 · 2026-10-27 · A5 BENCH-P5b · P5 Amendment 3's warm-up is built: `bench_train --adam-warm N` runs the first N iterations at learning rate 0 (data collected, Adam's moments filled, weights untouched), then LR; P5b-w (s1 rerun from P5 s1's pilot with 2 warm-up iterations) waits for P5b s2 to clear the GPU
+- **Done:** `notes/scripts/bench_train.py` +10 lines. It text-patches the worktree's train.py (ar/ itself is untouched)
+  to insert `for g in opt.param_groups: g["lr"] = 0.0 if it < N else LR` before its single `ppo_update` call. With the
+  flag off, nothing changes. result.json records `adam_warm`.
+- **Not yet verified:** the GPU smoke test (weights bit-identical to the start after 2 warm iterations, KL 0, Adam
+  moments filled) runs once P5b s2's training and readouts finish. No GPU work runs beside the arm.
+- **Plan for P5b-w** (research's Amendment 3):
+  - s1 from `arm-p5-s1/pilot.pt`, `--adam-warm 2`, with P5b's recipe (`--p5 --p5-komath 1 --keep-ckpt`), bands and
+    readouts. s2 too, if P5b s2 is killed.
+  - The standard kill (KL > 0.05 for 2 consecutive iterations) counts from the first training iteration. The warm
+    iterations' KL is 0 by construction.
+  - The budget is `--minutes 34`, so training keeps about 30 minutes after the two warm iterations (about 4 minutes).
+
+### #450 · 2026-10-27 · A5 research cadence · Deep-research round skipped at the 2-hour timer: the week is far ahead of its line (26% used at 7.6% elapsed), and the open questions are bench questions
+- **Done** (research session, 2026-10-27 21:46): the timer fired. Usage reading (current): 5-hour window 35%, week 26%.
+- **Why skipped:** working rule 18 holds fan-outs while the week is ahead of its line. The only literature lead, all-action updates for P5 (mean actor-critic), is needed only if P5b-w saturates, and it is recalled from memory, not cited.
+- **Next:** timer re-armed for 2 hours; P5b s2's readout, then P5b-w.
+
+### #451 · 2026-10-27 · A5 BENCH-P5b · P5b seed 2 ran its 30 minutes (13 iterations, no kill): missed conversions fell to 0.54 / 0.47 a game (P5 s2 0.62 / 0.59, arm 0 0.64; band <= 0.45 not yet met), and the branched signal held steady all run (conversion Δ +0.076 to +0.109; KO-anyway and no-KO about 0); PlusPower's price stayed at arm 0's (descriptive); `--adam-warm` passed its smoke test and P5b-w seed 1 launched 21:50:58
+- **P5b s2** (`--start arm-p5-s2/pilot.pt`, a fresh Adam, 21:10-21:39:38, 5,788 games, 0 errors):
+  - KL 0.141 (iteration 0, logged only), then 0.022-0.057, with one iteration over 0.05 (iteration 11). Not killed.
+  - koMath every iteration (`arm-p5b-s2/p5_komath.jsonl`): conversion Δ 0.091, 0.090, 0.079, 0.104, 0.084, 0.107,
+    0.096, 0.087, 0.103, 0.090, 0.085, 0.076, 0.109; KO-anyway −0.008 to 0.000; no-KO −0.005 to +0.005.
+  - PlusPower's share among the branched decisions: 0.017-0.032 in iterations 0-10, then 0.057 and 0.050.
+  - Under G (`eval-p5b-s2/conv_s{91,2}.json`): plays 161 / 141, attacks after a play 55 / 51, conversions 8 / 11,
+    conversion share 0.050 / 0.078, **missed 0.54 / 0.47 a game**.
+  - Descriptive (60 minutes of training against arm 0's 30), at 256 games against arm 0 s2:
+    - PlusPower 0.440 (−0.007), Gust 0.493 (+0.023), Item Finder 0.463 (0.000), Scoop Up 0.460 (−0.005), Computer
+      Search 0.441 (−0.011);
+    - mean price 0.516;
+    - head-to-head against arm 0 **0.497 ± 0.015**, against start 0.621 ± 0.029.
+  - P5b's C110 R3 step failed on seed 1's missing pilot. R3 for P5b s2 comes with P5b-w's readout.
+- **--adam-warm smoke** (scratch; `--adam-warm 2 --p5 --keep-ckpt --iters 2 --start arm-p5-s1/pilot.pt`; exit 0):
+  - The weights are **bit-identical** to the start pilot (126 tensors).
+  - Adam is filled: step 46, exp_avg_sq nonzero.
+  - KL 0.0001 / 0.0000. The first is numerical: rollout and update log-probs differ in batching and precision.
+  - The checkpoint resumes at it = 2.
+- **P5b-w** (registry BENCH-P5bw, `runs/probe/BENCH/P5bw/chain.sh`):
+  - s1 only (P5b s2 wasn't killed): `--start arm-p5-s1/pilot.pt --adam-warm 2 --minutes 34 --p5 --p5-komath 1
+    --keep-ckpt`.
+  - The kill: KL > 0.05 for 2 consecutive training iterations (it >= 2).
+  - Readouts as P5b's, plus C110's R3 for P5b-w s1, P5b s2, P5 s1 and s2.
+
+### #452 · 2026-10-27 · A5 BENCH-P5b · P5b-w seed 1 (2 warm-up iterations, then training) was killed by the KL rule at training iterations 14-15 (KL 0.060, 0.112) after about 31 minutes; the warm-up didn't calm the first step (its first training iteration's KL was 0.80, against cold starts' 0.11-0.14), but the next 11 iterations ran at 0.027-0.044; the policy moved further toward PlusPower than any run so far (its share at branched decisions 0.05 → 0.11-0.14); no pilot, so no readouts
+- **Evidence** (`runs/probe/BENCH/P5bw/train_s1.log`, `arm-p5bw-s1/p5.jsonl` and `p5_komath.jsonl`; 21:50:58-22:23:04,
+  exit 99; `ckpt.pt` kept):
+  - KL by iteration: 0.0001, 0.0000 (warm), **0.8015**, 0.0444, 0.0265, 0.0388, 0.0313, 0.0389, 0.0298, 0.0332,
+    0.0351, 0.0353, 0.0365, 0.0414, **0.0604, 0.1120**.
+  - Entropy: 0.421, 0.429 (warm), **0.324**, 0.400, 0.389 … 0.365, 0.338, 0.348.
+  - PlusPower's share among the branched decisions, by iteration: 0.052, 0.045, 0.043, 0.059, 0.062, 0.062, 0.084,
+    0.069, 0.080, 0.092, 0.077, 0.110, 0.138, 0.126, 0.129, 0.112. P5's ended about 0.04, P5b s2's 0.05.
+  - Conversion Δ +0.050 to +0.107 every iteration. Scale 6.9-9.5.
+- **Against research's test** (Amendment 3: KL <= 0.05 over training iterations 0-3 supports the cold-optimizer
+  reading): **not met**. The first training iteration is 0.80.
+  - The early repeated trips of cold starts (iterations 1-4) are gone: 11 iterations followed under 0.05.
+  - The kill came late, as the policy shifted toward PlusPower: share 0.11-0.14, entropy falling.
+- **A reading, not tested:** at lr 0 the policy doesn't move, so all 46 minibatch gradients point the same way.
+  Adam's first moment builds a large, coherent momentum, which the first real step applies at full LR. That is an
+  overshoot of a different kind from a cold start's.
+- **No pilot.pt** (killed), so the chain's readouts and its C110 R3 didn't run (FileNotFound). The iteration-15
+  checkpoint exists. Whether to read it is research's call: Amendment 3 rules out rescue, but measuring a checkpoint
+  isn't a verdict.
+
+### #453 · 2026-10-27 · A5 BENCH-P5b P5c · P5b can't meet its two-seed bands (s1 killed twice; s2 at 0.54 and 0.47 missed conversions against the <= 0.45 line), and my zero-learning-rate warm-up caused P5b-w's 0.80 first-step KL; Amendment 4 measures whether the harder push bought the fine timing before any more P5 training, and writes P5c (first-moment reset plus KL early stopping at 0.04) for 333-10's call
+- **Done** (research session, 2026-10-27 22:26): wrote P5b and P5b-w's readout and Amendment 4 in P5's record (the implementation session's #451 and #452).
+- **Found:**
+  - Amendment 3's test fails at training iteration 0 (0.80), while the iteration 1-4 trips are gone.
+  - The likely cause is that frozen weights let Adam's first moment build coherent momentum. That is my design's flaw, and untested.
+  - The late kill came as the policy moved the most yet: PlusPower at branched decisions 0.05 → 0.11-0.14.
+- **Gate (evaluation only, about 10-15 min):** R3 and missed conversions on P5b s2 and the killed s1 checkpoint (descriptive). Fine timing moves (R3 CI above 0, or missed conversions <= 0.45): P5c to 333-10. Only the coarse rule: stop P5; all-action update or set PlusPower aside.
+- **P5c (proposed, not run):** a warm-up that keeps second moments only, plus PPO early stopping at approximate KL 0.04; the kill rule stays as a backstop.
+
+### #454 · 2026-10-27 · A5 BENCH-P5b · P5 Amendment 4's gate (a gate, not a verdict) reads "P5c goes to 333-10" on its missed-conversion clause: P5b-w s1's iteration-16 checkpoint misses 0.26 / 0.24 conversions a game (P5b s2 0.54 / 0.47, arm 0 0.64); but it got there by playing PlusPower about 4x more everywhere (0.19-0.20 in conversion and no-KO states alike), not by targeting conversion turns (R3 −0.006, CI spans 0); only P5b s2's R3 point estimate turned positive (+0.011, CI spans 0)
+- **Done** (about 5 minutes; descriptive):
+  - `runs/probe/BENCH/P5bw/pilot_ckpt.pt` is built from `arm-p5bw-s1/ckpt.pt` (its model at it = 16, P5 s1's config),
+    labelled killed and descriptive.
+  - C106's conversion log under G (lists 3, 1, 21, 64 games, seeds 91 and 2) into `eval-p5bw-s1-ckpt/`.
+  - C110's R3 on its 3,281 states (CPU) into `P5bw/c110_r3_gate.json`.
+
+  | pilot | P(PlusPower) in conversion / no-KO states | R3 [95% CI] | R1 AUC | plays (G) | attacks after a play | conversion share | missed a game |
+  |---|---|---|---|---|---|---|---|
+  | P5 s1 | 0.054 / 0.063 | −0.010 [−0.026, +0.007] | 0.831 | 174 / 180 | 58 / 48 | 0.046 / 0.067 | 0.63 / 0.63 |
+  | P5 s2 | 0.036 / 0.050 | −0.013 [−0.028, +0.001] | 0.845 | 168 / 143 | 56 / 41 | 0.042 / 0.049 | 0.62 / 0.59 |
+  | P5b s2 | 0.079 / 0.067 | **+0.011** [−0.010, +0.035] | 0.856 | 161 / 141 | 55 / 51 | 0.050 / 0.078 | 0.54 / 0.47 |
+  | P5b-w s1 ckpt (it 16, killed) | **0.193 / 0.199** | −0.006 [−0.035, +0.024] | 0.867 | 303 / 285 | 140 / 125 | 0.059 / 0.060 | **0.26 / 0.24** |
+
+- **Gate** (Amendment 4, read on the s1 checkpoint with P5b s2 beside it):
+  - "R3 CI above 0, or missed <= 0.45": the R3 half isn't met (CI spans 0); the missed half is met (0.26 / 0.24). So
+    **P5c goes to 333-10**.
+  - The "stop" clause (R3 spans 0 and missed > 0.50) isn't met for the checkpoint. P5b s2 alone would sit between
+    (0.54 / 0.47).
+- **Caveat for P5c:**
+  - The checkpoint's missed conversions fell with a blanket rise in PlusPower plays: about 4x in both state kinds, and
+    attacks after a play about 2.5x P5b s2's. Discrimination didn't improve.
+  - The encoder's R1 kept rising with training (0.831 → 0.867).
+
+### #455 · 2026-10-27 · A5 BENCH-P5 P5c · The gate passes by the letter on missed conversions (0.26 and 0.24 at P5b-w s1's checkpoint), but the substance is the coarse rule: R3 is about 0 everywhere, since it plays PlusPower about 4× more in every state; P5c goes on the pre-decided go, with the absolute PlusPower price as the ground-truth readout, and the checkpoint's price is previewed while it builds
+- **Done** (research session, 2026-10-27 22:31): wrote the gate readout in P5's record (the implementation session's #454).
+- **Found:**
+  - My gate's missed clause can be met by playing the card more often, so fine timing isn't shown (R3 −0.006 [−0.035, +0.024]).
+  - The training signal is about 0 in no-KO states, so the pilot's own value sees no cost in spending PlusPower on any attack.
+  - "Play it whenever you attack" is therefore what P5 can teach, and its volume is near the oracle's (285-303 plays against T's 323-327).
+- **So:** R3 may be the wrong target, and PlusPower's absolute price per list at 256 games decides.
+- **Next:** implementation builds P5c (first-moment reset plus early stopping at KL 0.04); the GPU meanwhile measures the s1 checkpoint's price (descriptive); P5c launches after.
+
+### #456 · 2026-10-27 · A5 P5c · P5c is gated on the killed checkpoint's 256-game PlusPower price (333-10's refinement, written before the preview is read): it runs only if the price pools at >= 0.472 (arm 0 s1's 0.442 + 0.03) or reaches >= 0.50 in two of the three lists; otherwise the P5 line stops
+- **Done** (research session, 2026-10-27 22:32): recorded the gate in P5's record before the preview landed.
+- **Why:** the first gate passed by its letter, not its intent (#455). The volume shift alone doesn't justify about 70 GPU minutes.
+
+### #457 · 2026-10-27 · A5 BENCH-P5 · The P5 line stops by research's preview gate: P5b-w s1's iteration-16 checkpoint prices PlusPower at 0.455 ± 0.013 pooled (lists 3 / 1 / 21: 0.435, 0.476, 0.454; bar 0.472, or 0.50 in two lists; arm 0 s1 0.442), so P5c is not launched; its build (Adam first-moment reset, per-minibatch KL early stop) is kept, off byte-identical
+- **Preview** (P5 Amendment 5, descriptive; `runs/probe/BENCH/P5bw/preview/`, 22:32:03-22:32:39, exit 0 ×2):
+  - The checkpoint (`P5bw/pilot_ckpt.pt`, it = 16, killed run) is on both sides, greedy.
+  - Lists 3, 1, 21 against their PlusPower → Energy copies, 256 games a pair, seeds 91 and 2. Binomial SE over 512
+    games a list.
+
+  | list | price ± SE |
+  |---|---|
+  | 3 | 0.435 ± 0.022 |
+  | 1 | 0.476 ± 0.022 |
+  | 21 | 0.454 ± 0.022 |
+  | pooled | **0.455 ± 0.013** [0.430, 0.480]; by seed 0.469 / 0.441 |
+
+- **Gate** (recorded by research before the preview was read): launch P5c if pooled >= 0.472 (arm 0 s1's 0.442 +
+  0.03), or >= 0.50 in two of three lists. Neither is met: 0.455, and 0 lists at 0.50. **The P5 line stops.**
+- **Reading:**
+  - Across P5, P5b and P5b-w, branching moved the PlusPower policy: play rate up, missed knockouts from 0.64 to
+    0.25-0.54 a game.
+  - But it neither aimed the card at conversion turns (R3 about 0) nor raised its price beyond noise (+0.013 over
+    arm 0).
+  - Timed by the oracle, the same card is worth 0.51-0.53 (C106, C111). The gap between learned and oracle timing
+    stays open.
+- **P5c build kept** (mine, `notes/scripts/bench_train.py` +25 lines, flags off byte-identical; parsed on ar's
+  train.py, not run):
+  - `--adam-reset-m`: with `--adam-warm N`, zeroes Adam's exp_avg at iteration N, keeping exp_avg_sq and the step.
+  - `--kl-stop X`: after each minibatch's loss and before its step, if the minibatch's approximate KL exceeds X, the
+    PPO epochs stop. That minibatch's stats count, so the 0.05 kill still sees it. A `kl-stop:` line logs the
+    minibatches taken, out of the total.
+
+### #458 · 2026-10-27 · A5 BENCH-P5 close · The P5 line stops: the killed checkpoint's PlusPower price is 0.455 ± 0.013 (arm 0 s1 0.442; no list at 0.50), so P5c doesn't run; P5 taught "play it with attacks", not "hold it for a knockout", and the coarse rule doesn't lift the price, though oracle timing does (0.52-0.53)
+- **Done** (research session, 2026-10-27 22:34): wrote the preview readout and the P5 line's close in P5's record (the implementation session's #457).
+- **Found:**
+  - The signal carries the margin (+0.07-0.11 in conversion states), and the state carries it to the decision (0.92).
+  - The policy learned the coarse rule only (R3 about 0 throughout), and the price didn't move.
+  - My #455 reading (R3 may be the wrong target) is refuted: fine timing is where the value lies.
+- **Hypothesis:** the turn-end comparator is myopic. In no-KO states, play and hold score the same, so nothing teaches holding.
+- **Next:** the all-action record (P7), held for the auditor's audit of the P5 line, with a longer-horizon rival; a small deep-research round on teaching the value of holding a one-shot card (the weekly reading is now 3%).
+
+### #459 · 2026-10-27 · A5 C112 · C112 written (333-10's call): a signal check, no training, of whether P5's comparator scored at the end of the seat's next turn sees holding PlusPower beat playing it in no-KO states, testing the myopia hypothesis; it runs only if the branch code takes a horizon flag
+- **Done** (research session, 2026-10-27 22:36): wrote `runs/probe/C112-hold-horizon/record.md` with bands before launch.
+- **Bands:** R-horizon if hold − play at H2 is > 0 (CI above 0) in no-KO states and play − hold is > 0 in conversion states, at both seeds; R-not-horizon if the no-KO CI includes 0. Prior: R-not-horizon, weakly (the +10 persists).
+- **Next:** implementation checks whether a horizon flag suffices, and skips C112 if not.
+
+### #460 · 2026-10-27 · A5 C112 · C112 (hold against play at this turn's end and the next turn's end) is not run: by 333-10's condition it runs only if P5's branch code can score at the seat's next turn with a horizon flag, and it can't without a build (about 10 worker lines plus a 40-60-line collection driver)
+- **What exists:**
+  - `env/agents.js:297` PolicySearchAgent takes `horizon` (log #147): a line stops once the game turn has advanced
+    that many turns. 1 is the end of the deciding turn; 3 would be the end of the seat's next turn.
+- **What's missing:**
+  - P5's `ppCatch` (`env/remote_worker.js:187`) hardcodes `{k: 2, dets: 4, maxSteps: 40}` with the default horizon
+    1, and no message field sets them.
+  - At `maxSteps` 40 a three-turn line is often cut, and a cut line scores 0 (`agents.js:367`), which would bias H2.
+  - "H1 and H2 from the same branches" needs two agents on one CRN seed, or the score read at turn + 1 inside the
+    line.
+  - C112 also needs a no-training collection driver: P5 s1 as the continuation pilot, koMath labels, the drop for
+    greedy = PlusPower, two seeds with >= 300 conversion and no-KO states each, and game-clustered CIs.
+- **Not built.** It goes back to research and 333-10. The GPU is idle.
+
+### #461 · 2026-10-27 · A5 research round P7 · Deep-research round "Holding value credit assignment" delivered; it argues all-action updates can't help where the advantage is 0, so P7 is written but recommended against; on re-reading the evidence, my #458 overstated the P5 close, since the price preview was underpowered and the oracle's own behaviour suggests the target is catching conversions, not holding the card
+- **Done** (research session, 2026-10-27 22:40): one researcher plus a report writer (Sonnet), within 333-10's restored cadence (usage at
+  22:34: week 3%, 5-hour window 25%). Report `reports/Holding value credit assignment.md`, notes in
+  `research_notes/Holding value credit assignment/`. Wrote `runs/probe/BENCH/P7/record.md` (held for the audit).
+- **The round found:**
+  - No published study of learning when to hold a consumable. OpenAI Five scripted item use; AlphaStar learned from
+    human games.
+  - All-action, expected and hindsight methods only cut variance, so they inherit a zero advantage.
+  - Its top arms, untested, are (A) a branch continuation gated by the agent's own one-turn comparator and (B)
+    forced-hold exploration kept out of the policy target. It flags as hand-built the option-value shadow price and
+    any continuation gated by a simulator check that +10 converts a knockout.
+  - Citation fix: Mean Actor-Critic is Allen, Asadi et al. 2017 (arXiv), not "Asadi et al." as I cited from memory.
+- **Correction to #458, from re-reading C106 against the preview:**
+  1. **The price preview was underpowered.** In C106 the oracle's +0.05 came from catching about 0.6 conversions a
+     game. The checkpoint's conversion share and play volume suggest it catches about half of the oracle's
+     conversions, which predicts about +0.02-0.03. The preview measured +0.013, with an SE of the difference against
+     arm 0 of about 0.02. That fits both 0 and the prediction. "The coarse rule doesn't lift the price" overstated it:
+     the price didn't move detectably.
+  2. **Missed conversions can fall because the hand is empty.** They count only turns with PlusPower in hand, so
+     playing it early lowers them. The checkpoint's 0.25 overstates its progress. Conversions caught a game is the
+     cleaner count.
+  3. **The oracle plays PlusPower liberally.** About 90% of T's plays don't convert (conversion share 0.09-0.10, at
+     a volume of about 325), yet it reaches 0.52. So holding may not be the target. Playing it whenever a conversion
+     is there may be. That would undercut both my myopia hypothesis and the round's "zero baseline" framing, since
+     both are about holding.
+- **Next, a cheap check from existing logs (no GPU):** conversions caught a game (conversion plays over games) for arm
+  0 G, T, P5 s1 and s2, P5b s2 and the checkpoint, plus T's play rate in conversion and no-KO states. If T plays about
+  as often in no-KO states as in conversion states, the target is catching, and the question becomes P(play | a
+  conversion state). Then a longer P5 (P5c) rather than arms A or B. If T mostly holds in no-KO states, the round's
+  arms A and B stand. The auditor's audit and 333-10 decide.
+
+### #462 · 2026-10-27 · A5 BENCH-P5 C106 · From existing logs (no GPU): the oracle T catches 0.16-0.17 knockout conversions a game against 0.003-0.05 for every learned pilot (0.08-0.09 for P5b-w's checkpoint); at hits where PlusPower was available, T attaches it in 0.78-0.90 of conversion hits and saves it on KO-anyway hits (0.07-0.12), while every learned pilot attaches it less on conversion hits than on no-KO hits, P5b-w's checkpoint included (0.28 against 0.37)
+- **Done** (CPU, log reads only, research's ask; C106's `runs/probe/C106-pluspower-timing/{data,arm-arm0-s1}_s{91,2}.json`,
+  `eval-p5-s{1,2}`, `eval-p5b-s2`, `eval-p5bw-s1-ckpt`, `P5bw/preview`). Both seats are played by the pilot,
+  so counts per game cover both seats. 384 games = 2 seeds × 3 lists × 64.
+
+  | pilot · arm | conversions / games | a game | plays | missed a game |
+  |---|---|---|---|---|
+  | start G | 4 / 384 | 0.010 | 368 | 0.630 |
+  | arm 0 s1 G | 1 / 384 | 0.003 | 170 | 0.638 |
+  | P5 s1 G | 20 / 384 | 0.052 | 354 | 0.628 |
+  | P5 s2 G | 14 / 384 | 0.036 | 311 | 0.604 |
+  | P5b s2 G | 19 / 384 | 0.049 | 302 | 0.505 |
+  | P5b-w ckpt G | 35 / 384 | 0.091 | 588 | 0.253 |
+  | P5b-w ckpt G (preview, 256 a pair) | 129 / 1,536 | 0.084 | 2,308 | 0.200 |
+  | start T | 60 / 384 | 0.156 | 653 | 0.042 |
+  | arm 0 s1 T | 67 / 384 | 0.175 | 645 | 0.018 |
+
+  **PlusPower attached, at hits where it was attached or in hand** (`pp_log`, engine damage). Classes: conversion if
+  base (after W/R, without PlusPower) < HP left <= base + 10; no-KO if base + 10 < HP left; KO-anyway if base >= HP
+  left.
+
+  | pilot · arm | conversion | no-KO | KO anyway |
+  |---|---|---|---|
+  | start T | 57/73 = 0.781 | 329/441 = 0.746 | 8/108 = 0.074 |
+  | arm 0 s1 T | 66/73 = 0.904 | 336/480 = 0.700 | 12/101 = 0.119 |
+  | start G | 4/246 = 0.016 | 14/617 = 0.023 | 6/280 = 0.021 |
+  | arm 0 s1 G | 1/246 = 0.004 | 22/903 = 0.024 | 0/258 |
+  | P5 s1 G | 18/259 = 0.069 | 84/740 = 0.114 | 4/221 = 0.018 |
+  | P5 s2 G | 13/245 = 0.053 | 81/853 = 0.095 | 3/262 = 0.011 |
+  | P5b s2 G | 19/213 = 0.089 | 79/779 = 0.101 | 8/237 = 0.034 |
+  | P5b-w ckpt G (preview) | 119/426 = 0.279 | 795/2,132 = 0.373 | 73/616 = 0.119 |
+
+- **Not from logs:** T's per-decision play rate by koMath class. T's decisions weren't koMath-labelled, so it needs a
+  rerun, not run. The per-hit split above is the log-only substitute.
+- **Reading:**
+  - The oracle's PlusPower is mostly "attach before most attacks, but not when the hit kills anyway". Arm 0's oracle
+    favours conversion hits (0.90 against 0.70).
+  - The learned pilots attach it rarely and, if anything, less on conversion hits. Branching raised the overall rate
+    (to 0.28-0.37 at P5b-w) without the oracle's sorting.
+
+### #463 · 2026-10-27 · A5 BENCH-P5 · Research's branch rule (written in P5's record before the number): r = P_T(play | no-KO) / P_T(play | conversion) reads 0.96 (start T) and 0.77 (arm 0 T) from C106's T hit logs, both >= 0.5, "catching", which by 333-10's pre-decision means P5c (after research logs the preview gate's withdrawal)
+- **Source:**
+  - The koMath logs (`arm-p5b-s2/p5_komath.jsonl`, `arm-p5bw-s1/p5_komath.jsonl`) hold only per-class means and SEs of
+    Δ, not per-row values, so the share with Δ̂ > 0 by class can't be read without a rerun.
+  - Used instead: C106's T `pp_log` (engine damage, #462). At hits where PlusPower was attached or in hand, the share
+    attached: start T conversion 57/73 = 0.781, no-KO 329/441 = 0.746; arm 0 s1 T 66/73 = 0.904, no-KO 336/480 = 0.700.
+  - So r = 0.746 / 0.781 = **0.955** (start) and 0.700 / 0.904 = **0.774** (arm 0).
+- **Caveat:** this is per hit (an attack made with PlusPower available), not per PlusPower-playable decision, so it
+  conditions on the oracle's line reaching an attack.
+- **Rule:** r >= 0.5 is catching: P5c, both seeds, 2 × 34 minutes, as recorded. It is built (#457); waiting for research
+  to log the gate's withdrawal before launch.
+
+### #464 · 2026-10-27 · A5 BENCH-P5c · The no-GPU check reads catching (r = 0.955 and 0.774 > 0.5): the oracle attaches PlusPower before most attacks and saves it only when the attack already knocks out, catching about 0.17 conversions a game against the learned pilots' 0.003-0.09; so holding isn't the target, 333-10's preview gate is withdrawn, and P5c runs with bands rewritten on conversions caught and the absolute price
+- **Done** (research session, 2026-10-27 22:42): wrote the readout, the withdrawal and P5c's bands in P5's record (the
+  implementation session's #462 and #463), all before P5c runs.
+- **Found:**
+  - The learned pilots attach PlusPower too rarely (attach shares 0.03-0.37 against T's 0.7-0.9), not at the wrong
+    times.
+  - My myopia hypothesis (#458) and the round's holding framing (#461) are not supported. A one-turn signal already
+    expresses T's behaviour, which answers auditor A103's C112 question without the build.
+  - R3 and missed conversions are the wrong targets. P5c reads conversions caught a game (R-catching >= 0.12 at both
+    seeds) and the absolute price (R-price >= 0.472 pooled at both seeds, about 1.4 SE on the difference).
+  - Prior: catching about 0.10-0.13, price between.
+- **Usage-reading discrepancy (auditor A103):** at 22:34 the file read week 3% (raw JSON quoted in my tool output),
+  and at 22:42 week 5% with the 5-hour window 40%. The auditor read week 28% at 22:41. The file flips between
+  readings minutes apart, probably because several sessions write it. Until that's resolved I take the higher reading
+  (28% against about 8% elapsed, ahead of the line), so deep rounds go back to every 2 hours at the smallest breadth.
+- **Next:** P5c, 2 × 34 minutes; readout about 00:00.
+
+
+### #465 · 2026-10-27 · A5 P5c · Explicit override (333-10, on Evan's behalf under row 100): P5c runs as a new experiment after the pre-registered P5 stop (#456-#458); the P5 line stays stopped
+- **Done:** auditor A103 (after #461) flagged that P5c launching reverses #456's pre-registered stop ("runs only if the
+  checkpoint price is 0.472 or more, otherwise the P5 line stops"; #457 read 0.455). I made the call, and it is
+  logged here as an override, not a reading.
+- **Why:** #461 found the gate itself underpowered. The checkpoint catches about half of the oracle's conversions,
+  which predicts +0.02-0.03, and the preview's SE on the difference was about 0.02. The no-GPU check (#462-#464) then
+  read "catching" (r = 0.955 / 0.774 > 0.5): the oracle attaches PlusPower before most attacks, and catching
+  conversions (0.16-0.17 a game for T against 0.003-0.09 for learned pilots) is the target a longer P5 would test.
+- **How it counts:** P5 stays stopped at #457/#458 by its own rule. P5c is a new experiment, counted only against its
+  own bands (conversions caught >= 0.12 a game, PlusPower price >= 0.472 pooled at 256 games), never as a
+  continuation or a rescue of P5.
+- **Next:** P5c's readout against those bands; the auditor reviews the P5 line with this entry.
+
+### #466 · 2026-10-27 · A5 BENCH-P5c · BENCH-P5c launched 22:49:56 (research's gate withdrawal #464, bands set before the run): the smoke test shows the Adam first-moment reset removes the first-step overshoot (first training iteration's KL 0.015, against P5b-w's 0.80)
+- **Smoke** (scratch; `--adam-warm 2 --adam-reset-m --kl-stop 0.04 --p5 --iters 3 --seed 9 --start arm-p5-s1/pilot.pt`;
+  exit 0):
+  - KL 0.0000, 0.0000 (warm), then **0.0153** at the first training iteration.
+  - The `kl-stop` line printed each iteration: 24/24, 22/22 and 22/22 minibatches, no cut.
+  - Adam step 68 (46 warm + 22), checkpoint at it = 3.
+- **Run** (`runs/probe/BENCH/P5c/chain.sh`, registry BENCH-P5c):
+  - Seeds 1 and 2 from `arm-p5-sN/pilot.pt`, `--minutes 34` (about 30 of training).
+  - Kill: KL > 0.05 for 2 consecutive training iterations (it >= 2); entropy.
+- **Deciding readouts** (research, before the run), under G:
+  - PlusPower's same-pilot price per list at 256 games a pair, seeds 91 and 2 (`eval-p5c-sN/price_s*.json`). Its
+    follow-through log gives conversions caught a game and attach shares at hits by class.
+  - The head-to-head against arm 0.
+  - KL and kl-stop's cuts.
+  - R3 descriptive.
+- **Bands:**
+  - R-catching: >= 0.12 caught a game at both seeds.
+  - R-price: pooled >= 0.472 at both seeds.
+  - R-not: < 0.10 caught and < 0.472 at both seeds.
+
+### #467 · 2026-10-27 · A5 research cadence · Deep-research round skipped at the 2-hour timer: no open literature question, since P5c (running) decides the next step on the bench
+- **Done** (research session, 2026-10-27 23:46): the timer fired. The file read 5-hour window 47%, week 6%; per #464 I take the auditor's higher week reading (28%) while the file flips.
+- **Next:** timer re-armed; P5c's readout about 00:15.
+
+### #468 · 2026-10-28 · A5 BENCH-P5c · BENCH-P5c reads "between": no R-catching (0.053 and 0.089 knockouts caught a game against the 0.12 bar; T 0.16-0.17), no R-price (pooled 0.463 at s1, 0.4720 at s2, on the 0.472 line), and not R-not, only because s2's price equals the bar at the files' 4-decimal precision; the KL bound held every iteration but cut 58-65% of the minibatch steps, the head-to-head is even with arm 0, and attach shares stay higher on no-KO hits than on conversion hits
+- **Done** (BENCH-P5c, 22:49:56-00:03:28; s1 21 iterations (19 training), 9,358 games; s2 19 (17), 8,393; 0 errors; no
+  kill; `runs/probe/BENCH/P5c/readout.json`):
+
+  | | s1 | s2 |
+  |---|---|---|
+  | PlusPower same-pilot price, lists 3 / 1 / 21 (256 a pair × 2 seeds, SE ±0.022) | 0.428 / 0.466 / 0.495 | 0.453 / 0.481 / 0.481 |
+  | pooled ± SE (by eval seed) | **0.463 ± 0.013** (0.468 / 0.458) | **0.4720 ± 0.013** (0.452 / 0.492) |
+  | conversions caught a game | **0.053** (82 / 1,536) | **0.089** (137 / 1,536) |
+  | attach at hits: conversion / no-KO / KO anyway | 0.089 / 0.133 / 0.048 | 0.227 / 0.285 / 0.113 |
+  | head-to-head against arm 0 of the same seed | 0.515 ± 0.017 | 0.503 ± 0.015 |
+  | KL, training iterations | 0.018-0.041 | 0.017-0.029 |
+  | minibatches taken under kl-stop | 156 / 452 (35%) | 168 / 400 (42%) |
+  | R3 (C110 states; descriptive) | −0.006 [−0.026, +0.014] | +0.014 [−0.013, +0.042] |
+
+  - References: T caught 0.156 / 0.175 a game, attaching 0.78-0.90 / 0.70-0.75 / 0.07-0.12. Arm 0 G caught 0.003.
+    P5b-w's checkpoint caught 0.084-0.091, priced 0.455.
+- **Bands** (research's, before the run):
+  - R-catching (>= 0.12 caught at both seeds): not met.
+  - R-price (pooled >= 0.472 at both seeds): not met; s1 is 0.463.
+  - R-not (< 0.10 caught and < 0.472 at both seeds): not met. s2's pooled price is 0.4720, the mean of per-pair values
+    stored to 4 decimals, so it sits on the bar, not under it.
+  - So **between**, on a boundary tie at s2.
+- **Reading:**
+  - Bounded updates trained P5's recipe without a kill, and it caught 18-30x arm 0's conversions, but half to a third
+    of the oracle's.
+  - The price rose about +0.02-0.03 over arm 0 s1's 0.442, within about 2 SE.
+  - The attach pattern is still inverted (no-KO above conversion at both seeds). Volume rose, sorting didn't.
+  - kl-stop cut most iterations after 2-12 of 24 minibatches: each minibatch's 8x-scaled branched step moves the policy
+    about 0.02 KL. The bound sets the pace, not the data.
+
+### #469 · 2026-10-28 · A5 BENCH-P5c · P5c's raw pooled prices (research's tie check): s1 711.0 / 1,536 = 0.46289, s2 725.0 / 1,536 = 0.47201, so s2 is not below the 0.472 bar, R-not isn't met, and P5c stays "between"
+- **Done** (CPU, from `eval-p5c-s{1,2}/price_s{91,2}.json`): `per_pair` stores W / G rounded to 4 decimals, with
+  G = 256 a pair. So W = per_pair × 256 is recovered to its half-game (draws count half); the largest reconstruction
+  error is 0.012 games.
+  - s1, wins by pair (seed 91: lists 3, 1, 21; then seed 2): 108.0, 121.0, 130.5; 111.0, 117.5, 123.0. Total 711.0 /
+    1,536 = **0.46289**.
+  - s2: 110.5, 118.5, 118.0; 121.5, 128.0, 128.5. Total 725.0 / 1,536 = **0.47201**.
+- **Arithmetic note:** 725 / 1,536 is 0.47201 (724 / 1,536 = 0.47135, 726 / 1,536 = 0.47266). So s2 is at or just
+  above 0.472, not below it.
+- **Band:** R-not needs < 0.472 at both seeds; s2 isn't, so P5c reads between. R-price needs >= 0.472 at both; s1 is
+  0.463, so no.
+
+### #470 · 2026-10-28 · A5 BENCH-P5c · P5c reads between (s2 725/1536 = 0.47201, at the 0.472 line; s1 0.463; caught 0.053 and 0.089 against the 0.12 bar): PlusPower's price tracks conversions caught (+0.02-0.03 over arm 0, about 1-1.4 SE, no effect claimed), the pace is bound by KL (kl-stop cut 58-65% of minibatches), and coverage is moving, not discrimination
+- **Done** (research session, 2026-10-28 00:07): wrote P5c's readout and band read in P5's record (the implementation session's #468
+  and #469).
+- **Found:**
+  - Caught a game: s1 0.053 (82/1536), s2 0.089 (137/1536); T 0.156-0.175.
+  - Attach shares, conversion / no-KO / KO anyway: 0.089 / 0.133 / 0.048 and 0.227 / 0.285 / 0.113, against T's
+    about 0.8 / 0.7 / 0.1.
+  - Head-to-head against arm 0: 0.515 and 0.503.
+  - Per-card goal: met for lists 1 and 21 at both seeds, not for list 3.
+- **My corrections:** 725/1536 is 0.47201, not 0.4714 (my arithmetic). kl-stop *took* 156/452 and 168/400 minibatches,
+  so 58-65% were cut, not 35-42% (I misread the field). Implementation's P5c entry is #468, not #467. The record is
+  fixed.
+- **Next (333-10's call):** a 30-minute continuation from P5c's warm checkpoints (the pace trend), or the same
+  comparator generalised to any playable Trainer (needs a build; the only version that could ever port to drafting).
+  My lean is the generic version, written first.
+
+### #471 · 2026-10-28 · A5 BENCH-P8 · BENCH-P8 (P5-gen) written on 333-10's call: the pilot's own play-or-greedy branches at any decision where a Trainer is playable, with no card list, about 10 branched rows a game so P5c's measured KL pacing applies; banded on the mean absolute price of the four focus cards against arm 0 (R-lifts at +0.03, both seeds)
+- **Done** (research session, 2026-10-28 00:09): wrote `runs/probe/BENCH/P8/record.md` with the mechanism, the KL plan, readouts
+  and bands before the build.
+- **Design:** the candidates are greedy and a uniform other Trainer play, or, when greedy is a Trainer play, a uniform
+  other legal option. 4 CRN copies, scored at the turn's end; Amendment 1's rescale. The share s = min(1, 10 / the
+  Trainer-playable decisions a game) is set by the smoke run before iteration 0. The start is warm (`start.pt`, as
+  arm 0).
+- **KL plan, fixed now:** P5c's configuration (kl-stop 0.04, the 0.05 kill as backstop), with the branched-row count
+  held to P5c's. No smaller scale, because arm 0's own KL (median 0.032) leaves the budget to the paired signal. A cut
+  share over 80% is reported, not adjusted.
+- **Bands:** M = the mean of the four focus prices; arm 0's is 0.451 (s1) and 0.461 (s2), the SE of the difference
+  about 0.011 (estimated). R-lifts if M >= arm 0's + 0.03 at both seeds; R-not if within 0.03 at both. The harm
+  guard as P5's. Prior: R-not.
+- **Next:** implementation builds it in one pass, then smoke, s, and 2 × 30 minutes.
+
+### #472 · 2026-10-28 · A5 BENCH-P8 · BENCH-P8 (P5-gen: branched greedy-vs-u advantages at every Trainer-playable main-phase decision) is built and launched 00:33:14 from start.pt, seeds 1 and 2, 30 minutes each, at s = 0.138 (72.5 Trainer-playable decisions a game); the smoke's per-card Δ already shows playing a random Trainer instead of greedy costs most for Scoop Up (−0.149), Imposter Oak (−0.086), Computer Search (−0.071) and Professor Oak (−0.058)
+- **Build** (one Sonnet lean-builder, 83k tokens; research's record `runs/probe/BENCH/P8/record.md`, bands and KL plan written
+  first):
+  - `env/remote_worker.js` +61 lines, `trCatch` behind `cmd.trBranch` / `cmd.trFrac`. At main-phase decisions with
+    a legal Trainer play, it branches greedy against u, with probability s. u is uniform over the other Trainer plays,
+    or over all other options if greedy is a Trainer play. 4 CRN copies to the turn's end.
+  - Rows whose recorded legal options don't hold both candidates are skipped. This was 1 of about 5,000 before the
+    fix, 0 after.
+  - `notes/scripts/bench_train.py`: `--p8`, `--p8-frac`, `wrap_p8`, and the P8 advantage patch (Q(taken) − mean,
+    P5's per-iteration rescale, GAE elsewhere), logged to `<out>/p8.jsonl` with per-card counts and Δ.
+  - Flag-off rollout and reply are byte-identical. P5's paths are unchanged.
+- **Smoke:**
+  - The builder's 2 iterations: 31,806 Trainer-playable decisions over 439 games, 72.5 a game (both seats), so s =
+    min(1, 10 / 72.5) = 0.138.
+  - Branch share 0.33 of the iteration's wall time, under 0.6, so not halved. Scale 3.9-4.0 (sd GAE 0.29-0.32,
+    branched 0.077-0.081). KL 0.037 / 0.043.
+  - My re-smoke on the fixed worker, 1 iteration: 4,294 branched, all aligned, 3,665 replaced. kl-stop cut at 13 of 24
+    minibatches. KL 0.024. Pilot saved.
+- **Smoke per-card Δ = Q(u) − Q(greedy)** (iteration 1, builder's). Each cell is n, then Δ when the card is u / Δ when
+  greedy is the card:
+  - Scoop Up 806, −0.149 / —; Lass 549, −0.013 / —;
+  - PlusPower 423, +0.008 / 73, −0.009;
+  - Computer Search 389, −0.071 / −0.025; Item Finder 376, −0.050 / −0.028;
+  - Super Energy Removal 200, −0.013 / −0.085; Gust 189, +0.003 / −0.047;
+  - Professor Oak 204, −0.058 / −0.082; Energy Retrieval 105, −0.025 / −0.042;
+  - Imposter Oak's Revenge 65, −0.086 / —; Rocket's Sneak Attack 154, −0.007.
+- **Run** (`runs/probe/BENCH/P8/chain.sh`, registry BENCH-P8):
+  - `--p8 --p8-frac 0.138 --kl-stop 0.04 --keep-ckpt`. Kill: KL > 0.05 for 2 consecutive iterations from iteration
+    0; entropy.
+  - Readouts per seed: PlusPower's same-pilot price with its conversion log (probe_prompt_oracle G, 256 games a pair,
+    seeds 91 and 2); Gust, Item Finder, Scoop Up and Computer Search at 256 (trainer_value); head-to-head against
+    arm 0.
+- **Usage** (333-10): the week was 29% at 00:04. Lean mode stays.
+
+### #473 · 2026-10-28 · A5 BENCH-P5d · BENCH-P5d written for auditor A105 (is training time the dial?): P5c's seeds continued in up to 3 warm 30-minute stages with the recipe unchanged, a stop rule if catches don't rise by +0.01 a stage, bands on catches (>= 0.12) and the absolute and matched-time price; C104 is the matched arm-0 base, run before any price claim; the slot after P8 is 333-10's call
+- **Done** (research session, 2026-10-28 00:42): wrote the P5d section in P5's record (bands, stop rule, matched base) before any run.
+- **Also recorded:** P8's smoke and my prediction before its readout (P8's record). Δ as u is mostly negative
+  (Scoop Up −0.15, Computer Search −0.07, Item Finder −0.05, PlusPower about 0), so P8's signal mostly reinforces the
+  pilot's choices. Expected: M flat or down.
+- **Prior for P5d:** R-plateau (s1's catches were flat from P5 to P5c).
+
+### #474 · 2026-10-28 · A5 BENCH-P5d · BENCH-P5d is queued behind P8 (registry BENCH-P5d, launched 00:45:29): P5c continued from its warm checkpoints in up to three 30-minute stages, both seeds a stage, with a two-seed stop rule on knockouts caught a game
+- **Done:**
+  - `notes/scripts/p5_read.py` (new, CPU): P5c's readout as a script. From an eval folder's `price_s{91,2}.json` and
+    `bench_eval.json` plus the train logs, it reports:
+    - PlusPower's same-pilot price per list and pooled, from raw wins (per_pair × 256, draws half);
+    - caught a game, and attach shares by class;
+    - head-to-head against arm 0; KL; kl-stop's cut share.
+  - It reproduces P5c s2: 725.0 wins, 0.47201; 0.0892 caught a game; attach 0.227 / 0.285 / 0.113.
+  - `runs/probe/BENCH/P5d/chain.sh`, per stage k (at most 3), per seed:
+    - `bench_train --resume-from`, from `arm-p5c-sN/ckpt.pt` at stage 1 (t_train 2,026 s / 1,947 s, it 21 / 19),
+      then `arm-p5d-sN/ckpt.pt`, into `arm-p5d-sN/`;
+    - `--minutes` = the checkpoint's clock + 30, `--p5 --p5-komath 1 --kl-stop 0.04 --keep-ckpt`;
+    - the KL kill from each stage's first iteration; the stage's pilot and result are kept as `*_stage<k>`;
+    - readouts into `eval-p5d-sN-st<k>/`: the 256-game price at seeds 91 and 2, then the head-to-head against arm 0,
+      then p5_read.
+  - **The stop rule** (research): the next stage only if the two-seed mean of caught a game rose >= +0.01 over the
+    previous stage (P5c: 0.071).
+  - C104's condition (>= 0.12 caught at both seeds, or a pooled price >= 0.472 at both) is flagged in the log, not run
+    automatically.
+- **Expected:** about 70 minutes a stage (2 × 30 of training plus readouts), from P8's end at about 01:50 to at most about
+  05:20.
+
+### #475 · 2026-10-28 · A5 BENCH-P8 · BENCH-P8 (Trainer-wide branching) gives no lift: seed 1 was killed by the KL rule late (iterations 15-16: 0.055, 0.088), and seed 2's focus-card mean M is 0.448 against arm 0's 0.461 (−0.013, R-not on its own seed) with every focus card a little below arm 0 and a head-to-head of 0.421 ± 0.015 against arm 0, under the harm line on that seed; the two-seed bands can't be read with one seed
+- **Done** (BENCH-P8, 00:33:14-01:34:59):
+  - **s1:** killed at 00:59:19 (exit 99) after 17 iterations. KL 0.018, 0.017, 0.022, 0.024, 0.028, 0.027, 0.021, 0.033,
+    0.023, 0.021, 0.024, **0.058**, 0.037, 0.029, 0.023, **0.055, 0.088**. No pilot, so no readouts.
+  - **s2:** 18 iterations, 7,979 games, 0 errors. KL 0.017-0.038. kl-stop took 166 / 408 minibatches (59% cut).
+    Entropy 0.435 → 0.389.
+- **s2 readouts** (256 games a pair, seeds 91 and 2; against arm 0 s2's 256-game prices, #417):
+
+  | card | P8 s2 pooled | arm 0 s2 | Δ | per list (3, 1, 21, 2) |
+  |---|---|---|---|---|
+  | PlusPower | 0.441 | 0.447 | −0.006 | 0.405 / 0.455 / 0.462 / — |
+  | Gust of Wind | 0.463 | 0.470 | −0.008 | 0.470 / 0.454 / 0.493 / 0.433 |
+  | Item Finder | 0.441 | 0.463 | −0.022 | 0.450 / 0.434 / — / 0.438 |
+  | Scoop Up | 0.448 | 0.464 | −0.016 | 0.434 / 0.442 / 0.467 / 0.449 |
+  | Computer Search (reference) | 0.437 | 0.453 | −0.015 | 0.443 / 0.420 / 0.459 / 0.427 |
+
+  - **M** = 0.448 (arm 0 s2 0.461), so −0.013.
+  - PlusPower caught a game: **0.017** (26 / 1,536), against P5c's 0.053-0.089 and arm 0's 0.003.
+  - Head-to-head against arm 0 s2: **0.421 ± 0.015**.
+- **Bands** (the record's, two seeds): R-lifts and R-not need both seeds, and s1 has no readout. On s2 alone it's R-not
+  (|−0.013| < 0.03). The harm guard (head-to-head under 0.45 at both seeds) is met at s2 only. No card is "up". The
+  prior (R-not) holds on the one seed.
+- **Reading:**
+  - Spread over every Trainer (about 72 playable decisions a game, s = 0.138), branching made the pilot weaker against
+    arm 0 and nudged every focus card down slightly.
+  - It caught a third of P5c's PlusPower knockouts.
+  - KL stayed bounded (kl-stop) at s2, but s1 rose late past the 0.05 line from a warm start.
+- **Next:** P5d started 01:35:32 (stage 1 from P5c's checkpoints).
+
+### #476 · 2026-10-28 · A5 BENCH-P8 · P8 (Trainer-wide branches) can't meet its two-seed bands, since s1 was killed by the KL backstop; s2 reads R-not (M 0.448 against arm 0's 0.461, no card up) and crosses the harm line (head-to-head 0.421 ± 0.015), as the note written before the readout predicted; the likely cause is the KL budget spent on uniform-u rows that mostly repeat the pilot's choices, starving the GAE epochs
+- **Done** (research session, 2026-10-28 01:38): wrote P8's readout (the implementation session's #475).
+- **Found:**
+  - s2 prices: PlusPower 0.441, Gust 0.463, Item Finder 0.441, Scoop Up 0.448, Computer Search 0.437, all 0.006-0.022
+    below arm 0 s2. kl-stop cut 59%.
+  - This bears on my P8 KL plan: giving the budget to branched rows helps only when their signal is informative.
+- **Next:** P5d stage 1 (started 01:35) decides whether the comparator teaches catching with enough samples at the
+  right states. A P8 successor (u from the policy's own top alternatives, and GAE epochs protected) is written only
+  after that and the audit.
+
+### #477 · 2026-10-28 · A5 research cadence · Deep-research round skipped at the 2-hour timer: no research call is open and the week is well ahead of its line (29% at about 10% elapsed)
+- **Done** (research session, 2026-10-28 01:46): the timer fired. The file read 5-hour window 9%, week 29% (the higher reading, per 333-10).
+- **Next:** timer re-armed; P5d stage 1's readout about 02:45.
+
+### #478 · 2026-10-28 · A5 BENCH-P5d · P5d stops after stage 1 by its rule: the two-seed mean of PlusPower knockouts caught a game was 0.0697 against P5c's 0.071 (needs +0.01); 30 more minutes left catching flat, the attach pattern still inverted, and PlusPower's price at 0.465 / 0.485 (C104's condition not met: s1 is under 0.472)
+- **Done** (BENCH-P5d, 01:35:32-02:40:00; stage 1 resumed from P5c's checkpoints, warm Adam; 20 iterations a seed; KL
+  0.018-0.046 / 0.018-0.040; no kill; 0 errors; `eval-p5d-s{1,2}-st1/p5_read.json`):
+
+  | | s1 | s2 |
+  |---|---|---|
+  | PlusPower price, lists 3 / 1 / 21 | 0.436 / 0.508 / 0.452 | 0.482 / 0.476 / 0.498 |
+  | pooled (raw wins / 1,536) | **0.465** (714.5) | **0.485** (745.5) |
+  | caught a game | 0.075 (115 / 1,536) | 0.065 (99 / 1,536) |
+  | attach at hits: conversion / no-KO / KO anyway | 0.174 / 0.266 / 0.069 | 0.149 / 0.196 / 0.053 |
+  | head-to-head against arm 0 (30 minutes of training) | 0.551 ± 0.024 | 0.515 ± 0.028 |
+  | kl-stop: minibatches taken | 148 / 476 (69% cut) | 122 / 480 (75% cut) |
+  | P5c (the previous stage), for reference: price / caught | 0.463 / 0.053 | 0.472 / 0.089 |
+
+- **Rule** (research, P5d section): the next stage only if the two-seed mean of caught a game rose >= +0.01 over the
+  previous stage. It went 0.071 → 0.0697, so **stop**. C104's condition (>= 0.12 caught at both seeds, or price >=
+  0.472 at both) is not met.
+- **Reading:**
+  - Catching is flat from 30 to 60 minutes of P5's recipe (0.053 / 0.089 → 0.075 / 0.065).
+  - Attach stays higher on no-KO hits than conversion hits at both seeds.
+  - The price drifted up at s2 (0.472 → 0.485) and s1 (0.463 → 0.465). The head-to-head against arm 0 is above even
+    (0.551 / 0.515), but against arm 0's 30 minutes, not a matched time.
+  - kl-stop cut 69-75% of the minibatch steps, as in P5c.
+  - The P5 line ends here by its rules.
+
+### #479 · 2026-10-28 · A5 BENCH-P5d · P5d reads R-plateau (stopped after stage 1 by its rule): caught a game 0.0697 against P5c's 0.071; prices 0.465 and 0.485; the comparator signal teaches about 40% of the oracle's catching, then stops; the P5 line ends
+- **Done** (research session, 2026-10-28 02:43): wrote P5d's readout in P5's record (the implementation session's #478).
+- **Next:** the one-page bench summary for Evan (auditor A107, 333-10), `reports/Bench summary 2026-10-28.md`; no new probes.
+
+### #480 · 2026-10-28 · A5 bench summary · The one-page bench summary for Evan is written (auditor A107, 333-10): oracle ceilings at about an Energy, the backwards PlusPower policy, KL-bound pace, and 0 per-card effects in 16 hours; I recommend (b), resuming drafting from the gate base and reading G1 plus the tempo-card counts, with the strongest case for (a) beside it
+- **Done** (research session, 2026-10-28 02:43): `reports/Bench summary 2026-10-28.md`, with no new probes or research. Numbers are labelled measured or estimated and taken from the records and log #417-#479.
+- **Next:** 333-10 routes it to Evan in the morning; the decision reverses his rows 91/95, so it is his.
+
+### #481 · 2026-10-28 · A5 research cadence · Deep-research round skipped at the 2-hour timer: no research call is open, the week is ahead of its line (30% at about 11% elapsed), and the next direction waits on Evan's (a)/(b) decision
+- **Done** (research session, 2026-10-28 03:46): the timer fired; week 30% (the file showed no 5-hour field).
+- **Next:** timer re-armed; the GPU is idle pending Evan's call on the bench summary (#480).
+
+### #482 · 2026-10-28 · A5 research cadence · Deep-research round skipped at the 2-hour timer: nothing has changed since #481 (no research call; week 30%; waiting on Evan's (a)/(b) decision)
+- **Done** (research session, 2026-10-28 05:47): the timer fired; 5-hour window 1%, week 30%.
+
+### #483 · 2026-10-28 · A5 research cadence · Deep-research round skipped at the 2-hour timer: still no research call and no decision from Evan on the bench summary (#480); week 31%
+- **Done** (research session, 2026-10-28 07:47): the timer fired; 5-hour window 6%, week 31%.
+
+### #484 · 2026-10-28 · A5 AUDIT-engine · Plan for Evan's engine audit (row 102, about 08:50: "Why would the engine reward something different? It's the same game. Maybe do an audit into whether the engine is correct again, and that all cards are working properly"): rules, then every Pokémon and Energy card in the lists and the pool, then #235's Trainer fixes and the env's legal options; a fault list ranked by impact; fixes proposed, not applied until reviewed
+- **Roles** (333-10): implementation leads, since it owns the engine and env. Research supplies outside references
+  through the deep-research skill: official card texts and the 2000-era rules and rulings. The auditor reviews.
+- **Why outside references:** `notes/data/cards/pool.json` is built from the engine's own card definitions, so
+  checking the engine against it is circular. HP, types, Weakness, Resistance, retreat, costs, damage and texts are
+  checked against research's printed-card table.
+- **Steps, in order (lean: the week is about 30% against a line of about 13%):**
+  0. **Inventory** (me, CPU): every Pokémon and Energy card in the 24 human lists and in the draft pool. Impact =
+     copies × lists playing it. Into `runs/probe/AUDIT-engine/`.
+  1. **Regression** (me, CPU, existing suites): the engine and common specs, the rulings tests (#235: 694 / 250 /
+     23 of 23), `env/tools/test_env.js` and `verify_enumerator --games 300`. This checks that #235's Trainer fixes
+     hold and that the env offers every legal attack, Power and Trainer play.
+  2. **Rules** (one Sonnet lean-builder, live scenario scripts on `env/engine.js`): setup and mulligans, first-turn
+     rules, draw, one Energy attach and one retreat a turn, evolution timing, bench size, status conditions and their
+     between-turn checks (Asleep, Paralyzed, Confused with self-damage, Poisoned), Weakness ×2 and Resistance −30,
+     knockouts and Prizes, win conditions (all Prizes, no Pokémon, deck-out at the draw, sudden death), and Pokémon
+     Power rules (Muk's Toxic Gas, Aerodactyl's Prehistoric Power, status disabling).
+     - Our env's own rule too: the round/turn limit, how it picks a winner, and whether it changes which decks win.
+       This is measured by finishing cut games and comparing winners.
+  3. **Card data** (research's table, then a mechanical diff by me): engine card definitions against printed values.
+  4. **Card effects** (Haiku lean-readers in groups, then the builder's live scripts): each attack's and Power's code
+     against its printed text: coin flips, status, bench damage, self-damage, Energy discard, conditions. Flagged
+     cards, and every effect attack in the 24 lists, get a live scenario script.
+  5. **Skeptic:** every fault is re-tested with a fresh script by another agent.
+  6. **Output:** a fault list ranked by impact, with fixes proposed. Applied only after the auditor's review.
+  7. **After fixes:** the key bench readings again on the fixed engine: focus-card prices at 256 games, C106's T
+     against G, and arm 0's prices.
+- **Nothing else runs** (333-10's hold): no GPU experiments during the audit. Steps 0-1 start now.
+
+### #485 · 2026-10-28 · A5 engine audit (row 102) · Evan's question ("Why would the engine reward something different? It's the same game") starts an engine audit led by implementation; the research side runs one deep-research round on the 2000 STS game and tournament rules and on card-text and rulings references; the bench summary's wording is corrected; and a pipeline signal is flagged: 81% of bench games end on the turn cap and 3% by Prizes
+- **Done** (research session, 2026-10-28 08:53):
+  - started the round "STS 2000 rules and card references" (1 researcher plus the writer; usage at 08:52: week 32%,
+    5-hour window 7%; building on C02's findings and `notes/sts-2000-engine-check.md`);
+  - corrected `reports/Bench summary 2026-10-28.md`: "what the engine rewards" now reads as engine bugs, environment
+    rules that differ from tournament play, or what this pilot can exploit, with a dated note;
+  - appended Evan's words to the estack inbox.
+- **Signal for the audit (measured, `runs/probe/BENCH/eval-p5c-s2/price_s91.json`, G, 768 games):** endings were
+  time 622 (81%), no Pokémon 76, deck-out 44, Prizes 26 (3%). C02: at the real STS, time was reached in about 5-25% of
+  Swiss games, and fast decks took six Prizes in about 13-14 engine turns. Our cap is 20-45 engine turns.
+  - The gap may be the pilot (C02's H-pilot-slow), or the engine making knockouts slower than printed (HP, damage,
+    Energy or retreat rules). It's a direct check for the audit: on the human lists in the mirror, how many engine
+    turns does a Prize take, and are knockouts applied when damage reaches HP?
+- **Next:** hand the references to implementation as they land.
+
+### #486 · 2026-10-28 · A5 AUDIT-engine · Audit (a)-(c), first pass from code and existing hit logs: capped games go to the player ahead on Prizes, and with 81% of bench games capped the reward is mostly "Prizes ahead at turn T"; knockouts come slowly (about 3.4 a game across both seats in about 31.6 game turns); damage after Weakness and Resistance matches printed damage on 9,321 of 10,549 plain hits, the rest explained except one suspected Ditto fault (30 of 155 copied Slashes into Scyther doubled); inventory done
+- **Inventory** (`runs/probe/AUDIT-engine/inventory.json`):
+  - The 24 lists play 21 Pokémon and 9 Energy cards, with 37 attacks and 3 Powers. The rest of the pool has 204 Pokémon
+    and 1 Energy.
+  - Impact (copies × lists): Double Colorless 79 × 23 = 1,817; Fighting Energy 1,815; Scyther JU 1,340; Lightning
+    Energy 710; Hitmonchan BS 705; Psychic Energy 657; Jigglypuff JU 370; Wigglytuff JU 330; Electabuzz BS 310; Fire
+    Energy 276; Ditto FO 242; Mewtwo PR 216; Magmar FO 114; Chansey BS 66. Then 16 cards under 65.
+- **(a) Capped-game rule** (`env/game.js:129-141`, reward `:166-174`):
+  - A game unfinished when game turn T + 1 begins ends on time. T is drawn per game in [20, 45], counting both players'
+    turns.
+  - The player with fewer Prizes left wins; a Prize tie is a draw. No HP or Pokémon count enters.
+  - Reward: a win +1, a win on time +1/3, a draw −1/3 each, a loss −1.
+  - With 81% of games capped (research, from P5c's eval: 622 of 768), the reward is mostly "who is ahead on Prizes at
+    T". Whether that favours Energy-heavy decks is not measured yet.
+- **(b) Why games stall** (partial; C106's G hit logs, lists 3, 1 and 21 mirrored against their PlusPower → Energy
+  copies, 192 games a file, both seats one pilot):
+  - arm 0 s1: 15.1 hits a game, 28.1 mean damage a hit, knockouts 517 the same turn + 41 the next turn + 98 two turns
+    later = about 3.4 a game across both seats. 31.6 game turns a game. Endings: time 159, no Pokémon 25, Prizes 5,
+    deck-out 3 of 192.
+  - Start pilot: 17.4 hits, 26.5 damage, about 4.4 knockouts a game. Endings: time 143, deck-out 34, no Pokémon 9,
+    Prizes 6.
+  - So each player takes about 1.7-2.2 Prizes a game. C02 cites 6 Prizes in about 13-14 turns for fast real decks.
+  - Not yet measured: turns with an attack available but not taken, turns with no Energy-able attacker, and healing
+    per turn. These need a tracer.
+  - Caveat: the log's `game` field is per worker (32 ids over 192 games), so per-game figures are totals divided by
+    games.
+- **(c) Damage pipeline from 12,254 logged hits** (both pilots, seeds 91 and 2):
+  - 10,549 hits have plain-number printed damage. 9,321 match printed × 2 for Weakness, −30 for Resistance exactly.
+  - Of the 1,228 mismatches:
+    - 977 are Jab 20 into Fighting-resistant Scyther or Farfetch'd, logged at base −10: the intermediate before the
+      clamp to 0. Final damage 0, as ruled.
+    - 221 are Hitmonchan into Ditto without ×2: Ditto's Transform copies the Defending Pokémon, so a Ditto facing
+      Hitmonchan is a Hitmonchan (Psychic Weakness). Correct; my check used Ditto's printed Weakness.
+    - **Suspected fault:** 30 of 155 Ditto-copied Slashes (Scyther's attack) into Scyther did 60. A Ditto copying
+      Scyther is Grass (`set-fossil/ditto.ts` CheckPokemonTypeEffect), and Scyther's Weakness is Fire, so 30 is
+      printed. Possible causes: the recursion guard (`resolvingTransform`), a stale copy, or a Ditto-against-Ditto
+      chain. To be confirmed by a scripted test. Ditto FO's impact is 242 (22 copies, 11 lists).
+  - 1,705 hits have non-plain printed damage (30+, 10+, coin flips) and need the scripted tests.
+- **Next:** one Sonnet builder for (b)'s per-turn tracer on a human list's mirror, (c)'s scripted damage cases, and the
+  Ditto test. In parallel, the existing regression suites (#235's: engine and common specs, rulings, test_env,
+  verify_enumerator).
+
+### #487 · 2026-10-28 · A5 engine audit (row 102) · An outside printed-card table for all 277 pool cards (225 Pokémon, 10 Energy, 42 Trainers) is built from the PokemonTCG/pokemon-tcg-data dataset and keyed by pool.json's fullName, for implementation's audit; every card is matched, and 2 dataset conflicts are flagged for a scan check
+- **Done** (research session, 2026-10-28 08:56): the implementation session asked for it (pool.json is generated from the engine, so it
+  can't be the reference).
+  - Downloaded `cards/en/base1,base2,base3,base5,basep.json` (and base4, unused) from
+    github.com/PokemonTCG/pokemon-tcg-data, commit 39a26a14, into the scratchpad. Parsed as data only.
+  - Built `notes/data/cards/printed_reference.json` with `notes/scripts/build_printed_reference.py`. The set map is
+    BS→base1, JU→base2, FO→base3, TR→base5, PR→basep.
+  - Each card carries the dataset's id, HP, types, stage, evolvesFrom, Weakness, Resistance, retreat cost, attacks
+    (cost, damage, text), Pokémon Powers, rules text and alternate prints.
+- **Evidence:** 277/277 matched, 0 ambiguous, 0 missing. Holo and non-holo prints with identical text are collapsed.
+  Where one name has several promo prints, pool.json's HP and attack names pick the print (identity only).
+  - Spot check: Hitmonchan BS reads HP 70, Psychic Weakness, retreat 2, Jab 20 and Special Punch 40, as printed.
+- **Flags:**
+  - Dataset conflicts between a card's own prints: Dark Vileplume TR (Weakness differs between #13 and #30) and Raichu
+    FO (attack text differs between #14 and #29). Check these on a scan.
+  - The dataset carries no errata, and this is not a primary source. The deep-research round (running) is vetting it
+    and the Rulings Compendium.
+- **Next:** implementation diffs the engine against it; the rules references follow when the round lands.
+
+### #488 · 2026-10-28 · A5 AUDIT-engine · Audit steps 1 and 3: the engine's own suites pass (common 267 specs, sets 714, 0 failures; #235 had 250 and 694), and the engine's card data matches research's printed reference for all 225 pool Pokémon (HP, types, Weakness, Resistance, retreat, evolves-from, attack names, costs, damage, Powers), with three cosmetic string differences on cards no list plays; card effects go to two Haiku readers and rules to the builder's scripts against research's 2000 references
+- **Done:**
+  - **Regression** (CPU): `packages/common` jasmine-ts 267 specs, 0 failures (`runs/probe/AUDIT-engine/spec_common.log`);
+    `packages/sets` 714 specs, 0 failures (`spec_sets.log`). Still to run: the rulings tests, `test_env` and
+    `verify_enumerator`.
+  - **Card data diff** (`notes/scripts/audit/card_data_diff.py`, output `card_data_diff.json`): `pool.json` (the
+    engine's definitions) against `notes/data/cards/printed_reference.json` (research: pokemon-tcg-data commit
+    39a26a14, 277 cards, 0 missing). Of 225 Pokémon, 3 differ, none in the 24 lists:
+    - Nidorina JU and Nidorino BS evolve from "Nidoran Female" / "Nidoran Male" against the printed "Nidoran ♀ / ♂";
+    - Raticate BS's Super Fang damage is "" against "?".
+    - All Resistances are −30, as printed.
+  - **Effects worklist** (`runs/probe/AUDIT-engine/effects_worklist.json`): the 30 in-list cards (21 Pokémon, 9
+    Energy) with printed text and source file. Two Haiku lean-readers check every attack, Power and Energy rule
+    against its text (groups A and B). The builder's live scripts check flagged cards.
+  - **Rules references** (research; `research_notes/STS 2000 rules and card references/sts2000_rules_and_references.md`;
+    DCI Floor Rules of 14 Oct 1999 and the Rules Compendium filtered to rulings by 2000-07-22). Forwarded to the
+    builder as expected values:
+    - Confusion's self-damage in 2000 is 20 with Weakness applied, not the later 30.
+    - The mulligan's extra draw is optional, up to 2.
+    - The first player may attack.
+    - The sleep and Poison checks come at the end of every turn.
+    - Paralysis ends at the end of the paralyzed player's next turn.
+    - The win conditions, and Sudden Death.
+- **Known divergence to confirm** (#233 noted it): the engine uses the 2003 Confusion rule (30, free retreat). Against
+  2000 it does 10 more self-damage, though less when Weakness would apply.
+
+### #489 · 2026-10-28 · A5 engine audit (row 102) · Deep-research round "STS 2000 rules and card references" delivered: a 35-item testable checklist of the July 2000 game and tournament rules, each item tagged primary, secondary or inferred, with 2001+ changes marked, plus the outside references to test against (the DCI Floor Rules of Oct 1999 and the Rules Compendium filtered to rulings on or before 2000-07-22)
+- **Done** (research session, 2026-10-28 09:00): 1 researcher plus the writer (Sonnet). Report `reports/STS 2000 rules and card
+  references.md`, notes in `research_notes/STS 2000 rules and card references/`. The key checks were sent to the
+  implementation session before the report landed.
+- **Found:**
+  - The rules most likely to differ in a simulator:
+    - the opponent may draw 0-2 extra cards per mulligan, with no cap (Floor Rules §215);
+    - no first-turn restriction on drawing, attacking or Trainers in 2000 (the bans are from 2013 and 2020);
+    - Confusion self-damage is 20, with the Pokémon's own Weakness;
+    - Poison and the Sleep flip happen at the end of every turn, including the turn applied;
+    - Paralysis ends at the end of the owner's next turn;
+    - Toxic Gas also shuts off its owner's Powers;
+    - losing for having no Pokémon is immediate;
+    - at time, finish the turn and compare Prizes.
+  - Not found: the 1999 rulebook scans (archive.org and Bulbapedia blocked the fetches), the Sudden Death procedure,
+    and the order of the between-turns checks. These stay inferred or open.
+  - The researcher's one denied fetch (a spoofed Referer) was not retried.
+- **Next:** implementation runs the checklist against the engine and env, with `printed_reference.json` (#487) for
+  card text.
+
+### #490 · 2026-10-28 · A5 AUDIT-engine · Correction to #488 and more of step 1: the env already plays 2000 Confusion (20 with Weakness; `env/engine.js:39` sets `baseEraConfusion: true`, covered by `sets/tests/base-sets/confusion-2000.spec.ts`), so #488's "known divergence" is wrong; the rulings tests pass 23 of 23 and `test_env` passes
+- **Correction:** #488 said the engine uses the 2003 Confusion rule. Since #235's work, `env/engine.js:39` builds
+  `new C.Rules({ fossilsAsStarters: false, mulliganDrawCards: 2, baseEraConfusion: true })`. The spec
+  `confusion-2000.spec.ts` checks the 2000 behaviour: 20 self-damage, Defender reduces it, PlusPower doesn't add,
+  Weakness applies (Mr. Mime), Dark Primeape's Frenzy does 50. The engine's default without the switch is the later 30.
+  #233's note predates it.
+- **Regression, continued:**
+  - `node notes/scripts/ryuu_rulings_tests.js`: 23 of 23 checks agree with the 2000-era rulings.
+  - `node env/tools/test_env.js`: PASS (200 games, 36,276 decisions).
+  - `verify_enumerator --games 300` is running.
+- **Research's report** (`reports/STS 2000 rules and card references.md`): a 35-item checklist, each item tagged
+  primary, secondary or inferred, with 2001+ rules marked. It drives the builder's second scripted pass. Covered so far
+  by the suites: the mulligan draw of 2, Fossil and Doll at setup, Confusion, PlusPower after W/R.
+
+### #491 · 2026-10-28 · A5 AUDIT-engine · Audit step 1 done: `verify_enumerator --games 300` passes (29,936 main-phase decisions, 0 mismatches; 11,499 prompts, 281,891 raw answers tried, 0 missing, 0 invalid), so the env offers every legal attack, Power and Trainer play and nothing else; with #488 and #490, #235's Trainer fixes and the rulings still hold
+- **Evidence** (`runs/probe/AUDIT-engine/verify_enumerator.log`; 300 games, 0 engine errors, 25 s on 4 workers):
+  - Prompts by type: Choose cards 5,915, Choose pokemon 3,333, Choose energy 1,005, Show cards 800, Choose attack 156,
+    Attach energy 152, Alert 121, Confirm 17.
+  - "Engine leniency": the engine accepts raw actions the rules forbid, which the env never offers, matching with 0
+    mismatches. These are attaching to the opponent's Pokémon (attach@oA 19,959, @oB0-4), a Basic onto the opponent's
+    Bench (basic@oE 39,415), evolving the opponent's Pokémon (evolve@o*), 6 Power uses on the opponent's side, and
+    1,900 dead-ends. The engine is lenient; the env is not at fault.
+- **Step 1 total:** common specs 267 / 0, sets specs 714 / 0, rulings 23 / 23, test_env PASS, verify_enumerator PASS.
+
+### #492 · 2026-10-28 · A5 AUDIT-engine · Audit step 4, code reading (two Haiku lean-readers, 30 in-list cards): 47 of 57 attack, Power and Energy lines read OK; the strongest suspect is Ditto FO's Transform overwriting each attached Energy's provides with one any-type unit, which may make Double Colorless count as 1 on Ditto; four smaller suspects and three unverified paths go to the builder's scripts; #486's Ditto Slash suspicion reads as legit (a Ditto that copied Swords Dance)
+- **Group A** (Scyther, Hitmonchan, Jigglypuff, Wigglytuff, Electabuzz, Ditto, Mewtwo, Magmar, Chansey, Articuno; 85k
+  tokens): 19 of 20 lines OK on reading. Ditto FO's Transform:
+  - SUSPECT: `ditto.ts:170-178` sets `item.provides = StateUtils.rainbowEnergy()` per attached Energy, one any-type
+    unit, so a Double Colorless (2 Colorless) may count as 1.
+  - UNVERIFIED: copied attacks run `UseAttackEffect` from the Power (`ditto.ts:192-230`), and may skip the attack
+    gate (once a turn, the first turn). The any-type Energy rule is also switched off while Asleep, Confused or
+    Paralyzed, where the text only excludes the copy.
+  - Notes: copied passive Powers are offered; the KnockOut branch for Doll and Fossil is dead code.
+- **Group B** (Mr. Mime, Lickitung, Squirtle, Clefairy, Blastoise, Lapras, Clefable, Gastly, Machop, Mew, Farfetch'd, 9
+  Energies; 100k tokens). All Energies provide as printed (Double Colorless's 2 honoured, `check-effects.ts:116`).
+  Suspects:
+  - Blastoise BS Rain Dance: no Water-Pokémon filter (`blastoise.ts:89-112`).
+  - Gastly FO Energy Conversion: with no Energy in the discard it returns before the 10 self-damage
+    (`gastly.ts:66-70`).
+  - Farfetch'd BS Leek Slap: the lock is per player, not per Farfetch'd, and survives a knockout
+    (`farfetchd.ts:60-70`). Stricter than printed.
+  - Rainbow Energy TR: its 10 damage on attach is a direct mutation (`rainbow-energy.ts:38-40`); whether a knockout is
+    caught is unverified. Its type list includes 2001+ types (no effect).
+  - UNVERIFIED: Metronome (Clefairy, Clefable), whether the copied card's handlers fire; Mew PR Devolution Beam.
+- **#486's Ditto Slash at 60, re-read:** Swords Dance's marker (`sets/common/markers/during-your-next-turn.ts`) goes
+  on the attacking player's active slot, tagged with that Scyther card, and Slash checks it there. A Ditto that copied
+  Swords Dance therefore does 60 with Slash on its next turn, as the card implies. Most likely legit; the builder's
+  script will confirm.
+- **Impact order of the suspects:** Ditto × Double Colorless (Ditto 22 copies in 11 lists; DCE in 23 of 24 lists) far
+  above Rainbow (24), Metronome (4, 3), Blastoise (3), Gastly (2), Farfetch'd (1), Mew (1).
+- **Next:** these 8 cases are added to the builder's scripts. A skeptic re-test follows for every confirmed fault.
+
+### #493 · 2026-10-28 · A5 AUDIT-engine · Audit (b), (c) and the card cases, scripted (one Sonnet lean-builder, 196k tokens, CPU): the engine plays the 2000 rules as written (32 PASS, 0 FAIL, 3 untested) and only two minor card faults are confirmed, both on cards off the bench (Blastoise BS Rain Dance onto non-Water Pokémon, impact 3; Gastly FO Energy Conversion's missing self-damage, impact 2); slow games come from play, not the engine: under arm 0 the pilot attacks whenever it can, but no attack is payable on 45% of turns, amid about 4.4 Energy Removals a game, so 85% of capped games end on time and the Prize count at the cap decides the reward
+- **Scripts** (`notes/scripts/audit/`): `scene.js` (helper), `trace_worker.js`, `trace_games.py`, `summarize_trace.py`,
+  `damage_cases.js`, `ditto_probe.js`, `card_cases.js`. Outputs in `runs/probe/AUDIT-engine/`: `trace_summary.json`,
+  `trace_capped.jsonl`, `trace_untimed.jsonl`, `cases.json`, `ditto.json`, `card_cases.json`. 520 games, about 2.5
+  minutes of CPU. No engine or env file was changed.
+- **(b) Per-turn tracer:** lists 3, 1, 21, 2, each mirrored, pilot arm 0 s1 greedy on both seats; 400 games under the
+  round rule [20, 45] and 120 untimed.
+
+  | | capped | untimed |
+  |---|---|---|
+  | endings | time 340, no Pokémon 45, Prizes 10, deck-out 5 | deck-out 69, Prizes 34, no Pokémon 17 |
+  | game turns, mean | 30.9 | 50.8 |
+  | knockouts a game, both seats | 2.45 | 4.96 |
+  | games with no knockout | 42 / 400 | 1 / 120 |
+  | first knockout, game turn (mean) | 14.5 | 16.7 |
+
+  - An attack is available but not taken on **0.0%** of turns.
+  - An attack is legal on 55% of player turns. The Active can't pay for any attack on 41%, and no Pokémon in play can
+    on 31% (29% untimed).
+  - Energy Removal is played 1,193 times and Super Energy Removal 586 in the 400 capped games. Healing is 0: Scoop Up
+    is never played, though 3 of the 4 lists run 2-3.
+  - The 340 games decided on time: Prize tie (draw) 26%, 1 Prize 36%, 2 or more 37%.
+- **(c) Scripted rule cases** (`cases.json`, against research's 2000 references): **32 PASS, 0 FAIL, 3 INFO.**
+  - Covered: base damage, Weakness ×2, Resistance −30 with the floor, PlusPower after W/R, Defender, a knockout exactly
+    at 0, Prizes, Poison between turns and its knockout, Confusion (20 with Weakness, 2000 rule), the draw and deck-out,
+    the first-turn attack, one attach and one retreat a turn, evolution timing, Paralysis wearing off.
+  - The builder's own first FAILs on Defender and Koffing were script mistakes (target, Weakness), fixed and passing.
+  - Not tested: mulligan (the rulings suite covers its draw of 2), Sudden Death, the Asleep flip.
+- **Card cases** (`ditto.json`, `card_cases.json`):
+  - Ditto with Double Colorless counts 2 Energy (#492's top suspect is cleared).
+  - All 22 traced Ditto Slashes at 60 followed that Ditto's own copied Swords Dance; 57 others did 30 (#486 cleared).
+  - Ditto's copied attack ends the turn, and a second attack is rejected. It isn't blocked on the first player's first
+    turn, which 2000 rules allow.
+  - Rainbow Energy knocks out a 10-HP-left Pokémon at once. Farfetch'd Leek Slap is OK. Metronome copying Thunderpunch
+    and Swords Dance runs the copied card's handlers correctly.
+- **Confirmed faults, ranked by impact (copies × lists):**
+  1. **Blastoise BS Rain Dance:** attaches Water Energy to non-Water Pokémon, and the env offers it
+     (`blastoise.ts:91-103`: the AttachEnergyPrompt has no target restriction). Impact 3 (1 list).
+  2. **Gastly FO Energy Conversion:** no self-damage when the discard has no Energy (`gastly.ts:68-70`, an early
+     return). Impact 2 (1 list).
+  - Neither card is on the bench lists (3, 1, 21, 2), so no bench reading changes.
+- **Reading, for Evan's question** ("why would the engine reward something different?"):
+  - The engine plays the cards and rules as printed everywhere we tested, with two small exceptions off the bench.
+  - What differs from real play is the game's pace under these pilots: Energy denial and unpaid attacks make knockouts
+    slow (2.45 in 31 turns).
+  - So the env's round rule ends 85% of games on time, and the reward mostly pays the Prize lead at a random cut.
+    Real STS games ended on time far less often (5-25%, C02).
+  - The reward is the event's rule, but in this regime it measures something closer to "who is ahead early" than
+    "who wins the game".
+- **Remaining:** the effects of the 204 other pool Pokémon (the draft pool), not yet read; and the fixes, proposed for
+  review below.
+- **Proposed fixes** (not applied until the auditor reviews):
+  - Blastoise: restrict Rain Dance's target to Water Pokémon (`blockedTo` for non-Water slots).
+  - Gastly: deal the 10 self-damage before the discard check.
+
+### #494 · 2026-10-28 · A5 AUDIT-engine · 333-10's calls: the effects audit continues on the 40 Pokémon the drafts use most outside the lists (two Haiku lean-readers), and an evaluation-only end-rule test (M and the four focus cards under the current cap, untimed play and the real STS rule) is requested from research for its record and bands; the Blastoise and Gastly fixes go to the auditor as proposed in #493
+- **Drafted-Pokémon worklist** (`runs/probe/AUDIT-engine/effects_worklist_drafted.json`): Pokémon copies across all 594
+  decks of six populations: C85 s3 and s4 and C90 s3 and s4 at iteration 29, C91 s5 and s6 at 499.
+  - The top 40 not in the lists: Snorlax JU 478 copies (184 decks), Tauros JU 165, Kangaskhan JU 102, Electabuzz PR2
+    101, Eevee PR11 93, Cool Porygon PR15 89, Ekans TR 83, Rattata BS 80, Doduo BS 77, Meowth TR 66 … Alakazam BS 46,
+    Magnemite TR 46, Muk FO 46, Drowzee BS 45, Squirtle TR 45, Paras JU 44.
+  - In-list Pokémon the drafts use most (already read): Chansey BS 449, Lickitung JU 142, Farfetch'd BS 119, Scyther JU
+    118, Hitmonchan BS 85.
+  - Two readers take 20 cards each, briefed on #493's fault patterns: an early return skipping an effect, an
+    unrestricted prompt target, a lock kept on the player.
+- **End-rule test** (research writes the record and bands; I run it; about 30 minutes, evaluation only):
+  - Measures: M (each list against copies with 6 random Trainers turned into Energy, `energy+6#r`), plus PlusPower,
+    Gust, Item Finder and Scoop Up. Lists 3, 1, 21, 2; arm 0 s1 on both sides; 256 games a pair; seeds 91 and 2.
+  - End rules: the current cap ([20, 45] game turns, the Prize lead wins), untimed (to completion), and the real STS
+    rule.
+  - Asked of research: the game-turn distribution that stands for a 20-minute round, and whether the at-time
+    adjudication matches ours.
+
+### #495 · 2026-10-28 · A5 C113 · C113 written (333-10's call after the engine audit, #493): M and the four focus cards' prices under (i) the current cap scored as a win share, (ii) untimed, and (iii) the real STS rule, both as scored at the event (time win 2 of 3 points; iii-a, on (i)'s games) and with the cap set so time is reached in 20% of games (iii-b); R-rule-matters if any rule moves M or F by 0.03 at both seeds
+- **Done** (research session, 2026-10-28 09:12): wrote `runs/probe/C113-end-rule/record.md`, bands before launch, answering the
+  implementation session's two questions.
+- **Found while writing:**
+  - `env/game.js` already implements the STS adjudication (finish the turn, compare Prizes, a tie is a draw), and
+    its `reward()` already pays event points (a time win +1/3, a draw −1/3).
+  - The bench prices count a time win as a full win. So the event's scoring is the first difference to test.
+  - The second is the turn count: the real round reached time in 5-25% of games, against 85% here.
+- **Prior:** between. (iii-a) lifts M and F by +0.01-0.02; (ii) lowers them (58% deck-outs punish draw Trainers).
+
+### #496 · 2026-10-28 · A5 AUDIT-engine · The 40 Pokémon the drafts use most outside the lists read as printed: no suspect among the top 20 (Snorlax JU through Meowth JU), and three minor ones among the next 20 (Muk FO's Toxic Gas not switched off by Dark Arbok's Stare; Alakazam BS's Damage Swap no-knockout cap enforced only by the prompt, unverified; Exeggcute JU's Leech Seed healing without asking); no fault class from #493 recurs, so the pool audit stops here by 333-10's rule
+- **Done** (two Haiku lean-readers, 98k and about 100k tokens, read-only; worklist
+  `runs/probe/AUDIT-engine/effects_worklist_drafted.json`):
+  - **Entries 1-20** (Snorlax JU 478 drafted copies, Tauros JU, Kangaskhan JU, Electabuzz PR2, Eevee PR11, Cool Porygon
+    PR15, Ekans TR, Rattata BS, Doduo BS, Meowth TR, Psyduck FO / TR, Abra BS, Charmander BS, Rattata TR, Pikachu BS,
+    Machop TR, Sandshrew BS, Staryu BS, Meowth JU): all OK. Notes that change nothing:
+    - Tauros's Rampage confuses Tauros in the coin prompt before the damage, against the printed "after", which isn't
+      observable.
+    - Meowth TR's Coin Hurl asks for the target only on heads.
+    - Sandshrew's Sand-attack: tails ends the turn and the marker clears after the first try, the usual reading.
+    - Eevee's Chain Reaction triggers on any evolution, matching the English text.
+  - **Entries 21-40** (Grimer FO … Paras JU): OK, except:
+    - **Muk FO Toxic Gas** (`set-fossil/muk.ts:65, 81-85`): builds the PowerEffect with the blocked Power's user, so Dark
+      Arbok TR's Stare (`dark-arbok.ts:115`, a player marker) doesn't switch Toxic Gas off. A two-card edge case. The
+      owner exemption and the Asleep / Confused / Paralyzed rule are as printed. Drafted: Muk 46, Dark Arbok 51.
+    - **Alakazam BS Damage Swap** (`set-base/alakazam.ts:79-106`): the no-knockout cap is set as the prompt's
+      `maxAllowedDamage`, and no re-check was found. Weak suspect; `verify_enumerator` enumerates Move damage prompts
+      but doesn't test this cap. Drafted 46.
+    - **Exeggcute JU Leech Seed** (`set-jungle/exeggcute.ts:55-60`): removes the damage counter without asking ("you
+      may"). Harmless, since removing is never worse.
+  - Unverified engine paths (both readers): CheckTableState timing (Snorlax's Thick Skinned), slot markers clearing on
+    switch, countAdditionalEnergy excluding the cost Energy, Psyduck FO's Headache against Stadium and Tool plays (none
+    in the era).
+- **The audit's fault list, ranked by impact (copies × lists playing it; drafted copies for pool cards):**
+  1. Blastoise BS Rain Dance onto non-Water Pokémon (lists: impact 3). Confirmed by script.
+  2. Gastly FO Energy Conversion's missing self-damage (lists: impact 2). Confirmed by script.
+  3. Muk FO / Dark Arbok TR interaction (drafts). By reading.
+  4. Alakazam BS Damage Swap cap (drafts). By reading, unverified.
+  5. Exeggcute JU Leech Seed's "may" (drafts). Harmless.
+  - No fault touches the bench lists or the top-impact cards (Double Colorless, the basic Energies, Scyther, Hitmonchan,
+    Electabuzz, Jigglypuff / Wigglytuff, Ditto, Mewtwo).
+- **Next:** C113 (the end-rule test, running since 09:14:27). The fixes for 1-2 go to the auditor (#493). Items 3-4 can
+  get a scripted test if the auditor wants them.
+
+### #497 · 2026-10-28 · A5 C113 · C113 reads R-rule-matters, and the rule cuts against the lists: played longer, the human lists lose to their Energy copies (M, the list against copies with 6 Trainers as Energy: 0.49-0.50 under the current cap, 0.375-0.384 untimed, 0.389-0.398 under the real-STS stand-in at T = 64-65 turns with 17-18% time-outs; the start pilot 0.450 → 0.331 / 0.345), because in long games the Trainer-rich list decks out first (the copy wins 73% of deck-outs); the focus cards barely move (F −0.01 to −0.02); so the cap helps the lists, and under these pilots' slow pace the draw Trainers become a liability
+- **Done** (C113, 09:14:27-09:40:53, exit 0 ×9; `runs/probe/C113-end-rule/`; scripts `notes/scripts/c113_run.py` (every
+  game kept) and `c113_read.py`):
+  - M pairs (`energy+6#0..3`) and the four focus cards, lists 3, 1, 21, 2, the same pilot on both sides, 256 games a
+    pair (7,680 games a run).
+  - arm 0 s1 at seeds 91 and 2; the start pilot at seed 91 (under 20 minutes had passed). T = the 80th percentile of the
+    untimed run's game turns, logged before each fixed-T run: 65 / 64 (arm 0), 55 (start).
+
+  | pilot · rule | M (share) | M (points) | F (share) | time-reached | Prize ties at time | game turns (mean) | endings |
+  |---|---|---|---|---|---|---|---|
+  | arm 0 s91 · (i) cap | 0.489 | 0.492 | 0.451 | 85% | 23% | 31.4 | time 6,553, no Pokémon 831, deck-out 149, Prizes 147 |
+  | arm 0 s2 · (i) cap | 0.504 | 0.510 | 0.461 | 85% | 26% | 31.1 | time 6,521, no Pokémon 894, Prizes 187, deck-out 78 |
+  | arm 0 s91 · (ii) untimed | **0.375** | — | 0.444 | 0 | — | 51.5 | deck-out 4,227, Prizes 2,520, no Pokémon 933 |
+  | arm 0 s2 · (ii) untimed | **0.384** | — | 0.440 | 0 | — | 51.2 | deck-out 4,157, Prizes 2,531, no Pokémon 990 |
+  | arm 0 s91 · (iii-b) T 65 | 0.395 | **0.389** | 0.435 (points 0.434) | 17% | 14% | 50.3 | deck-out 3,215, Prizes 2,205, time 1,327 |
+  | arm 0 s2 · (iii-b) T 64 | 0.403 | **0.398** | 0.438 | 18% | 15% | 49.9 | deck-out 3,079, Prizes 2,199, time 1,412 |
+  | start s91 · (i) cap | 0.450 | 0.446 | 0.445 | 78% | 22% | 31.4 | |
+  | start s91 · (ii) untimed | 0.331 | — | 0.425 | 0 | — | 44.9 | deck-out 4,757 of 7,680 |
+  | start s91 · (iii-b) T 55 | 0.355 | 0.345 | 0.429 | 18% | 15% | 43.8 | |
+
+  - (iii-a), the cap's games scored by event points, moves M by +0.003 / +0.006 and F by −0.001 / −0.002.
+- **Bands** (research's, before the run): **R-rule-matters**. Against (i), (ii) moves M by −0.114 / −0.120 and (iii-b)
+  by −0.10 / −0.11 (points), at both seeds in the same direction. F moves at most −0.023, under 0.03. The prior ("between";
+  untimed lower) holds in direction, not in size.
+- **The mechanism** (M pairs, arm 0 s91, 4,096 games):
+  - Untimed, 2,141 games end in deck-out, and **the copy wins 1,557 of them (73%)**: the list, with 6 more Trainers
+    (Professor Oak, Bill and other draw), runs out first. The copy also wins Prize races 781-613. The list wins more "no
+    Pokémon" endings, 339-222.
+  - Under the cap, deck-outs almost vanish (69), and time decides 3,459 games with a tie in 837.
+  - At T 65, 1,566 deck-outs, the copy winning 1,193 (76%).
+- **Reading, for the ground truth and Evan's question:**
+  - The engine plays the game as printed (#493, #496). But under these pilots a game takes about 50 turns to finish (2.5
+    knockouts in 31), so long games end by deck-out, which punishes exactly the draw Trainers the human lists carry.
+  - The turn cap hides much of that. Under the real-STS stand-in the human lists lose to their Energy copies about 60-40.
+  - So the drafts' Energy lean is the right answer to the game as these pilots play it. The fix sits in the pilot's
+    pace: knockouts per turn, and the 45% of turns with no payable attack. Neither the end rule nor the engine is at
+    fault.
+  - This matches #493: in real play six Prizes come in about 13-14 turns (C02), well before deck-out.
+
+### #498 · 2026-10-28 · A5 C114 BENCH-P9 · Two records written after C113 (333-10's call): C114, an evaluation-only pace diagnostic in the P-list mirrors with SimpleBot as a reference (R-learnable if the bot takes knockouts 1.5× faster in 3 of 4 lists), runs first; BENCH-P9, a per-turn discount (γ 0.98 a game turn), is written and held for C114 and Evan; I chose a per-turn, not per-decision, discount because the latter would tax every Trainer play
+- **Done** (research session, 2026-10-28 09:44): `runs/probe/C114-pace/record.md` and `runs/probe/BENCH/P9/record.md`, bands
+  first.
+- **How firm C02's human pace is:**
+  - "Most 20-minute games finished": medium. Time was reached in 5-16% of Long Beach Swiss games, from a standings
+    model plus player samples.
+  - "Six Prizes in about 7 own turns (13-14 engine turns)": medium-low. Two player sources, both about fast decks at
+    their best (Wigglytuff notes, one Mewtwo game), so not a typical-game average.
+- **C114 bands:**
+  - R-learnable: SimpleBot's knockouts per own turn >= 1.5× arm 0's in 3 of 4 lists.
+  - R-deck-paced: within 1.2×. Energy lost to removal over Energy attached >= 0.3 then says the removal war sets the
+    pace.
+  - Prior: R-learnable, weakly.
+- **P9:** γ_T = 0.98 per game turn, so a win at turn 30 is worth about 1.5× one at turn 50 (arithmetic).
+  - Bands: R-faster (>= 1.2× knockouts per own turn at both seeds); R-M (M under the real-STS stand-in >= arm 0's + 0.03).
+  - A per-decision discount would make each Trainer play cost future value, a bias against the ground truth, so it is
+    only a recorded alternative.
+  - P9b (also training under the real-STS stand-in) is written as a variant.
+
+### #499 · 2026-10-28 · A5 C114 · C114 (the pace diagnostic; research's record `runs/probe/C114-pace/record.md`, bands first; row 100, 30 minutes or less, evaluation only) is started with one Sonnet builder: the audit's tracer extended with Energy targets, payable-attack timing, Energy lost to removal, switches and draws, over untimed P-list mirrors for the start, arm 0 s1 and SimpleBot
+- **Design** (research): each P list (3, 1, 21, 2) against itself, untimed with a 200-turn safety cap scored as a
+  draw, the same pilot on both seats. Start and arm 0 s1 at 256 games a mirror; SimpleBot at 256, or 128 if slow.
+  Seed 91, plus seed 2 if time allows.
+- **Readouts:** knockouts per own turn; median own turns to six Prizes; own turns to the first payable attack; payable
+  and attack shares; Energy per own turn and the share to non-attackers; Energy lost to removal against attached;
+  retreats, switches and evolutions a game; endings.
+- **Bands:** R-learnable if SimpleBot is at least 1.5x arm 0's knockouts per own turn in at least 3 of 4 lists;
+  R-deck-paced if within 1.2x.
+- **Held:** BENCH-P9 (a per-turn discount, γ 0.98 a game turn) waits for C114's reading and Evan's look at C113. Not
+  built.
+- Usage at 09:51: 5-hour 20%, week 34%.
+
+### #500 · 2026-10-28 · A5 research cadence · Deep-research round skipped at the 2-hour timer: a round ran an hour ago on the engine audit's call (#489), no new call is open, and the week reads 34%
+- **Done** (research session, 2026-10-28 09:47): the timer fired; 5-hour window 19%, week 34%.
+
+### #501 · 2026-10-28 · A5 C114 · C114 reads "between": SimpleBot takes 1.20-1.31x arm 0's knockouts per own turn in lists 3, 1 and 21, and 2.39x in list 2 (1.47x pooled); every pilot, SimpleBot included, needs a median 24-28 own turns to take six Prizes, against the roughly 7 cited for real play; SimpleBot ends 78% of games by Prizes (arm 0 28%) mainly because it loses half as much Energy to removal (it doesn't play the disruption Trainers), and arm 0 retreats 8.8 times a game
+- **Done** (one Sonnet lean-builder, 90k tokens, about 15 minutes):
+  - New scripts `notes/scripts/audit/pace_worker.js` (hooks on `Game.prototype.dispatch`, which also sees SimpleBot's
+    actions, and on reduceEffect for attacks, damage and knockouts), `pace_games.py` and `summarize_pace.py`.
+  - Outputs: `runs/probe/C114-pace/<pilot>_P<i>_s<seed>.jsonl` and `summary.json` (all seeds, and each seed).
+  - Bit-identity, hook off against on: 64 games each on lists 0 and 2 for all three pilots, seed 7. Per-game results
+    identical in 6 of 6 (cmp of sorted files).
+  - Small `_id*` identity files are left in the folder; their delete was refused.
+  - SimpleBot pilots both seats through the existing `bot: "simplebot"` job flag. Mirrors of P lists 0-3 (lists 3, 1,
+    21, 2), untimed with `maxTurns` 200 (none reached it), 256 games per pilot, list and seed, seeds 91 and 2: 6,144
+    games, 0 errors.
+- **Pooled, both seeds** (2,048 games a pilot):
+
+  | pilot | KOs / own turn (SE) | median own turns to six Prizes | ends by Prizes | median own turns to the first payable attack | payable at turn end | attack share | Energy / own turn | to non-attackers | Energy lost / attached | retreats / game | switches / game | evolutions / game | mean game turns |
+  |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+  | start | 0.121 (0.0012) | 24 | 23% | 2 | 0.65 | 0.61 | 0.65 | 6% | 0.24 | 3.2 | 0.14 | 0.53 | 44.7 |
+  | arm 0 s1 | 0.098 (0.0011) | 26 | 28% | 2 | 0.60 | 0.55 | 0.60 | 11% | 0.22 | 8.8 | 0.12 | 0.63 | 52.5 |
+  | SimpleBot | 0.144 (0.0010) | 28 | **78%** | 1 | 0.71 | 0.65 | 0.54 | 4% | **0.11** | 5.6 | 2.3 | 1.2 | 54.8 |
+
+  - Endings:
+    - start: deck-out 1,448, Prizes 467, no Pokémon 133;
+    - arm 0: deck-out 1,280, Prizes 568, no Pokémon 200;
+    - SimpleBot: Prizes 1,592, deck-out 257, no Pokémon 197, no winner 2.
+  - SimpleBot / arm 0 knockouts per own turn, by list (3, 1, 21, 2): 1.28, 1.20, 1.31, 2.39. By seed: 91 gives
+    1.31 / 1.18 / 1.32 / 2.41, and 2 gives 1.26 / 1.22 / 1.29 / 2.38.
+- **Bands** (research's): R-learnable needs >= 1.5x in >= 3 of 4 lists (met in 1). R-deck-paced needs within 1.2x
+  (met in 1, list 1 at 1.198). So **between** at both seeds.
+- **Reading:**
+  - The learned pilots are slower than SimpleBot (about 1.2-1.3x fewer knockouts per own turn, list 2 aside).
+  - But all three, SimpleBot included, take 24-28 own turns to six Prizes. So a large part of the gap to the cited
+    real pace (about 7) is not about learned play, or that figure needs checking.
+  - SimpleBot's games end by Prizes mostly because it never plays the disruption Trainers (Energy Removal, Super Energy
+    Removal; #233), so it loses half as much Energy (0.11 against 0.22 a card attached), and its games don't run to
+    deck-out.
+  - Arm 0 retreats 2.7x as often as the start (8.8 against 3.2 a game) and sends 11% of its Energy to Pokémon with no
+    damaging attack.
+
+### #502 · 2026-10-28 · A5 C114 BENCH-P9 · C114 reads between (SimpleBot 1.20-1.31× arm 0's knockouts per own turn in 3 lists, 2.39× in list 2), and SimpleBot isn't a fair pace reference because it never plays Energy Removal; what C114 does show is that training moved the pilot toward an attrition game (knockouts −19%, retreats ×2.7, 60-70% of untimed mirrors ending in deck-out), which favours Energy over draw Trainers; P9's per-turn discount targets exactly that drift and stays held for Evan
+- **Done** (research session, 2026-10-28 10:00): wrote C114's readout (the implementation session's #501), and added deck-out share and
+  retreats as P9 readouts before any run.
+- **Human pace, restated honestly:** the "7 own turns" figure is a best-case anecdote (medium-low). Most 20-minute
+  games finished (medium). A round's turn count is unknown (17-57). So a 6× gap to humans is not established.
+- **Next:** P9 waits on Evan (333-10's condition). A literature or primary-source check of typical 2000 game length
+  (turns or minutes) is a candidate for the next research call.
+
+### #503 · 2026-10-28 · A5 C115 · C115 written for auditor A115 (environment first, before P9): a goldfish run of each P list against a passive opponent, with SimpleBot and then arm 0 attacking; R-interaction if the median is 10 or fewer own turns to six Prizes in 3 of 4 lists (P9 is the right lever), R-flow if 16 or more (audit the engine's flow first); the "about 7 turns" figure is sourced and rated
+- **Done** (research session, 2026-10-28 10:42): `runs/probe/C115-goldfish/record.md`, bands first.
+- **The 7-turn source:** C02's [P4] (Chad Mills' Wigglytuff notes, June 2000: "6 KO's in 7 turns"), [P2] (the same
+  author's STS report) and [P6] (an 11-14 player's game, October 2000: "six pokemon in seven turns"). Two authors, both
+  best cases (medium-low), so a goldfish pace, not a typical game's.
+- **Prior:** R-interaction (medians about 8-12).
+
+### #504 · 2026-10-28 · A5 C115 · C115 (auditor A115 via research; record `runs/probe/C115-goldfish/record.md`, bands first; CPU, evaluation only, before P9) is started with one Sonnet builder: each P list attacking a passive "Goldfish" copy of itself (it benches Basics and passes), to measure how fast the decks can take six Prizes with no interaction
+- **Design** (research): the Goldfish sets up an Active and benches Basics (up to 5), each turn benches any Basic drawn,
+  then passes, with no Energy, Trainers, attacks or retreats, and promotes when knocked out. Attackers: SimpleBot,
+  then arm 0 s1 greedy, then the start if cheap. 128 games a list, lists 3, 1, 21, 2, seed 91, untimed (maxTurns 200).
+  C114's pace hook is reused.
+- **Readouts:** the median own turns to six Prizes (IQR), the share reaching six, own turns to the first knockout,
+  knockouts per own turn, endings, payable-attack turns, Energy per own turn.
+- **Bands** (on SimpleBot): R-interaction if the median is <= 10 own turns in >= 3 of 4 lists (the slow pace comes from
+  interaction: removal, disruption); R-flow if >= 16 (the decks themselves, or the engine's flow, are slow); between
+  otherwise.
+- The builder stops before building if the passive pilot needs more than a small scripted agent.
+- **Correction:** #501's C114 result went to research as "log #500"; it is #501.
+
+### #505 · 2026-10-28 · A5 C115 · C115 reads R-flow: against a passive Goldfish copy (no Energy, Trainers or attacks), SimpleBot still needs a median 27-32 own turns to take six Prizes in all four lists (arm 0 19-26, start 19.5-29), with the first knockout 5-7 own turns in and about 0.2 knockouts per own turn despite a payable attack on 83-95% of turns; so the slow pace is the decks' own flow under this engine, not interaction or learned play, and #497's "the lever is the pilot's pace" is withdrawn as stated; the cited real pace (about 7 own turns to six Prizes) looks implausible for these decks and needs its source checked
+- **Done** (one Sonnet lean-builder, CPU, a few minutes; scripts in `notes/scripts/audit/`):
+  - `goldfish_agent.js`: the passive agent. `goldfish_worker.js` wraps `Runner.prototype.run` to make one seat the
+    Goldfish by seed parity, then loads C114's `pace_worker.js` unchanged. No env edits, since every job is a list
+    against itself.
+  - `goldfish_games.py`, `summarize_goldfish.py`. Outputs in `runs/probe/C115-goldfish/`: 12 JSONL files and
+    `summary.json`.
+  - 128 games a list for SimpleBot, arm 0 s1 and the start: 1,536 games, 0 errors, seed 91, untimed (maxTurns 200).
+  - **Goldfish check:** over about 25,000 Goldfish turns, attaches, attacks, Trainers, retreats, evolutions and Switch
+    uses were all 0.
+- **Results** (median own turns to six Prizes among games that reached six, with IQR):
+
+  | attacker | list 3 | list 1 | list 21 | list 2 | share reaching six (3, 1, 21, 2) |
+  |---|---|---|---|---|---|
+  | SimpleBot | 28 (25-32) | 27 (22-33) | 28.5 (27-32) | 32 (25.5-37) | .48 / .38 / .55 / .45 |
+  | arm 0 s1 | 20 | 19 | 20 | 26 | .48 / .27 / .41 / .35 |
+  | start | 22 | 19.5 | 20 | 29 | .45 / .28 / .41 / .28 |
+
+  - Most other games end "no Pokémon": the Goldfish runs out of Pokémon first. Deck-out happens too, up to 30 of 128
+    for SimpleBot on list 3.
+  - First knockout at a median 6-7 own turns for SimpleBot, 5-7 for the learned pilots.
+  - Knockouts per own turn: SimpleBot 0.14-0.22, arm 0 0.22-0.30, start 0.18-0.30.
+  - Payable attack at the turn's end: 0.83-0.95 for every attacker.
+  - Energy attached per own turn: SimpleBot 0.37-0.52, arm 0 0.50-0.71, start 0.36-0.51.
+  - Medians are conditional on reaching six, so they are biased low.
+- **Bands** (research's, on SimpleBot): **R-flow** (median >= 16 in all 4 lists). The prior ("about 7-10") failed.
+- **Reading:**
+  - Unopposed, the attackers take a payable attack nearly every turn but still need 3-5 attacks per knockout. These
+    decks' damage (Jab 20, Slash 30, Thunderpunch 30-40, Special Punch 40) against 60-120 HP Basics, Chansey and
+    Snorlax included, with PlusPower rarely played, makes about one knockout every 3-5 own turns.
+  - About 0.5 Energy attached a turn is roughly what 18 Energy in 60 cards supplies through normal draws.
+  - So six Prizes take about 20-30 own turns even with no interaction, and the learned pilots are faster than SimpleBot
+    here (arm 0 19-26).
+  - **Correction to #497's reading:** "the fix lies in the pilot's knockout pace" is withdrawn. C114 and C115 put the slow
+    pace mostly in the decks' flow under this engine, not in learned play.
+  - **Open:** the real-play figure (6 Prizes in about 13-14 engine turns, about 7 own turns; C02) doesn't fit these
+    decks' damage per Energy, even unopposed. Either the figure counts differently (bench-outs, Prizes at time), or the
+    engine's flow differs from real play somewhere C115 doesn't reach: draws, the setup hand, mulligans. Research to
+    check the source.
+
+### #506 · 2026-10-28 · A5 C115 · C115 reads R-flow, refuting my prior (R-interaction, 8-12): uncontested, the lists take a median 19-32 own turns to six Prizes (SimpleBot 27-32, arm 0 19-26), so the mirrors' 24-28 is the decks' raw pace on this engine, not interaction; the human 7-turn claim is 3-4× faster than any goldfish, so a small deep-research round re-sources it and implementation checks the flow from logs (Energy in hand but not attached, draws, attack choice, bench size, opening hands)
+- **Done** (research session, 2026-10-28 10:50): wrote C115's readout (the implementation session's #505); started the round
+  "2000 game pace sources" (1 researcher plus the writer; auditor A115's call; usage at 10:50: week 34%, 5-hour 22%).
+  The bench lists are Haymaker (3, 21, 2) and Wigglytuff (1).
+- **Next:** the round's notes, and the implementation session's internal flow checks. P9 stays held.
+
+### #507 · 2026-10-28 · A5 C115 · Research's five flow checks on the Goldfish games (Energy held but not attached, draws and Oak/Bill held, attack choice and damage against printed, Bench sizes, opening hands and mulligans against the hypergeometric expectation) need fields the C115 logs don't have, so one Sonnet lean-builder re-runs the same 1,536 games with log-only additions
+- **Why a re-run:** C115's per-turn log has att, attTo, payS/payE, atk, dmg, kos, prizes, erLost, retreat, sw, evolve,
+  basic, trainers and drawn. It has no hand contents, attack options, Bench sizes, opening hands or mulligans.
+- **Build:** copies of the pace and Goldfish workers (C114's and C115's files unchanged), log-only, CPU. Outputs to
+  `runs/probe/C115-goldfish/flow/`.
+- **Research's reading rule:** if check 1 (Energy held but not attached) or check 5 (opening hands, mulligans) is off,
+  that's a flow issue to audit. If all are normal, the decks are just slow at this damage-to-HP ratio, and the
+  human-pace figure awaits research's re-source (a small deep-research round, running).
+
+### #508 · 2026-10-28 · A5 C115 · Research traced the cited real pace ("6 KO's in 7 turns") to a conditional best case in Chad Mills' Wigglytuff deck notes (Do the Wave with a full Bench, 60, plus PlusPower, one-hitting 70-HP Haymaker Basics), not a logged game (unverified: search snippets only; the pages returned 403); Wigglytuff-specific checks are added to the flow re-run for list 1
+- **Source** (research, snippet): "with pluspowers you take out the 70 HP hay pokemon in one hit, and Item finders can
+  get back the pluspowers if necessary to get 6 KO's in 7 turns if you don't bench them first." The third source (2ll)
+  wasn't found.
+- **Added to the re-run** (list 1, Lieu's Wigglytuff, per attacker): Wigglytuff's Bench size at each Do the Wave; damage
+  against 10 + 10 × benched; PlusPower plays per Wigglytuff attack and Item Finder recovering PlusPower; the share of
+  Wigglytuff attacks that one-hit a 70-HP Defender, and the share with 5 benched.
+- **Reading so far:** the "about 7 own turns" was a best case for one deck. C115's 19-32 own turns may be normal for
+  these decks in general. Whether the pilots miss the Wigglytuff line (a full Bench plus PlusPower) is what the added
+  checks show.
+
+### #509 · 2026-10-28 · A5 pace sources C115b · The pace re-source round is delivered but couldn't read its primary pages (pojo.com HTTP 403; web.archive.org denied by the permission system, not retried); from search snippets, "6 KOs in 7 turns" is a conditional best case for Wigglytuff with a full bench and PlusPower, not a logged game, so it is a ceiling and not evidence that the engine is slow; C115b, a scripted best-case Wigglytuff line against the goldfish, is proposed to test the engine directly
+- **Done** (research session, 2026-10-28 10:55): report `reports/2000 game pace sources.md` (1 researcher plus the writer); C115b
+  written in C115's record.
+- **For Evan:** reading pojo.com Killer Decks 2000 pages 21u, 22a and 2ll (and the July 2000 STS features) needs a
+  browser, or permission for the Wayback route. The research agent's Wayback fetch was denied and not retried.
+- **Also found:** one recap site gives the STS time limit as 25 minutes. C02 documented 20 for the West Coast event
+  from 4 WotC documents and 3 player reports (25 was the East Coast). C02 stands.
+- **C115b bands:** R-engine-ok if the scripted line's median is 10 or fewer own turns (our pilots' 20-26 is then a play
+  gap); R-engine-slow if 16 or more with the bench at 5 and PlusPower on most attacks.
+
+### #510 · 2026-10-28 · A5 C115 · The Goldfish flow checks find the engine's flow normal (opening hands and mulligans at the hypergeometric expectation; damage as printed after W/R on 94-100% of plain hits; Do the Wave exactly 10 + 10 × benched) and the gap in the pilots: Professor Oak or Bill sits unplayed on 79-96% of the turns it's held, PlusPower is almost never played (0-0.6% of Wigglytuff's attacks), and Wigglytuff attacks with a full Bench only 24-44% of the time, so the cited best-case line (Do the Wave 60 + PlusPower, one-hitting 70 HP) never happens (0%); arm 0 attaches whenever it holds Energy (1-5% missed), the start pilot and SimpleBot don't (18-51%)
+- **Done** (one Sonnet lean-builder, CPU, about 2 minutes of games):
+  - Copies `notes/scripts/audit/pace_worker2.js`, `goldfish_worker2.js`, `goldfish_games2.py` and a new
+    `summarize_flow.py`; outputs in `runs/probe/C115-goldfish/flow/` (`summary.json` per attacker and list).
+  - The 1,536 games match C115's originals (winner, ending, turns, Prizes left, turn records), so the logging changes
+    nothing. The old `flow/` run.log couldn't be cleared (rm refused) and holds earlier identical runs too.
+- **Results** (lists P0-P3 = 3 Osborn, 1 Lieu, 21 Graham, 2 Neathery; 128 games a cell):
+  - **Energy in hand but no attach** (share of turns holding Energy): SimpleBot .45 / .18 / .51 / .20; arm 0 .01 / .02 /
+    .00 / .05; start .38 / .28 / .38 / .37.
+  - **Draws:** the turn's draw is 1.00 everywhere. Trainer draws per own turn: SimpleBot .17-.61, arm 0 .31-.39, start
+    .20-.56.
+  - **Oak or Bill held and not played:** 79-96% of the turns one is held, which is 35-79% of all turns. Oak and Bill
+    weren't split.
+  - **Attack choice** (multi-option decisions using the highest damage): arm 0 and start 1.0 on every list; SimpleBot
+    .43 / .99 / .60 / .93.
+  - **Damage against printed** after W/R, PlusPower and Defender: equal on 94-100% of plain hits. Below .97 only for
+    SimpleBot P0 (.94) and P2 (.96) and start P0 (.96), not investigated. Mean dealt 16-31 against printed 18-31.
+  - **Benches and HP:** attacker bench 3.2-4.3; Goldfish bench 1.4-3.2; the Defender's HP 68-74 printed and 39-53
+    remaining.
+  - **Opening hands and mulligans:** Basics, Energy and the mulligan rate are within noise of the hypergeometric
+    expectation for every list. P(no Basic in 7): expected .163 / .191 / .191 / .191, observed .14-.23.
+  - **List 1 Wigglytuff, Do the Wave** (226 / 305 / 330 attacks for SimpleBot / arm 0 / start):
+    - (a) mean Bench 3.55 / 3.22 / 3.89, with 5 benched in 35% / 24% / 44%;
+    - (b) damage = 10 + 10 × benched in 99-100% (no W/R applied in this data);
+    - (c) PlusPower played in 0% / 0% / 0.6% of Wigglytuff's attacks, and Item Finder recovered a PlusPower 0 times;
+    - (d) one-hit knockouts of a 70-HP Defender: 0%.
+- **Reading** (research's rule: if check 1 or check 5 is off, it's a flow issue to audit; if not, the decks are slow
+  at this ratio):
+  - Check 5 is normal. Check 1 is normal for arm 0, the trained pilot, and off for the start and SimpleBot.
+  - So the engine's flow is not at fault. The distance from the cited best case is the pilots' line: no PlusPower,
+    draw Trainers held, a partial Bench.
+  - Whether the engine can produce that best case at all is untested, since no pilot plays it. That is what C115b (a
+    scripted best-case Wigglytuff) tests.
+
+### #511 · 2026-10-28 · A5 C115 flow checks C115b · The engine's flow is normal (opening hands match the hypergeometric expectation, damage as printed on 94-100% of hits, Do the Wave exact), and every pilot, SimpleBot included, under-plays Trainers: Oak or Bill held and not played on 79-96% of the turns held, PlusPower on 0-0.6% of Wigglytuff's attacks, the bench full in only 24-44%, 0% one-hit knockouts; C115b (the scripted best case) goes, to test whether the engine can deliver human pace
+- **Done** (research session, 2026-10-28 11:01): wrote the flow checks' readout (the implementation session's #509) in C115's
+  record; gave the go on C115b (333-10's conditional go: the logs answered the pilot side but not the engine's
+  capability).
+- **Reading:** the pace gap is in Trainer play, which is the drafts' Trainer deficit seen from the play side. Holding
+  draw engines fits C114's attrition and deck-out game, a self-consistent local minimum.
+
+### #512 · 2026-10-28 · A5 C115b · C115b (research's go; spec in C115's record) is started with one Sonnet lean-builder: a scripted best-case Wigglytuff pilot (list 1) against list 3's passive Goldfish, to test whether the engine can deliver the cited best-case line (Do the Wave with a full Bench, plus PlusPower), since no learned or heuristic pilot plays it (#510)
+- **The line:** Bill whenever held; Oak when a piece is missing; bench every Basic; evolve Jigglypuff at the first legal
+  turn; Energy to the Wigglytuff line; Computer Search or Item Finder for a missing piece or a discarded PlusPower;
+  PlusPower before each attack; Do the Wave.
+- **Games:** 256, seed 91, untimed (maxTurns 200).
+- **Readouts:** the median own turns to six Prizes or a win (IQR); the Bench at each Do the Wave; damage against 10 + 10
+  × benched; PlusPower per attack; and the share of games where the line never came together (no Wigglytuff by own turn
+  4), with the median over the games where it did.
+- **Bands:** R-engine-ok at a median <= 10 own turns; R-engine-slow at >= 16 with the Bench at 5 and PlusPower on most
+  attacks; between otherwise.
+- **Correction:** #510's flow checks went to research as "log #509"; they are #510.
+
+### #513 · 2026-10-28 · A5 C115b · C115b reads "between" by its bands (median 15.5 own turns to six Prizes or a win, unfinished games counted as infinite; 11 over finished games), but the engine delivers the fast line when it comes together: in the 59% of games with a Wigglytuff in play by own turn 4 the median is 9 own turns (IQR 7-14), near the cited best case; the learned pilots' 19-26 turns (C115) are their own play, which skips the line's PlusPower, draw Trainers and full Bench
+- **Done** (one Sonnet lean-builder, CPU, 256 games in about 2 s, 0 errors; scripts in `notes/scripts/audit/`:
+  `wiggly_agent.js` (the scripted line), `wiggly_worker.js`, `wiggly_games.py` (the Goldfish plays deck j by seed
+  parity), `summarize_c115b.py`; outputs in `runs/probe/C115-goldfish/c115b/`):
+  - List 1 (Lieu's Wigglytuff) with the scripted best-case line, against list 3's (Osborn) passive Goldfish. Seed 91,
+    untimed (maxTurns 200).
+- **Results:**
+  - Median own turns to six Prizes or a win: **15.5** with the 74 unfinished games counted as infinite (IQR 9-∞); **11**
+    over the 182 finished games (IQR 7-17).
+  - Endings: Wigglytuff wins 132 no Pokémon, 49 Prizes, 1 deck-out; it loses 74 by deck-out (Bill and Item Finder burn
+    the deck).
+  - **The line didn't come together** (no Wigglytuff in play by own turn 4) in **40.6%** of games. In the 152 where it
+    did: a median of **9 own turns** over finished games (IQR 7-14), with 20 unfinished.
+  - Bench at Do the Wave (1,347 attacks), from 0 to 5 benched: 36, 121, 216, 230, 210, 534. 5 benched in 39.6%; mean
+    3.53.
+  - Damage: Do the Wave mean 49.2 against the formula's 45.3. It equals 10 + 10 × benched in 69% of attacks, and with
+    PlusPower, Weakness and Resistance added it matches in **100%**.
+  - PlusPower attached on 31% of Do the Wave attacks (24% of all). Item Finder recovered a PlusPower 192 times.
+  - Agent check: Bill played at 468 of 469 main decisions where it was held. The one miss wasn't offered. Oak is held
+    back by design until the hand is spent.
+- **Bands** (the record's): R-engine-ok (median <= 10) and R-engine-slow (>= 16 with a full Bench and PlusPower on most
+  attacks) not met; **between**. The slow-engine condition also fails on its premise: PlusPower is on 31% of attacks,
+  not most.
+- **Reading, for the audit (row 102):**
+  - The engine can produce the cited pace. A deliberate line reaches a median of 9 own turns to six Prizes or a win when
+    its pieces arrive by turn 4. The overall median is held up by bad draws (41%) and the line's own deck-outs.
+  - The learned pilots' 19-26 own turns against the same Goldfish (#505) come from their play: PlusPower on 0-0.6% of
+    Wigglytuff's attacks (#510), Oak and Bill held on 79-96% of the turns held, a full Bench on 24-44%.
+  - So the engine is right, the decks can be fast, and the pilots under-play the Trainers that make them fast. That is
+    the same gap the bench found card by card (PlusPower's timing, C106-C108; the drafts' missing Trainers, A99).
+
+### #514 · 2026-10-28 · A5 C115b BENCH-P9 · C115b reads between by its bands, but when the line's pieces arrive (59% of games) the scripted Wigglytuff line takes six Prizes or wins in a median 9 own turns, against the human best case of about 7: the engine and the decks can reach human pace, and the pilots' 19-26 comes from skipping the speed Trainers; P9 gains a goldfish pace readout and Oak and Bill play rates, written before any run, and stays held for Evan
+- **Done** (research session, 2026-10-28 11:09): wrote C115b's readout (the implementation session's #513), and P9's added readouts
+  and band.
+- **The chain so far** (#493, #497, #501, #505, #509, #511, #513):
+  1. The engine plays the 2000 rules as printed.
+  2. Under the learned pilots, games are long (about 50 turns) and end in deck-out, which punishes draw Trainers.
+  3. That is not the engine or the decks. A scripted line reaches about human pace.
+  4. It is the pilots under-playing speed Trainers: Oak and Bill held, no PlusPower, a short bench. That under-play
+     is self-reinforcing in long games.
+- **Next:** 333-10 puts P9 to Evan (a general per-turn discount against slow wins).
+
+### #515 · 2026-10-28 · A5 C116 · C116 written for auditor A116 (before P9): at arm 0's held Professor Oak and Bill turns, the pilot's own one-ply value difference (dV) against its own CRN branch outcomes to game end (8 re-deals); R-value-bias if the branches say play and dV says hold (fix V before P9), R-hold-right if both say hold (P9 is the lever), R-both-play if both say play (a policy gap); split by cards left in the deck
+- **Done** (research session, 2026-10-28 11:42): `runs/probe/C116-draw-hold/record.md`, bands first. Evaluation only.
+- **Prior:** early in the game, value bias (or both say play for Oak); late, hold is right; pooled, between.
+
+### #516 · 2026-10-28 · A5 C116 · C116 (auditor A116 via research, before P9; record `runs/probe/C116-draw-hold/record.md`, bands first; evaluation only, 30 minutes or less) is started with one Sonnet lean-builder: at main-phase decisions where Professor Oak or Bill is playable and arm 0's greedy action is something else, the value head's dV against branched play-to-game-end outcomes, to see whether the pilots hold the draw Trainers because their value head misjudges them
+- **Design** (research):
+  - States: arm 0 s1's P-list mirrors under the training round rule [20, 45], seed 91; about 300 for Oak and 300 for
+    Bill.
+  - dV = V(after the card, resolved) − V(after greedy), from the pilot's value head, averaged over the same re-deals.
+  - Δ_branch: play against greedy (hold), each continued by the pilot to game end on K = 8 CRN re-deals, scored by the
+    training reward (event points). Plus a turn-end branch (P5's horizon).
+  - Reported per card: mean dV and Δ_branch with game-clustered CIs, the share of states where each says play, sign
+    agreement, and splits by cards left in the deck (>= 25, 15-24, < 15) and by list.
+- **Bands** (per card): R-value-bias (Δ_branch > 0 with its CI above 0, and dV <= 0); R-hold-right (both <= 0);
+  R-both-play (both > 0); between otherwise.
+- **Machinery:** O_B's `probe_target_signal.py` / `probe_target_worker.js` (game-end CRN branches), C106's turn-end
+  comparator and the offline value read. If game-end branches don't fit, it cuts to 150 states a card or the turn-end
+  branch alone, and says which.
+- Usage at about 11:10: 5-hour 28%, week 35%.
+
+### #517 · 2026-10-28 · A5 research cadence · Deep-research round skipped at the 2-hour timer: the pace-sources round ran an hour ago on a call (#509), no new literature question is open, and C116 is a bench question
+- **Done** (research session, 2026-10-28 11:47): the timer fired.
+
+### #518 · 2026-10-28 · A5 C116 · C116 reads R-hold-right for both draw Trainers: at arm 0's main-phase decisions where Professor Oak or Bill is playable and greedy holds it, playing Oak costs −0.049 [−0.083, −0.015] of the training reward over game-end CRN branches (the value head agrees: dV −0.177), and Bill is flat (−0.002 [−0.018, +0.015]); Oak's cost grows as the deck thins (−0.174 with under 15 cards left), so the pilots' holding is right for the game they play under the round rule, consistent with C113's deck-out mechanism; no value bias found
+- **Done** (one Sonnet lean-builder; `env/tools/probe_draw_worker.js`, a copy of probe_target_worker.js;
+  `notes/scripts/probe_draw_hold.py`, which reuses probe_target_signal's ProbePool, with `--from-raw` to reanalyse;
+  outputs `runs/probe/C116-draw-hold/C116.probes.json.gz` and `summary.json`; 4 min 51 s):
+  - arm 0 s1 on both seats, greedy, the 4 P-list mirrors (bench_matchups.json), round rule [20, 45], seed 91.
+  - 828 games collected, 0 game or line errors. States: Oak 300 (188 games), Bill 300 (237 games); at most 2 a game,
+    each kept at p 0.15.
+  - Measures (play − greedy, 8 CRN re-deals each, game-clustered 95% CIs):
+    - dB: the training reward at the game's end (event points);
+    - dT: the pilot's value at the turn change, on a sampled continuation;
+    - dV: the pilot's value after the action.
+    - Continuations are sampled at temperature 1, as for O_B.
+
+  | | Professor Oak | Bill |
+  |---|---|---|
+  | dV | −0.177 [−0.208, −0.146] | −0.079 [−0.110, −0.048] |
+  | **dB** (game end) | **−0.049 [−0.083, −0.015]** | −0.002 [−0.018, +0.015] |
+  | dT (turn end) | −0.092 [−0.106, −0.077] | −0.005 [−0.008, −0.002] |
+  | "play" share: dV / dB / dT | 27% / 34% / 11% | 53% / 22% / 38% |
+  | sign agreement of dV with dB (with dT) | 58% (67%) | 50% (53%) |
+  | band | R-hold-right | R-hold-right |
+
+  - By cards left in the deck (states; dV; dB):
+    - Oak >= 25: 206; −0.097; −0.052 [−0.091, −0.014]. Oak 15-24: 70; −0.350; +0.005. Oak < 15: 24; −0.362; −0.174.
+    - Bill >= 25: 172; +0.016; +0.003. Bill 15-24: 87; −0.163; +0.012. Bill < 15: 41; −0.303; −0.049.
+  - By list: Oak is hold-right in all four (dB −0.030 to −0.060). Bill is hold-right for Graham and Lieu and between for
+    Neathery. Osborn's mirror had no Bill states.
+- **Bands** (the record's): **R-hold-right for both cards** (Δ_branch <= 0 and dV <= 0). No R-value-bias: no card has dB
+  above 0 with its CI.
+- **Reading:**
+  - Under the training reward and these pilots' continuations, holding Oak is correct, and more so as the deck thins.
+    Holding Bill costs nothing. The value head's verdict matches the branched outcome in sign on average, though only
+    50-58% state by state.
+  - So the pilots' "under-played draw Trainers" (#510) are not a learning failure. In games this long under the round
+    rule, extra draw burns the deck (C113: the copy wins 73% of deck-outs).
+  - The fast best-case line (C115b) plays Bill every time and still loses 74 of 256 games to deck-out against a passive
+    opponent.
+  - Caveats: the live states are greedy play; dV's sign flip for a turn-ending greedy action assumes a zero-sum value;
+    the under-15 cells are small (24, 41).
+
+### #519 · 2026-10-28 · A5 C116 · C116 reads R-hold-right for Oak and Bill, refuting my prior: the pilot's own game-end playouts agree with its value (Oak −0.049 [−0.083, −0.015], increasingly negative as the deck thins; Bill about 0); no value bias, just the self-consistent long-game loop seen from the decision's side; by the band, P9 is the next lever, on Evan's OK
+- **Done** (research session, 2026-10-28 11:51): wrote C116's readout (the implementation session's #517).
+- **Found:** holding draw engines is correct under the pilot's own slow continuations. C116 can't say whether a faster
+  continuation would flip that, which is P9's question.
+
+### #520 · 2026-10-28 · A5 BENCH-P9 · BENCH-P9 launched (registry BENCH-P9, 11:59): arm 0's recipe with a per-game-turn discount γ_T 0.98 in GAE, from start.pt (warm), seeds 1 and 2, 30 minutes each; the γ_T 1.0 identity check passed on the real training batch (bit-identical advantages)
+- **Done** (333-10's go under Evan's row 100; research's record and bands, `runs/probe/BENCH/P9/record.md`):
+  - `notes/scripts/bench_train.py --turn-gamma G` (new): inserts a GAE after train.py's, in the worktree copy only. Between a
+    seat's decision and its next one, the discount is γ · G^(game turns between them), with the turn from glob byte 0
+    (`env/tokens.js:186`, exact up to 240). So the discount is 1 within a turn and usually G² to the seat's next turn.
+    λ is unchanged, and the value targets are adv + value, as in GAE. Every iteration logs `p9 ... max |adv − adv(γ_T 1)|`
+    and `identical`. With no flag, train.py is untouched. The flag refuses to combine with --p5, --p6 or --p8.
+  - `notes/scripts/p9_read.py` (new, CPU): the record's readouts and bands for each P9 seed against arm 0 of the same seed,
+    from the raw game files.
+    - M and the focus cards under iii-b (T 65 at eval seed 91, T 64 at seed 2) and under the cap, both in event points;
+      that is the metric behind the record's arm-0 figures (cap 0.492 / 0.510, not the share 0.489 / 0.504).
+    - Pace in the untimed mirrors: knockouts per own turn, first payable attack, payable share, endings, deck-out share,
+      retreats, and the p80 of game turns.
+    - The goldfish median (six-Prize wins, as C115), Oak or Bill played when held, PlusPower per attack, and a full Bench at
+      attack.
+    - The head-to-head, KL and entropy.
+  - `notes/scripts/audit/pace_games.py` and `goldfish_games2.py`: `--ckpt` and `--out-dir` (defaults unchanged).
+  - `runs/probe/BENCH/P9/chain.sh` runs:
+    1. The identity step: one iteration at --turn-gamma 1.0. The chain stops unless the log says `identical True`.
+    2. For each seed: train `--turn-gamma 0.98 --keep-ckpt` (out `arm-p9-sN`), then C113's cap and iii-b, C114's pace
+       mirrors (seeds 91 and 2, 256 games a list), C115's goldfish flow games (seed 91, 128 a list), and the head-to-head
+       against arm 0 of that seed.
+    3. The same evals on arm 0 s2, which C113–C115 never ran (they used arm 0 s1 only), as the matched base.
+    4. p9_read.
+  - Same clock for every pilot: iii-b uses arm 0 s1's T at each eval seed (65 / 64), not each pilot's own 80th percentile.
+    P9's own p80 is reported from the mirrors.
+  - **Kill:** KL > 0.05 for 2 consecutive iterations with iteration 0 excluded (333-10); entropy < 0.199 (0.5 × arm 0's);
+    errors over 1%; row 73; GPU-PAUSE; 30 minutes. Arm 0's own KL ran 0.015–0.054 over its 21 + 21 iterations and was never
+    over 0.05 twice in a row (`runs/probe/BENCH/arm0.log`).
+- **Evidence:**
+  - CPU check (synthetic batch, 20,000 rows, 400 trajectories): at γ_T 1.0, advantages and returns are `array_equal` to
+    train.py's. In a hand case (turns 3, 3, 5, 9, then a win, λ 1), γ_T 0.98 gives 0.98^6 − V, 0.98^6 − V, 0.98^4 − V and 1 − V,
+    to within 1e-6.
+  - Real batch (`runs/probe/BENCH/P9/identity.log`, iteration 0 under the chain): `p9 turn-gamma 1.0: |adv − adv(gamma_T 1)|
+    max 0 mean 0; identical True`.
+  - p9_read on arm 0 s1's existing files reproduces the record's base:
+    - M iii-b 0.3889 / 0.3984 and M cap 0.4923 / 0.5101;
+    - 2,048 mirror games: deck-out share 0.625 and 8.83 retreats a game, with knockouts per own turn 0.0978 and p80 65 turns;
+    - goldfish medians 20 / 19 / 20 / 26 (lists 3 / 1 / 21 / 2);
+    - Oak or Bill played when held 0.127, PlusPower per attack 0.0, full Bench at attack 0.476.
+  - With arm 0 standing in for every pilot, the bands read R-not, as they should.
+- **Found:** the full-Bench figure here (0.476) counts every attack in all four lists. #510's 24% for arm 0 (24–44% across the
+  three pilots) counted list 1's Do the Wave attacks only. P9 is read against this script's own arm-0 number.
+- **Next:** about 2 hours: seed 1 to about 12:33, its evals to about 12:50, seed 2 to about 13:22, its evals, arm 0 s2's base,
+  then p9_read. Watch the KL and the γ 0.98 `p9` lines (how much the discount moves the advantages).
+
+### #521 · 2026-10-28 · A5 BENCH-P9 · P9 launched 11:59 (the implementation session's #520; about 2 hours); its four readout choices are checked and accepted (points under the cap, iii-b at arm 0's fixed T for every pilot, arm 0 s2's base run at the end, full bench measured over all attacks); a citation corrected
+- **Done** (research session, 2026-10-28 12:02): recorded the checks in P9's record.
+- **Correction:** #519 cited "the implementation session's #517" for C116's readout. That entry is #518 (#517 is my cadence note). C116's record is fixed.
+
+### #522 · 2026-10-28 · A5 BENCH-P9 · BENCH-P9 reads between: the per-turn discount (γ_T 0.98) leaves M under the real-STS clock unchanged (+0.000 / +0.007 against arm 0 of the same seed; R-M needs +0.03) and doesn't speed up the goldfish or the speed Trainers' play; it shifts how mirror games end (knockouts per own turn 1.13× at both seeds, deck-outs −8 / −14 points, retreats −34 / −21%) without shortening them, and the pilot is slightly weaker (head-to-head 0.473 / 0.452)
+- **Done:** the chain of #520 ran to its end at 13:40 (`runs/probe/BENCH/P9/launch.log`) with no kill:
+  - identity at 12:01; seed 1 trained 12:01–12:31; seed 2 trained 12:45–13:15 (both 18 iterations, 0 errors in 7,985 / 7,952 games);
+  - each seed's evals, then arm 0 s2's matched base, then `notes/scripts/p9_read.py` (`runs/probe/BENCH/P9/readout.json`).
+  - KL over 0.05 only on single iterations (s1: 0.061 at iteration 1; s2: 0.052 at 1 and 0.077 at 9), never two in a row.
+    Lowest entropy 0.357 / 0.330 (kill 0.199).
+  - The discount moved the advantages by a mean of 0.066 / 0.067 at the last iteration (max 0.24 / 0.28).
+- **Evidence** (P9 sN against arm 0 sN, measured, finished runs):
+
+  | readout | s1: P9 / arm 0 | s2: P9 / arm 0 |
+  |---|---|---|
+  | **M, iii-b** (T 65 / 64, event points; eval seeds 91, 2) | **0.394 / 0.394** | **0.370 / 0.363** |
+  | M, cap (event points) | 0.476 / 0.501 | 0.478 / 0.494 |
+  | knockouts per own turn (2,048 untimed mirrors) | 0.111 / 0.098 (1.135×) | 0.105 / 0.093 (1.129×) |
+  | deck-out share of mirror endings | 0.543 / 0.625 | 0.592 / 0.729 |
+  | retreats a game | 5.87 / 8.83 | 7.41 / 9.41 |
+  | mirror game turns, mean (p80) | 51.7 (63) / 52.5 (65) | 51.5 (62.6) / 50.1 (61) |
+  | iii-b games reaching time | 0.152, 0.150 / 0.173, 0.184 | 0.141, 0.160 / 0.110, 0.124 |
+  | goldfish median own turns to six (lists 3 / 1 / 21 / 2; 128 a list) | 21 / 20 / 20 / 28 vs 20 / 19 / 20 / 26 | 21 / 20 / 20 / 28 vs 21 / 18 / 19 / 25 |
+  | Oak or Bill played when held | 0.121 / 0.127 | 0.104 / 0.158 |
+  | PlusPower per attack | 0.0003 / 0.0 | 0.0009 / 0.0 |
+  | full Bench at attack | 0.541 / 0.476 | 0.518 / 0.475 |
+  | head-to-head against arm 0 | 0.473 ± 0.009 | 0.452 |
+
+  - First payable attack: own turn 2 everywhere; payable share 0.63 / 0.62 against 0.60 / 0.60.
+  - Focus cards under iii-b show no consistent change. PlusPower is 0.387 / 0.416 at s1 and 0.420 / 0.417 at s2; Gust,
+    Item Finder and Scoop Up are within ±0.02 at both seeds.
+- **Bands** (written before the run):
+  - R-faster: not met. The knockout ratio is 1.135 / 1.129, under 1.2, and no list's goldfish median is 0.8× arm 0's or less.
+  - R-M: not met (ΔM iii-b +0.0004 / +0.0069).
+  - R-not: not met (the ratio is over 1.1 at both seeds).
+  - Harm guard: not met. The head-to-head is 0.473 / 0.452, not under 0.45 at both seeds, and ΔM cap is −0.025 / −0.016,
+    not −0.03 at both.
+  - So: **between**. The record's prior (pace 1.1–1.3×, M between) held.
+- **Found:**
+  - The knockout-rate rise replicates on both seeds (1.135, 1.129), and it is larger than arm 0's own seed-to-seed spread
+    (0.098 against 0.093, 1.05×). It comes with fewer deck-outs and retreats, but not shorter games, a faster goldfish, or
+    more Oak, Bill or PlusPower. The discount changes how the mirrors end (Prizes over deck-out), not the pace the pilot
+    can reach, and so not M.
+  - Arm 0's own M under iii-b differs by 0.031 between its training seeds (0.394 / 0.363). The R-M band's +0.03 is thus
+    about one training-seed spread.
+  - The head-to-head is under 0.5 at both seeds (−0.03 / −0.05), so 30 minutes of the discount cost a little strength.
+  - One s1 mirror game reached the 200-turn safety cap (ending none).
+- **Next:** by the record, P9b and the drafting follow-up run only after R-faster, so neither runs. This closes P9 on the
+  bench. What comes next (for example a stronger or longer discount, which would need its own record) is research's and
+  333-10's call. `loop.py ack BENCH-P9`.
+
+### #523 · 2026-10-28 · A5 BENCH-P9 · P9 reads between: knockouts per own turn 1.13× arm 0's at both seeds (under the 1.2 bar), fewer deck-outs (−0.09, −0.14) and retreats (−2.9, −2.0), but no change in M under the real-STS stand-in, goldfish pace, Oak and Bill play or PlusPower; the discount changes how mirrors end, not the Trainer play that makes games fast; P9b and the drafting follow-up stay gated
+- **Done** (research session, 2026-10-28 13:42): wrote P9's readout (the implementation session's #522).
+- **Reading:** this fits C116. Drawn cards aren't turned into tempo, so playing Oak doesn't pay even when speed is
+  rewarded. The bottleneck is using Trainers (the same credit problem as PlusPower), not the objective's indifference
+  to pace.
+- **Next:** 333-10's call. Options are in my message.
+
+### #524 · 2026-10-28 · A5 BENCH-P10 · BENCH-P10 written and held for Evan (333-10's option c): forced Trainer-play exploration with no card list (ε 0.10 at main-phase decisions where a Trainer is playable, a uniform legal Trainer play), the forced rows masked out of the policy loss with a trace cut in GAE, and their outcomes credited to the value; banded on Oak and Bill play (>= 0.25), goldfish pace (<= 0.8×) and M under the real-STS stand-in (+0.03 at both seeds); prior R-not
+- **Done** (research session, 2026-10-28 13:44): `runs/probe/BENCH/P10/record.md`, bands first. Not run.
+- **How it differs from the earlier nulls:**
+  - ENT_PROMPT and C83 explored prompt answers, not whether to play a Trainer.
+  - P8 put turn-end scores into the policy, and its uniform alternatives spent the KL budget.
+  - P9 changed the objective, not the data.
+- **Prior:** R-not. Under the current continuations a played Oak loses (C116), so V first learns that.
+
+### #525 · 2026-10-28 · A5 research cadence · Deep-research round skipped at the 2-hour timer: no research call is open, and the next step (bench P10 against resuming drafting) is Evan's decision
+- **Done** (research session, 2026-10-28 13:47): the timer fired.
+
+### #526 · 2026-10-28 · A5 BENCH-P10 · BENCH-P10 launched (registry BENCH-P10, 13:52; 333-10's call under Evan's row 100, a bench arm): ε 0.10 forced uniform Trainer plays at main-phase rows, masked from the policy loss, GAE's trace cut there, from start.pt (warm), seeds 1 and 2, 30 minutes each; the ε 0 identity check passed on a real batch
+- **Done** (research's record and bands, `runs/probe/BENCH/P10/record.md`, #524; go note added there before launch):
+  - `notes/scripts/bench_train.py --p10-eps E` (new). It patches the bench's worktree copy only; with no flag train.py is
+    untouched.
+    - `wrap_p10` wraps `RemotePool._serve_batches` and `collect`. At each served sampled row (not greedy, not a search's
+      `topk` request) whose legal options include a Trainer play (candidate verb 5; the pool's 42 Trainers have no
+      Stadium), with probability E the response's action becomes a uniformly chosen legal Trainer play, with logp 0 and
+      `sampled` 0. `env/runner.js` already records `sampled` into the rollout, so no worker change was needed.
+    - The forcing has its own RNG, so E = 0 draws nothing. Every response is counted and passed byte-identical unless
+      forced. Each iteration logs a `p10` line and `<out>/p10.jsonl`: rows, eligible, forced, payloads, changed, per game.
+    - The GAE inserted after train.py's cuts the trace at forced rows. A row whose next decision was forced bootstraps from
+      V there, with λ 0 across the forced action. The forced row and later rows keep their own GAE, so their value targets
+      are the returns that follow. Each iteration logs the forced count against the server's, and the difference from
+      train.py's GAE.
+    - `ppo_update` gets five anchored replacements, each guarded by `pol is None` (no forced row), so with no forced row
+      train.py's lines run. With forced rows, they take no policy loss and no KL stat; the policy term is the mean over the
+      minibatch's policy rows and the advantages normalise over those rows (`rl/train.py`'s handling of unsampled rows);
+      value and entropy use every row.
+    - The flag refuses to combine with --p5, --p6, --p8, --turn-gamma or --kl-stop.
+  - `notes/scripts/p10_read.py` (new, CPU): the record's readouts and bands, reusing `p9_read.py`'s readers.
+    `p9_read.flow()` gains "Energy in hand, not attached" (arm 0: 0.020 / 0.016).
+  - `runs/probe/BENCH/P10/chain.sh`:
+    1. The identity step at --p10-eps 0 (the chain stops unless it passes).
+    2. For each seed: train `--p10-eps 0.10 --keep-ckpt`; then C113 cap and iii-b (T 65 / 64), C114 mirrors, C115 goldfish
+       flow, `bench_eval --only 1f` (Computer Search and Item Finder at 256, as arm 0's eval256), the head-to-head against
+       arm 0 of that seed, and C116's Oak value check (n 150 a card, 660 s).
+    3. p10_read. Arm 0's bases are C113–C115's and P9's (#522), so none rerun; C116 exists for arm 0 s1 only.
+  - **Kill (as written):** KL > 0.05 for 2 consecutive iterations from iteration 0, KL over policy rows only; entropy <
+    0.199; errors over 1%; row 73; GPU-PAUSE; 30 minutes. About 2 hours in all.
+- **Evidence:**
+  - CPU (synthetic batch, 20,000 rows): at ε 0, the advantages and returns are `array_equal` to train.py's. In a hand case
+    (rows 0, 1 forced, 2, then a win; γ 1, λ 0.5), row 0's advantage is V1 − V0 and its return is V1 (0.2), the trace cut
+    at the forced row. The forced row keeps its return, 0.65.
+  - The patched train.py compiles, with all five update anchors found once.
+  - Real batch (`runs/probe/BENCH/P10/identity.log`, ε 0, one iteration):
+    - The server counted 45,053 sampled rows, the batch's exact length, so every served row is a training row.
+    - 31,150 were eligible (69.7 a game; the record estimated about 72).
+    - 1,590 responses, 0 changed; `p10 forced 0 of 45053 rows (server 0) ... identical True`; `p10 policy mask: off`.
+    - KL 0.043, entropy 0.436, 0 errors.
+  - Seed 1, iteration 0 at ε 0.10: the server forced 2,781 rows and the batch holds exactly 2,781 with `sampled` 0, so
+    the flag survives the worker and the rollout file. That is 5.81 a game, 10.1% of 27,523 eligible rows; eligible fell to
+    57.5 a game as forced plays empty the hand. The trace was cut before 2,739 rows; 479 games against 447 at ε 0.
+    KL (policy rows) 0.055, over 0.05 at the first iteration counted (arm 0's iteration 0: 0.033); entropy 0.403.
+- **Next:** about 2 hours: seed 1 to about 14:25, its evals to about 14:55, seed 2 to about 15:25, its evals, then
+  p10_read. If it reads R-uses, R-pace or R-M, the drafting follow-up is research's to write and Evan's to call.
+
+### #527 · 2026-10-28 · A5 BENCH-P10 · Record clarified (auditor A119): launching P10 was 333-10's call under Evan's row 100; the replication rule was written before seed 2's readouts
+- **Done:** This entry corrects #524 ("held for Evan") and #525 ("Evan's decision"). Launching P10 at 13:52 (#526) was 333-10's call under row 100 ("keep experimenting for awhile, don't wait on my approval right now"). The choice between continuing the bench (c) and resuming drafting with the gate (b) is still Evan's. Two rules were added to `runs/probe/BENCH/P10/record.md` at 14:07, after seed 1's KL kill and before any seed 2 readout:
+  - If seed 2 survives and clears R-uses or R-pace on its own, seed 3 runs with the identical recipe, bands and kill rule, and the report counts every seed, kills included. Otherwise P10 closes as R-not.
+  - Seed 3's R-pace and R-M are read against an arm 0 s3 trained in the same chain, matched by seed.
+- **Evidence:** `record.md` lines for the go, the seed 1 kill, the replication rule and seed 3's base. Seed 1's KL series is in `train_s1.log` (0.055, 0.035, 0.048, 0.023, 0.041, 0.055, 0.051); killed at 14:05 at iterations 5-6.
+- **Next:** Seed 2's readout, about 15:10. Research has a RESEARCH CALL (A119) on whether a fast opponent changes the Oak and Bill hold (C116 against C115b's line); P10's written bands stay as they are.
+
+### #528 · 2026-10-28 · A5 C117 BENCH-P10 · C117 written for auditor A119: C116's Oak and Bill branch test against C115b's fast scripted Wigglytuff as the opponent (evaluation only); R-opponent-pace if playing Oak early pays against a fast opponent (the slow self-play population holds the loop, so P10's exploration won't break it), R-pace-independent if holding stays right; P10 seed 1 was KL-killed at 14:05 (0.055, 0.051 at iterations 5-6), so P10's seed 2 is a one-seed read
+- **Done** (research session, 2026-10-28 14:42): `runs/probe/C117-fast-opponent/record.md`, bands first; P10 s1's kill recorded in
+  P10's record.
+- **Prior:** R-opponent-pace, weakly. A fast opponent removes the deck-out cost behind C116's hold.
+- **Noted for the log** (A119): P10 was launched at 13:52 on 333-10's call under row 100 (#526), after #524 had held it
+  for Evan. The go note in P10's record says so.
+
+### #529 · 2026-10-28 · A5 C117 · C117 launched on CPU (registry C117-fast-opponent; research's call for auditor A119, record `runs/probe/C117-fast-opponent/record.md`, bands first): C116's Oak and Bill branch test with the opponent seat played by C115b's scripted Wigglytuff line, arm 0 s1 on lists 3, 1, 21 and 2, 150 states a card, seed 91, a 30-minute budget
+- **Done:**
+  - `env/tools/probe_fastopp_worker.js` (new): a copy of C116's `probe_draw_worker.js`, which stays untouched (P10's
+    chain runs C116 with it today). The seat whose deck name starts with `OPP ` is played by
+    `notes/scripts/audit/wiggly_agent.js`, in the live games and at the opponent's decisions in every branch line. The
+    pilot's value is still asked there, so v1 and vt keep C116's meaning. Each line records the Prizes each side has taken
+    at its end (`pz`, `pzOpp`). The script's moves are counted.
+  - `notes/scripts/c117_probe.py` (new), reusing C116's `ci`/`group`:
+    - games pair a uniformly drawn P list against the `OPP` copy of list 1, with the pilot's seat alternating by pair key;
+    - C116's states and K = 8 CRN lines, under the cap [20, 45] as C116;
+    - per card: dB (training reward), dV, dT and dPz, pooled, by cards left (≥ 25, 15–24, < 15) and by list;
+    - the pilot's base win share, Prizes taken each side and endings, by list;
+    - the record's band on Oak with ≥ 25 left (on dPz if the base win share is under 0.10 or over 0.90).
+  - `runs/probe/C117-fast-opponent/run.sh`: CPU only (`CUDA_VISIBLE_DEVICES=-1`), 4 workers, `--n 150 --budget-s 1800`.
+- **Evidence** (smoke, CPU, 2 workers, 2 states a card, `runs/probe/C117-fast-opponent/smoke-summary.json`; not a
+  result):
+  - 4 games and 4 states in 10 s, 64 lines, 0 line errors and 0 game errors.
+  - 1,642 opponent moves in the lines were the script's.
+  - The base games all reached the cap (4 of 4).
+  - The analysis and the band ran end to end.
+- **Next:** read the band when it ends (about 15:15 at the smoke's rate), log it, and message research and 333-10.
+
+### #530 · 2026-10-28 · A5 C117 · C117 reads invalid by research's validity check (written before the readout): the scripted Wigglytuff opponent was not fast against arm 0 (0.069 knockouts per own turn, 0.71× arm 0's mirror rate, under the 1.2× bar; 59% of games to the cap), so no band is read; the branch numbers would have read R-pace-independent (Oak, ≥ 25 left: Δ_branch −0.035 [−0.079, +0.008])
+- **Done** (#529's run, CPU, 14:45–14:54; then the validity games, 14:54–14:55):
+  - `runs/probe/C117-fast-opponent/C117-summary.json` (792 base games, 150 Oak and 150 Bill states, 0 game and line errors,
+    8 minutes).
+  - `notes/scripts/audit/c117_pace.py` with `c117_pace_worker.js` (new): arm 0 s1 against the scripted list 1 with C114's
+    per-turn trace, the cap [20, 45], seed 91, 64 games a list
+    (`runs/probe/C117-fast-opponent/pace/summary_s91.json`).
+- **Evidence** (measured, finished):
+  - **Validity** (256 traced games): the script took 0.069 KOs per own turn (lists 3 / 1 / 21 / 2: 0.090 / 0.075 / 0.038 /
+    0.073), against 1.2 × 0.098 = 0.118 needed.
+    - Its first KO came at a median own turn 8, and only 36% of games had one.
+    - The cap was reached in 59% of games (passes the < 75% condition).
+    - The script won 0.195 of games.
+    - The pilot took 0.186 KOs per own turn, with its first at a median own turn 5.
+  - **Base games** (C117's own 792): the pilot won 0.778 (lists 21 / 2 / 3 / 1: 0.85 / 0.80 / 0.74 / 0.71). It took 2.40
+    Prizes a game to the script's 1.02. Mean game turns 26.5. Endings: time 443, no-Pokémon 279, Prizes 61, deck-out 9.
+  - **Branches** (play − hold, K ≤ 8 CRN lines, the script on the opponent's side). Not banded, since the check failed:
+    - Oak, ≥ 25 left (125 states): dB −0.035 [−0.079, +0.008], dPz −0.013, dV −0.166.
+    - Oak, 15–24 left (14): dB −0.036. Oak, < 15 left (11): dB −0.349 [−0.794, +0.097].
+    - Oak pooled (150): dB −0.058 [−0.111, −0.006], dV −0.187, dT −0.060.
+    - Bill pooled (150): dB +0.009 [−0.010, +0.028], dV −0.061.
+  - Against C116's own mirror, Oak was −0.049 pooled and −0.052 with ≥ 25 left. So against this opponent, which is slower
+    than the mirror and loses 4 games in 5, the hold reads about the same.
+- **Found:**
+  - C115b's line is fast only against a passive opponent (9 own turns when it came together). Against arm 0 it stalls:
+    one KO in about 14 own turns.
+  - The pilot itself plays fast against a weak opponent (0.186 KOs per own turn, about 2× its mirror rate). So the
+    mirror's slow pace comes from both sides contesting the game, not from a slow attacker.
+  - Testing opponent pace needs an opponent that is fast against this pilot. The scripted line isn't.
+- **Next:** the record's question (does a fast opponent flip the hold?) stays open. A valid test needs a fast opponent
+  built from self-play; that is research's call.
+
+### #531 · 2026-10-28 · A5 C117 · C117 reads invalid by its validity check (the scripted Wigglytuff line took 0.069 knockouts per own turn, 0.71× arm 0's mirror rate, and the pilot won 78% against it), so no band; reported, not banded, Oak still doesn't pay in these faster, mostly-won games (−0.035 [−0.079, +0.008] early; −0.058 pooled), which leans against "holding is right only because games are slow"
+- **Done** (research session, 2026-10-28 14:55): wrote C117's readout (the implementation session's #530).
+- **Found:** C115b's line is fast only against a passive opponent. The mirror's slowness comes from both sides
+  contesting. A valid test needs an opponent fast against this pilot, from self-play; that is a design question, not
+  proposed now.
+
+### #532 · 2026-10-28 · A5 BENCH-P10 · BENCH-P10 closes as R-not by 333-10's replication rule (seed 1 KL-killed at iteration 6; seed 2 clears neither R-uses nor R-pace): the forced Trainer plays taught the value what follows a played Oak (dV −0.073 against arm 0's −0.177, now matching the playouts' −0.069), and since that is a loss under these continuations the pilot plays Oak and Bill half as often (0.078 against 0.158); M under iii-b +0.029 at the one seed, the head-to-head 0.424
+- **Done:** the chain of #526 ended at 15:00 (`runs/probe/BENCH/P10/launch.log`; readout `runs/probe/BENCH/P10/readout.json`
+  by `notes/scripts/p10_read.py`).
+  - Seed 1 was killed at 14:05 by the written rule, from iteration 0, after 7 iterations. KL over policy rows: 0.055, 0.035,
+    0.048, 0.023, 0.041, 0.055, 0.051. No pilot, so no readouts.
+  - Seed 2 ran its 30 minutes (18 iterations, 8,385 games, 0 errors). KL was over 0.05 on single iterations only (0.063,
+    0.071, 0.063 at 1, 3 and 12); lowest entropy 0.338.
+  - Forcing: 5.6–6.0 forced plays a game, 10% of 57–59 eligible rows a game. Server and batch counts matched every iteration.
+  - 333-10's replication rule (record, 14:07, before seed 2's readouts): seed 2 clears neither band, so no seed 3.
+- **Evidence** (P10 s2 against arm 0 s2, one seed, measured, finished):
+
+  | readout | P10 s2 | arm 0 s2 |
+  |---|---|---|
+  | **M, iii-b** (T 65 / 64, event points) | **0.391** (0.392, 0.391) | **0.363** (0.364, 0.361) |
+  | M, cap (event points) | 0.471 | 0.494 |
+  | Oak or Bill played when held | 0.078 | 0.158 |
+  | PlusPower per attack | 0.0003 | 0.0 |
+  | full Bench at attack | 0.492 | 0.475 |
+  | Energy in hand, not attached | 0.007 | 0.016 |
+  | goldfish median own turns (lists 3 / 1 / 21 / 2) | 21 / 22 / 19 / 32 | 21 / 18 / 19 / 25 |
+  | knockouts per own turn (untimed mirrors) | 0.124 (1.33×) | 0.093 |
+  | deck-out share; retreats a game | 0.42; 5.95 | 0.73; 9.41 |
+  | head-to-head against arm 0 | 0.424 ± 0.022 | — |
+
+  - Focus cards, cap (C113 pairs, 256 games, eval seeds 91 and 2): PlusPower 0.424 / 0.444, Gust 0.466 / 0.475, Item
+    Finder 0.446 / 0.465, Scoop Up 0.460 / 0.461. Computer Search at 256 (`bench_eval --only 1f`): 0.450 / 0.453.
+  - **C116's Oak check on P10 s2** (n 150 a card, against arm 0 s1's C116, n 300; arm 0 s2 has none):
+    - dV −0.073 [−0.102, −0.044], against −0.177 [−0.208, −0.146];
+    - dB −0.069 [−0.108, −0.031], against −0.049 [−0.083, −0.015];
+    - sign agreement 0.627 against 0.583. Band R-hold-right.
+    - By cards left: ≥ 25 (122 states) dV −0.044, dB −0.067 [−0.112, −0.022]; 15–24 (22) dB −0.110.
+    - Bill: dV −0.029, dB −0.001 [−0.020, +0.019].
+- **Bands:**
+  - The record's bands need both seeds, and seed 1 was killed, so they are incomplete.
+  - Seed 2 alone: R-uses not met (Oak or Bill 0.078, under 0.25; PlusPower 0.0003, under 0.10). R-pace not met (no list at
+    0.8× or less; lists 1 and 2 at 1.22× and 1.28×). R-M: +0.029 at one seed, under +0.03. R-not by its letter is not met
+    either, since Oak and Bill play fell by 0.08 (beyond ±0.05) and two goldfish lists fell outside 0.9–1.1×.
+  - By 333-10's rule P10 closes as R-not.
+  - The harm guard can't fire with one seed, but seed 2's head-to-head of 0.424 is under its 0.45 line.
+- **Found:**
+  - The mechanism worked as designed: V saw post-play states and its view of playing Oak moved toward the playouts (dV from
+    −0.18 to −0.07, matching dB −0.07).
+  - The record's prior held, more strongly than written: what V learned is that playing Oak loses, so the pilot holds more.
+  - Exploration inside slow self-play confirms the hold rather than breaking it.
+  - Like P9 (#522), P10 moves the mirrors away from deck-outs (KOs per own turn 1.33×, deck-outs −31 points) without more
+    speed-Trainer play, and costs head-to-head strength.
+  - M under iii-b rose +0.029 at the one seed, about one training-seed spread (arm 0's two seeds differ by 0.031). By the
+    null rule it is not an effect.
+- **Next:** P10 is closed, and the GPU is free. With C117 invalid (#530), whether a faster opponent would flip the hold
+  is still untested. The next lever is research's and 333-10's call, and drafting stays Evan's.
+
+### #533 · 2026-10-28 · A5 BENCH-P10 · P10 closes with no effect claimed (seed 1 KL-killed; seed 2 alone): the forced Trainer plays taught the value that Oak loses under the current continuations (playouts −0.069), so the policy played Oak and Bill half as often (0.078 against 0.158), M didn't move, and the pilot was weaker head to head at that seed (0.424); like P9, mirrors ended with fewer deck-outs and retreats
+- **Done** (research session, 2026-10-28 15:02): wrote P10's readout (the implementation session's #532).
+- **The run of evidence today** (C113-C117, P9, P10):
+  - the engine is right, and the decks can be fast;
+  - the pilots under-play speed Trainers;
+  - under their own continuations holding draw engines is correct, and stays correct in faster games (C117, not
+    banded);
+  - neither a pace objective (P9) nor exploration (P10) changes it in 30 minutes.
+- **Next:** Evan's bench-or-drafting call (333-10).
+
+### #534 · 2026-10-28 · A5 C118 · C118 written for auditor A120 (no researchers): at about 100 of C116's held Oak states, play against hold with a two-turn search continuation for the deciding seat (the pilot's own turn-end comparator at every decision) against the pilot's own continuation; R-conversion if Oak turns positive with the search, so the route is general play strength rather than card fixes; prior R-not-conversion, weakly
+- **Done** (research session, 2026-10-28 15:42): `runs/probe/C118-conversion/record.md`, bands first. CPU, evaluation only, 30
+  minutes or less.
+
+### #535 · 2026-10-28 · A5 C118 · C118 held for usage (333-10, 15:41: week 40% at about 18% elapsed); my 15:42 hand-off crossed the hold and was retracted at once; it waits on Evan
+- **Done** (research session, 2026-10-28 15:42): marked C118 held in its record and in the handover. Asked the implementation session not to run it, or to stop it if started. Idle until Evan decides (b) or (d), or 333-10 messages.
+
+### #536 · 2026-10-29 · A5 C119 · Evan picked (b) (row 103, relayed by 333-10): drafting resumes from the gated base. C119 re-measures C90's paired-gate recipe at new seeds 5 and 6 on today's code, in two 30-minute stages, read on G1, the tempo-card counts (A99's four) and deck shape; R-repro if G1 and the tempo total fall within C93's and C90's gated noise
+- **Done** (research session, 2026-10-29 10:51): `runs/screens/C119-gate-base/record.md`, bands first, from the repo (no research).
+- **Recipe:** C90's chain unchanged (`--select --select-paired`, init `runs/pilot/C49-sd/model_it00199.pt`, 30
+  iterations, `--round-turns 20-45`), seeds 5 and 6.
+  - Stage 1 is iterations 0-19 (about 28 minutes), with a stop rule on errors over 2% or 0 moves for 10 iterations.
+  - Stage 2 is iterations 20-29 plus G3's probe.
+  - About 55 minutes in all side by side (estimated).
+- **Bands:**
+  - R-repro: G1 at each seed within 4.47-15.87 (C93's gated mean ± 2 sd), and the tempo total within C90 s1-s4's mean
+    ± 2 sd, computed from their saved populations before the run.
+  - R-drift: the mean G1 above 15.87, or both tempo totals out on one side.
+  - Prior: R-repro.
+- **Held:** C118 and (d).
+
+### #537 · 2026-10-29 · A5 C119 · Drafting resumes (Evan row 103, pick b): the gated drafting path runs on today's code, C119's base counts are recorded before stage 1 (C90 s1-s4's G1 set: T4 2.29 ± 0.14 copies a deck against the lists' 9.17), neither #493 engine fault is fixed in the screens' build, and stage 1 at seeds 5 and 6 is queued on free RAM (7.0 GB against the 8 GB a screen needs)
+- **Done:**
+  - **Smoke** (333-10's ask; scratch runs in the session scratchpad, C90's chain flags, 2 iterations of 1,000 games, not
+    results):
+    - `--select --select-paired`: moved 13 and 6 decks (gains 0.17, 0.22), 0 errors, 84 s;
+    - `--select --select-z 1.0`: moved 17 and 13 (gains 0.29, 0.35), 0 errors;
+    - a 120-game, one-iteration run first moved 0, since no deck had complete paired slots at that size.
+  - `notes/scripts/c119_counts.py` (new, CPU): A99's per-card copies a deck (#412) on C90 Amendment 3's G1 set. It takes
+    the top 12 by z on a log row, mapped by id to that iteration's snapshot, checking P / T / E against the row. It
+    reports the eight cards, T4, and the median P / T / E of the set and of the population, against the 24 lists.
+  - **Base counts**, recorded in C119's record before stage 1 (`runs/screens/C119-gate-base/base_counts_it29.json`), from
+    C90 s1-s4 at iteration 29, the only snapshot in the 25-29 window (`--save-every 5`). All 48 decks match their log rows.
+
+    | card | copies a deck (mean ± sd) | lists |
+    |---|---|---|
+    | PlusPower | 0.50 ± 0.31 | 2.75 |
+    | Gust | 0.63 ± 0.20 | 2.54 |
+    | Item Finder | 0.77 ± 0.34 | 2.12 |
+    | Scoop Up | 0.40 ± 0.08 | 1.75 |
+    | **T4** | **2.29 ± 0.14** (2.08 / 2.33 / 2.42 / 2.33) | **9.17** |
+    | Computer Search | 0.38 | 2.71 |
+    | Oak | 0.90 | 3.38 |
+    | Bill | 0.65 | 2.50 |
+    | Energy Removal | 1.04 | 2.08 |
+
+    G1-set medians: 17/20/23.5, 13/25/21.5, 14/24/22 and 14/22/23.5.
+  - **Engine** (research's question): neither #493 fault is fixed in the screens' build (ryuu-play a62e054; the last
+    commit touching either file is 9cd20b6). Rain Dance still offers any Bench or Active target; Energy Conversion still
+    has no self-damage.
+  - **Chains:** `runs/screens/C119-R1-K-base-paired-s5/` and `-s6/chain.sh`, C90's command with `--seed 5` / `--seed 6`
+    and `--iters $C119_ITERS` (20 for stage 1, 30 with the same `--resume` for stage 2, which also runs G3's probe).
+  - **Launch:** `loop.py launch` refused both: free RAM 7.1 GB, under a screen's 8.0 GB (#175). The RAM is held by
+    desktop apps and the agent sessions, none by my jobs. A background retry launches each seed through `loop.py` once
+    there is room (side by side if both fit, otherwise one at a time), for up to 3 hours.
+- **Found:**
+  - The T4 range for R-repro as written (2.00-2.58) is narrower than one seed's own sampling error: 12 decks with
+    per-deck T4 from 0 to 7 give SE 0.42-0.70, so a new seed falls outside ±0.29 by chance about half the time.
+  - This is flagged in the record for research to keep or amend before any readout.
+- **Next:** stage 1 when RAM allows; then the stop rule and the interim G1; stage 2 and G3.
+
+### #538 · 2026-10-29 · A5 C119 · C119 Amendment 1, before any readout: the T4 band now adds each seed's own sampling error (2.29 ± 2·sqrt(0.14² + SE²), about 1.15-3.43), since four seeds' sd alone was narrower than one seed's SE; G1's band is unchanged; the screens use the C90 and C93 build with #493's two faults unfixed, so C119 stays a clean reproduction and the fixes follow as a separate change
+- **Done** (research session, 2026-10-29 10:58): Amendment 1 in C119's record. The base counts (the implementation session's #537):
+  PlusPower 0.50, Gust 0.63, Item Finder 0.77, Scoop Up 0.40 copies a deck (lists 2.75, 2.54, 2.12, 1.75); T4 2.29
+  against the lists' 9.17.
+- **Next:** C119 launches when RAM allows (it was refused at 7.1 GB free against 8.0 needed).
+
+### #539 · 2026-10-29 · A5 C119 · C119 stage 1 launched at 11:07, both seeds side by side (registry C119-R1-K-base-paired-s5 and -s6, replicates of C90-R1-K-base-paired, Evan row 103): C90's paired-gate chain at seeds 5 and 6, iterations 0-19, on engine a62e054 with #493's faults unfixed (Amendment 1, #538)
+- **Done:** #537's RAM retry launched both at 11:07, once free RAM reached a screen's 8 GB, about 15 minutes after the
+  first refusal. Each runs `runs/screens/C119-R1-K-base-paired-sN/chain.sh` with `C119_ITERS=20`.
+  `notes/scripts/c119_counts.py` now also reports Amendment 1's per-seed T4 SE and range, for example C90 s3: SE 0.417,
+  range 1.41-3.17.
+- **Kill:** errors over 2%, or 0 moves an iteration for 10 iterations (C90's rule), checked at the end of stage 1;
+  row 73; runs/GPU-PAUSE (the chains pause and resume with `--resume`).
+- **Next:** at about 11:35, stage 1's stop rule and the interim G1 (iterations 15-19, reported, not banded); then stage 2
+  (`C119_ITERS=30`, iterations 20-29, then G3's probe). After C119 ends, 333-10's queued engine fix (#493, row 102):
+  specs, uncommitted edits in ryuu-play, and one re-measure of the gated base.
+
+### #540 · 2026-10-29 · A5 C119 · C119 seed 5 is done and meets both R-repro conditions for its seed: G1 last-5 13.0 (within 4.47-15.87) and T4 1.83 copies a deck (within its Amendment-1 range 1.24-3.34); 2 errors in 60,000 games; G3 0.269 against C90's 0.138-0.219; seed 6 runs one at a time after it, for RAM
+- **Done:**
+  - Stage 1 (11:07-11:30) passed the stop rule (2 errors in 40,000 games; 8-19 moves an iteration, never 0). Interim
+    G1 (iterations 15-19) 11.8.
+  - Stage 2 (11:31-11:41) and G3's probe (11:42) followed.
+  - Counts from `notes/scripts/c119_counts.py`, at the iteration-29 snapshot as the base
+    (`runs/screens/C119-gate-base/counts_s5_it29.json`; 12/12 shapes match the log row).
+  - **RAM:** both seeds launched at 11:07, the second passing `loop.py`'s RAM check 1 s after the first, before the
+    first allocated. Free RAM then fell to 2.3 GB, under #175's 3 GB headroom. So I stopped seed 6 with
+    `loop.py stop` after its iteration 0 (checkpoint kept, clean exit). It resumed at 11:42 with `--resume`, one at a
+    time, as the record's fallback allows.
+- **Evidence** (seed 5, measured, finished):
+  - G1 by iteration, 25-29: 11.50, 13.17, 15.17, 15.50, 9.67, so last-5 **13.0**. Moves in iterations 20-29: 8-19.
+  - Copies a deck in the G1 set, iteration 29, with C90 s1-s4's mean and the lists:
+
+    | card | s5 | C90 s1-s4 | lists |
+    |---|---|---|---|
+    | PlusPower | 0.67 | 0.50 | 2.75 |
+    | Gust | 0.25 | 0.63 | 2.54 |
+    | Item Finder | 0.58 | 0.77 | 2.12 |
+    | Scoop Up | 0.33 | 0.40 | 1.75 |
+    | **T4** | **1.83** (SE 0.51) | 2.29 | 9.17 |
+    | Computer Search | 0.50 | 0.38 | 2.71 |
+    | Oak | 0.42 | 0.90 | 3.38 |
+    | Bill | 0.92 | 0.65 | 2.50 |
+    | Energy Removal | 0.25 | 1.04 | 2.08 |
+
+  - Median P / T / E: G1 set 16.5/24.5/20.5, population 15/25/20, lists 13.5/28/18.
+  - G3 (`vs_lists.json`, C49-sd, seed 93, 8 games a pair): M 0.269 ± 0.012. C90 s1-s4 from the same probe: 0.219,
+    0.158, 0.138, 0.161.
+- **Next:** seed 6, stage 1 from its checkpoint (to about 12:10), then stage 2 and G3 (to about 12:25); then C119's
+  two-seed bands, and 333-10's queued engine fix.
+
+### #541 · 2026-10-29 · A5 C119 · C119 reads R-repro: today's code reproduces the gated drafting base at seeds 5 and 6 (G1 last-5 13.0 and 13.8, both within C93's 4.47-15.87; T4 1.83 and 1.58 copies a deck, both within their Amendment-1 ranges); both seeds lean the same way (G1 above C93's gated mean 10.17, T4 below C90's 2.29) while G3 rose (0.269, 0.275 against C90's 0.138-0.219); the tempo deficit stands at about 7.5 of the lists' 9.17 copies
+- **Done:**
+  - Seed 6: stage 1 (iteration 0 at 11:07-11:09, stopped for RAM; resumed 11:42-12:03; stop rule passed: 1 error in
+    40,000 games, 9-26 moves, interim G1 13.63); stage 2 12:04-12:14; G3 12:15.
+  - Seed 5 as in #540.
+  - Counts (`runs/screens/C119-gate-base/counts_s56_it29.json`, iteration 29, 12/12 shapes match at both seeds).
+  - Both runs acknowledged in `loop.py`.
+- **Evidence** (measured, finished, 2 seeds):
+
+  | readout | s5 | s6 | base |
+  |---|---|---|---|
+  | **G1 last-5** (25-29) | **13.00** (11.50, 13.17, 15.17, 15.50, 9.67) | **13.83** (9.83, 15.83, 16.50, 12.00, 15.00) | C93 gated 10.17 ± 2.85 |
+  | **T4** | **1.83** (SE 0.51; range 1.24-3.34) | **1.58** (SE 0.43; range 1.38-3.21) | C90 2.29 ± 0.14; lists 9.17 |
+  | PlusPower / Gust / Item Finder / Scoop Up | 0.67 / 0.25 / 0.58 / 0.33 | 0.67 / 0.75 / 0.00 / 0.17 | lists 2.75 / 2.54 / 2.12 / 1.75 |
+  | Computer Search / Oak / Bill / Energy Removal | 0.50 / 0.42 / 0.92 / 0.25 | 0.92 / 0.83 / 0.92 / 0.25 | lists 2.71 / 3.38 / 2.50 / 2.08 |
+  | median P/T/E, G1 set; population | 16.5/24.5/20.5; 15/25/20 | 11.5/22/26; 14/24/21 | lists 13.5/28/18 |
+  | G3 (8 games a pair, seed 93) | 0.269 ± 0.012 | 0.275 ± 0.012 | C90 s1-s4: 0.219, 0.158, 0.138, 0.161 |
+  | moves an iteration (min, mean); errors | 8, 14.2; 2 / 60,000 | 9, 15.1; 1 / 60,000 | — |
+
+- **Bands:**
+  - R-repro: met. Each seed's G1 is inside 4.47-15.87, and each T4 is inside its Amendment-1 range.
+  - R-drift: not met. The mean G1 is 13.4, not above 15.87. Both T4 values sit below C90's mean but inside their
+    ranges, so they are not outside on the same side.
+  - The record's prior (R-repro) held.
+- **Found:**
+  - The two new seeds agree in direction: G1 +2.8 and +3.7 above C93's gated mean, and T4 0.46 and 0.71 below C90's
+    mean. Both are within the bands, so not an effect by the null rule, but it is the same side twice.
+  - G3 rose against every C90 seed while G1 got worse. C91 and C92 showed G3 tracks the population and pilot, not deck
+    shape, and the probe's pilot-exploitation caveat stands.
+  - The tempo deficit is unchanged in kind. The drafted decks carry about 1.6-1.8 of the lists' 9.17 T4 copies, and
+    under 1 copy each of Computer Search, Oak and Bill.
+  - Seed 6's G1 set is Energy-heavy (26 E), the drafts' usual direction.
+- **Next:** this is the base the drafting levers are read against. 333-10's queued fix comes next: #493's two engine
+  faults in ryuu-play, with specs, left uncommitted. Re-measuring the gated base on the fixed build needs research's
+  record.
+
+### #542 · 2026-10-29 · A5 C119 C120 · C119 reads R-repro at both seeds (G1 13.00 and 13.83; T4 1.83 and 1.58), so today's code reproduces the gated base, with a same-side lean inside the bands (G1 +2.8 and +3.7, T4 −0.46 and −0.71); the tempo deficit stays about 7 copies a deck against the lists' 9.17; C120, the same base on the build with #493's faults fixed (seeds 5 and 6, banded on the six old-build seeds), is written for implementation
+- **Done** (research session, 2026-10-29 12:17): wrote C119's readout (the implementation session's #541) and
+  `runs/screens/C120-gate-base-fixed/record.md`, bands first.
+- **The six-seed gated base on a62e054:** G1 mean 11.25 (sd 2.79); T4 mean 2.10 (sd 0.33).
+- **C120 bands:** R-same if each seed's G1 is within 5.67-16.83 and its T4 within 2.10 ± 2·sqrt(0.33² + SE²); R-moved
+  if the mean G1 or both T4 values fall outside. Prior: R-same.
+- **Pending:** 333-10's call on C118 (auditor A122).
+
+### #543 · 2026-10-29 · A5 engine fix, C120 · #493's two engine faults fixed in ryuu-play (Evan row 102, 333-10's queue), with specs, left uncommitted; the env runs the fixed build `a62e054+bbeffc414243` from now on; C120 (the gated base on the fixed build, research's record) launched at 12:43, seed 5 first, one seed at a time
+- **Done** (ryuu-play working tree on `sts-2000-pool` at a62e054; not committed and the pin not bumped, per 333-10, for
+  Evan; diff sha256 `bbeffc414243`):
+  - `packages/sets/src/base-sets/set-base/blastoise.ts`: Rain Dance now attaches only to the player's Water Pokémon, by
+    their current type (`CheckPokemonTypeEffect`, so Venomoth's Shift or Buzzap count). It uses the engine's `blockedTo`
+    pattern (as Electrode BS), which `env/legal.js` already honours. The transfer callback re-checks each target, since
+    `AttachEnergyPrompt.validate()` doesn't check `blockedTo`.
+  - `packages/sets/src/base-sets/set-fossil/gastly.ts`: Energy Conversion with no Energy in the discard still does 10
+    damage to Gastly (`DealDamageEffect`, as its normal path).
+  - New specs: `packages/sets/tests/base-sets/set-base/blastoise.spec.ts` (4) and
+    `packages/sets/tests/base-sets/set-fossil/gastly.spec.ts` (2).
+  - `npm run compile` in `packages/sets` (dist is git-ignored). `env/engine.js` loads `ryuu-play/packages/sets`, so
+    every env user now plays the fixed build.
+  - **C120:**
+    - record note before stage 1;
+    - `runs/screens/C120-R1-K-base-paired-fixed-s5/` and `-s6/chain.sh`, C119's chains with only the names and the stage
+      variable changed;
+    - `runs/screens/C120-gate-base-fixed/sequence.sh`, which runs each later stage through `loop.py launch`, one seed at
+      a time, with the stop rule between stages. It runs as a detached process, because `loop.py` refused it as a probe
+      on RAM though it holds almost none.
+- **Evidence:**
+  - The new specs: 6 / 6 pass on the fix. On the old code the three fault specs fail (non-Water target blocked;
+    non-Water answer ignored; empty-discard self-damage) and the three normal-path specs pass.
+  - Suites: sets 720 / 0 failures (714 before), common 267 / 0, rulings 23/23, `test_env` PASS, `verify_enumerator
+    --games 300` PASS (29,936 decisions, 0 mismatches; 11,499 prompts, 0 missing, 0 invalid). Those counts equal #491's,
+    so these games never reach the two cards.
+  - 64-game smoke on the fixed build: list 16 (Viray, 3 Blastoise BS) against list 6 (Stein, 2 Gastly FO), C49-sd 199
+    greedy, the cap: 0 errors.
+  - Mechanism on the old build (C119, iteration 29): Blastoise BS is in 0% and 4% of decks (1 of 12 G1 decks at s6);
+    Gastly FO in 1% at both. Saved before any C120 readout (`mechanism_oldbuild_C119.json`).
+- **Found:**
+  - Bench prices and every readout before this entry are old-build numbers (a62e054). Off-bench, so no bench reading
+    should change, but they keep that label.
+  - `ar/` needs its re-setup (`--setup`, `--calibrate`) before its next experiment, since the engine build changed.
+  - `AttachEnergyPrompt.validate()` doesn't enforce `blockedTo`, for any card. The env never offers a blocked target,
+    but a direct client could. It is noted here, not changed, since it touches every card using the pattern.
+- **Next:** C120's stages (about 1h50), then its bands against the six old-build gated seeds.
+
+### #544 · 2026-10-29 · A5 C120 · Correction to #543 and a sequencer fault: C120 seed 5 launched at 12:24, not 12:43; its stage 1 ended at 12:48 and passed the stop rule (0 errors in 40,000 games, 10-19 moves, interim G1 12.2); the detached sequencer had no coreutils on its PATH and launched nothing, so stage 2 started 8 minutes late, at 12:56, after the fix
+- **Correction:** #543 said C120 launched at 12:43. The registry and `launch.log` say 12:24:21.
+- **Fault:**
+  - `runs/screens/C120-gate-base-fixed/sequence.sh`, started with PowerShell `Start-Process` on Git's `sh.exe`, ran
+    without `/usr/bin` on its PATH. `dirname`, `sleep` and `grep` were not found, so it never reached the repo and
+    spun without sleeping, writing about 54,000 error lines.
+  - It launched nothing (no stage 2, no seed 6; the registry is unchanged). It was killed at about 12:55 (pid 13920 and
+    its child).
+  - Fixed with an explicit `export PATH="/usr/bin:/bin:/mingw64/bin:$PATH"` (checked in a bare shell: dirname, sleep,
+    grep, seq and date resolve). Restarted as pid 14068.
+  - The time lost was 8 minutes (stage 1 ended 12:47:54, stage 2 launched 12:56:10).
+- **Evidence** (seed 5, stage 1, fixed build): 0 errors in 40,000 games; moves 10-19 (mean 13.7). Interim G1 (15-19):
+  12.17, 11.83, 11.33, 12.83, 12.83, mean 12.2. Reported, not banded.
+- **Found:** a detached shell started outside `loop.py` needs its PATH set. `loop.py` spawns from Python with the
+  session's environment, so its runs never hit this.
+
+### #545 · 2026-10-29 · A5 C120 · C120 reads between: on the fixed build (a62e054+bbeffc414243) seed 5 matches the gated base (G1 11.73, T4 2.08) but seed 6 slid toward Pokémon from iteration 23 (G1 20.80, outside 5.67-16.83; T4 1.42 within its range); the two-seed mean G1 16.27 is just inside the band, so not R-moved; the fixed cards are absent from both G1 sets, so the slide doesn't run through them
+- **Done:** #543's sequencer ran the stages one seed at a time, restarted after #544's PATH fix:
+  - s5 stage 2 12:56-13:08;
+  - s6 stage 1 13:08-13:32 (stop rule PASS);
+  - s6 stage 2 13:32-13:45; then G3's probes.
+  - Readout by C119's method and C120's bands: `runs/screens/C120-gate-base-fixed/readout.json`.
+- **Evidence** (measured, finished, 2 seeds, against C119's same seeds on the old build):
+
+  | readout | C120 s5 | C120 s6 | C119 s5 / s6 (old build) |
+  |---|---|---|---|
+  | **G1 last-5** | **11.73** (9.50, 12.83, 6.83, 13.17, 16.33) | **20.80** (21.17, 22.17, 19.17, 20.83, 20.67) | 13.00 / 13.83 |
+  | **T4** (SE; C120 range) | **2.08** (0.60; 0.74-3.46) | **1.42** (0.31; 1.19-3.01) | 1.83 / 1.58 |
+  | PP / Gust / IF / SU | 0.58 / 0.58 / 0.58 / 0.33 | 0.58 / 0.25 / 0.42 / 0.17 | — |
+  | CS / Oak / Bill / ER | 0.42 / 0.92 / 0.67 / 0.25 | 0.67 / 0.67 / 0.67 / 0.42 | — |
+  | median P/T/E, G1 set; population | 14.5/20/23; 15/24/20 | 19/18/24; 18/21/21 | 16.5/24.5/20.5; 15/25/20 / 11.5/22/26; 14/24/21 |
+  | G3 | 0.275 ± 0.013 | 0.238 ± 0.011 | 0.269 / 0.275 |
+  | errors; moves (min, mean) | 0 / 60,000; 10, 13.9 | 1 / 60,000; 13, 16.9 | 2 / 60,000; 1 / 60,000 |
+
+  - **Mechanism** (copies a deck, population / G1 set, iteration 29):
+    - s5: Blastoise BS 0.02 / 0, Gastly FO 0.07 / 0, Gengar FO 0.09 / 0.08;
+    - s6: Blastoise BS 0.06 / 0, Gastly FO 0.04 / 0, Wartortle BS 0.03 / 0.08;
+    - old build (#543): Blastoise BS 0.00 and 0.04, Gastly FO 0.02 and 0.01.
+  - **s6's slide:** its G1 was 11.0-18.7 through iteration 22 (12.0 at 22), then 21.7 at 23 and 19.2-22.2 after. The
+    population median went from 12/27/20 (iteration 9) to 14/25/21 (19), 15/23/21 (24) and 18/21/21 (29). C119's s6 on
+    the old build stayed at 8.5-16.5 throughout, with a median of 14/24/21 at 29.
+- **Bands** (C120's, from the six old-build gated seeds):
+  - R-same: not met. s5 is in band on both, but s6's G1 of 20.80 is outside 5.67-16.83.
+  - R-moved: not met. The two-seed mean G1 is 16.27, inside the range by 0.56, and the T4 values are not outside on
+    the same side.
+  - So: **between**. The record's prior was R-same.
+- **Found:**
+  - s6's slide doesn't run through the fixed cards: neither Blastoise BS nor Gastly FO is in either G1 set, and they
+    stay under 0.07 copies a deck in the populations. The fixes change the games, so the trajectories diverge from
+    C119's.
+  - One late slide toward Pokémon at one seed is the shape the ungated runs showed (C85: G1 about 17.8). It is the
+    first gated seed of eight above 16.83.
+  - It came after the stage-1 stop rule had passed. The stop rule watches errors and moves, not G1.
+  - By the null rule, one out-of-band seed with no mechanism through the changed cards is no effect of the fix. Whether
+    the fixed build counts as the drafting base, or a third seed is run first, is research's call under the record.
+- **Next:** research reads C120 against its record, and decides whether a seed 7 is wanted.
+
+### #546 · 2026-10-29 · A5 C120 · C120 reads between: s5 is in band (G1 11.73, T4 2.08), s6's G1 slid late to 20.80 (out of band; Trainers fell from 27 to 21 in the population after iteration 23), the two-seed mean (16.27) is inside, and the fixed cards are absent from both G1 sets, so no effect of the fix is claimed; seed 7 on the fixed build decides the base (Amendment 1), and later lever records get a G1 watch in their stop rule
+- **Done** (research session, 2026-10-29 13:47): wrote C120's readout (the implementation session's #545) and Amendment 1.
+- **Eight gated seeds:** G1 mean 12.50, sd 4.10. s6 is the first above 16.83.
+- **Seed 7's rule:** G1 at 16.83 or less means the fixed build is the base. Above it, two of three fixed-build seeds
+  are high, so s6 and s7 are rerun on the old build before any lever.
+
+### #547 · 2026-10-29 · A5 C120 · C120 seed 7 queued on the fixed build (research's call, C120 Amendment 1, written before it runs): C90's chain at --seed 7, the same stages and stop rule, through loop.py when free RAM allows; it decides whether the fixed build is the drafting base
+- **Done:**
+  - `runs/screens/C120-R1-K-base-paired-fixed-s7/chain.sh`: seed 5's C120 chain with `--seed 7` and the name only. The
+    build is a62e054+bbeffc414243, checked unchanged by the diff hash.
+  - `runs/screens/C120-gate-base-fixed/sequence_s7.sh`: the fixed sequencer for seed 7 (stage 1, stop rule, stage 2
+    and G3), started detached as pid 6436. It waits on RAM, 7.9 GB free against a screen's 8.0.
+  - 333-10 was told, with how to veto.
+- **Amendment 1's reading** (research): the fixed build is the drafting base if seed 7's G1 is 16.83 or less and its T4
+  is in band, and s6 is then a tail draw. Otherwise it is R-moved-candidate: s6 and s7 rerun on the old build at the
+  same seeds before any lever.
+- **Standing from now on** (research): every drafting lever's screen gets a G1 watch in its stop rule. It stops if its
+  last-5 G1 stays above 17.77 (C93's ungated mean) for 5 consecutive iterations after iteration 15. Base measurements
+  don't stop on it.
+- **Next:** seed 7 (about 45 minutes once launched); then the base decision.
+
+### #548 · 2026-10-29 · A5 C120 · C120 seed 7 settles Amendment 1: on the fixed build its G1 is 7.37 (the closest to the lists' shape of any gated seed so far) and T4 2.58 (inside 0.76-3.44), so the fixed build a62e054+bbeffc414243 is the drafting base and seed 6 is a tail draw; G3 0.302, 1 error in 60,000 games
+- **Done:** #547's sequencer ran seed 7: stage 1 13:53-14:18 (stop rule PASS); stage 2 14:24-14:36, launched after
+  about 6 minutes of RAM retries; then G3. Readout added to `runs/screens/C120-gate-base-fixed/readout.json` (key `7`).
+  Acknowledged in `loop.py`.
+- **Evidence** (seed 7, measured, finished):
+  - G1 by iteration: 18.7 at 0, 7.0-18.0 through 24, then 6.33, 5.00, 10.67, 9.17, 5.67, so last-5 **7.37**.
+  - T4 **2.58** (SE 0.58; range 0.76-3.44): PlusPower 0.58, Gust 0.17, Item Finder 0.83, Scoop Up 1.00. Beside them,
+    Computer Search 0.50, Oak 0.83, Bill 1.75, Energy Removal 1.25.
+  - Median P/T/E: G1 set 12.5/21.5/21, population 12/25/21. G3 0.302 ± 0.013. Moves min 8, mean 15.7. 12/12 shapes match.
+  - Mechanism (population / G1 set): Blastoise BS 0.01 / 0, Gastly FO 0.05 / 0, Gengar FO 0.04 / 0.08.
+- **Amendment 1's reading:** G1 7.37 ≤ 16.83 and T4 in band, so the fixed build is the drafting base and s6 (G1 20.80)
+  is recorded as a tail draw.
+  - Fixed-build seeds 5 / 6 / 7: G1 11.73 / 20.80 / 7.37 (mean 13.30), T4 2.08 / 1.42 / 2.58, G3 0.275 / 0.238 / 0.302.
+  - Old-build gated seeds (C90 s1-s4, C119 s5-s6): G1 mean 11.25 (sd 2.79), T4 2.10 (sd 0.33).
+- **Found:**
+  - The three fixed-build seeds span 7.4-20.8 on G1, wider than the six old-build seeds. One slide in three is
+    consistent with a tail draw, with no mechanism through the fixed cards (absent from all three G1 sets).
+  - The base is now three fixed-build seeds. Drafting levers are read against them with research's G1 watch in their
+    stop rules.
+- **Next:** the drafting levers, each with its own record (research), against this base. The ryuu-play fix waits for
+  Evan's commit and pin bump.
+
+### #549 · 2026-10-29 · A5 C120 · Seed 7 settles C120's Amendment 1: the fixed build is the drafting base (s7 G1 7.37, T4 2.58), and s6's 20.80 is a tail draw; over nine gated seeds G1 is 11.93 ± 4.20 and T4 2.07 ± 0.39 against the lists' 9.17, which sets the noise for drafting levers (about −6 G1 at two seeds to clear 2 SE, estimated)
+- **Done** (research session, 2026-10-29 14:38): wrote s7's readout (the implementation session's #548).
+- **Next:** the first drafting lever. C118 (held by 333-10) decides whether it targets drafting or play strength, so I
+  asked 333-10 for its call.
+
+### #550 · 2026-10-29 · A5 C118 C121 C122 · Evan's row 105 ("Stop stopping ... just make progress towards the ground truth"): C118 handed off (go, row 104); the two first-lever records written, bands first: C121 (L-draft: the gated base with P9's per-turn discount in the drafting loop's pilot training, seeds 8 and 9) and C122 (L-search stage A: M and the focus prices with the pilot's own search at Trainer-playable decisions); C118's reading sets their order
+- **Done** (research session, 2026-10-29 21:58): `runs/screens/C121-L-draft-discount/record.md` and
+  `runs/probe/C122-L-search/record.md`. Evan's rule appended to the estack inbox.
+- **C121 bands** (against nine gated seeds; a 2-seed mean is about 0.78 sd of SE):
+  - R-lever if the mean T4 is 2.68 or more with each seed above 2.07, or the mean G1 is 5.36 or less with each seed
+    below 11.93;
+  - harm if a seed is stopped by the G1 watch;
+  - prior R-null.
+- **C122 bands:** R-search-lifts if M_S − M_G is +0.03 or more at both eval seeds (then stage B is written); R-not
+  stops L-search. Prior: between (C96's search at every decision was about 0).
+- **Queue (row 105, the GPU kept busy):** C121 s8 first, since it needs only a small build and the GPU is idle, with
+  C118 on CPU beside it. Then C122 if C118 reads R-conversion, else C121 s9.
+
+### #551 · 2026-10-29 · A5 C121 C118 · Built `--gamma-turn` for the drafting loop (C121, bit-identical off) and the G1 watch (`notes/scripts/g1_watch.py`); C121 s8 is queued behind RAM, and C118 runs on CPU at full size (100 Oak states, K = 8) after a 4-state timed pilot (41 s, 0 errors, search differs from greedy at 48% of decisions); Evan's rows 104-105 (run C118; don't wait, keep the GPU busy)
+- **Done:**
+  - `rl/train.py advantages(..., gamma_turn=None)`: the discount between two decisions of a seat is gamma × gamma_turn^(game
+    turns between them, glob byte 0). With None the arithmetic is the old function's. `rl/metagame.py --gamma-turn`
+    passes it to its PPO.
+  - `notes/scripts/g1_watch.py` (new): research's G1 watch for lever screens. It fires when the last-5 G1 stays above
+    17.77 for 5 consecutive iterations at or after 15, and `--stop` writes "g1watch" to the run's STOP file.
+  - `runs/screens/C121-R1-K-paired-gturn-s8/chain.sh`: C90's command with `--gamma-turn 0.98 --seed 8` only, the watch
+    polling every 60 s beside training. A watch stop prints STOPPED and end, and exits 6.
+  - `runs/screens/C121-L-draft-discount/sequence_s8.sh`: stage 1, the stop rule (errors, zero-move runs, the G1 watch),
+    stage 2, through `loop.py launch --components gamma-turn --evan-row 105`. Detached as pid 43420.
+  - C118: `env/tools/probe_conversion_worker.js`, a copy of C116's worker. Each probed Oak state gets its play and hold
+    lines on the same K re-deals under C-pilot (sampled to the end, as C116) and C-search: the deciding seat's
+    main-phase decisions for the rest of the turn and its next turn go to `PolicySearchAgent` over the pilot (its top
+    6 options by policy probability, 4 CRN copies to the turn's end, scored by the pilot's value), with a small pilot
+    adapter because ProbePool serves probabilities, not top-k. Lines record Prizes and where Oak's 7 drawn cards went.
+    Driver `notes/scripts/c118_probe.py`. Run `runs/probe/C118-conversion/run.sh`, launched through `loop.py` (CPU).
+- **Evidence:**
+  - Identity (synthetic batch, 20,000 rows): with gamma_turn None, advantages and returns are `array_equal` to a
+    verbatim copy of the old function, with lam_turn None and 1.0. gamma_turn 1.0 also matches. A 0.98 hand case
+    (turns 3, 3, 5, 9, then a win) gives 0.98^6 − V, 0.98^6 − V, 0.98^4 − V and 1 − V.
+  - `rl.metagame --gamma-turn 0.98` smoke (1 iteration, 120 games): exit 0.
+  - The G1 watch on C120: s6 fires at iteration 29 (its last-5 G1 above 17.77 from 25); s5 OK.
+  - C118 pilot (4 states, K = 8, 3 CPU workers): 41 s; 0 line and game errors; 322 searches, 155 changed (48%). The
+    pilot's Δ numbers have n = 4 and are not results.
+- **Found:**
+  - RAM is the binding limit. A screen needs 8.0 GB free and the machine has about 7.9 with desktop apps open, so
+    C121 s8 waits. C118 (CPU) holds about 2 GB while it runs, so the two can't overlap under #175. C118 runs first
+    (≤ 30 minutes), and C121's sequencer launches when RAM frees.
+- **Next:** C118's band picks the GPU item after C121 s8: C122 if R-conversion, else C121 s9.
+
+### #552 · 2026-10-29 · A5 C118 parallel · C118 reads R-not-conversion: a two-turn search continuation roughly halves Oak's cost but doesn't make it pay (pooled Δ under C-search −0.008 [−0.067, +0.050] against −0.055 [−0.112, +0.002] under C-pilot; difference +0.047 [−0.015, +0.109]); a screen's measured footprint (4.3-4.95 GB working set) matches loop.py's FOOTPRINT_GB 5.0, so it stays; C121 s8 and s9 run side by side and C122 stage A is queued on GPU memory, cut by its timed pilot to M's pairs at 64 games (Evan's rows 104-106)
+- **Done:**
+  - C118 ran 22:05-22:27 on CPU (100 Oak states, K = 8, 4 workers, 1,326 s; 0 line and game errors).
+    Summary in `runs/probe/C118-conversion/C118-summary.json`.
+  - `notes/scripts/mem_tree.ps1` (new, read-only): a run's process-tree working set and private bytes over time.
+  - C121 s8 launched 22:24:40 and s9 22:37:42, both through `loop.py`.
+    - s9's first sequencer lacked `--replicate-of C121-R1-K-paired-gturn-s8`, and `loop.py` refused it as a silent
+      repeat. It was killed and fixed, and launched once s8 left the 10-minute GPU-loading window.
+  - C122:
+    - `env/agents.js` PolicySearchAgent gets opt-in `trainerOnly` and `includeTrainer`. With `includeTrainer` it asks
+      for the whole order (k 64), so a Trainer play below the top 3 can be swapped in. Off, it is as before.
+      `env/remote_worker.js` passes both from `judgeSearch`.
+    - New `notes/scripts/c122_run.py` (arms G and S on the same deals, an optional C114 trace) and
+      `notes/scripts/c122_read.py`. The latter keeps only each real game's last trace line, since a search copy that
+      ends inside its turn could log too.
+    - The timed pilot set the size, recorded in C122's record before any readout: M's 16 pairs, 64 games a pair, one
+      stage an eval seed, 4 workers. The queue (`runs/probe/C122-L-search/queue.sh`) launches it when GPU memory allows.
+- **Evidence:**
+  - **C118** (pooled over 100 states / with ≥ 25 cards left, 71 states; game-clustered 95% CIs):
+
+    | | pooled | ≥ 25 left |
+    |---|---|---|
+    | Δ C-pilot (play − hold) | −0.055 [−0.112, +0.002] | −0.070 [−0.138, −0.003] |
+    | **Δ C-search** | **−0.008 [−0.067, +0.050]** | +0.002 [−0.063, +0.067] |
+    | C-search − C-pilot | +0.047 [−0.015, +0.109] | +0.073 [−0.011, +0.156] |
+    | Oak's 7 drawn cards: out of hand / on board by the window's end (P; S) | 3.71 / 2.05; 4.13 / 1.93 | 4.30 / 2.14; 4.53 / 1.97 |
+
+    - The search changed the pilot's main-phase choice at 44% of its searched decisions.
+    - Band: R-conversion needs Δ under C-search above 0 with its CI above 0. Δ is −0.008, so **R-not-conversion**.
+    - The record's prior (R-not-conversion, weakly) held.
+    - C-pilot's −0.055 is close to C116's −0.049 on re-collected states (the pairing is approximate).
+  - **Footprint** (C121 s8, a live screen, 10-s samples over 4 minutes covering 3 iterations): working set 4.30-4.38 GB,
+    peak 4.95 GB; private bytes 8.97-9.06 GB, peak 11.17 GB. C118's CPU probe tree: 2.75 GB working set, 4.71 GB private.
+  - **C122 pilot** (arm S, seed 91, 16 games a pair, 30 pairs, beside s8): 480 games in 375 s (1.3 games/s; 28,514
+    searches, 10,066 changed; 0 errors). Arm G: the same games in 34 s.
+- **Found:**
+  - The screen's resident peak (4.95 GB) leaves no room to lower FOOTPRINT_GB 5.0, so it stays. RAM_CRIT_GB 3.0 stays.
+    Today's earlier per-screen free-RAM drops of about 2.4-2.9 GB came under memory pressure, with working sets
+    trimmed and pages out, so they understate what a screen holds.
+  - With two screens the GPU runs at 81% utilization and 8.8 GB, at its caps, so C122 waits behind them under the
+    record's limits.
+  - In C118 the search continuation is worth +0.05 to +0.07 on Oak's cost without crossing 0. A one-turn tactical
+    search doesn't turn a fresh hand into a winning line, consistent with C96's null.
+- **Next:**
+  - By research's order (C118 R-not-conversion), C121 s9 before C122, and both are now running or queued in parallel
+    under row 106.
+  - C121's readouts after its two seeds; C122's after its two stages.
+
+### #553 · 2026-10-29 · A5 C118 C121 C122 · C118 reads R-not-conversion, as the prior said: with a two-turn search continuation, playing Oak moves from −0.055 to −0.008 (difference +0.047 [−0.015, +0.109], not significant), and the drawn cards aren't put into play any more often, so short-horizon play strength isn't the bottleneck alone; L-draft (C121 s8 and s9, running side by side) leads, and C122 follows, cut to M only by its timed pilot
+- **Done** (research session, 2026-10-29 22:40): wrote C118's readout (the implementation session's #552) and C122's size note.
+
+### #554 · 2026-10-29 · A5 C122 · C122 stage A reads between: the pilot's own search at Trainer-playable decisions changes M by −0.008 at eval seed 91 and +0.056 at seed 2 (R-search-lifts needs +0.03 at both, R-not under 0.03 at both); at both seeds it plays PlusPower about 7× as often (0.009-0.012 → 0.066-0.068 a attack) and Oak or Bill slightly more, with fewer full Benches
+- **Done:** #552's queue launched C122 at 22:47, beside C121 s8 and s9 (Evan's row 106), once s9 left the GPU-loading
+  window. Arms G then S at eval seed 91 (22:47-23:04), then seed 2 (23:04-23:20).
+  - M's 16 energy+6#r pairs, 64 games a pair, the cap, event points, arm 0 s1 on both sides, engine a62e054+bbeffc414243,
+    with C114's traces.
+  - Readout `runs/probe/C122-L-search/readout.json` (`notes/scripts/c122_read.py`; it now omits the focus cards stage A
+    didn't run, instead of NaN). Acknowledged in `loop.py`.
+- **Evidence** (measured, finished; 1,024 games an arm at each eval seed, on the same deals):
+
+  | | seed 91: G / S | seed 2: G / S |
+  |---|---|---|
+  | **M** (event points) | 0.537 / 0.529 (**dM −0.008**) | 0.489 / 0.545 (**dM +0.056**) |
+  | games reaching time | 0.830 / 0.793 | 0.844 / 0.817 |
+  | Oak or Bill played when held | 0.517 / 0.551 | 0.508 / 0.542 |
+  | PlusPower per attack | 0.0087 / 0.0675 | 0.0124 / 0.0662 |
+  | full Bench at attack | 0.419 / 0.353 | 0.432 / 0.375 |
+
+  - The play readouts pool both seats of all games, the lists and their Energy copies. They are counted only on the
+    arms' own games (the last trace line per job seed), so no search copy is in them.
+- **Band:** **between**. The record's prior was between.
+- **Found:**
+  - At the searched decisions, the search turns PlusPower into a played card at both seeds (7×). The play changes
+    without a price change at seed 91, and with a +0.056 lift at seed 2.
+  - G's M differs by 0.048 between the eval seeds on its own (0.537 against 0.489), which bounds how far one seed's dM
+    can be read.
+  - Stage B (a search-priced drafting screen) is written only on R-search-lifts. Whether to replicate stage A (more
+    games, or a third eval seed) is research's call.
+- **Next:** research's queue. A GPU slot is free beside C121 s9's stage 2.
+
+### #555 · 2026-10-29 · A5 C122 C121 C123 · C122 (L-search stage A) reads between (dM −0.008 and +0.056 against an eval-seed spread of 0.048), so L-search stops by its record; C121 s8 finishes at G1 17.37 and T4 2.67, with the loop's endings unchanged by the discount (s9 pending); C123 (L-long: the fixed-build base continued from iteration 29 to 59, no build) is written for the free GPU slot
+- **Done** (research session, 2026-10-29 23:21): wrote C122's readout (the implementation session's #554) and
+  `runs/screens/C123-L-long/record.md`, bands first.
+- **C123:**
+  - resumes C120 s5 and s6 (pre-specified, not chosen by G1) in two stages of 15 iterations;
+  - its stop rule stops a seed when last-5 G1 doesn't fall by 1.0 over a stage;
+  - R-trend if G1 at 59 is at least 3 below its value at 29 at both seeds; prior R-flat.
+
+### #556 · 2026-10-29 · A5 C123 · C123 (L-long, research's queue under Evan's row 105) launched: C120 s5 resumed from its iteration-29 checkpoint at 23:23 toward iteration 59 in two stages, with the trend stop rule; s6 queued behind GPU memory; C120's own endpoint kept
+- **Done:**
+  - `runs/screens/C123-L-long/sequence.sh <seed>` (detached, one an s; s5 pid 46500, s6 pid 3496). For each seed it
+    resumes C120's registered run through `loop.py launch --resume` (the same chain, flags, build and seed). Stage 1
+    runs to iteration 44 (`C120_ITERS=45`) and stage 2 to 59.
+  - Stop rule after each stage: errors over 2%, 0 moves for 10 iterations within the stage, or no progress (last-5 G1
+    at the stage's end not at least 1.0 below its start). A trend stop is R-flat for that seed.
+  - Then G3's probe at 59 into `vs_lists_it59.json`.
+  - C120's iteration-29 state is kept: `checkpoint_it29.pt` was copied before any resume, `population_it0029.pt` and
+    `vs_lists.json` stay, and the chain only probes at `C120_ITERS=30`.
+- **Starting points** (last-5 G1 at iteration 29): s5 11.73, s6 20.80. Stage 1 must reach 10.73 and 19.80, or better,
+  to continue.
+- **Next:** C121's two-seed band when s9's probe ends; C123's stages; research's next records into the free slots.
+
+### #557 · 2026-10-29 · A5 C121 · C121 reads R-lever (T4) by its bands, no claim yet: with the per-turn discount (--gamma-turn 0.98) in the drafting loop, the two-seed mean T4 is 2.79 copies a deck (2.67 and 2.92, each above the base's 2.07; the bar was 2.68), G1 12.15 (17.37 and 6.93), no harm; the loop's own endings don't move; by the record, seeds 10 and 11 replicate before any claim
+- **Done:** C121 s8 (22:24-23:17) and s9 (22:37-23:26) ran side by side through their sequencers (stage 1, stop rule,
+  stage 2, G3). Both stage-1 stop rules passed and the G1 watch never fired. Readout
+  `runs/screens/C121-L-draft-discount/readout.json`. Both acknowledged in `loop.py`.
+- **Evidence** (measured, finished, 2 seeds, fixed build a62e054+bbeffc414243):
+
+  | readout | s8 | s9 | base (nine gated seeds) |
+  |---|---|---|---|
+  | **T4** (SE) | **2.67** (0.56) | **2.92** (0.63) | 2.07 ± 0.39 |
+  | PP / Gust / IF / SU | 1.00 / 0.67 / 0.67 / 0.33 | 0.42 / 1.17 / 0.67 / 0.67 | lists 2.75 / 2.54 / 2.12 / 1.75 |
+  | CS / Oak / Bill / ER | 0.25 / 0.42 / 0.33 / 0.67 | 0.67 / 0.67 / 0.33 / 1.00 | lists 2.71 / 3.38 / 2.50 / 2.08 |
+  | **G1 last-5** | **17.37** (18.17, 12.67, 21.33, 17.50, 17.17) | **6.93** (6.67, 8.33, 7.17, 4.83, 7.67) | 11.93 ± 4.20 |
+  | P/T/E, G1 set; population | 16/20/26; 14/23/23 | 12/23/21; 12/27/20 | lists 13.5/28/18 |
+  | G3 | 0.264 ± 0.012 | 0.261 ± 0.012 | C120: 0.24-0.30 |
+  | loop endings, 25-29: deck-out / Prizes / time | 1.4% / 6.9% / 45.8% | 1.7% / 6.5% / 39.6% | C120: 0.9-1.6% / 7.0-11.9% / 38-49% |
+  | errors; moves (min, mean) | 1 / 60,000; 6, 14.7 | 0 / 60,000; 9, 15.2 | — |
+
+- **Bands** (written before the run):
+  - R-lever (T4): met. The two-seed mean T4 is 2.79 against 2.68, and each seed is above 2.07.
+  - R-lever (G1): not met (mean 12.15; the bar is 5.36).
+  - Harm: no (no watch stop; mean G1 12.15, under 17.77).
+  - The record's prior was R-null.
+- **Found:**
+  - Each seed's T4 sits within about 1.1-1.3 of its own 12-deck SE above the base mean, so the two-seed lift of +0.72
+    copies is real by the band but small against one seed's sampling noise. By the record and the null rule, it is not
+    a claim until seeds 10 and 11 replicate.
+  - The mechanism P9 found on the bench (fewer deck-outs) is absent in the loop: its own games end by deck-out
+    1.4-1.7% of the time with or without the discount, as the base does. So if T4 replicates, the route isn't
+    through deck-outs.
+  - Oak and Bill copies didn't rise (0.33-0.67 a deck), the record's first thing to watch.
+- **Next:** C121 s10 and s11 replicate, queued behind C123 s6 for the GPU slots (one at a time beside C123 s5).
+
+### #558 · 2026-10-29 · A5 C121 · C121 reads R-lever (T4) by its letter (mean T4 2.79 against the 2.68 bar, both seeds above the base's 2.07) and not R-lever (G1) (mean 12.15); each seed is only about 1.2 SE above the base, so seeds 10 and 11 replicate before any claim; the gain is in PlusPower and Gust (draw engines flat, deck-outs unchanged), about +0.7 copies against a deficit of about 7
+- **Done** (research session, 2026-10-29 23:27): wrote C121's two-seed readout (the implementation session's #557).
+- **Queue:** C123 s5 is running; C123 s6, then C121 s10 and s11.

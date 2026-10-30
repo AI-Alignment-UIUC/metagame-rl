@@ -294,8 +294,12 @@ module.exports.searchScore = score;
 // but 'cancel', from an Rng of the line's seed. The copy's score is the max over its replicates. stats: followupLines,
 // followupPrompts.
 class PolicySearchAgent {
-  constructor(pilot, enc, { k = 4, dets = 4, maxSteps = 40, seed = 0, horizon = 1, crn = false, keepLines = false, followups = 1 } = {}) {
+  // trainerOnly (C122): search only the main-phase decisions where a Trainer play is legal, the rest greedy. includeTrainer
+  // (C122): if none of the top k is a Trainer play, the last candidate becomes the pilot's best-ranked Trainer play. Off: as before.
+  constructor(pilot, enc, { k = 4, dets = 4, maxSteps = 40, seed = 0, horizon = 1, crn = false, keepLines = false, followups = 1,
+                            trainerOnly = false, includeTrainer = false } = {}) {
     this.pilot = pilot;
+    this.trainerOnly = trainerOnly; this.includeTrainer = includeTrainer;
     this.horizon = horizon;
     this.crn = crn;
     this.keepLines = keepLines;
@@ -307,12 +311,15 @@ class PolicySearchAgent {
   }
 
   async act(batch) {
-    const base = await this.pilot.evaluate(batch, this.k);
+    const base = await this.pilot.evaluate(batch, this.includeTrainer ? 64 : this.k);   // includeTrainer: the whole order
     const out = new Array(batch.length), todo = [];
     for (let i = 0; i < batch.length; i++) {
       const b = batch[i], e = base[i];
       const d = b.env.game.decision();
       if (d.prompt || b.legal.length < 2) { out[i] = { action: e.best, logp: 0, value: e.value }; continue; }
+      if (this.trainerOnly && !b.legal.some(a => b.env.current.options[a].key.startsWith('trainer|'))) {
+        out[i] = { action: e.best, logp: 0, value: e.value }; continue;
+      }
       todo.push(i);
     }
     if (todo.length) {
@@ -330,6 +337,11 @@ class PolicySearchAgent {
     const probs = items.map(({ b, e }, pi) => {
       const me = b.env.current.playerId;
       const cands = e.order.slice(0, this.k);
+      const isTr = a => b.env.current.options[a].key.startsWith('trainer|');
+      if (this.includeTrainer && !cands.some(isTr)) {
+        const tr = e.order.find(isTr);
+        if (tr !== undefined) { if (cands.length >= this.k) cands[cands.length - 1] = tr; else cands.push(tr); }
+      }
       const startTurn = b.env.game.state.turn;
       // Moves are matched by key, not position: re-dealing the hidden cards can change which moves
       // exist (a search card with nothing left to find), so a copy may lack one or order them

@@ -27,24 +27,26 @@ ROOT = Path(__file__).resolve().parent.parent
 TOKEN_FIELDS = ("obs.tokCard", "obs.tokKind", "obs.tokAux", "obs.glob", "obs.slots", "obs.cand", "obs.nCand")
 
 
-def advantages(r: dict, gamma: float, lam: float, lam_turn: float = None):
+def advantages(r: dict, gamma: float, lam: float, lam_turn: float = None, gamma_turn: float = None):
     """GAE per trajectory (one player's decisions in one game, in order); reward only at the end. lam_turn (log #96):
     the lambda between two decisions of the same game turn (glob byte 0, env/tokens.js), lam across turns, so a turn's
-    outcome credits every decision of that turn in full with lam_turn = 1."""
+    outcome credits every decision of that turn in full with lam_turn = 1. gamma_turn (C121): the discount between two
+    decisions is gamma * gamma_turn ** (game turns between them), so 1 within a turn; None leaves gamma alone."""
     T = len(r["action"])
     adv = np.zeros(T, dtype=np.float32)
     nxt_v, nxt_a, nxt_turn = {}, {}, {}
     value, reward, done, traj = r["value"], r["reward"], r["done"], r["traj"]
-    turn = r["obs.glob"].reshape(T, -1)[:, 0] if lam_turn is not None else None
+    turn = r["obs.glob"].reshape(T, -1)[:, 0] if lam_turn is not None or gamma_turn is not None else None
     for t in range(T - 1, -1, -1):
         k = traj[t]
         if done[t]:
             v1, a1 = 0.0, 0.0
         else:
             v1, a1 = nxt_v.get(k, 0.0), nxt_a.get(k, 0.0)
-        delta = reward[t] + gamma * v1 - value[t]
-        l = lam_turn if turn is not None and nxt_turn.get(k) == turn[t] else lam
-        adv[t] = delta + gamma * l * a1
+        g = gamma if gamma_turn is None else gamma * gamma_turn ** max(int(nxt_turn.get(k, turn[t])) - int(turn[t]), 0)
+        delta = reward[t] + g * v1 - value[t]
+        l = lam_turn if lam_turn is not None and nxt_turn.get(k) == turn[t] else lam
+        adv[t] = delta + g * l * a1
         nxt_v[k], nxt_a[k] = value[t], adv[t]
         if turn is not None:
             nxt_turn[k] = turn[t]
@@ -362,7 +364,11 @@ def build_model(args, info):
                              chain=getattr(args, "chain", 0), cand_latent=getattr(args, "cand_latent", 0),
                              cand_latent_zone=getattr(args, "cand_latent_zone", 0),
                              cand_latent_gate=getattr(args, "cand_latent_gate", 0),
-                             state_canon=getattr(args, "state_canon", 0), state_key=getattr(args, "state_key", 0))
+                             cand_latent_pick=getattr(args, "cand_latent_pick", 0),
+                             cand_latent_center=getattr(args, "cand_latent_center", 0),
+                             state_canon=getattr(args, "state_canon", 0), state_key=getattr(args, "state_key", 0),
+                             card_content=getattr(args, "card_content", 0), emb_scale=getattr(args, "emb_scale", 0.0),
+                             cand_origin=getattr(args, "cand_origin", 0))
 
 
 # Weights a pilot may lack when a checkpoint is read into a larger architecture: new modules that start as the
@@ -387,7 +393,9 @@ def token_net(cfg: dict, info: dict, **overrides):
                                                                "card_inputs", "deck_tokens", "slot_bind", "ability_text",
                                                                "deck_mode", "deck_layers", "history", "memory",
                                                                "value_tower", "value_query", "chain", "cand_latent", "cand_latent_zone",
-                                                               "cand_latent_gate", "state_canon", "state_key") if k in c}), info)
+                                                               "cand_latent_gate", "cand_latent_pick", "cand_latent_center", "state_canon", "state_key",
+                                                               "card_content", "emb_scale", "cand_origin")
+                                                               if k in c}), info)
 
 
 def load_grown(model, state: dict) -> list:

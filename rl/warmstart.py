@@ -23,7 +23,7 @@ from rl import limits
 from rl.decks import Pool
 from rl.remote import RemotePool
 from rl.rollouts import concat, read_rollout
-from rl.train import legal_mask, load_grown, model_inputs, token_net
+from rl.train import legal_mask, load_grown, model_inputs, round_turns, token_net
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -42,6 +42,11 @@ def main(argv=None):
     ap.add_argument("--holdout", type=float, default=0.1, help="share of games held out to measure the fit")
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--decks", help="a deck file [{name, cards}] for the games, played in every ordered pair, mirrors too "
+                    "(BENCH-P1: the P lists); default: the teacher's population")
+    ap.add_argument("--round-turns", default="0", help='the 2000 round rule in the games, "T" or "A-B"; "0" off')
+    ap.add_argument("--fold-card-content", action="store_true", help="the student starts from the teacher's weights with "
+                    "card_resid folded into its content maps (rl/token_model.py fold_card_content; BENCH-P1 card_content)")
     args = ap.parse_args(argv)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     workers = limits.cap_workers(args.workers)
@@ -51,6 +56,9 @@ def main(argv=None):
     t0 = time.time()
 
     st = torch.load(ROOT / args.teacher, map_location="cpu", weights_only=False)
+    ar_format = "net" not in st and "model" in st      # ar/'s start.pt ({model, config}): written back in that format
+    if ar_format:
+        st = {**st, "net": st["model"]}
     opts = json.loads(args.pilot_opts)
     pool = Pool()
     rp = RemotePool(workers)
@@ -63,12 +71,20 @@ def main(argv=None):
         teacher.load_state_dict(st["net"])
         teacher.eval()
         student = token_net({**st["config"], **opts}, info).to(device)
-        grown = load_grown(student, st["net"])
+        if args.fold_card_content:
+            from rl.token_model import fold_card_content
+            folded, fold_err = fold_card_content(st["net"])
+            missing, unexpected = student.load_state_dict(folded, strict=False)
+            assert not unexpected, f"folded state has weights the student lacks: {unexpected[:5]}"
+            grown = list(missing)
+        else:
+            grown = load_grown(student, st["net"])
         # the teacher's games, both seats recorded, with the student's history window if it reads one
-        decks = [pool.names(pool.vector(a["deck"])) for a in st["population"]]
+        decks = ([d["cards"] for d in json.loads((ROOT / args.decks).read_text(encoding="utf-8"))] if args.decks
+                 else [pool.names(pool.vector(a["deck"])) for a in st["population"]])
         shards = [{"decks": [], "jobs": []} for _ in range(workers)]
         for g in range(args.games):
-            k, l = (int(x) for x in rng.choice(len(decks), 2, replace=False))
+            k, l = (int(x) for x in rng.choice(len(decks), 2, replace=bool(args.decks)))
             sh = shards[g % workers]
             sh["decks"] += [{"name": f"g{g}a", "cards": decks[k]}, {"name": f"g{g}b", "cards": decks[l]}]
             i = len(sh["decks"]) - 2
@@ -76,7 +92,9 @@ def main(argv=None):
         msgs = [{"cmd": "games", "encoding": "tokens", "greedy": False, "deckoutWin": 1, "concurrency": 48,
                  "out": str(out_dir / f"warm_w{w}.bin"), "decks": sh["decks"], "jobs": sh["jobs"],
                  "history": int(student.config().get("history", 0) or 0),
-                 "chain": int(student.config().get("chain", 0) or 0)} for w, sh in enumerate(shards) if sh["jobs"]]
+                 "chain": int(student.config().get("chain", 0) or 0),
+                 **({"roundTurns": round_turns(args.round_turns)} if round_turns(args.round_turns) else {})}
+                for w, sh in enumerate(shards) if sh["jobs"]]
         replies = rp.collect(msgs, {0: teacher}, device)
     finally:
         rp.close()
@@ -135,11 +153,18 @@ def main(argv=None):
                 pace.tick()
             torch.nn.utils.clip_grad_norm_(student.parameters(), 0.5)
             opt.step()
+        f = fit(test_idx)                   # the holdout fit per epoch, and the student so far (survives a crash)
+        print(json.dumps({"epoch": e + 1, **f, "seconds": round(time.time() - t0, 1)}), flush=True)
+        if ar_format:
+            torch.save({"model": student.state_dict(), "config": student.config(), "warm": {"epoch": e + 1, **f}},
+                       (ROOT / args.out).with_suffix(".partial.pt"))
     after = fit(test_idx)
 
-    state = {**st, "net": student.state_dict(), "config": student.config(), "opt": opt.state_dict(),
-             "warm": {"teacher": args.teacher, "opts": opts, "grown": grown, "states": T, "before": before, "after": after,
-                      "epochs": args.epochs, "seconds": round(time.time() - t0, 1)}}
+    warm = {"teacher": args.teacher, "opts": opts, "grown": grown, "states": T, "before": before, "after": after,
+            "epochs": args.epochs, "seconds": round(time.time() - t0, 1), "decks": args.decks, "round_turns": args.round_turns,
+            "fold_card_content": args.fold_card_content}
+    state = ({"model": student.state_dict(), "config": student.config(), "warm": warm} if ar_format else
+             {**st, "net": student.state_dict(), "config": student.config(), "opt": opt.state_dict(), "warm": warm})
     tmp = (ROOT / args.out).with_suffix(".tmp")
     torch.save(state, tmp)
     tmp.replace(ROOT / args.out)

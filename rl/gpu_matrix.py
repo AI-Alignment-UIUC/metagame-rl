@@ -42,7 +42,10 @@ def load_policy(path: str, device: str, overrides: dict = None):
                               value_query=cfg.get("value_query", 0), aux_heads=cfg.get("aux_heads", 0),
                               chain=cfg.get("chain", 0), cand_latent=cfg.get("cand_latent", 0),
                               cand_latent_zone=cfg.get("cand_latent_zone", 0), cand_latent_gate=cfg.get("cand_latent_gate", 0),
-                              state_canon=cfg.get("state_canon", 0), state_key=cfg.get("state_key", 0))
+                              cand_latent_pick=cfg.get("cand_latent_pick", 0), cand_latent_center=cfg.get("cand_latent_center", 0),
+                              state_canon=cfg.get("state_canon", 0), state_key=cfg.get("state_key", 0),
+                              card_content=cfg.get("card_content", 0), emb_scale=cfg.get("emb_scale", 0.0),
+                              cand_origin=cfg.get("cand_origin", 0))
         enc = "tokens"
     else:
         from rl.model import build
