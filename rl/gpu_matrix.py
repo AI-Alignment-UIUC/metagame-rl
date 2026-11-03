@@ -54,8 +54,12 @@ def load_policy(path: str, device: str, overrides: dict = None):
     missing, unexpected = m.load_state_dict(state["model"] if "model" in state else state["net"],   # rl.train or rl.metagame
                                             strict=not overrides)
     assert not unexpected and all(k.startswith(("vquery", "vcross.", "vblocks.", "ln_v.", "aux_head.", "chain_", "g_lat", "g_ptr", "lat_", "ptr_", "flag_emb", "g_flag", "key_bias",
-                                                                 "hist_"))   # history grown from a history-0 pilot (log #259)
+                                                                 "hist_", "count_proj."))   # history grown from a history-0 pilot (log #259)
                                   for k in missing), (missing, unexpected)
+    if "count_proj.weight" in missing:               # C152: count features grown on a pilot without them start at zero, so the
+        with torch.no_grad():                        # grown pilot plays exactly as its checkpoint until training moves them
+            m.count_proj.weight.zero_()
+            m.count_proj.bias.zero_()
     return m.to(device).eval(), enc
 
 
@@ -138,7 +142,8 @@ class GpuMatrix:
         return self
 
     def play(self, decks: list, games: int, seed: int, new: int = 0, pairs: list = None, value_at_turn: int = 0,
-             slots: list = None, models: dict = None, pair_keys: list = None, round_turns=0, search: dict = None):
+             slots: list = None, models: dict = None, pair_keys: list = None, round_turns=0, search: dict = None,
+             max_turns: int = 0):
         """decks: [{name, cards}] -> (wins, games, steps) as [n, n] arrays; mirrors filled with 0.5.
         `pairs` [(i, j)] plays only those pairs instead of all (or all involving the last `new`).
         slots / models (rl/league.py): deck i is piloted by model slot slots[i] of `models` instead of
@@ -160,8 +165,9 @@ class GpuMatrix:
                      "concurrency": self.concurrency, "valueAtTurn": value_at_turn, "history": history_of(models or {0: self.model}),
                      "chain": chain_of(models or {0: self.model}), "canon": canon_of(models or {0: self.model}),
                      **({"slots": [int(x) for x in slots]} if slots is not None else {}),
-                     **({"slotEnc": slot_enc_of(models)} if models and len(models) > 1 else {}),
-                     **({"roundTurns": round_turns} if round_turns else {})} for w, s in enumerate(shards)]
+                     **({"slotEnc": slot_enc_of(models)} if models and len({id(m) for m in models.values()}) > 1 else {}),  # C143: one pilot in two slots needs none
+                     **({"roundTurns": round_turns} if round_turns else {}),
+                     **({"maxTurns": int(max_turns)} if max_turns else {})} for w, s in enumerate(shards)]   # C140; 0: as before
             replies += self.pool.collect(msgs, models or {0: self.model}, self.device)   # fp32, as the ONNX pilot
         self.results = [x for rep in replies for x in rep["results"]]   # per game (with its job's seed), for analyses
         W, G, S = np.zeros((n, n)), np.zeros((n, n)), np.zeros((n, n))

@@ -296,10 +296,22 @@ module.exports.searchScore = score;
 class PolicySearchAgent {
   // trainerOnly (C122): search only the main-phase decisions where a Trainer play is legal, the rest greedy. includeTrainer
   // (C122): if none of the top k is a Trainer play, the last candidate becomes the pilot's best-ranked Trainer play. Off: as before.
+  // score (C132, evaluation only): "prizes" scores a line by 10 x the Prizes the searching player has taken by its end, plus
+  // its value score (so Prizes first, ties by V), and counts in stats whether that choice takes fewer Prizes than the value's
+  // own choice on the same lines (pWorse). "value": as before.
   constructor(pilot, enc, { k = 4, dets = 4, maxSteps = 40, seed = 0, horizon = 1, crn = false, keepLines = false, followups = 1,
-                            trainerOnly = false, includeTrainer = false } = {}) {
+                            trainerOnly = false, includeTrainer = false, score = 'value', lineOpponent = null, searchKey = null,
+                            allTrainers = false, afterstate = false } = {}) {
     this.pilot = pilot;
+    this.afterstate = afterstate;                    // C149: a line ends at the first decision with no prompt open (the option resolved)
     this.trainerOnly = trainerOnly; this.includeTrainer = includeTrainer;
+    this.searchKey = searchKey;                      // C136: search only where a legal option's key starts with it (null: off)
+    this.allTrainers = allTrainers;                  // C138: the candidates are the top k plus every legal Trainer play (false: off)
+    this.score = score;
+    // lineOpponent (C132b): a name in PolicySearchAgent.lineOpponents (registered by a worker, e.g. the goldfish) whose agent plays
+    // the other seat's decisions inside search lines in place of the pilot; null: the pilot plays both seats, as before.
+    this.opponent = lineOpponent ? PolicySearchAgent.lineOpponents[lineOpponent] : null;
+    if (lineOpponent && !this.opponent) throw new Error(`lineOpponent ${lineOpponent} is not registered`);
     this.horizon = horizon;
     this.crn = crn;
     this.keepLines = keepLines;
@@ -320,6 +332,9 @@ class PolicySearchAgent {
       if (this.trainerOnly && !b.legal.some(a => b.env.current.options[a].key.startsWith('trainer|'))) {
         out[i] = { action: e.best, logp: 0, value: e.value }; continue;
       }
+      if (this.searchKey && !b.legal.some(a => b.env.current.options[a].key.startsWith(this.searchKey))) {
+        out[i] = { action: e.best, logp: 0, value: e.value }; continue;
+      }
       todo.push(i);
     }
     if (todo.length) {
@@ -337,6 +352,7 @@ class PolicySearchAgent {
     const probs = items.map(({ b, e }, pi) => {
       const me = b.env.current.playerId;
       const cands = e.order.slice(0, this.k);
+      if (this.allTrainers) for (const a of b.legal) if (b.env.current.options[a].key.startsWith('trainer|') && !cands.includes(a)) cands.push(a);
       const isTr = a => b.env.current.options[a].key.startsWith('trainer|');
       if (this.includeTrainer && !cands.some(isTr)) {
         const tr = e.order.find(isTr);
@@ -370,26 +386,43 @@ class PolicySearchAgent {
     });
     this.stats.searches += items.length;
     this.stats.lines += lines.filter(l => !l.rep).length;
-    const turned = l => l.env.game.state.turn - probs[l.pi].startTurn >= this.horizon;
+    const turned = l => l.env.game.state.turn - probs[l.pi].startTurn >= this.horizon ||
+      (this.afterstate && !l.env.game.decision().prompt);       // C149: scored at the afterstate, before any further move
+    const prizes = this.score === 'prizes';
+    const taken = l => 6 - l.env.game.state.players.find(p => p.id === probs[l.pi].me).prizes.reduce((s, z) => s + z.cards.length, 0);
+    const byPrizes = l => { if (prizes) { l.v = l.score; l.p = taken(l); l.score = 10 * l.p + l.v; } };   // score "prizes" (C132)
     for (;;) {
-      const ask = [];
+      const ask = [], oppAsk = [];
       for (const l of lines) {
         if (l.score !== null) continue;
         while (l.n < this.maxSteps && !l.t.done && l.t.legal.length === 1 && !turned(l)) { l.t = l.env.step(l.t.legal[0]); l.n++; }
-        if (l.n >= this.maxSteps) { l.score = 0; l.capped = true; this.stats.capped++; continue; }   // still in the turn after maxSteps
+        if (l.n >= this.maxSteps) { l.score = 0; l.capped = true; this.stats.capped++; byPrizes(l); continue; }   // still in the turn after maxSteps
         if (l.t.done) {
           const me = probs[l.pi].me;
           if (l.t.error) this.stats.lineErrors++;
           l.score = l.env.game.reward(me);        // +1 / -1 / 0, or the round rule's points (env/game.js, log #160)
+          byPrizes(l);
           continue;
         }
-        ask.push(l);
+        if (this.opponent && !turned(l) && l.t.playerId !== probs[l.pi].me) oppAsk.push(l);   // lineOpponent (C132b)
+        else ask.push(l);
       }
-      if (!ask.length) break;
+      if (oppAsk.length) {
+        const acts = await this.opponent.act(oppAsk.map(l => ({ obs: l.t.obs, legal: l.t.legal, env: l.env })));
+        oppAsk.forEach((l, i) => {
+          const key = l.env.current.options[acts[i].action].key;
+          this.stats.oppActs = (this.stats.oppActs || 0) + 1;
+          if (/^(attach|attack|trainer)\|/.test(key)) this.stats.oppBad = (this.stats.oppBad || 0) + 1;
+          l.t = l.env.step(acts[i].action);
+          l.n++;
+        });
+      }
+      if (!ask.length) { if (oppAsk.length) continue; break; }
       const ev = await this.pilot.evaluate(ask.map(l => ({ obs: l.t.obs, legal: l.t.legal, env: l.env })), 0);
       ask.forEach((l, i) => {
         if (turned(l)) {
           l.score = l.t.playerId === probs[l.pi].me ? ev[i].value : -ev[i].value;
+          byPrizes(l);
         } else {
           let a = ev[i].best;
           const g = l.env.game;
@@ -415,14 +448,30 @@ class PolicySearchAgent {
         if (m > bestMean) { bestMean = m; best = a; }
       }
       if (best !== p.best) this.stats.changed++;
+      if (prizes) {                                  // C132's check: the Prizes of this choice against the value's own choice
+        const mean = (a, f) => { const s = byProb[pi].filter(l => l.a === a).map(f); return s.length ? s.reduce((x, y) => x + y, 0) / s.length : null; };
+        let vBest = null, vMean = -Infinity;
+        for (const a of p.cands) { const m = mean(a, l => l.v); if (m !== null && m > vMean) { vMean = m; vBest = a; } }
+        const pc = mean(best, l => l.p), pv = vBest === null ? null : mean(vBest, l => l.p);
+        if (pc !== null && pv !== null) {
+          this.stats.pCmp = (this.stats.pCmp || 0) + 1; this.stats.pChosen = (this.stats.pChosen || 0) + pc;
+          this.stats.pValue = (this.stats.pValue || 0) + pv; this.stats.pWorse = (this.stats.pWorse || 0) + (pc < pv - 1e-9 ? 1 : 0);
+        }
+      }
       if (!this.keepLines) return { action: best, logp: 0, value: bestMean };
       const scores = p.cands.map(a => {
         const row = new Array(this.dets).fill(null);
         for (const l of byProb[pi]) if (l.a === a) row[l.r] = l.score;
         return row;
       });
-      return { action: best, logp: 0, value: bestMean, cands: p.cands, scores };
+      const lineP = p.cands.map(a => {              // C137: the Prizes the searching player has taken at each line's end
+        const row = new Array(this.dets).fill(null);
+        for (const l of byProb[pi]) if (l.a === a) row[l.r] = taken(l);
+        return row;
+      });
+      return { action: best, logp: 0, value: bestMean, cands: p.cands, scores, prizes: lineP };
     });
   }
 }
+PolicySearchAgent.lineOpponents = {};                // lineOpponent's registry (C132b), empty unless a worker fills it
 module.exports.PolicySearchAgent = PolicySearchAgent;

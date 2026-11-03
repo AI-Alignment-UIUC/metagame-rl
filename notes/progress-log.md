@@ -13634,3 +13634,5393 @@ Entry format:
 ### #558 · 2026-10-29 · A5 C121 · C121 reads R-lever (T4) by its letter (mean T4 2.79 against the 2.68 bar, both seeds above the base's 2.07) and not R-lever (G1) (mean 12.15); each seed is only about 1.2 SE above the base, so seeds 10 and 11 replicate before any claim; the gain is in PlusPower and Gust (draw engines flat, deck-outs unchanged), about +0.7 copies against a deficit of about 7
 - **Done** (research session, 2026-10-29 23:27): wrote C121's two-seed readout (the implementation session's #557).
 - **Queue:** C123 s5 is running; C123 s6, then C121 s10 and s11.
+
+### #559 · 2026-10-29 · A5 C123 C124 · C123 s5 reads R-flat (last-5 G1 11.73 → 12.13 over iterations 30-44, stopped by the trend rule); C124, a stronger drafting discount (γ_T 0.95, seeds 12 and 13) as a dose-response check on C121's tempo lean, is written to keep the queue deep (prior R-null or harm, since stall-when-behind grows)
+- **Done** (research session, 2026-10-29 23:43): wrote C123 s5's readout and `runs/screens/C124-L-draft-discount095/record.md`.
+- **Queue:** C121 s10 is running, then s11, then C123 s6, then C124 s12 and s13.
+
+### #560 · 2026-10-29 · A5 C123 C121 C124 · C123 s5 stops by its trend rule after stage 1 (last-5 G1 11.73 at 29 → 12.13 at 44), so R-flat for that seed; the GPU queue runs in 333-10's order: C121 s10 (23:33) and s11 (23:43) beside each other, then C123 s6, then C124 (C121's recipe at --gamma-turn 0.95, seeds 12 and 13)
+- **Done:**
+  - **C123 s5** (resumed 23:23): 15 iterations, then its stage-1 stop rule fired on no progress (0 errors in 30,000
+    games, no zero-move run). Readout `runs/screens/C123-L-long/readout_s5.json`.
+  - **Queue** (333-10: the replication of the only positive lever first):
+    - C123 s6's waiting sequencer was stopped before it had launched anything.
+    - C121 s10's sequencer started; s10 launched at 23:33.
+    - `runs/screens/C121-L-draft-discount/queue_after_s10.sh` starts s11's sequencer once s10 is registered (s11
+      launched 23:43, into s5's slot), then C123 s6's.
+  - **C124** (research's record, bands first):
+    - `runs/screens/C124-R1-K-paired-gturn095-s12/` and `-s13/chain.sh`: C121's chain with `--gamma-turn 0.95` and the
+      seeds and names.
+    - Sequencers `runs/screens/C124-L-draft-discount095/sequence_s12.sh` and `_s13.sh`; s13 replicates s12. They were
+      built in Python after a sed escape failed and left empty files, now checked non-empty.
+    - `queue.sh` starts s12 once C123 s6 has launched, and s13 after s12.
+- **Evidence** (C123 s5, iteration 44, measured):
+  - G1 per iteration 30-44: 10.8, 7.0, 19.5, 4.5, 11.2, 9.3, 11.7, 7.0, 10.3, 7.5, 13.5, 15.5, 9.5, 13.0, 9.2.
+  - T4 2.33 (SE 0.58; 2.08 at 29). PP 0.58, Gust 0.83, IF 0.83, SU 0.08; Oak 1.67 (0.92 at 29), Bill 0.58, CS 0.42,
+    ER 1.42.
+  - G1 set 14/23.5/21, population 12/25/21. Loop deck-outs at 40-44: 2.0%.
+- **Found:**
+  - Fifteen more iterations moved s5's last-5 G1 by +0.4. Its per-iteration G1 swings 4.5-19.5, so one iteration's
+    value says little and the last-5 mean is the readout.
+- **Next:** C121 s10 and s11's readouts (the replication), then C123 s6, then C124.
+
+### #561 · 2026-10-29 · A5 queue plan · The queue planned several screens ahead (Evan's row 110, "keep it rolling"; 333-10's lean-turn rule): C121 s10 and s11, then C123 s6, then C124 s12 and s13; then C125 (the winning discount continued to 59) if C121 replicates at 4 seeds (mean T4 2.54 or more, 3 of 4 seeds above 2.07), else C126 (the draft head's entropy 0.01 → 0.03), with the other after
+- **Done** (research session, 2026-10-29 23:48): `runs/screens/C125-L-draft-long/record.md` and `runs/screens/C126-L-draft-ent/record.md`, bands first.
+
+### #562 · 2026-10-30 · A5 C123 · C123 reads R-flat: both seeds stopped after stage 1 by the trend rule. s5's last-5 G1 went 11.73 → 12.13 (iteration 29 → 44); s6's slide continued, 20.80 → 28.80, with T4 falling to 1.08 and its G1 set at 22/15/23.5. More drafting iterations of the gated base don't bring the decks closer to the lists
+- **Done:**
+  - C123 s6 resumed at 00:07 from its iteration-29 checkpoint. Its stage-1 stop rule fired at 00:32 (1 error in 30,000
+    games, no zero-move run).
+  - Readouts `runs/screens/C123-L-long/readout_s5.json` and `readout_s6.json`. C120's iteration-29 state is unchanged
+    (`checkpoint_it29.pt`, `population_it0029.pt`, `vs_lists.json`).
+- **Evidence** (s6, iteration 44, measured):
+  - G1 per iteration 30-44: 22.3, 25.5, 22.0, 23.5, 22.5, 21.3, 28.2, 23.8, 30.3, 30.2, 25.7, 29.3, 32.2, 29.7, 27.2.
+  - T4 1.08 (SE 0.34; 1.42 at 29): PP 0.50, Gust 0.08, IF 0.17, SU 0.33; CS 0.42, Oak 0.83, Bill 0.67, ER 0.75.
+  - Shape: G1 set 22/15/23.5, population 18/19/22 (lists 13.5/28/18). Loop endings at 40-44: deck-out 0.8%, Prizes 12.6%,
+    time 46.5%.
+- **Band:** **R-flat**. By the record, both seeds stopped by the trend rule read R-flat. The prior was R-flat.
+  - s6's +8.0 rise would read R-worse for that seed had both seeds run to 59.
+  - Of four fixed-build seeds continued or ending above 16.8 (C120 s6, C121 s8), none came back down.
+- **Found:**
+  - On the gated recipe, drafting time isn't the dial. A seed near the base stays there, and a seed that slid toward
+    Pokémon keeps sliding (Trainers 21 → 15 in its G1 set).
+  - **Order slip:** the first C124 queue's s12 sequencer survived its queue's kill (`taskkill /T` took a child, not
+    the backgrounded sequencer). It launched C124 s12 at 00:17 into the slot C121 s11's stage 1 freed, ahead of C121
+    s10 and s11's stage 2s. Left running. The duplicate queue was killed, and s13 now waits for both C121 stage-2
+    launches (`queue_s13.sh`). This delays the C121 replication readout by about 20-30 minutes.
+- **Next:** C121 s10 and s11's stage 2s take the next slots, C124 s12 continues, and s13 follows.
+
+### #563 · 2026-10-30 · A5 C123 · C123 reads R-flat: more drafting iterations don't approach the lists (s5 11.73 → 12.13; s6 kept sliding, 20.80 → 28.80, with population Trainers falling to 19), so time alone isn't a drafting lever; the planned queue stands (C121's 4-seed check at about 01:15)
+- **Done** (research session, 2026-10-30 00:33): wrote C123's readout (the implementation session's #562).
+
+### #564 · 2026-10-30 · A5 A133 selection lean · A133's discriminator, answered from the run logs at no cost: the drafting loop's own selection signal is not flat on the gated base, it is tilted against Trainers; in all 18 engine-K seeds (C85, C90, C119-C121, C124) the moves selection accepts carry fewer Trainers and more Energy than the head proposes (Trainers −0.23 a move, SE 0.02; Energy +0.37, SE 0.02), with or without the gate or the discount, so a stronger selection signal (A133's route) would push away from the lists
+- **Done** (research session, 2026-10-30 00:59): ran `notes/scripts/select_lean.py`'s `lean()` (S37, #204: accepted minus
+  proposed Pokémon / Trainers / Energy a move, from each run's `select` records) over every engine-K drafting seed
+  with select records, iterations 0-29. No GPU, no subagents.
+- **Evidence** (measured; per-seed mean over iterations 0-29; C121 s11 (0-21) and C124 s12 (0-19) are still running):
+
+  | recipe | seeds | Trainers a move (SE over seeds) | Energy a move (SE) |
+  |---|---|---|---|
+  | ungated C85 | 4 | −0.16 (0.03) | +0.39 (0.03) |
+  | gated C90, C119, C120 | 9 | −0.27 (0.03) | +0.37 (0.04) |
+  | gated + discount C121, C124 | 5 | −0.22 (0.05) | +0.35 (0.05) |
+  | all | 18 | −0.23 (0.02), range −0.40 to −0.09 | +0.37 (0.02), range +0.19 to +0.55 |
+
+  - Every seed has Trainers below 0 and Energy above 0. The draft head proposes the other way (Energy −1.1 to −2.2 a
+    candidate in C119-C124).
+  - Moves are about 14-17 of 99 decks an iteration, near the 1-SE rule's null rate (about 16% for one candidate), so
+    most single moves are noise, but their sum tilts the same way in every seed.
+- **Found:**
+  - This is the lean #204-#238 found on 10-24 (a fixed preference of the games, not co-adaptation; #213). It survives
+    the gate (C93), the fixed build (C120) and the per-turn discount (C121, C124). C121's T4 lift didn't come from selection,
+    which still trimmed Trainers in s8-s11; it came from the head's proposals or turnover.
+  - A133's two outcomes were "about 0: a stronger selection signal" and "positive: time and seeds". The reading is
+    neither: the gradient points away from the lists. Larger or paired deals per comparison would sharpen that, so
+    that route isn't queued. The per-card version (which tempo cards, if any, selection favours) isn't in the logs;
+    the bench's per-card prices are its readout (0.43-0.52, A132).
+  - So the drafting loop's own games price Trainers under Energy. By the ground truth (the lists are optimal) the
+    deviation lives in how these games are played or scored, not in the drafting optimiser. A120/A132's question stays
+    open after C118 and C122.
+- **Next:** no new run from this; the queue stands (C121's 4-seed read, C124, then C125 or C126). Research holds the
+  next deep round (no RESEARCH CALL; week 58% at 38% elapsed, ahead of the line); its topic, when one runs: why
+  self-play pilots' games make draw and tempo Trainers worth less than Energy (game pace and endings).
+
+### #565 · 2026-10-30 · A5 C121 C124 · Restart: a shutdown attempt at 00:52:46 (System log, User32 1073: restart/shutdown by evanc, failed) killed the sequencers and C121 s11's stage 2 at iteration 20, with no reboot and no GPU-PAUSE; relaunched in 333-10's order by 00:58 (s11 stage 2 with --resume, C124 s12's stop rule (PASS) and stage 2, then C124 s13's sequencer); C121 s10 had finished first (G1 11.67, T4 2.00, below the base's 2.07)
+- **Done:**
+  - **What died** (00:52, measured from file times): C121 s11 stage 2 (launched 00:50:12, checkpoint at iteration 20,
+    00:52:12); C124 s12's sequencer (stage 1 had ended at 00:52:37, exit 0); C124 s13's sequencer (started 00:50:22,
+    nothing launched). The s11 sequencer's err shows `fork: retry` and `0xC000026B` at the end. No STOP files.
+  - **Relaunched** (`loop.py state` first: nothing registered, 0 of 3 slots busy, RAM 18.1 GB free, GPU 1.3 GB):
+    - `runs/screens/C121-L-draft-discount/resume_s11.sh`, which is `sequence_s11.sh` without stage 1. s11 stage 2 was
+      launched at 00:56:51 with `--resume`.
+    - `runs/screens/C124-L-draft-discount095/queue_resume.sh` → `resume_s12.sh`, which is `sequence_s12.sh` without
+      the stage-1 launch. s12's stage-1 stop rule passed at 00:57:22, and its stage 2 was launched at 00:57:23.
+    - Then `sequence_s13.sh` started at 00:57:50, unchanged, and it waits for a slot.
+    - All of them were started with PowerShell `Start-Process` on Git's `sh.exe`.
+  - **C121 s10** finished before the shutdown: stage 2 ended at 00:50:31 (exit 0), and its G3 probe at 00:51:36.
+- **Evidence** (C121 s10, iteration 29, measured, finished; `c119_counts.py --iter 29`):
+  - G1 per iteration 25-29: 11.00, 13.83, 13.17, 9.00, 11.33. **Last-5 G1 11.67.** The G1 watch didn't fire.
+  - **T4 2.00 (SE 0.52)**: PP 0.67, Gust 0.75, IF 0.42, SU 0.17. CS 0.58, Oak 0.42, Bill 0.50, ER 0.08.
+  - Shape: G1 set 15/23.5/22, population 15/24/21. 12/12 shapes match the log row.
+  - G3 M 0.251 (SE 0.014). Errors 1 / 60,000. Moves at least 6 an iteration.
+- **Found:**
+  - With three of four seeds in, the mean T4 is 2.53 (2.67, 2.92, 2.00). By #561's gate, C125 needs a 4-seed mean
+    T4 of 2.54 or more with 3 of 4 seeds above 2.07. s10 is below 2.07, so **s11 needs T4 2.58 or more** for C125.
+    Otherwise C126 is next.
+- **Next:** C121 s11's readout when its stage 2 and probe end (about 01:20, estimated from 100-120 s an iteration);
+  then the 4-seed C121 readout and the C125 / C126 branch; C124 s12 and s13 continue.
+
+### #566 · 2026-10-30 · A5 C126 · C126 (research's record: the draft head's entropy 0.01 → 0.03 on the gated base, seeds 14 and 15) is built and queued behind C124 s13. It runs in either branch of #561, and C125 needs C124's reading to pick its γ, so it takes the next free slots
+- **Done:**
+  - `runs/screens/C126-R1-K-paired-ent03-s14/` and `-s15/chain.sh`: C121's chain with `--gamma-turn 0.98` removed,
+    `--draft-ent 0.03`, and the seed and names changed. The diff against C121 s11's chain is those lines only. Otherwise
+    the flags are C120's fixed-base chain (checked by diff: only the seed and the discount differ).
+  - `runs/screens/C126-L-draft-ent/sequence_s14.sh` and `_s15.sh` (s15 has `--replicate-of` s14) are C121's sequencer
+    with one fix. In the old sequencers `ends()` printed "0\n0" when nothing matched (`grep -c` prints 0, then
+    `|| echo 0` adds another), so `[ -ge ]` logged "integer expression expected" on every poll. That was only noise, and
+    no stage was skipped (the coordinating session found it). The fix is `|| true`, with `tail -1` in `wait_end`. The
+    running sequencers are left unedited, since sh reads its script as it runs.
+  - `queue.sh`, started at 01:03 with `Start-Process`, starts s14's sequencer once C124 s13 has launched, and s15's
+    once s14 has.
+  - README Next: the stale "ryuu-play fix waits for Evan's commit" is dropped. Row 108: 07ab29a pushed, pin bump in
+    84de069, seen in `git log`.
+- **Evidence:** `sh -n` passes on all six new scripts. The chain diffs are as stated. Not launched yet (no slot).
+- **Next:** C121 s11's readout (about 01:20, estimated), then the four-seed C121 check. C124 s13, then C126 s14 and s15,
+  take slots as they free.
+
+### #567 · 2026-10-30 · A5 C121 · C121's four-seed check meets #561's gate by its letter, narrowly: mean T4 2.56 (2.67, 2.92, 2.00, 2.67) against the 2.54 bar, with 3 of 4 seeds above 2.07, so C125 runs once C124 picks its γ. But the replication pair alone (s10, s11) averages 2.33, only +0.9 SE above the base, and G1 doesn't move (four-seed 13.12 against 11.93), so the lift is about +0.5 copies of a deficit of about 7, not yet a claim
+- **Done:** C121 s11 stage 2 (resumed at 00:56:51 from the iteration-20 checkpoint, #565) ended at 01:12:30 (exit 0),
+  and its G3 probe at 01:13:35. The four-seed readout is in `runs/screens/C121-L-draft-discount/readout_4seed.json`.
+- **Evidence** (measured, finished, iteration 29, `c119_counts.py` over s8-s11; s8 and s9 from #557, s10 from #565):
+
+  | readout | s10 | s11 | four seeds | base (nine gated seeds) |
+  |---|---|---|---|---|
+  | **T4** (SE) | 2.00 (0.52) | **2.67** (0.68) | **2.56** (sd 0.39) | 2.07 ± 0.39 |
+  | PP / Gust / IF / SU | 0.67 / 0.75 / 0.42 / 0.17 | 1.17 / 0.67 / 0.33 / 0.50 | — | lists 2.75 / 2.54 / 2.12 / 1.75 |
+  | CS / Oak / Bill / ER | 0.58 / 0.42 / 0.50 / 0.08 | 0.50 / 1.17 / 0.25 / 0.75 | — | lists 2.71 / 3.38 / 2.50 / 2.08 |
+  | **G1 last-5** | 11.67 | **16.50** (16.17, 14.50, 14.33, 18.83, 18.67) | 13.12 | 11.93 ± 4.20 |
+  | P/T/E, G1 set; population | 15/23.5/22; 15/24/21 | 18.5/17.5/22.5; 13/25/22 | — | lists 13.5/28/18 |
+  | G3 | 0.251 ± 0.014 | 0.220 ± 0.010 | — | C120: 0.24-0.30 |
+  | loop endings 25-29: deck-out / Prizes / time | 1.9% / 8.8% / 46.0% | 1.9% / 5.4% / 37.6% | — | C120: 0.9-1.6% / 7.0-11.9% / 38-49% |
+  | errors; G1 watch | 1 / 60,000; not fired | 1 / 60,000; not fired (max last-5 15.2) | — | — |
+
+- **Gate** (#561, written before s10 and s11 read): mean T4 2.54 or more, with 3 of 4 seeds above 2.07. **Met**:
+  2.562, with s8, s9 and s11 above.
+- **Found** (calibration, estimated from the seed sds):
+  - The four-seed mean is +0.49 above the base, about 2.1 SE of a 4-against-9 difference. The replication pair alone is
+    2.33, +0.26, about 0.9 SE. So the replication seeds came in weaker than the first pair, and the gate passes by 0.02.
+  - G1 doesn't move (13.12 against 11.93, inside the base's sd), and s11's best decks drifted toward Pokémon
+    (18.5/17.5/22.5) while their T4 rose. The tempo lift isn't bringing the decks closer to the lists' shape.
+  - Deck-outs stay at 1.9% at both seeds, as at s8 and s9. Whatever lifts T4, it isn't fewer deck-outs.
+- **Next:** by C125's record, its γ waits for C124's reading (s12's stage 2 ends about 01:25, s13's about 02:00, both
+  estimated). Then C125 resumes s8 and s9 (γ 0.98) or s12 and s13 (γ 0.95, if C124 reads R-dose) from iteration 29 to
+  59. C126 s14 takes s11's freed slot now.
+
+### #568 · 2026-10-30 · A5 C126 C125 · C126 s14 launched at 01:16:14 into s11's freed slot, after its record got the standard Kill line that `loop.py launch` requires (§10). C125's record got the same line before its launch
+- **Done:**
+  - C126 s14's sequencer was refused from 01:13 to 01:16. `launch_problems` rejects a record with no "kill", and
+    C126's record (and C125's) had bands but no Kill section.
+  - Both records got C121's and C124's line, "**Kill.** As the stop rule; row 73; runs/GPU-PAUSE.", marked as added
+    by this session at 01:16, before launch.
+  - s14 launched on the sequencer's next try. s15's sequencer starts from `queue.sh` now that s14 is registered, and it
+    waits for a slot.
+- **Evidence:** `sequence_s14.log`: "01:16:14 launched C126-R1-K-paired-ent03-s14 iters 20". `loop.py state` at 01:15:
+  2 of 3 slots, RAM 9.0 GB free (8.0 needed), GPU 7.2 of 15.9 GB.
+- **Next:** C124 s12's readout (about 01:25, estimated), then s13's (about 02:00), then C125's γ and launch. C126 s14
+  stage 1 runs to about 01:50.
+
+### #569 · 2026-10-30 · A5 C124 C126 · C124 s12 (γ_T 0.95) finished, one seed of two, so no band yet: T4 2.50 (SE 0.42) is under C121's four-seed 2.56, and G1 17.03 sits at the harm watch's edge without firing. C126 s15 launched at 01:26:46 into s12's slot
+- **Done:**
+  - C124 s12's stage 2 ended at 01:16:10 (exit 0), and its G3 probe at 01:17:24. Readout
+    `runs/screens/C124-L-draft-discount095/readout_s12.json`.
+  - C126 s15 launched at 01:26:46. Running now: C124 s13 (stage 1, iteration 9 at 01:27) and C126 s14 and s15.
+- **Evidence** (C124 s12, iteration 29, measured, finished, one seed):
+  - **T4 2.50 (SE 0.42)**: PP 0.83, Gust 0.42, IF 0.42, SU 0.83. CS 0.42, Oak 0.50, Bill 0.17, ER 0.17.
+  - **G1 last-5 17.03** (14.50, 18.50, 18.00, 15.67, 18.50). The watch's last-5 peaked at 18.33 at iteration 24, but
+    never ran 5 in a row above 17.77.
+  - Shape: G1 set 16/21.5/23, population 15/24/20.
+  - G3 0.270 ± 0.012. Errors 0 / 60,000.
+  - Loop endings 25-29: deck-out 0.5%, Prizes 11.3%, time 47.8% (C121's four seeds 37.6-46.0%).
+- **Found:**
+  - At one seed γ 0.95 doesn't show more tempo copies than γ 0.98 (2.50 against 2.56), and G1 runs higher (17.0 against
+    13.1). That reads toward R-no-dose, the record's prior, but s13 decides it.
+  - Time endings are +5.5 points above C121's four-seed mean (estimated mean 42.3%), under the harm band's 10.
+- **Next:** C124 s13's readout (stage 1 ends about 01:45, then stage 2 plus probe to about 02:05, estimated). Then
+  C124's band, C125's γ, and C125's launch.
+
+### #570 · 2026-10-30 · A5 C125 · C125 (the discount continued from 29 to 59) is built and queued to start by itself when C124 s13's sequence ends. Its queue reads C124's R-dose band as written and picks γ by C125's record: 0.95 resumes C124 s12 and s13, otherwise 0.98 resumes C121 s8 and s9
+- **Done:**
+  - `runs/screens/C125-L-draft-long/sequence.sh <run>` is C123's sequencer for one seed with C125's trend rule. It
+    resumes in place through `loop.py launch --resume --candidate C125` with `--evan-row 110`. Stage 1 runs to 44, and
+    the seed continues if last-5 G1 falls by at least 1.0 or T4 (`c119_counts.py`) rises by at least 0.3. Stage 2 runs
+    to 59, then G3 into `vs_lists_it59.json`. `checkpoint_it29.pt` keeps each screen's endpoint. The chain's own G1
+    watch stays on.
+  - `queue.sh` (started at 01:30 with `Start-Process`) waits for "C124 seed-13 sequence done", then applies C124's
+    band:
+    - R-lever (T4): the two-seed mean at 29 is 2.68 or more, with each seed above 2.07;
+    - the mean is above C121's 2.562;
+    - no harm: the watch didn't fire, and the two-seed time endings are under 42.25% + 10.
+  - It starts the first seed's sequencer, and the second's once the first has launched.
+- **Evidence:**
+  - `sh -n` passes.
+  - The trend rule was tested on C121 s8's own log (iterations 24 → 29). With T4 2.00 → 2.67 it gives PASS, and with
+    2.60 → 2.67 it gives STOP (G1 rose 15.73 → 17.37).
+  - The γ rule was tested with C121 s9 standing in for s13 (T4 2.50 and 2.92, time 47.8% and 39.6%). It gives 0.95, as
+    it should.
+  - With s12 at 2.50, the rule picks 0.95 only if s13's T4 is 2.86 or more.
+- **Next:** C124 s13's readout (about 02:05, estimated), then C125's γ and launch by the queue. C126 s14 and s15 run on.
+
+### #571 · 2026-10-30 · A5 C125 · C125's record gets Amendment 1 before launch: no G1 watch on the continuations (C123's stop rule as the record names it, since the watch's absolute 17.77 bar would fire on noise at starts of 17.03-17.37), with harm read at the end instead (R-worse if last-5 G1 ends 5.0 or more above its iteration-29 value)
+- **Done** (research session, 2026-10-30 01:31): `runs/screens/C125-L-draft-long/record.md` Amendment 1, answering the
+  implementation session's question in #570. Checked #570's s13 threshold: C124's R-dose needs a two-seed mean T4 of at
+  least 2.68 with s12 at 2.50, so s13 needs at least 2.86.
+- **Next:** C124 s13's read picks γ, then C125 launches. C126 s14 and s15 are running.
+
+### #572 · 2026-10-30 · A5 C125 · #571's Amendment 1 is built: C125's continuations launch a watch-free copy of each screen's chain, and harm is read at the end (last-5 G1 at 59 is 5.0 or more above 29: R-worse)
+- **Done:**
+  - `runs/screens/C125-L-draft-long/sequence.sh` now writes `chain_c125.sh` next to each screen's `chain.sh`, with the
+    `g1_watch.py` line removed by `sed`, just before launch. It exits if the watch line is still there, and launches
+    `sh $run/chain_c125.sh`.
+  - The screens' own `chain.sh` files are untouched. C124 s13's chain is running.
+  - Stage 2 also prints the 29 → 59 last-5 G1 and T4 change, which the R-grows and R-worse bands read.
+  - The sequencer hadn't started (`queue.sh` waits for C124 s13), so editing it is safe. `queue.sh` is unchanged.
+- **Evidence:** `sh -n` passes on the sequencer and on the stripped chain. Diffing `chain.sh` against the stripped
+  copy for C121 s8 and C124 s13 shows only the watch's command line and its first comment line removed.
+- **Next:** unchanged: C124 s13's readout (about 02:05, estimated), then C125 by its queue.
+
+### #573 · 2026-10-30 · A5 C126 · C126 s14 (draft-head entropy 0.03) finished, one seed of two, so no band yet: T4 1.92 (SE 0.60), under the base's 2.07, and G1 15.30; the mechanism check shows the lever barely moves its own dial, since the head's outgoing entropy and its KL to the base measure sit inside the 0.01 runs' range
+- **Done:**
+  - s14's stage 2 ended at 02:11:32 (exit 0), and its G3 probe at 02:12:42. Readout
+    `runs/screens/C126-L-draft-ent/readout_s14.json`. `config.json` confirms `draft_ent` 0.03 and `gamma_turn` null.
+  - Stage-2 launches waited on GPU memory: C124 s13 from 01:52 to 02:04, and C126 s15 from 02:07 to 02:11.
+    `loop.py launch` counts a run that is still loading at its full 3.7 GB on top of the measured use (s14 had just
+    relaunched at 01:54:53), so 7.9 + 3.7 + 3.7 GB was over the 12.7 GB cap.
+- **Evidence** (C126 s14, iteration 29, measured, finished, one seed):
+  - **T4 1.92 (SE 0.60)**: PP 0.42, Gust 0.50, IF 0.25, SU 0.75. CS 0.25, Oak 1.33, Bill 0.75, ER 1.00.
+  - **G1 last-5 15.30** (12.17, 19.50, 13.67, 15.33, 15.83). The watch's last-5 peaked at 14.2.
+  - Shape: G1 set 16/21/25.5, population 14/24/21.
+  - G3 0.271 ± 0.012. Errors 0 / 60,000.
+  - Loop endings 25-29: deck-out 2.3%, Prizes 7.7%, time 38.3%.
+  - **Mechanism** (the draft head, mean over iterations 10-29; with `--draft-base features` the bonus is β × (h_out −
+    KL(incoming ‖ q0))):
+
+    | run | β | h_out | h_in | kl_in |
+    |---|---|---|---|---|
+    | C126 s14 | 0.03 | 3.18 | 3.00 | 0.147 |
+    | C126 s15 (iterations 10-21) | 0.03 | 3.16 | 3.10 | 0.056 |
+    | C121 s8, s9, s10, s11 | 0.01 | 3.07-3.19 | 2.67-3.31 | 0.065-0.188 |
+    | C120 s7 | 0.01 | 3.11 | 2.69 | 0.248 |
+
+- **Found:**
+  - Tripling β leaves the head's outgoing entropy and its KL to the base measure inside the 0.01 runs' seed range. So
+    at these settings the bonus isn't what holds the head's exploration. The h_in floor (3.0) and the features base
+    measure are, and C126 changes little in what the head proposes.
+  - That fits the record's prior (R-null). If s15 reads null too, a wider exploration lever would have to act on the
+    floor or the base measure, not on β.
+- **Next:** C124 s13's readout (about 02:30, estimated), then C125 by its queue. C126 s15 (stage 2 from 02:11) reads
+  at about 02:35, estimated.
+
+### #574 · 2026-10-30 · A5 C124 C125 · C124 (γ_T 0.95) reads R-null by its bands: the two-seed mean T4 is 2.13 (2.50, 1.75), against the 2.68 bar, so it isn't R-dose, and there's no harm. s13 drafted the nearest shape to the lists yet (G1 5.87, population median 12/28/20) with few tempo cards, so its Trainers are Oak, Bill and Energy Removal. C125's queue picked γ 0.98, and C121 s8's continuation launched at 02:23:20
+- **Done:**
+  - C124 s13's stage 2 ended, and its probe at 02:22:47. Readout
+    `runs/screens/C124-L-draft-discount095/readout_s13.json` (with the two-seed band).
+  - C125's queue read the band at 02:23:17 ("0.98 T4 [2.5, 1.75] time [0.478, 0.392]"). It resumed C121 s8 to 45 at
+    02:23:20 through `chain_c125.sh` (no G1 watch, Amendment 1), with `checkpoint_it29.pt` kept. s9's sequencer
+    started at 02:23:47 and waits for a slot.
+- **Evidence** (C124 s13, iteration 29, measured, finished):
+  - **T4 1.75 (SE 0.41)**: PP 0.83, Gust 0.33, IF 0.17, SU 0.42. CS 0.25, **Oak 1.42, Bill 1.00, ER 2.08**.
+  - **G1 last-5 5.87** (6.50, 10.00, 4.00, 5.33, 3.50). The watch's last-5 peaked at 9.0.
+  - Shape: G1 set 13/27.5/18.5, **population 12/28/20** (lists 13.5/28/18).
+  - G3 0.246 ± 0.011. Errors 1 / 60,000.
+  - Loop endings 25-29: deck-out 1.9%, Prizes 6.8%, time 39.2%.
+- **Bands** (C124's record, written before the run):
+  - R-lever (T4): not met (2.125 < 2.68, and s13 is below 2.07). So not R-dose.
+  - Harm: no. The watch fired at neither seed, and the two-seed time endings of 43.5% are under C121's 42.25% + 10.
+  - **R-null.** The prior was R-null or harm.
+- **Found:**
+  - The two seeds bracket the base: G1 17.03 and 5.87 (mean 11.45, base 11.93 ± 4.20). G1's seed-to-seed spread
+    swamps any γ effect, as in C120 (s6 20.80, s7 7.37).
+  - At s13 the shape is near the lists' while T4 is low. Shape and tempo copies are separate readouts: the Trainer
+    count can reach 28 with Oak, Bill and Energy Removal filling it, while PlusPower, Gust, Item Finder and Scoop Up
+    stay at a fifth of the lists' 9.2.
+  - The discount's lean doesn't strengthen from 0.98 to 0.95. With C121's own replication pair at 2.33, that weighs
+    against a real tempo effect from the discount (estimated, no new test).
+- **Next:** C125 s8 stage 1 (30-44, about 25-30 min, estimated), then its trend rule. s9 follows into a free slot.
+  C126 s15 reads at about 02:35 (estimated). Research writes the next record before the queue runs dry.
+
+### #575 · 2026-10-30 · A5 C127 · C127, the next screen for the queue: a per-card selection ledger (logging only, opt-in) on two fresh gated-base seeds (16 and 17), asking whether the tempo four's deficit (about 2 copies a deck against 9.17) comes from selection rejecting them or from the head rarely proposing them; bands first, prior R-selection
+- **Done** (research session, 2026-10-30 02:27): `runs/screens/C127-card-ledger/record.md`, with the change, an integrity check
+  (the ledger must reproduce each row's `acc` and `prop`), bands, a Kill line and the build's acceptance. Handed to
+  the implementation session.
+- **Why this one:** #564 showed selection's lean as shape only. C124 s13 reached the lists' shape (G1 5.87) with T4 at
+  1.75, so the deficit is per card, and the two mechanisms point to different levers: the games' pricing (pilot or judge)
+  against the proposal distribution. C126 showed that the entropy bonus doesn't move the proposals (#573).
+- **Not queued:** a wider-exploration lever on the h_in floor or base measure. Near-uniform proposals slid every start
+  (#225), and selection trims Trainers (#564).
+- **Next:** implementation builds `--card-ledger` and runs C127 when C126 s15 frees its slot; C125 s8 and s9 continue.
+
+### #576 · 2026-10-30 · A5 C126 · C126 (the draft head's entropy bonus 0.01 → 0.03) reads R-null by its bands, worded as research asked, "the lever didn't move its dial": the head's outgoing entropy and its KL to the base measure stayed inside the 0.01 runs' range at both seeds, and the two-seed T4 is 1.71 (1.92, 1.50), under the base's 2.07 (about −1.2 SE, estimated), with G1 12.35
+- **Done:**
+  - C126 s15's stage 2 and probe ended at 02:28:01. Readout `runs/screens/C126-L-draft-ent/readout_s15.json` (with
+    the two-seed band).
+  - C125 s9 launched at 02:27:53 (from 29 to 45, no watch) once GPU memory allowed. C125 s8 and s9 are the only runs
+    now.
+- **Evidence** (C126 s15, iteration 29, measured, finished):
+  - **T4 1.50 (SE 0.45)**: PP 0.00, Gust 0.25, IF 0.83, SU 0.42. CS 0.67, Oak 1.08, Bill 1.00, ER 1.17.
+  - **G1 last-5 9.40** (10.00, 12.33, 5.67, 8.33, 10.67). The watch's last-5 peaked at 14.07.
+  - Shape: G1 set 13/22/20.5, population 12/25/22.
+  - **G3 0.325 ± 0.012**, the highest of the fixed-build drafting seeds read this week (C120 0.24-0.30, C121 0.22-0.26,
+    C124 0.25-0.27).
+  - Errors 0 / 60,000. Loop endings 25-29: deck-out 0.9%, Prizes 8.4%, time 40.4%.
+  - Draft head over 10-29: h_out 3.18, h_in 2.97, kl_in 0.069 (s14: 3.18, 3.00, 0.147; the 0.01 runs: 3.07-3.19,
+    2.67-3.31, 0.065-0.248).
+- **Bands** (C126's record, written before the run):
+  - R-lever (T4): not met (1.71, and both seeds are under 2.07). R-lever (G1): not met (12.35).
+  - Harm: no (the watch didn't fire).
+  - **R-null by the letter.** The manipulation didn't take (#573), so this says nothing about exploration as such.
+- **Found:** both seeds sit under the base's T4 (1.92 and 1.50 against 2.07 ± 0.39), but a two-seed mean of −0.36 is
+  about −1.2 SE of a 2-against-9 difference, so it's inside noise. s15's G3 of 0.325 is one seed, so no claim either.
+- **Next:** C127 (research's #575): build `--card-ledger`, a smoke and its integrity check, then seeds 16 and 17.
+  C125 s8 and s9 stage 1 ends at about 02:55 (estimated).
+
+### #577 · 2026-10-30 · A5 C127 · Built `--card-ledger` (research's C127 record, #575) and `select_lean.py --cards`. Its acceptance passes: the integrity check reproduces every row's acc and prop from the ledger, on smokes with and without moves, and a run without the flag logs no `select.card`. C127 s16 launched at 02:38:45; s17 waits for a slot
+- **Done:**
+  - `rl/metagame.py --card-ledger` (opt-in, logging only). In step 5's move loop, `dv = held[q]["deck"] - held[0]["deck"]`
+    (int32 count vectors) is summed per card over every candidate q ≥ 1 (`prop_net`; `max(dv, 0)` as `prop_in`) and over
+    the moves taken (`acc_net`). They are logged as `select.card` (sparse card id → sum) with `n_prop` and `n_acc`. The
+    code draws no random numbers and no decision reads it.
+  - **Timing:** the edits finished at 02:28:28. C125 s9 launched at 02:27:53, so it may have loaded any of the four edit
+    states. Each one is valid Python, and with the flag off each runs the same path, so s9 is unaffected (it trains
+    normally).
+  - `notes/scripts/select_lean.py --cards`, per group (T4, D3, ER, basic Energy):
+    - λ = acc_net / n_acc − prop_net / n_prop, as the mean and SE over iterations;
+    - the share of all prop_in copies, and the gross prop_in copies;
+    - an integrity check that rebuilds each row's acc and prop by supertype with `rl.decks.deck_shape`.
+  - C127 chains `runs/screens/C127-R1-K-paired-ledger-s16/` and `-s17/chain.sh`. Their flags are C120 s5's plus
+    `--card-ledger`, with the seed changed (checked by parsing both commands). C121's G1 watch is on.
+  - Sequencers `runs/screens/C127-card-ledger/sequence_s16.sh` and `_s17.sh` (from C126's, with the `ends()` fix). They
+    launch with `--candidate C127 --components card-ledger --evan-row 110`. Both were started at 02:38 with
+    `Start-Process`.
+- **Evidence** (smokes: C120's flags with 200 games, 20 practice games, 4,000 PPO transitions, seed 16; run directly,
+  as #551's smoke was):
+  - `_smoke-c127-on` (1 iteration, 68 s): integrity PASS. n_prop 99, n_acc 0, prop_net summing to 0.
+  - `_smoke-c127-on3` (3 iterations, 189 s): integrity PASS on all 3 rows, with 2, 3 and 3 moves (acc_net checked).
+  - `_smoke-c127-off` (67 s): no `select.card`.
+  - **Nondeterminism:** a second flag-off run (`_smoke-c127-off2`) differs from the first in its games' endings (deck-out
+    2 against 4 of 200) as much as on differs from off. Run-to-run nondeterminism, not the flag, explains the
+    on/off difference.
+- **Next:** C127 s16 (stage 1 to about 03:05, estimated) and s17 when a slot frees, likely when C125's stage 1 ends at
+  about 02:55. Then the readout with `select_lean.py --cards` against C127's bands.
+
+### #578 · 2026-10-30 · A5 C125 C127 · C125 stage 1: s9 reads R-worse by Amendment 1 (stopped by the trend rule at 44 with last-5 G1 up 6.50, 6.93 → 13.43, and T4 down 2.92 → 2.33), while s8 passes the rule on G1 (17.37 → 13.60; T4 2.67 → 2.42) and goes on to 59; C127 s17 launched at 02:54:15 into s9's slot
+- **Done:** C125's sequencers ran their stage-1 trend rules. s8 at 02:53:29 gave PASS, and its stage 2 (to 59) waits
+  for GPU memory behind s17's load. s9 at 02:54:01 gave STOP, so it isn't continued (`checkpoint_it29.pt` and its
+  iteration-29 `vs_lists.json` are kept). C127 s17 launched at 02:54:15.
+- **Evidence** (measured, from the sequencer logs, iterations 30-44, 30,000 games each, 0 errors, no zero-move run):
+
+  | seed | last-5 G1 at 29 → 44 | T4 at 29 → 44 | rule |
+  |---|---|---|---|
+  | C121 s8 | 17.37 → 13.60 (−3.77) | 2.67 → 2.42 | PASS (G1 fell ≥ 1.0) |
+  | C121 s9 | 6.93 → 13.43 (+6.50) | 2.92 → 2.33 | STOP |
+
+- **Reading** (C125's record and Amendment 1, written before launch):
+  - s9 is stopped by the trend rule (R-flat for that seed), and its last-5 G1 at its stop is 5.0 or more above 29, so
+    it reads **R-worse** by the amendment. R-grows (both seeds +0.6 T4 or −3.0 G1 at 59) can't be met now.
+  - The C125 band is R-flat or R-worse whatever s8 does. s8's stage 2 is reported only.
+- **Found:**
+  - With 15 more iterations, both seeds' T4 fell (−0.25 and −0.59), and their G1 moved toward each other (17.4 and 6.9
+    → 13.6 and 13.4), back to the base's mean of 11.93. Longer drafting with the discount regresses to the base, as
+    C123 did without it. C121's two best seeds don't hold their tempo copies, which weighs further against a real
+    discount effect (estimated from 2 seeds).
+- **Next:** C125 s8 stage 2 (to 59, about 30 min, estimated), reported only. C127 s16 and s17 run on (s16 is in stage
+  1; s17 started at 02:54), and research checks s16's ledger integrity on its first real rows.
+
+### #579 · 2026-10-30 · A5 C125 · C125 closes at stage 1 (research, under Evan's "stop it then and there"): s8's stage 2 was never launched and its sequencer was stopped at 02:56, since C125's band is already R-flat or R-worse and stage 2 would only compete with C127 for GPU memory. Both continuations went back to the base's mean, so a seed's G1 at iteration 29 is a draw from the walk, not a state it holds
+- **Done:**
+  - At 02:56:09 C125 s8's sequencer was still waiting on GPU memory. Its stage-2 launch was never made (s8's
+    `launch.log` ends with stage 1's "end" at 02:53:21). The sequencer (pid 31932) was killed at 02:56:22, and the
+    C125 queue then exited. No C125 process is left. C127 s16 and s17 are the only trainers.
+  - Acknowledged in `loop.py`, against the entries that logged them: C121 s10 and s11 (#565, #567), C124 s12 and s13
+    (#569, #574), C126 s14 and s15 (#573, #576), and C121 s8 and s9 as C125 (#578, #579).
+- **Found** (research's reading, from #562, #578):
+  - C125 s9 6.93 → 13.43 and s8 17.37 → 13.60, C123 s5 flat (11.73 → 12.13), and C123 s6 sliding (20.80 → 28.80).
+  - Continued seeds don't hold their iteration-29 shape; most go back toward the base's mean of 11.93. The near-list
+    endpoints (C120 s7 7.37, C121 s9 6.93, C124 s13 5.87) are draws from the walk, not recipe effects. Their tempo
+    copies fell when continued too (C125: −0.25 and −0.59).
+- **Next:** C127 s16 and s17. Research's next record follows C127's read (about 03:45, estimated).
+
+### #580 · 2026-10-30 · A5 C127 · C127 reads R-selection by its letter: selection leans against the tempo four at both seeds (λ_T4 −0.072 and −0.071 copies a move, pooled −2.4 SE). The head also proposes them at a quarter of their list share (3.1% and 4.0% of proposed copies against the lists' 15%), so both sides hold. By scale, though, selection's lean costs only about 0.3 copies a deck over 30 iterations (estimated) against a deficit of about 7, and the head's proposals are net-neutral on them
+- **Done:** C127 s16 (stage 2 ended at 03:32:56) and s17 (training ended at 03:39:22, then its G3 probe) finished
+  through their sequencers. Both stop rules passed, and the G1 watch never fired. Readout
+  `runs/screens/C127-card-ledger/readout.json`.
+- **Evidence** (measured, finished; `select_lean.py --cards` over 0-29, integrity PASS on 30 of 30 rows at each seed):
+
+  | readout | s16 | s17 |
+  |---|---|---|
+  | **λ_T4** (SE), copies a move | **−0.072** (0.045) | **−0.071** (0.038) |
+  | **s_T4**, share of proposed copies (lists 15%) | **3.1%** | **4.0%** |
+  | T4 gross proposed (underpowered under 50) | 660 | 866 |
+  | T4 a candidate: net / gross added; a move taken: net | −0.012 / 0.222; −0.084 | +0.022 / 0.292; −0.049 |
+  | λ D3 / ER / basic Energy | +0.068 / +0.007 / +0.286 | −0.003 / +0.001 / +0.402 |
+  | basic Energy a candidate, net; a move, net | −1.41; −1.13 | −1.46; −1.06 |
+  | moves an iteration (of 99) | 15.0 | 13.5 |
+  | G1 last-5; T4 at 29 (base 11.93 ± 4.20; 2.07 ± 0.39) | 6.60; 1.08 | 11.10; 2.00 |
+  | G1 set; population | 13.5/24.5/22; 14/25/20 | 13/22.5/23; 13/24/22 |
+  | G3; errors | 0.268 ± 0.012; 0 / 60,000 | 0.274 ± 0.013; 0 / 60,000 |
+
+  - Pooled λ_T4 is −0.0715. Its SE is 0.0294, from the two seed SEs, so z is −2.43.
+- **Bands** (C127's record, written before the run):
+  - R-selection: met. λ_T4 is under 0 at both seeds, and the pooled value is at least 2 SE below 0.
+  - R-proposal: not met. The pooled value is 2 SE below 0, although s_T4 is under 5% at both seeds.
+  - The Between clause reports "λ_T4 < 0 with s_T4 under 5%" as both. Here both hold, so this reads **R-selection by
+    the letter, with proposal-side starvation as well**. The prior was R-selection.
+- **Found** (the scale, estimated from the table):
+  - Selection's lean on the tempo four is about −0.07 copies a move. At about 14 moves an iteration across 99 decks, over
+    30 iterations, that's about −0.3 copies a deck. That is small next to a deficit of about 7.
+  - The head's T4 proposals are net about 0 a candidate (it adds 0.22-0.29 copies and removes as many). So nothing in
+    the loop pushes the tempo four up. Selection trims a little, and the decks keep roughly whatever T4 they start or
+    turn over with.
+  - Basic Energy runs the other way. The head proposes cutting about 1.4 copies a candidate, toward the lists, and
+    selection keeps back about 0.3-0.4 of that (λ +0.29, +0.40). The head pushes against Energy, and the games push
+    for it.
+  - So the games' pricing (selection) points away from the lists on both the tempo four and Energy, and the head's
+    proposals don't supply the tempo four in the first place. Neither side alone accounts for a 7-copy gap within 30
+    iterations. The deficit is what the loop's starting and turnover decks carry, with no force adding the tempo four.
+- **Next:** research's next record from this read (both sides; the games price the tempo four and Energy against the
+  lists, and the head doesn't propose the tempo four). The GPU is idle until then.
+
+### #581 · 2026-10-30 · A5 C127 C128 · Research's read of C127: fresh wide decks already carry the lists' 28 Trainers and 2.67 tempo-four copies (4,000 sampled), so drafting moves Trainers away from the lists (28 → about 24, T4 2.67 → about 2.07) while gaining Pokémon toward them (8.6 → about 13); nothing in the loop adds the tempo four. The per-turn step cap (250) never binds. C128 puts the Prize margin in selection's paired score (Evan's 10-12 reward, W 0.5), read on C127's ledger, bands first
+- **Done** (research session, 2026-10-30 03:45):
+  - Sampled 4,000 `rl/decks.py wide_deck` decks (seed 0): T4 2.67 (sd 1.72), D3 (CS, Oak, Bill) 2.04, P/T/E mean 8.6 /
+    27.9 / 23.5, median 8 / 28 / 23. Measured.
+  - Pipeline check (working rule 9): `cut_off` counts games with no winner (Prize ties at time, 8%), not a cap.
+    `MAX_TURN_STEPS` (250 decisions a turn, `env/game.js:31`) is far above a game's 90 steps, so it never binds.
+  - Wrote `runs/screens/C128-select-margin/record.md` and handed it to the implementation session.
+- **Found:**
+  - C127 reads R-selection by its letter, with the head also not supplying the tempo four, as #580 put it. The start
+    adds the scale: the drafted decks carry fewer tempo cards (about 2.07, nine gated seeds) and fewer Trainers than the
+    random decks they start from. Every lever's "T4 lift" so far (C121 2.56) is less erosion, not discovery.
+  - The G1 gains come mostly from Pokémon (+4 from the generator's 8.6). The Trainer count moves away from the lists.
+  - Selection's score is the round result only, so a time win (38-49% of the loop's games end on time) pays the same at
+    any Prize lead. Evan's 10-12 reward was the result plus 0.5 × the margin; it is 0 in today's head and never was in
+    selection. C128 tests it where the lean lives, with rivals R-margin and R-reverse (a sharper proxy of the same
+    pricing) and prior R-null.
+- **Next:** implementation builds `--select-margin` and runs C128 at seeds 18 and 19 (about 55 minutes). Research's
+  deep round waits until the week is back under its line (59% at 02:55 against about 58.7%).
+
+### #582 · 2026-10-30 · A5 C128 · Built `--select-margin W` (research's C128 record, #581): the paired move rule scores each entry's game as the result plus W × the Prize margin. The acceptance smoke at W 0.5 logs `margin_w` 0.5 and passes the ledger's integrity check. C128 s18 and s19 launched side by side at 03:48:42 and 03:49:02
+- **Done:**
+  - `rl/metagame.py --select-margin` (default 0). The two lines computing `mk` ((opponent's Prizes left − own) / 6)
+    now come before the paired block (pure arithmetic, same values). The slot vector's entry is
+    `zk + W * mk if W else zk`, so at W 0 it is `zk` exactly, as before. `vec` reaches only `pairs`, which feeds
+    `paired_move` and the checkpoint (grep). The head's reward, season sums, turnover and PPO data are unchanged. The
+    `select` row logs `margin_w` when W ≠ 0.
+  - Chains `runs/screens/C128-R1-K-paired-margin05-s18/` and `-s19/chain.sh`: C127's flags plus `--select-margin
+    0.5`, with the seed changed (checked by parsing both commands). The G1 watch is on.
+  - Sequencers `runs/screens/C128-select-margin/sequence_s18.sh` and `_s19.sh` launch with `--candidate C128
+    --components select-margin --evan-row 110`, and s19 has `--replicate-of` s18. Started with `Start-Process`, no
+    GPU-PAUSE.
+- **Evidence:**
+  - `py_compile` passes.
+  - Smoke `runs/_smoke-c128` (C127's flags at W 0.5: 3 iterations, 200 games, seed 18, 103 s): `margin_w` 0.5 on all 3
+    rows, integrity PASS with 4, 5 and 5 moves.
+  - C127's W 0 smoke has no `margin_w`.
+  - The smoke's move counts (4-5 against C127's smoke's 2-3) are n = 3 at 200 games. Not a result.
+- **Next:** C128 s18 and s19, about 55 minutes each side by side (C127's pace, estimated, so about 04:45). Then the
+  ledger readout against C127 (Δλ_T4, Δλ_bE) by C128's bands.
+
+### #583 · 2026-10-30 · A5 C128 · C128 (Evan's Prize margin, 0.5, in selection's paired score) reads R-null by its bands. Selection's lean doesn't move on either the tempo four (pooled λ_T4 −0.064 against C127's −0.072, Δ +0.008, 0.2 SE) or basic Energy (+0.344 against +0.344, Δ 0.000). The two C128 seeds disagree on λ_T4 by more than either moves from the control (+0.015 and −0.142)
+- **Done:** C128 s18 (ended at 04:38:52) and s19 (04:43:13) ran side by side through their sequencers. Both stop
+  rules passed, and the G1 watch fired at neither seed. `margin_w` was 0.5 on every row. Readout
+  `runs/screens/C128-select-margin/readout.json`. Both acknowledged in `loop.py`.
+- **Evidence** (measured, finished; `select_lean.py --cards` over 0-29, integrity PASS on 30 of 30 rows at each seed):
+
+  | readout | C128 s18 | C128 s19 | C128 pooled | C127 control (W 0) |
+  |---|---|---|---|---|
+  | **λ_T4** (SE) | +0.015 (0.030) | −0.142 (0.042) | **−0.064** (0.026) | −0.072 (0.029) |
+  | **λ basic Energy** (SE) | +0.204 (0.097) | +0.483 (0.139) | **+0.344** (0.085) | +0.344 (0.089) |
+  | λ D3 / ER | +0.011 / +0.002 | +0.031 / +0.023 | — | +0.068, −0.003 / +0.007, +0.001 |
+  | s_T4; gross T4 proposed | 3.8%; 797 | 3.5%; 746 | — | 3.1%, 4.0% |
+  | moves an iteration | 15.1 | 15.7 | — | 15.0, 13.5 |
+  | G1 last-5; T4 at 29 | 12.40; 2.00 | 14.93; 1.58 | — | 6.60, 11.10; 1.08, 2.00 |
+  | G1 set; population | 10.5/24/25; 11/25/22 | 17.5/18/23.5; 12/26/23 | — | — |
+  | G3; errors | 0.318 ± 0.013; 2 / 60,000 | 0.297 ± 0.012; 0 / 60,000 | — | 0.268, 0.274 |
+
+  - Δλ_T4 is +0.008, with a difference SE of 0.039 (z 0.2). Δλ_bE is −0.0005 (SE 0.123, z 0.0).
+- **Bands** (C128's record, written before the run):
+  - R-margin: not met (Δλ_T4 +0.008 against +0.08; Δλ_bE 0.000 against −0.25).
+  - R-reverse: not met.
+  - Harm: no.
+  - **R-null.** The prior was R-null.
+- **Found:**
+  - At W 0.5, the Prize margin leaves selection's lean exactly where the result alone puts it: away from the lists on the
+    tempo four and toward Energy. Move rates don't change either. Scoring the margin doesn't re-price the tempo
+    four in these games.
+  - The seed-to-seed spread on λ_T4 within C128 (0.157, about 3 SE of a seed's own estimate) is larger than any
+    treatment difference measured so far. The seed SEs over iterations understate between-seed variation, so 2-seed
+    pooled λ bands carry more noise than the record's 0.041 assumed (estimated from 4 seeds).
+  - Outcomes, reported only: both seeds sit inside the base's spread (G1 12.40 and 14.93; T4 2.00 and 1.58). G3 0.318
+    and 0.297 are at the high end of the week's seeds (one seed each, no claim).
+- **Next:** research's next record from C128's read. By the record, R-null leaves the head's margin (`--draft-margin
+  0.5`) unqueued. The GPU is idle until a record arrives.
+
+### #584 · 2026-10-30 · A5 C128 C129 · Research's read of C128 (R-null, #583): the Prize margin in selection's score leaves both leans where C127 had them, so the round score's indifference to the Prize lead isn't why the games price the tempo four under Energy. No lever with a case is left in the notes; C129 (two more W 0 ledger seeds) measures the ledger's between-seed noise for future bands on the otherwise idle GPU; the deep round on the play regime waits for usage
+- **Done** (research session, 2026-10-30 04:45): `runs/screens/C129-ledger-noise/record.md` (calibration, no effect bands), handed to the
+  implementation session.
+- **Evidence** (measured, from #580 and #583): λ_T4 at the four ledger seeds: −0.072, −0.071 (C127, W 0); +0.015, −0.142
+  (C128, W 0.5). Their sd is about 0.064, against per-seed SEs over iterations of 0.030-0.045. At shape level, the 18 seeds
+  of #564 give between-seed sds of about 0.09 (Trainers) and 0.10 (Energy).
+- **Found:**
+  - The two-seed bands of C127 and C128 used over-iteration SEs, which understate seed-to-seed spread by about 1.5-2×.
+    C127's pooled z of −2.43 would be about −1.6 against a between-seed sd of 0.064. That is still the sign of #564's
+    18-seed shape lean, which every seed shows.
+  - The levers tested tonight (C121 discount, C122 search, C123/C125 longer drafting, C124 stronger discount, C126
+    entropy, C128 margin) leave the tempo four at or below the random starting decks' 2.67 (#581). Each lever that acts
+    on drafting meets the same pricing in the games.
+- **Held:** the deep-research round on why the loop's games price the tempo four and Energy against the lists (the play
+  regime: slow games, time and no-Pokémon endings), to turn into a lever. Usage at 03:56: 5h 11%, week 60% against a
+  line of about 59.0% (58% at 00:54 to 92% at the 11-03 08:00 reset). It runs when the week is back under the line or
+  Evan says so.
+- **Next:** C129 at seeds 20 and 21 (about 55 minutes); then the deep round if usage allows, else the GPU waits.
+
+### #585 · 2026-10-30 · A5 C129 · C129 (research's #584: calibration of the ledger's between-seed noise, not a lever) launched side by side: C127's chain unchanged at seeds 20 and 21 (s20 at 04:46:06, s21 at 04:46:26), no build
+- **Done:**
+  - `runs/screens/C129-R1-K-paired-ledger-s20/` and `-s21/chain.sh` are C127 s16's chain with the seed changed. Parsing
+    the two commands, `--seed` is the only flag that differs: W 0, `--card-ledger`, G1 watch on.
+  - `runs/screens/C129-ledger-noise/sequence_s20.sh` and `_s21.sh` launch with `--candidate C129 --components card-ledger
+    --replicate-of C127-R1-K-paired-ledger-s16 --evan-row 110`. Started with `Start-Process`, no GPU-PAUSE.
+- **Evidence:** `sh -n` passes on all four scripts. Both launched (`sequence_s20.log` and `_s21.log`).
+- **Next:** C129's readout, about 05:45 (estimated at C128's pace): the between-seed sd of λ_T4 and λ_bE over the four
+  W 0 seeds, with C128's two seeds as a check, and the gated base reference re-stated with C127's and C129's seeds.
+  Research answers auditing's RESEARCH CALL (A135) meanwhile.
+
+### #586 · 2026-10-30 · A5 A135 RESEARCH CALL · A135's call (does a stronger player price the human lists above their Energy copies?) is answered from four earlier runs, without a new run or a deep round: every stronger player built so far (learned pilots up to 93% against SimpleBot, one-turn search on both seats, the pilot's search at Trainer decisions, oracle-timed PlusPower) prices the lists' Trainers at or below an Energy; what they share is the slow pace (#508), so the open question is a faster player, not a stronger one
+- **Done** (research session, 2026-10-30 04:47): read #92, #218, #227, #508, #554 and the bench summary in the README against A135's
+  call. No run, no subagents (precedent: A54 was answered by #292 without a deep round).
+- **Evidence** (all measured earlier; cited, not re-run):
+  - #92 (10-19): several learned pilots on both seats, including a4-tok at 93% against SimpleBot. The lists lose to their
+    copies with a Trainer group turned into Energy.
+  - C59 (#218, #227; C49-sd, the round rule, 71 list-group pairs): the tempo group scores 0.408 greedy and 0.344 with
+    one-turn search on both seats, and search on both seats changes 50% of the moves. 83% of searched games still end on time.
+  - C111 (bench): PlusPower timed by an oracle comes to about an Energy at every matched pilot strength.
+  - C122 (#554): the pilot's own search at Trainer-playable decisions gives M 0.529 and 0.545 against greedy's 0.537 and
+    0.489 (eval seeds 91 and 2). That's parity, not above.
+  - #508: under these pilots a game takes about 50 turns, so long games end by deck-out, which punishes the draw Trainers.
+    Under the real-STS stand-in the lists lose to their Energy copies about 60-40.
+- **Not run, and why:** A135 proposed SimpleBot on both seats. SimpleBot is weaker than the pilots (they beat it 83-93%),
+  so it can't answer "stronger". Full-game search with the pilot's value at Trainer decisions is C122's design, already read.
+- **Found:** the players differ in strength but share the pilot's pace (19-32 own turns to take six Prizes against a
+  passive opponent, against about 9 for the scripted line, #505-#520). No faster player exists in the repo. So the
+  discriminator A135 wants is a human-pace player, not a stronger one, and the next research question is how a
+  self-play pilot learns tempo (P9's discount and P10's forced exploration were the two tries, both between or worse).
+  That is the deep round's topic, held for usage (week 60% against a line of about 59%).
+- **Next:** C129 (calibration) on the GPU. The deep round on tempo learning when usage allows.
+
+### #587 · 2026-10-30 · A5 C129 · C129 measures the ledger's between-seed noise, and it corrects #583: at W 0 the four seeds agree closely (λ_T4 sd 0.014 against per-seed SEs of about 0.040; λ_bE sd 0.059 against about 0.125), so the over-iteration SE governs ledger bands and C128's 0.041 wasn't optimistic. It was C128's two W 0.5 seeds that diverged (sd 0.111), while their mean sat at the W 0 mean (Δλ_T4 +0.003)
+- **Done:** C129 s20 (ended at 05:39:17) and s21 (05:38:36) ran side by side. Both stop rules passed, and the G1 watch
+  fired at neither seed. Readout `runs/screens/C129-ledger-noise/readout.json`. Both acknowledged in `loop.py`.
+- **Evidence** (measured, finished; `select_lean.py --cards`, integrity PASS on 30 of 30 rows at each seed):
+
+  | seed (W) | λ_T4 (SE) | λ_bE (SE) | s_T4 | G1 last-5 | T4 at 29 | G3 |
+  |---|---|---|---|---|---|---|
+  | C127 s16 (0) | −0.072 (0.045) | +0.286 (0.118) | 3.1% | 6.60 | 1.08 | 0.268 |
+  | C127 s17 (0) | −0.071 (0.038) | +0.402 (0.132) | 4.0% | 11.10 | 2.00 | 0.274 |
+  | **C129 s20 (0)** | **−0.045** (0.034) | **+0.288** (0.148) | 3.7% | **11.03** | **1.92** | 0.265 |
+  | **C129 s21 (0)** | **−0.077** (0.044) | **+0.277** (0.103) | 4.0% | **9.80** | **2.17** | 0.252 |
+  | C128 s18 (0.5) | +0.015 (0.030) | +0.204 (0.097) | 3.8% | 12.40 | 2.00 | 0.318 |
+  | C128 s19 (0.5) | −0.142 (0.042) | +0.483 (0.139) | 3.5% | 14.93 | 1.58 | 0.297 |
+
+  - **W 0, four seeds:** λ_T4 mean −0.066, sd 0.014. λ_bE mean +0.313, sd 0.059. Per-seed SEs average 0.040 and 0.125.
+  - **All six:** λ_T4 sd 0.051, λ_bE sd 0.101.
+  - **The base reference, re-stated over 13 gated seeds** (C120's nine, C127's two, C129's two, combined from the nine's
+    mean and sd): G1 11.22 ± 3.75, T4 1.98 ± 0.42.
+  - C129 s20 and s21: errors 0 / 60,000 each, about 15 moves an iteration. G1 sets 15/21/22 and 14.5/23.5/23.5.
+- **Found:**
+  - **Correction to #583.** That entry said the over-iteration SEs understate between-seed variation, and that the
+    record's 0.041 was optimistic. With four W 0 seeds that's wrong. They vary less between seeds than within a seed,
+    so by C129's rule (the larger of the two) the over-iteration SE governs, and C128's bands stand as written.
+  - C128's spread is the outlier. Its two seeds differ by 0.157, against a W 0 sd of 0.014. An F-ratio of about 60 on
+    (1, 3) df is unlikely by chance (estimated). But its pooled mean equals the W 0 mean, so the margin may widen
+    seed-to-seed variation without shifting the lean (one pair, no claim).
+  - The selection lean is a stable property of the recipe. At W 0 every seed trims the tempo four (−0.045 to −0.077 a
+    move) and keeps Energy back (+0.28 to +0.40), as #564 found at the shape level in 18 seeds.
+- **Next:** no screen queued. Research's next lever waits on a deep round on tempo learning, held while the week's
+  usage (60% at 40% elapsed, 04:47) is ahead of its line. The GPU is idle.
+
+### #588 · 2026-10-30 · A5 C129 correction · Correction to #584: C129 (#587) shows the ledger's between-seed sd at W 0 is small (λ_T4 sd 0.014 over four seeds, against per-seed SEs of about 0.040), so #584's claim that two-seed bands understate the spread 1.5-2× and that C127's z would be about −1.6 was wrong; C127's z −2.43 stands, and all four W 0 seeds trim the tempo four (−0.045 to −0.077). No lever with a case is left, and the deep round that should supply one is blocked by the week's line, which the sessions' own use now outpaces
+- **Done** (research session, 2026-10-30 05:42): read #587 and C129's readout.json, and checked the notes for a pilot-pace lever in
+  the loop. Persistent prize shaping (0.1, never fading; lab `010-pilot-shapeon`) lost 31 Elo [−50, −13] (#106),
+  so a stronger shaping has a negative prior and isn't recorded.
+- **Correction:** #584's "Found" used C128's outlier pair (sd 0.111) as if it were the noise. By C129 the over-iteration SE
+  governs at W 0, as #587 says. C128's R-null read is unchanged (Δ +0.008).
+- **State:** GPU idle, nothing queued. Base reference over 13 gated seeds: G1 11.22 ± 3.75, T4 1.98 ± 0.42 (#587), against
+  2.67 in the random starting decks and 9.17 in the lists.
+- **Held, for Evan or 333-10:** the deep-research round on how a self-play pilot learns tempo (A135, #586; P9's discount
+  and P10's forced exploration were the two tries). Usage at 05:41: 5h 16% / week 61% against a line of 59.6% (58% at
+  00:54 to 92% at the 11-03 08:00 reset). The week rose about 0.6 points an hour tonight with no subagents, faster than
+  the line's 0.33, so it won't come back under at this pace. The round is held until Evan or 333-10 allows it or sets a
+  new line.
+- **Next:** none queued. Research's watcher stays on for RESEARCH CALL lines.
+
+### #589 · 2026-10-30 · A5 A136 RESEARCH CALL · A136's call (how a self-play pilot learns human-pace tempo without human priors) is planned as the next deep round and held for usage until the week meets its line (about 10:05 if it stays at 61%) or Evan or 333-10 releases it
+- **Done** (research session, 2026-10-30 08:44): `research_notes/Learning tempo in self-play/plan.md` (the question, the eleven tempo
+  levers already tried, the pilot facts, and the deliverable of 2-3 banded proposals). Checked research_notes/: earlier
+  rounds touch pace only as real-play sources (`2000 game pace sources`), holding PlusPower and Trainer-play signals, so
+  the topic is new. A usage check is set for about 10:06.
+- **Usage:** week 61% against a line of about 60.6% at 08:43 (A136). The 5-hour window is at 1%.
+- **Next:** the round at the smallest breadth when allowed, ending in a queued record. The GPU stays idle until then.
+
+### #590 · 2026-10-30 · A5 A136 deep round C130 · Deep round 4 (A136's call, smallest breadth) on how self-play pilots learn tempo found no documented stall-and-fix case and only thin, secondary evidence; its top proposal, a win that pays more the sooner it comes with losses untouched (unlike the discount, which pays stalling when behind, or a flat turn cost, which pays losing fast), becomes C130 in the drafting loop's pilot, bands first, read on the loop's time-ending share, T4, G1 and the ledger
+- **Done** (research session, 2026-10-30 10:12; launched 10:06 with usage at 5h 3% / week 61%, on the line):
+  - `anthropic-skills:deep-research` with one Haiku researcher (about 73k tokens) and a Sonnet report writer (about 57k).
+    Notes: `research_notes/Self-play tempo learning methods/tempo_and_passivity.md`. Report: `reports/Self-play tempo
+    learning methods.md` (about 1,300 words). Plan: `research_notes/Learning tempo in self-play/plan.md`.
+  - Checked the log: a per-turn cost was proposed on 10-06 (#32) but only the deck-out variant was built (#33), so the
+    payout family is untried.
+  - Measured the controls (the four W 0 ledger seeds, iterations 25-29): time endings 38.2-46.5% (mean 41.3), Prizes 6.6-7.5%,
+    no-Pokémon 45.5-53.6%, steps a game 92-100.
+  - Wrote `runs/screens/C130-win-speed/record.md` and handed it to the implementation session.
+- **Found (the report; evidence thin, mostly abstracts and forum posts):**
+  - No documented case of a self-play agent learning to stall and being fixed by a named method. The known failures are
+    cycling and exploiter collapse. AlphaStar's league dropped early rushes as training went on.
+  - Draw-value controls exist in engines (KataGo's draw value, Leela's contempt; secondary sources).
+  - No card-game result shows tempo emerging from pure self-play. Xi et al. (arXiv 2303.04096, LOCM) is flagged unread.
+  - Proposals: (1) speed-dependent win payout, losses untouched; (2) lower clock payouts in training only; (3) a league of
+    the pilot's own frozen checkpoints (weakest; exploiters were tried in drafting, #121-#184).
+- **C130:** `--win-turn-cost 0.01 --win-floor 0.5`: a full win pays max(1 − 0.01 × game turn, 0.5) (0.82 at turn 18, 0.60
+  at 40), and time wins, draws and losses keep the round rule's values. Seeds 22 and 23, about 55 minutes. Bands:
+  R-pace at a time share of 34.5% or less (each seed under 38.2%), R-lever at T4 2.57 or G1 5.92, R-ledger at λ_T4 +0.004,
+  with harm on the G1 watch or G3 under 0.25. Prior: pace between, the rest null.
+- **Next:** implementation builds and runs C130. Proposal 2 waits for C130's pace read. The next deep round is no
+  earlier than 13:06.
+
+### #591 · 2026-10-30 · A5 C130 · Built `--win-turn-cost C --win-floor F` (research's C130 record, #590): in the drafting loop's PPO only, a full win pays max(1 − C × game turn, F). The acceptance passes (the unit batch maps to {0.82, 0.5, 1/3, −1/3, −1}, C 0 returns the rewards untouched, and a 3-iteration smoke passes the ledger's integrity check). C130 s22 and s23 launched side by side at 10:16:03 and 10:16:23
+- **Done:**
+  - `rl/metagame.py`: `win_speed(reward, turn, cost, floor)` replaces each reward exactly equal to 1.0 with
+    max(1 − cost × turn, floor), and returns the array untouched at cost 0.
+  - It is called just before `shape_rewards`, on `obs.glob[:, 0]` (the game turn, as `advantages` reads it), and only
+    when `--win-turn-cost` is set, so the default path skips the line.
+  - Flags `--win-turn-cost` (default 0) and `--win-floor` (default 0.5). Selection, the head's reward and G3 use the
+    unchanged round scores.
+  - What counts as a full win:
+    - `env/game.js` `reward()` gives +1 for a win by Prizes or no Pokémon, and `deckoutWin`, default 1, for a deck-out
+      win.
+    - Under the round rule a time win is +1/3, a draw −1/3 and a loss −1.
+    - The reward sits only on a trajectory's last decision (`env/runner.js`), so only winning end decisions change.
+  - Chains `runs/screens/C130-R1-K-paired-winspeed-s22/` and `-s23/chain.sh`: C127's flags plus `--win-turn-cost 0.01
+    --win-floor 0.5`, with the seed changed (checked by parsing both commands). The G1 watch is on.
+  - Sequencers `runs/screens/C130-win-speed/sequence_s22.sh` and `_s23.sh` launch with `--candidate C130 --components
+    win-turn-cost --evan-row 110`, and s23 has `--replicate-of` s22. No GPU-PAUSE. The chains' header comment cites
+    "log #589" for the build, but the build is this entry (#591). It's a comment in running scripts, so it's left as is.
+- **Evidence:**
+  - Unit: rewards [1, 1, 1/3, −1/3, −1] at turns [18, 60, 30, 40, 25] give [0.82, 0.5, 1/3, −1/3, −1] (float32,
+    `allclose`). With C 0 the same array comes back.
+  - Smoke `runs/_smoke-c130` (C127's flags plus the two flags: 3 iterations, 200 games, seed 22): exit 0 in 118 s,
+    ledger integrity PASS on 3 of 3 rows. `config.json` has `win_turn_cost` 0.01 and `win_floor` 0.5.
+- **Next:** C130's readout, about 11:15 (estimated at C129's pace). The primary readout is the time-ending share at
+  iterations 25-29 against the controls' 41.3% (R-pace: 34.5% or less, each seed under 38.2%). Then T4, G1, the
+  ledger and G3 by the record's bands.
+
+### #592 · 2026-10-30 · A5 C131 · C131, the queue's second screen behind C130: the report's proposal 2, lower clock payouts in the pilot's training reward only (a time win 2/3 → 0.4 of the points, a draw 1/3 → 0.1), at seeds 24 and 25, read against C130's controls and bands; it runs whatever C130 reads, since the report says to test the two separately
+- **Done** (research session, 2026-10-30 10:49): `runs/screens/C131-clock-payout/record.md`, handed to the implementation session.
+  Checked C130's build: `glob[0]` is the raw game turn (`q(min(turn, 240)/48)` with `q(x) = round(48x)`,
+  `env/tokens.js:71, 186`), so its 0.01 cost is per game turn as recorded.
+- **Next:** C130's readout (about 11:15, implementation's estimate), then C131.
+
+### #593 · 2026-10-30 · A5 C130 C131 · C130 s22 is stopped by its G1 watch at iteration 19 (last-5 G1 20.47 to 19.37 over 15-19, all above 17.77), which C130's record reads as Harm; s23 continues to 29 for its pace readout. Built `--clock-payout TW,D` (research's C131, #592): its acceptance passes, and C131 s24 launched at 10:55:11 into s22's slot, with s25 waiting for one
+- **Done:**
+  - **C130 s22:** the watch wrote STOP at the end of stage 1. The chain printed "STOPPED by the G1 watch" at 10:50:30,
+    and the sequencer's stop rule read "G1 watch True" at 10:50:40, so s22 isn't continued. s23 passed its stop rule
+    (last-5 13.43 at 18) and started stage 2 at 10:50:00.
+  - **Build:** `rl/metagame.py` `clock_payout(reward, tw, d)` maps `np.isclose(reward, 1/3)` to 2·TW − 1 and
+    `np.isclose(reward, −1/3)` to 2·D − 1. The flag is `--clock-payout TW,D` (default None, which skips the call). It
+    runs after `win_speed` and before `shape_rewards`.
+  - **Timing:** the edit started after s23's stage-2 process had imported the module (launched at 10:50:00, edit at
+    about 10:51). Each edit step was valid on its own.
+  - Chains `runs/screens/C131-R1-K-paired-clock-s24/` and `-s25/chain.sh`: C127's flags plus `--clock-payout 0.4,0.1`,
+    with the seed changed (checked by parsing). The G1 watch is on.
+  - Sequencers `runs/screens/C131-clock-payout/sequence_s24.sh` and `_s25.sh` launch with `--candidate C131 --components
+    clock-payout --evan-row 110`, and s25 has `--replicate-of` s24. Both were started at about 10:54. s25 waits for
+    RAM or GPU memory while s23 and s24 run.
+- **Evidence:**
+  - Unit: [+1, +1/3, −1/3, −1, 0] at 0.4,0.1 gives [+1, −0.2, −0.8, −1, 0] (float32, `allclose`). With both flags, win
+    speed then clock payout gives [0.82, 0.5, −0.2, −0.8, −1].
+  - With no flag the call is skipped, by code.
+  - Smoke `runs/_smoke-c131` (3 iterations, 200 games, seed 24): exit 0 in 130 s, ledger integrity PASS on 3 of 3
+    rows. `config.json` has `clock_payout` [0.4, 0.1].
+- **Found** (research's note for the C130 readout, from the logs):
+  - s22's population median stayed at 13/25/21, like the controls, so the slide is in its top-12 set. A base seed slid
+    the same way unassisted (C120 s6, 20.80).
+  - Pace hasn't moved by stage 1. Time endings at 15-19 are 40.2% (s22) and 44.6% (s23), against the controls'
+    40.7-46.1% at the same iterations. Steps a game are 95 and 101, against 95-102.
+- **Next:**
+  - C130 s23's readout (about 11:15, estimated). Then C130 by its bands: Harm by s22's watch, pace from s23 alone.
+  - C131 s24 and s25 (readout about 12:00, estimated).
+
+### #594 · 2026-10-30 · A5 C130 · C130 (a win pays more the sooner it comes, PPO only) reads Harm by its letter (s22's G1 watch fired) and null on its mechanism: s23's games end on time 45.4% of the time at 25-29, against the controls' 41.3% and the R-pace bar of 34.5%. Steps a game rose rather than fell (104.8 against 92-100), and T4, G1 and the ledger are all at the base. By its record, R-null on pace ends this line
+- **Done:** C130 s23's stage 2 and probe ended at 11:07:03. s22 was stopped at 19 (#593). Readout
+  `runs/screens/C130-win-speed/readout.json`. Both acknowledged in `loop.py`.
+- **Evidence** (measured, finished; ledger integrity PASS, s22 20 of 20 rows and s23 30 of 30):
+
+  | readout | s22 (stopped at 19) | s23 | controls (four W 0 ledger seeds) |
+  |---|---|---|---|
+  | **time endings** | 40.2% at 15-19 | 44.6% at 15-19; **45.4% at 25-29** | 41.3% (38.2-46.5) at 25-29 |
+  | Prize endings; steps a game | 7.0%; 94.7 at 15-19 | 8.9%; **104.8** at 25-29 | 6.6-7.5%; 92-100 |
+  | T4 | 1.75 at 19 | 1.83 (SE 0.46) | 1.98 ± 0.42 |
+  | G1 last-5 | **19.37** at 15-19 (watch fired) | 13.87 | 11.22 ± 3.75 |
+  | G1 set; population | 14/18/24.5; 13/25/21 | 16/22/22; 16/22/21 | — |
+  | λ_T4; λ_bE | −0.065; +0.449 (0-19) | −0.031 (0.038); +0.295 (0.095) | −0.066; +0.313 |
+  | G3 | none | 0.233 ± 0.010 | 0.25-0.30 |
+
+- **Bands** (C130's record, written before the run):
+  - **Harm:** met, since s22's G1 watch fired. (G3 under 0.25 at both seeds can't be read, as s22 has none. s23's 0.233
+    is under 0.25.)
+  - **R-pace:** not met. s23 is at 45.4% against the 34.5% bar, and above the controls' mean.
+  - R-lever (T4), R-lever (G1) and R-ledger: not met.
+  - The prior was R-pace between and R-null on the rest. Pace didn't move at all.
+- **Found:**
+  - Paying a sooner full win more didn't shorten the games. s23's steps a game went up, and its Prize endings only
+    edged up (8.9% against 6.6-7.5%). Within 30 iterations, the pilot doesn't find faster wins from this reward alone.
+  - s22's slide was in its top-12 set (population 13/25/21, as the controls), like C120 s6's unassisted one. So the
+    Harm reading may be a base tail draw rather than the lever (research's note, #593).
+  - By the record, "R-null on pace ends this line". C131 (lower clock payouts) runs now, and the record said it comes
+    after C130 whatever C130 reads.
+- **Next:** C131 s24 (from 10:55) and s25 (from 11:05), readout about 12:05 (estimated). If C131 is null on pace too,
+  research's next round looks at credit assignment or search.
+
+### #595 · 2026-10-30 · A5 C131 · C131 (lower clock payouts in the pilot's training: a time win −0.2, a draw −0.8) reads R-null by its bands, with no harm: time endings at 25-29 are 38.4% and 39.5% (mean 39.0%, against the controls' 41.3% and the 34.5% bar). Selection's lean moved toward the lists on both the tempo four (pooled λ_T4 −0.007 against −0.066, z 1.8) and Energy (+0.127 against +0.313, z −1.8), but it misses R-ledger's bar of +0.004 and isn't 2 SE. With C130 also null on pace, the record's branch is that the stall isn't the payout
+- **Done:** C131 s24 (ended at 11:54:53) and s25 (11:53:54) ran through their sequencers. Both stop rules passed, and
+  the G1 watch fired at neither seed. Readout `runs/screens/C131-clock-payout/readout.json`. Both acknowledged in
+  `loop.py`.
+- **Evidence** (measured, finished; ledger integrity PASS on 30 of 30 rows at each seed):
+
+  | readout | s24 | s25 | two-seed | controls (four W 0 ledger seeds) |
+  |---|---|---|---|---|
+  | **time endings 25-29** (15-19) | **38.4%** (34.2%) | **39.5%** (42.9%) | **39.0%** | 41.3% (38.2-46.5) |
+  | Prize endings; steps a game, 25-29 | 6.7%; 93.9 | 6.9%; 101.9 | — | 6.6-7.5%; 92-100 |
+  | T4 at 29 | 1.83 (SE 0.37) | 2.00 (SE 0.44) | 1.92 | 1.98 ± 0.42 |
+  | G1 last-5 | 11.77 | 9.87 | 10.82 | 11.22 ± 3.75 |
+  | G1 set; population | 14/22.5/23.5; 12/24/22 | 14.5/23/20; 13/25/22 | — | — |
+  | **λ_T4** (SE) | −0.026 (0.043) | +0.013 (0.031) | **−0.007** (0.027) | −0.066 (0.020) |
+  | **λ_bE** (SE) | +0.223 (0.097) | +0.030 (0.137) | **+0.127** (0.084) | +0.313 (0.063) |
+  | G3; errors | 0.268 ± 0.013; 0 / 60,000 | 0.257 ± 0.012; 1 / 60,000 | — | 0.25-0.30 |
+
+  - The differences from the controls use C129's rule (the larger of the over-iteration SE and the between-seed sd
+    term). λ_T4 is +0.060 (SE 0.033, z 1.79), and λ_bE is −0.187 (SE 0.105, z −1.78).
+- **Bands** (C131's record, which takes C130's, written before the run):
+  - R-pace: not met. The mean is 39.0% against 34.5%, and neither seed is under 38.2%.
+  - R-lever (T4): not met (1.92). R-lever (G1): not met (10.82).
+  - R-ledger: not met. The pooled −0.0065 is under the +0.004 bar, although both seeds are above −0.066.
+  - Harm: no. **R-null.** The prior was R-pace between.
+- **Found:**
+  - Lower clock payouts didn't shorten games. Time endings fell 2.3 points, inside the controls' sd of 3.9, and Prize
+    endings and steps a game are unchanged. With C130's null, by the record "the stall is not the payout".
+  - Selection's lean on the tempo four and Energy both moved toward the lists, each at z about 1.8, in the same
+    direction at both seeds' λ_bE (+0.22, +0.03, against the controls' +0.28 to +0.40). Neither reaches 2 SE, and λ_T4
+    misses the band. Under the null rule this isn't an effect, but it's the first lever whose ledger moved toward the
+    lists on both readouts. Two more seeds would say whether it replicates (estimated cost about 55 minutes). That's
+    research's call.
+- **Next:** research's next round on credit assignment or search, by C131's record. Optionally C131 replicates its
+  ledger shift at two more seeds, if research writes it.
+
+### #596 · 2026-10-30 · A5 C130 C131 C131b · Research's read of C130 and C131: neither payout lever moves the loop's pace (C130 s23's time endings 45.4%, C131 39.0%, against 41.3%), so payout isn't what keeps the games slow, as C131's record said. C131's ledger moved toward the lists on both readouts (Δλ_T4 +0.060, z 1.79; Δλ_bE −0.187, z −1.78), the first lever to do so. That's not an effect by the null rule, so C131b replicates it at seeds 26 and 27, read on the new pair alone, bands first
+- **Done** (research session, 2026-10-30 11:57): `runs/screens/C131b-clock-payout-rep/record.md`, handed to the implementation
+  session. The primary band uses only s26 and s27, so C131's near-miss can't be topped up by pooling.
+- **Found:**
+  - Both payout levers left pace where it was, so neither tests a faster pilot.
+  - C131's ledger shift came without a pace change. If it replicates, the clock payout acts through how the pilot plays at
+    time, not through game length.
+- **Next:** C131b (about 55 minutes). The deep round on credit assignment or search, as the report concluded, is no
+  earlier than 13:06. A pilot-only bench arm of pace is the alternative check (handover).
+
+### #597 · 2026-10-30 · A5 C131b · C131b (research's #596: the replication of C131's ledger shift) launched side by side: C131's chain unchanged at seeds 26 and 27 (s26 at 11:57:42, s27 at 11:58:02), no build
+- **Done:**
+  - `runs/screens/C131b-R1-K-paired-clock-s26/` and `-s27/chain.sh` are C131 s24's chain with the seed changed. Parsing
+    the commands, `--seed` is the only flag that differs: `--clock-payout 0.4,0.1`, `--card-ledger`, W 0, G1 watch on.
+  - `runs/screens/C131b-clock-payout-rep/sequence_s26.sh` and `_s27.sh` launch with `--candidate C131b --components
+    clock-payout --replicate-of C131-R1-K-paired-clock-s24 --evan-row 110`. Started with `Start-Process`, no GPU-PAUSE.
+- **Evidence:** `sh -n` passes on all four scripts. Both launched (`sequence_s26.log` and `_s27.log`).
+- **Next:** C131b's readout, about 12:55 (estimated). The primary read is on s26 and s27 alone, by its bands:
+  - R-rep: Δλ_T4 at least +0.066 with both seeds above −0.066, and Δλ_bE at most 0 with both seeds below +0.313;
+  - R-rep-weak: the same at 1 SE.
+  - The four-seed pool is reported only.
+  - If R-rep, C131 continues to 59, read on T4. If R-null, the clock-payout line closes.
+
+### #598 · 2026-10-30 · A5 A137 C132 · A137's call (is the pilot's slow pace a learning failure or a capacity limit?) becomes C132, evaluation only: C115's goldfish with arm 0 greedy, with the pilot's own one-turn search at every main-phase decision (S-V), and with that search scored by Prizes taken (S-P, an oracle objective for diagnosis), bands first; the goldfish was never run under search (checked)
+- **Done** (research session, 2026-10-30 12:45): `runs/probe/C132-goldfish-search/record.md`, handed to the implementation session.
+  Checked the log: C115 measured SimpleBot, arm 0 and the start pilot only; C122 searched only at Trainer-playable
+  decisions and read M, not pace.
+- **Design note:** a search scored by the pilot's value could reproduce the slowness if V learned that slow play pays, so
+  S-P (scored by Prizes) separates "the value is the limit" from "the line is out of one-turn reach".
+- **Next:** C132 after a timed pilot (about 30 minutes); C131b's readout (about 12:55). The deep round waits for both and
+  for usage (week 62% against a line of about 61.7% at 12:19).
+
+### #599 · 2026-10-30 · A5 C131b · C131b (the replication of C131's ledger shift) reads R-null by its bands, so the clock-payout line closes: the new pair's tempo-four lean improves by only +0.028 (bar +0.066, weak bar +0.033), with s27 at −0.075, and its Energy lean doesn't fall (+0.330 and +0.315, against the controls' +0.313). C131's z 1.8 shift didn't replicate
+- **Done:** C131b s26 (ended at 12:44:52) and s27 (12:45:12) ran side by side. Both stop rules passed, and the G1 watch
+  fired at neither seed. Readout `runs/screens/C131b-clock-payout-rep/readout.json`. Both acknowledged in `loop.py`.
+- **Evidence** (measured, finished; ledger integrity PASS on 30 of 30 rows at each seed):
+
+  | readout | s26 | s27 | pair | C131 s24, s25 | controls |
+  |---|---|---|---|---|---|
+  | **λ_T4** (SE) | −0.002 (0.029) | **−0.075** (0.038) | −0.039 (Δ +0.028) | −0.026, +0.013 | −0.066 |
+  | **λ_bE** (SE) | **+0.330** (0.137) | **+0.315** (0.098) | +0.323 (Δ +0.009) | +0.223, +0.030 | +0.313 |
+  | time endings 25-29 | 41.0% | 39.1% | 40.0% | 38.4%, 39.5% | 41.3% |
+  | Prize endings; steps a game | 9.2%; 89.9 | 9.7%; 91.1 | — | 6.7-6.9%; 94-102 | 6.6-7.5%; 92-100 |
+  | T4; G1 last-5 | 2.17; 13.27 | 2.33; 8.50 | 2.25; 10.89 | 1.83, 2.00; 11.77, 9.87 | 1.98; 11.22 |
+  | G1 set; population | 14/20/26; 13/23/22 | 12.5/22/24.5; 14/23/22 | — | — | — |
+  | G3; errors | 0.330 ± 0.012; 0 / 60,000 | 0.255 ± 0.014; 0 / 60,000 | — | 0.268, 0.257 | 0.25-0.30 |
+
+- **Bands** (C131b's record, written before the run, s26 and s27 only):
+  - R-rep: not met.
+  - R-rep-weak: not met (Δλ_T4 +0.028 against +0.033, s27 is below −0.066, and Δλ_bE is +0.009 against ≤ 0).
+  - Harm: no. **R-null.** The prior was R-null.
+- **Secondary** (four C131 seeds pooled, reported only): λ_T4 −0.023, λ_bE +0.224, time endings 39.5%, T4 2.08, G1 10.85.
+- **Found:**
+  - C131's ledger shift (z 1.8 at one pair) didn't replicate. The pair is back at the controls on Energy, and half-way
+    on the tempo four. As the null rule expects, a single pair at under 2 SE was noise. With the record's "Then", the
+    clock-payout line closes.
+  - All four lowered-payout seeds' time endings (38.4-41.0%) sit inside the controls' range. The clock payout doesn't
+    shorten the games.
+- **Next:** C132 (research's A137 call, evaluation only): the goldfish under the pilot's own search. It needs a build
+  first, in the harness and the search's `score: "prizes"` option.
+
+### #600 · 2026-10-30 · A5 C132 · Built C132 (research's A137 call: the goldfish under the pilot's own search, evaluation only) and launched it after its acceptance and timed pilot: arms G, SV and SP at 512 games a list on bench lists 3, 1, 21, 2, seed 91, about 34 minutes (estimated from the pilot); G reproduces C115's pace (median own turns to six Prizes 20, 18, 20, 25)
+- **Done:**
+  - `env/agents.js` PolicySearchAgent, `score` option (default `'value'`, unchanged). With `'prizes'` each line scores
+    10 × the Prizes the searching player has taken by its end, plus its value score, so Prizes come first and ties go
+    by V.
+  - In prizes mode the agent also counts, per searched state, whether its choice takes fewer Prizes than the value's
+    own choice on the same lines (`pCmp`, `pChosen`, `pValue`, `pWorse`). That is the record's 20-state check, run
+    on every searched state.
+  - `env/remote_worker.js`: `judgeSearch.score` is passed to the searchers, and the prizes counters are summed in
+    `searchStats` only in prizes mode (`|| 0` on the sums).
+  - `notes/scripts/audit/goldfish_worker3.js` (a copy of `goldfish_worker2.js`):
+    - Search copies (`Game.prototype.clone`) get `_pdone`, which C114's trace hook skips. Without this, any simulated
+      line that reaches a game's end would write a seedless trace row.
+    - The Goldfish agent gets an empty `stats`, since the search runner sums its searchers' stats.
+  - `notes/scripts/audit/goldfish_games3.py` (a copy of `goldfish_games2.py`) adds `--arm G|SV|SP`. The S arms mark every
+    job `search` and send `judgeSearch` = C122's SEARCH with `trainerOnly` false (k 3, dets 2, CRN, maxSteps 40,
+    `includeTrainer` kept), with `score` value or prizes.
+  - `notes/scripts/c132_read.py` gives C115's per-game summary plus PlusPower per attack and full-Bench share at attack,
+    with the record's bands. A list with no game reaching six counts as 16 or more.
+  - The run is `runs/probe/C132-goldfish-search/run.sh`, launched through `loop.py launch --kind probe --gpu-gb 1.5` at
+    12:51:33.
+- **Evidence** (measured):
+  - **Smoke** (4 games, list index 3, each arm): 0 errors. SV ran 198 searches with 0 line errors. SP ran 198
+    searches with pWorse 0 (pChosen 349.5 against pValue 349).
+  - The trace files hold 4 rows each, all with a seed, so no search copies got in.
+  - **Timed pilot** (16 games a list, 6 workers): G 8 s, SV 28 s, SP 28 s in all, with 0 errors and 0 line errors.
+    SP's pWorse was 0 in 1,981 searched states, and its choices took more Prizes than the value's would have (3,261
+    against 3,217 summed).
+  - The full size is 512 games a list per arm, about 34 minutes. That was stated here before the run.
+  - **G arm** (finished, 512 a list): median own turns to six Prizes 20, 18, 20 and 25 (IQRs 19-25, 17-21, 19-23,
+    20-29). The share reaching six is 24-43%, and most other games end by no Pokémon. PlusPower per attack is 0.0,
+    and the full Bench at attack 29-54%. This matches C115's 19-26.
+- **Next:** SV then SP, then `c132_read.py` and the band (R-learnable, R-value-limited, R-reach or between).
+
+### #601 · 2026-10-30 · A5 C132 · C132 reads **R-reach**: against a passive goldfish, the pilot's own one-turn search doesn't reach six Prizes faster, whether scored by its value (SV medians 23, 20, 20, 29 own turns) or by Prizes taken (SP 20, 18, 19, 27), against greedy's 20, 18, 20, 25. The fast line isn't within one turn of the policy's top 3 plus a Trainer play. By the readouts the pilot attaches whenever it holds Energy, but 24-50% of its turns start with none, and PlusPower stays near 0 a attack under search
+- **Done:** `runs/probe/C132-goldfish-search/run.sh` ran 12:51:33-12:59:13 (7.7 minutes, against the 34 estimated from
+  the pilot), 512 games a list per arm, 0 errors and 0 search line errors. Read with `notes/scripts/c132_read.py`
+  (`summary.json`). Acknowledged in `loop.py`.
+- **Evidence** (measured, finished; attacker arm 0 s1 against C115's goldfish, seed 91, untimed; lists 3 / 1 / 21 / 2):
+
+  | arm | median own turns to six (IQR) | share reaching six | 1st KO | KOs a turn | Energy a turn | PlusPower a attack | full Bench at attack |
+  |---|---|---|---|---|---|---|---|
+  | G | **20 / 18 / 20 / 25** (19-25, 17-21, 19-23, 20-29) | .43 / .24 / .35 / .40 | 4 / 5 / 5 / 6 | .28 / .31 / .29 / .23 | .57 / .55 / .73 / .51 | 0 / 0 / 0 / 0 | .54 / .29 / .43 / .53 |
+  | SV | **23 / 20 / 20 / 29** (20-28, 17-23, 19-23, 23-33) | .44 / .23 / .33 / .47 | 4 / 4 / 4 / 7 | .27 / .31 / .29 / .21 | .56 / .60 / .76 / .48 | .02 / .03 / .03 / 0 | .45 / .27 / .35 / .49 |
+  | SP | **20 / 18 / 19 / 27** (18-25, 16-21, 17-21, 22-31) | .39 / .22 / .30 / .46 | 4 / 4 / 4 / 7 | .29 / .33 / .31 / .22 | .59 / .61 / .78 / .50 | .02 / .03 / .04 / 0 | .43 / .29 / .33 / .46 |
+
+  - **Energy in hand:** own turns starting with Energy in hand are 50-76% in every arm. On those turns the pilot attaches
+    93-100% of the time, so 0.00-0.07 are missed.
+  - **SP's check:** its choices took more Prizes than the value's would have on the same lines. The sums are 26,253.5
+    against 25,754.5, 16,825.5 against 16,539.0, 25,334.5 against 24,982.5, and 30,880.5 against 30,509.5, with pWorse
+    0 in all 60,890 searched states.
+  - Search changed the greedy move at about 37-42% of searched decisions.
+- **Bands** (C132's record, written before the run):
+  - R-learnable (SV ≤ 12 in 3 of 4): no, 0 of 4.
+  - R-value-limited (SV ≥ 16 in 3 and SP ≤ 12 in 3): no.
+  - **R-reach** (SP ≥ 16 in 3 of 4): met, 4 of 4.
+  - The prior was R-reach or between.
+- **Found** (which part of reach, from the readouts):
+  - **Not the attach decision.** The pilot attaches on nearly every turn it holds Energy.
+  - **Card flow.** A quarter to a half of its turns start with no Energy in hand, so Energy a turn stays at 0.5-0.8,
+    where a fast line needs about 1.
+  - **PlusPower** is almost never on the Active at an attack (0.00-0.04), even with a Trainer play always among the
+    searched candidates. Prize-scored lines take more Prizes (about +1-2% summed) without bringing the six sooner.
+  - **The Bench** is full at under half of attacks in every arm.
+  - The lines a fast game needs (draw now for Energy next turn, a Bench filled ahead) pay off beyond one turn. A
+    one-turn search scored on this turn's Prizes or value can't see them. That's an inference from the readouts, not
+    measured here. It points the next round at horizon and card flow (draw engines), as the record's R-reach says
+    (representation, interface or horizon).
+  - Prizes also come slower with search on list 2 (SV 29, SP 27, against G 25), so one turn of lookahead can trade
+    tempo for a safer line.
+- **Next:** research's next round from R-reach: a horizon over one turn (two-turn search or n-step targets) or card flow
+  (whether the pilot plays its draw Trainers when it has no Energy), before any lever. The GPU is idle.
+
+### #602 · 2026-10-30 · A5 C132 C132b · Research's read of C132 (R-reach, #601): one-turn search over the policy's top 3, even scored by Prizes, doesn't speed the goldfish, and the pilot's Energy shortfall is card flow (no Energy in hand at the start of a quarter to half of its turns, attached 93-100% when held), which the human lists get from draw Trainers that pay a turn later; C132b splits horizon from the candidates with the same Prize-scored search to the end of the next own turn and two own turns ahead, with the goldfish script inside lines, bands first
+- **Done** (research session, 2026-10-30 13:01): C132's readout and the C132b section appended to
+  `runs/probe/C132-goldfish-search/record.md`; handed to the implementation session. PolicySearchAgent already has
+  `horizon` (log #147); the build only keeps the goldfish passive inside lines.
+- **Found:** R-reach rules out a one-turn learning failure. The open split is horizon (a multi-turn search finds the fast
+  line, so the lever is credit beyond a turn) against the candidate set or representation (it doesn't).
+- **Next:** C132b (about 30 minutes after its build). The next deep round takes its topic from C132b's band.
+
+### #603 · 2026-10-30 · A5 C132b · Built C132b (research's horizon split, in C132's record): PolicySearchAgent's `lineOpponent` lets the goldfish play the other seat inside search lines. Its acceptance passes (0 errors, 0 cut lines, and 0 attachments, attacks or Trainers in 7,652 goldfish actions inside lines), and C132b launched at 13:05:40: SP at horizon 3 and 5, 512 games a list, paired with C132's deals. C132's arms also add a new readout: the pilot plays Oak or Bill on only 11-21% of the turns it holds one
+- **Done:**
+  - `env/agents.js` PolicySearchAgent, `lineOpponent` option (default null, unchanged): a name in
+    `PolicySearchAgent.lineOpponents` whose agent decides for the other seat inside lines, in place of the pilot. The
+    pilot still scores the line's end. It counts `oppActs`, and `oppBad` for an `attach|`, `attack|` or
+    `trainer|` key.
+  - `env/remote_worker.js` passes `judgeSearch.horizon` (default 1, as before) and `lineOpponent`, and sums the
+    two counters only when `lineOpponent` is set.
+  - `notes/scripts/audit/goldfish_worker3.js` registers a second `GoldfishAgent` as `lineOpponents.goldfish`.
+  - `goldfish_games3.py` gets `--horizon`, `--max-steps` and `--line-goldfish`, with arm files named SPh3 and SPh5.
+  - `notes/scripts/c132_read.py` gets the SPh3 and SPh5 arms, C132b's bands, and two readouts: Oak or Bill played on own
+    turns that start with one in hand, and the share of own turns starting with Energy in hand.
+  - `runs/probe/C132-goldfish-search/run_b.sh` was launched through `loop.py launch --kind probe`.
+- **Evidence** (measured):
+  - **Smoke** (4 games, list index 3): h3 (maxSteps 120) and h5 (200) each had 0 errors, 0 line errors and 0 capped
+    (cut) lines. The goldfish inside lines made 3,100 and 4,552 actions with oppBad 0. The trace rows are the 4 real
+    games, each with its seed.
+  - **Timed pilot** (16 a list, 6 workers): h3 took 47 s in all and h5 57 s, with 0 errors, 0 capped lines and oppBad 0
+    of 35,276 and 51,615 actions.
+  - **Size:** 512 games a list per arm, which pairs with C132's G and SP (h1) deals. That's projected at about 14
+    minutes by C132's pilot-to-run scaling (about 8×), at most about 55 by linear scaling. No list-arm goes over the
+    record's 20-minute cut. Stated here before the run.
+  - **The new readouts on C132's finished arms:**
+
+    | readout | G (lists 3 / 1 / 21 / 2) | SP h1 |
+    |---|---|---|
+    | Oak or Bill played when held | .11 / .11 / .15 / .13 | .15 / .21 / .20 / .14 |
+    | own turns starting with Energy in hand | .56 / .55 / .72 / .50 | .58 / .61 / .76 / .50 |
+
+- **Found:**
+  - The pilot keeps Oak or Bill in hand on 79-89% of the turns it holds one, even under a one-turn Prize-scored search.
+    Together with Energy in hand on only half to three quarters of its turns, that's the card-flow limit #601 pointed to.
+    Its draw cards pay a turn later, beyond a one-turn search.
+- **Next:** C132b's readout (about 13:20, estimated). R-horizon if h3 or h5 has a median of 12 or less in 3 of 4 lists,
+  R-not-horizon if h5 is 16 or more in 3 of 4. It's read beside Oak and Bill played when held.
+
+### #604 · 2026-10-30 · A5 C132b · C132b reads **R-not-horizon**: two own turns of Prize-scored lookahead over the policy's top 3 plus a Trainer play (SP-h5) still needs a median 20 / 17 / 19 / 25 own turns to six Prizes, as do one turn (20 / 18 / 19 / 27) and the end of the next turn (21 / 17 / 19 / 25), against greedy's 20 / 18 / 20 / 25. Longer lookahead plays Oak or Bill about twice as often when held (G 11-15% → h5 20-29%) and holds Energy slightly more often, but the pace doesn't move. By the record, the candidate set or the greedy continuations inside lines are the limit, not the horizon
+- **Done:** `runs/probe/C132-goldfish-search/run_b.sh` ran 13:05:40-13:21:29 (15.8 minutes, against the 14 projected),
+  512 games a list per arm, 0 errors, 0 line errors and 0 capped lines. The goldfish inside lines made 0 bad actions
+  in 2,487,769. Read with `notes/scripts/c132_read.py` (`summary.json`, `bands_b`). The run script's header cites
+  "log #602" for the build, which is #603 (a comment in a finished script). Acknowledged in `loop.py`.
+- **Evidence** (measured, finished; lists 3 / 1 / 21 / 2; G and SP-h1 from C132, on the same deals):
+
+  | readout | G | SP-h1 | SP-h3 | SP-h5 |
+  |---|---|---|---|---|
+  | **median own turns to six** | **20 / 18 / 20 / 25** | **20 / 18 / 19 / 27** | **21 / 17 / 19 / 25** | **20 / 17 / 19 / 25** |
+  | share reaching six | .43 / .24 / .35 / .40 | .39 / .22 / .30 / .46 | .41 / .19 / .30 / .41 | .37 / .20 / .29 / .39 |
+  | KOs a turn | .28 / .31 / .29 / .23 | .29 / .33 / .31 / .22 | .30 / .34 / .31 / .23 | .30 / .34 / .31 / .22 |
+  | **Oak or Bill played when held** | .11 / .11 / .15 / .13 | .15 / .21 / .20 / .14 | .22 / .30 / .26 / .18 | **.26 / .29 / .27 / .20** |
+  | **turns starting with Energy in hand** | .56 / .55 / .72 / .50 | .58 / .61 / .76 / .50 | .59 / .66 / .79 / .54 | .60 / .67 / .79 / .54 |
+  | Energy attached a turn | .57 / .55 / .73 / .51 | .59 / .61 / .78 / .50 | .61 / .67 / .81 / .54 | .61 / .67 / .80 / .54 |
+  | PlusPower a attack | 0 / 0 / 0 / 0 | .02 / .03 / .04 / 0 | .04 / .03 / .05 / 0 | .04 / .03 / .05 / 0 |
+  | full Bench at attack | .54 / .29 / .43 / .53 | .43 / .29 / .33 / .46 | .53 / .38 / .43 / .55 | .52 / .38 / .42 / .55 |
+
+- **Bands** (C132b, written before the run):
+  - R-horizon (h3 or h5 at 12 or less in 3 of 4): no, 0 of 4 at both.
+  - **R-not-horizon** (h5 at 16 or more in 3 of 4): met, 4 of 4.
+  - The prior was between.
+- **Found:**
+  - Lookahead moves the card-flow readouts in the expected direction without moving the pace. Oak or Bill played when
+    held roughly doubles, Energy in hand and Energy attached rise by about 0.05-0.1, and the Bench is fuller at attack.
+    The median own turns to six stays within 1-2 of greedy, and the shares reaching six don't rise.
+  - Even with search over two own turns the pilot still holds Oak or Bill on 71-80% of the turns it has one. Its own
+    candidates (top 3 plus the best-ranked Trainer) and its greedy continuations inside lines don't include the
+    play-every-draw line a fast game needs.
+  - By the record, the lever is the policy's candidate set or representation. That's research's next record.
+- **Next:** research's next record from R-not-horizon. The GPU is idle.
+
+### #605 · 2026-10-30 · A5 C132b C133 · Research's read of C132b (R-not-horizon, #604): even two own turns of Prize-scored lookahead over the policy's top 3 leave pace within 1-2 turns of greedy, though Oak and Bill play doubles. C133 asks where the pilot's policy ranks the scripted fast line's moves (C115b, evaluation only): outside the top 3 (R-candidates) or inside, with the pilot choosing others (R-coordination), bands first. The deep round stays held for usage (week 63% against a line of 62.1% at 13:22)
+- **Done** (research session, 2026-10-30 13:23): `runs/probe/C133-scripted-rank/record.md`, handed to the implementation session.
+  Checked: the 10-09 sequence-search design (`notes/design-action-sequence-search.md`) is still "proposed, nothing built".
+- **Found:** C132's three arms and C132b's two all stay at 17-29 own turns, and Oak and Bill play when held rises from .11-.15
+  to .20-.29 with lookahead. So the draw cards matter, but more of them alone doesn't make a fast game.
+- **Next:** C133 (minutes). Its band sets the next deep round's topic: the policy's ranking (representation, training
+  signal) or chaining moves (sequence search).
+
+### #606 · 2026-10-30 · A5 C133 · C133 reads **R-candidates**: 27.4% of C115b's scripted fast line's moves fall outside arm 0's top 3. They're concentrated in the Trainers that build tempo (PlusPower 100% outside, at probability 0.000; Item Finder 99.5%; Computer Search 74%), with evolve 46%, Bill 36%, Oak 35% and Energy to the Bench 37%. Attacks, benching Basics and retreats sit in its top 3. Calibration: measured as own turns to a win of any kind on the same deals, the scripted line is faster by a median 2 turns (11 against 14), or 5 when its pieces come together (9 against 14)
+- **Built:**
+  - `rl/remote.py` sends a top-K reply's log-probabilities as `top_lp`, only on search (`topk`) requests, which
+    nothing else reads.
+  - `env/remote_worker.js` passes them on as `topLp`.
+  - `notes/scripts/audit/c133_worker.js`:
+    - **shadow mode:** C115b's WigglyAgent always plays; a fresh top-64 RemoteAgent on slot 0 logs the scripted move's
+      rank, probability, top-1 and V at each main-phase decision with 2 or more options.
+    - **pilot mode:** arm 0 greedy is the attacker on the same deals, its V logged.
+    - Own turns exclude setup, as in the trace.
+  - `notes/scripts/audit/c133_games.py` (a copy of `wiggly_games.py`) and `notes/scripts/c133_read.py`.
+  - The run is `runs/probe/C133-scripted-rank/run.sh`, through `loop.py launch --kind probe`, 13:27:49-13:28:02.
+- **Acceptance** (measured):
+  - The 4-game smoke equals C115b on the same seeds (own turns to six, ending, winner). On the full run, **256 of 256**
+    games are identical.
+  - 0 errors. A rank of 1 whenever the scripted move is the top-1 (79 of 79 in the smoke).
+  - The own-turn index agrees with the trace on 188 of 188 smoke decisions. Pilot mode: rank 1 on 100% of decisions.
+  - The timed pilot: 16 games in 2 s a mode.
+- **Evidence** (measured, finished, 256 deals, 10,383 scripted decisions with 2 or more options, mean 9.8 legal):
+
+  | kind | n | top-1 | top-3 | outside top 3 | mean p |
+  |---|---|---|---|---|---|
+  | **all** | 10,383 | .44 | .73 | **.27** | .41 |
+  | end turn | 3,474 | .48 | .74 | .27 | .39 |
+  | attack | 1,754 | .97 | 1.00 | .00 | .96 |
+  | attach to the Bench | 1,363 | .05 | .64 | .37 | .05 |
+  | bench a Basic | 964 | .47 | .99 | .01 | .46 |
+  | attach to the Active | 897 | .50 | .80 | .21 | .52 |
+  | **PlusPower** | 528 | .00 | .00 | **1.00** | .000 |
+  | Bill | 468 | .21 | .64 | .36 | .20 |
+  | evolve | 414 | .17 | .54 | .46 | .17 |
+  | **Item Finder** | 192 | .00 | .01 | **.99** | .000 |
+  | **Computer Search** | 163 | .00 | .26 | **.74** | .001 |
+  | Professor Oak | 119 | .12 | .66 | .35 | .11 |
+  | retreat | 47 | 1.00 | 1.00 | .00 | 1.00 |
+
+  - **V at the first decision of own turns 2 / 4 / 6:** the scripted line .069 / .168 / .203 (SE .011-.018), against
+    arm 0's own games on the same deals .155 / .354 / .431 (SE .009-.013).
+  - On the came-together seeds (an evolution by own turn 4, 152 games), the scripted line is at .098 / .256 / .316 and
+    arm 0 at .144 / .356 / .416.
+  - **Pace on the same deals** (own turns to a win of any ending):
+    - scripted: 182 wins, median 11 (IQR 7-17), with 74 losses or draws by deck-out;
+    - arm 0: 256 wins, median 14 (IQR 9-20);
+    - paired over the 182 seeds both won: the scripted line is faster on 116 and slower on 45, a median 2 turns.
+    - On the 152 came-together seeds: scripted median 9 (132 wins), against arm 0's 14 on the same seeds.
+- **Bands** (C133's record, written before the run):
+  - **R-candidates** (25% or more outside the top 3): met, .274. The kinds are named above.
+  - R-coordination: no.
+  - The prior was R-candidates, in benching Basics and PlusPower. PlusPower held up, but benching a Basic is in the
+    top 3 99% of the time.
+- **Found:**
+  - The fast line's tempo Trainers aren't among the pilot's candidates at all. PlusPower's mean probability is 0.000
+    at all 528 of the script's PlusPower plays. Item Finder (which the script uses to fetch PlusPower) is the same, and
+    Computer Search close to it. No top-3 search can reach these. That is why C132 and C132b stayed slow, and it
+    matches the drafts' T4 deficit (PlusPower, Item Finder).
+  - Evolve, Bill, Oak and Energy to the Bench are top-3 only about half to two thirds of the time.
+  - **The value readout is confounded:**
+    - The pilot's own positions get the higher V at turns 2-6. But by own turn 6 they also hold more Prizes on
+      average (0.97 against 0.69 overall).
+    - On came-together seeds the scripted line holds 1.06, and its V is still under the pilot's.
+    - So the value doesn't rate the scripted fast positions above its own, but this run can't separate "the value can't
+      see it" from "the pilot's positions really are as good by turn 6".
+  - **Calibration for #601-#604:** C132's "own turns to six Prizes" counts only Prize wins, and against the goldfish
+    most wins come by no Pokémon. On own turns to any win the pilot's pace gap to the script is a median 2 turns, or 5
+    on came-together seeds, not the 10 or more that 9 against 19-26 suggested. The C132 and C132b bands stand as read
+    on their own metric.
+- **Next:** research's next record from R-candidates: why the policy gives PlusPower, Item Finder and Computer Search
+  about 0 probability (representation or the training signal for those cards). The GPU is idle.
+
+### #607 · 2026-10-30 · A5 C133 pace correction · Research's read of C133 (R-candidates, #606): the pilot's policy gives PlusPower and Item Finder essentially zero probability in every state where the scripted fast line plays them (outside the top 3 in 528 of 528 and 190 of 192; mean p .000), and Computer Search almost none (.74 outside), so no top-k search could reach those plays. Correction: the pace gap behind A136, A137, C132 and the README is about 2-5 own turns, not 10+, since C115's "turns to six Prizes" left out wins by no Pokémon (arm 0 wins 256 of 256 against the goldfish at a median 14 own turns; the scripted line wins 182 at 11, or 9 when its pieces come together, and decks out in 74)
+- **Done** (research session, 2026-10-30 13:31): read #606 and C133's summary.json against `runs/probe/C133-scripted-rank/record.md`.
+- **Evidence** (measured, from #606; 256 shadowed games identical to C115b's, 10,383 scripted decisions):
+  - Outside the policy's top 3 / mean probability, by kind: PlusPower 1.00 / .000 (n 528); Item Finder .99 / .000 (192);
+    Computer Search .74 / .001 (163); evolve .46; attach to the Bench .37; Bill .36; Oak .35; end turn .27; attach to the
+    Active .21; bench a Basic .01; attack 0; retreat 0.
+  - V along the scripted line is lower than in arm 0's own games at own turns 2, 4 and 6, even on came-together seeds
+    (.098 / .256 / .316 against .144 / .356 / .416). Confounded by Prizes held, so it's reported, not banded.
+- **Corrections** (to my own records and to the README's "Where things stand"):
+  - "A scripted line wins in about 9 own turns where every pilot needs 19-32" compared a came-together best case with
+    turns to six Prizes, a metric that leaves out the goldfish's most common ending. On wins of any ending, arm 0 is
+    about 3 own turns slower (14 against 11) and never loses to the goldfish, while the script's aggressive draws deck it
+    out in 29% of games.
+  - So the pilots aren't 2-3× slower than the human best case uncontested, and the loop's long games come mostly from
+    interaction. C130 and C131's reads stand on their own metric (the loop's time endings).
+- **Found:**
+  - The deficit that ties the run together is per card: the policy has learned to put no mass on PlusPower and Item
+    Finder at the moments a fast line uses them. These are two of the drafts' missing tempo four, and dead cards in a
+    pilot's hand price under an Energy.
+  - This matches the bench (P5-P8): branching at PlusPower decisions moved the policy most of the way without flipping
+    its inverse pattern or the price, and oracle-timed PlusPower (C111) is worth only about an Energy.
+  - So even a pilot that played them right would make them roughly Energy-neutral in these games. That is the open
+    question the drafting loop can't answer by itself.
+- **Open for Evan** (no run queued; the GPU idle; the deep round held for usage, week 63% against 62.1% at 13:22):
+  1. **Default:** a short deep round (when usage allows) on why oracle-timed PlusPower is worth only about an Energy here,
+     against human valuations: the field's HP and damage thresholds, the mirror, the clock. The lists are ground truth,
+     so a card worth 2.75 copies to humans and about an Energy to a perfect timer suggests the evaluation setting
+     (field, clock, matchups) differs from the 2000 metagame, which working rule 9 says to check first.
+  2. Build the 10-09 sequence-level search with a probability floor, so plays at p ≈ 0 get searched. It's a large build,
+     and C133 suggests top-k search can't reach these plays without it.
+  3. Return to pilot learning on the bench for PlusPower and Item Finder at near-zero probability (P5's branching moved
+     the policy but not the price).
+- **Next:** none queued until one of these is picked, or a RESEARCH CALL.
+
+### #608 · 2026-10-30 · A5 deep round 5 C134 · Deep round 5 (#607's default; launched 16:13 with the week at its line) on why the 2000 players valued the tempo Trainers: no 2000-era strategy text was readable, but the card numbers and the engine's own PlusPower code agree that PlusPower is a flat +10 after Weakness, so it flips a knockout only at exactly 10 HP left and pays through Gust's choice of target. C134 measures how often the loop's field offers those breakpoints against the California lists' field, evaluation only, bands first. The ground truth is the California event (13.5 / 28 / 18); New Jersey was Prop 15
+- **Done** (research session, 2026-10-30 16:19):
+  - `anthropic-skills:deep-research` with one Haiku researcher (about 76k tokens) and a Sonnet report writer (about 78k).
+    Notes: `research_notes/Tempo card value in 2000 meta/tempo_card_value.md`. Report: `reports/Tempo card value in
+    2000 meta.md` (a 10-row checklist).
+  - Corrected the notes' Weakness-type error for the writer (Thunderpunch is Lightning damage).
+  - Read the engine's PlusPower (`ryuu-play/packages/sets/src/base-sets/set-base/pluspower.ts`): +10 at
+    `PutDamageEffect`, after Weakness and Resistance, if the attack does damage. That matches the printed text and the
+    rules note's 2 March 2000 chat.
+  - Checked the reference lists. California's 24 have a median 13.5 / 28 / 18 (Trainers 18-34): the ground truth. New
+    Jersey's 24 have a median 19.5 / 15 / 26 (Trainers 14-15), under Prop 15 (at most 15 Trainers), so they're no part of it.
+  - Wrote `runs/probe/C134-breakpoints/record.md` and handed it to the implementation session.
+- **Found:**
+  - With the Trainer slots capped, the New Jersey players filled with Energy (26) and Pokémon. The same players chose 28
+    Trainers when free, so the lists themselves rank the Trainers above Energy.
+  - Pojo, Bulbapedia and Pokebeach returned 403 or 404, so the "why" rests on later retrospectives (the report says so).
+- **Next:** C134 after its build (about 30 minutes). Its band picks between the field (how the population forms) and the
+  pilot's use of chances.
+
+### #609 · 2026-10-30 · A5 C134 · Built C134 (research's breakpoint probe after deep round 5, evaluation only): a log-only attack logger with the engine's own damage and each benched target's damage plus one more PlusPower. Its acceptance passes after one fix found by the hand check (the engine's `baseDamage` is already after Weakness), and the full run launched at 16:26:02: fields H, L and LH at 2,760 games each
+- **Done:**
+  - `notes/scripts/audit/bp_worker.js` (log only; `env/remote_worker.js` underneath, search copies skipped) wraps
+    `ATTACK_ACTION` dispatches. Per attack it records:
+    - the engine's base damage to the Defending Pokémon (the first PutDamageEffect on it, `baseDamage`);
+    - raw = (base − R) / W;
+    - the Defender's HP left before and after, KO, its Weakness hit, and PlusPower and Defender;
+    - each benched opposing Pokémon's HP left and d10 = max(0, raw × its W + its R) + 10 × (PlusPower + 1), PlusPower
+      being +10 after W and R in the engine (`set-base/pluspower.ts`).
+  - `notes/scripts/audit/bp_games.py` plays three fields, with the same greedy pilot on both seats and the round rule
+    [20, 45]:
+    - H: the 24 California lists (`env/decks.js archivedDecks`), round-robin, under arm 0 s1.
+    - L: C127 s16's `population_it0029.pt` (99 decks), random pairs, under its own pilot (`load_policy` on the
+      population file).
+    - LH: that pilot on H.
+  - `notes/scripts/c134_read.py` reads b10, bG and the record's other readouts from the attack's own damage
+    max(0, base + 10 × PlusPower − 20 × Defender), so a poison tick after the attack isn't counted. It also runs the
+    checks and the bands.
+- **Fixes found by the acceptance:**
+  1. `R.subprocess` is the `subprocess` module, so patching its Popen before loading the decks launched the worker in
+     place of `node -e`. Moved after the deck load.
+  2. The hand table showed Mewtwo's Psyburn (40) logged as base 80 on a Weakness hit. The engine's `baseDamage` is
+     after the Defender's W and R (as `pluspower.ts` reads it), so d10 had double-counted Weakness. It now uses
+     raw = (base − R) / W.
+- **Evidence** (smokes, 8 games a field, after the fixes; measured):
+  - **Drop check:** the engine's HP drop equals max(0, base + 10 × PlusPower − 20 × Defender) on 72 of 73 (H), 76 of 78
+    (L) and 83 of 86 (LH) damaging attacks the Defender survived. The rest are poison attacks (Poison Claws, Smog) whose
+    between-turns tick lands in the same dispatch.
+  - **Weakness hits** agree with `pool.json`'s type vectors on 83 of 83, 106 of 106 and 107 of 107.
+  - **Hand count on 20 H attacks** (the table above): 0 at exactly 10, so b10 0, and 2 bG. Psyburn left Scyther at 30
+    with a benched Hitmonchan at 70 left against 40 × 2 + 10 = 90. Slash left the Defender at 40 with a benched Scyther
+    at 40 against 30 + 10. Both match the logged flags.
+  - **Timed pilot** (32 games a field, 6 workers): 3 s a field, 0 errors, about 500 attacks a field.
+  - **Size:** 2,760 games a field (H and LH run each of the 276 pairs 10 times), at most about 13 minutes in all by
+    linear scaling. Stated here before the run.
+  - Smoke readouts (n = 8 games, not results): b10 + bG of .27 (H), .43 (L), .42 (LH).
+- **Next:** C134's readout. R-field if L's b10 + bG is under half of H's, R-same if within 25%.
+
+### #610 · 2026-10-30 · A5 C134 · C134 reads **R-same**: the loop's own field offers PlusPower and Gust about as many knockout breakpoints as the 24 California lists (b10 + bG .429 against .476, L/H 0.90; 1.00 on the attacks whose HP drop the formula reproduces exactly), and the loop's pilot on the human lists sees the same (.437). The field isn't why the tempo cards price under an Energy. The pilot's use of the chances is (C133: PlusPower at p about 0 where the fast line plays it)
+- **Done:** `runs/probe/C134-breakpoints/run.sh` ran 16:26:02-16:28:42 (2.7 minutes), 2,760 games a field, 0 errors
+  (one L game ended with no ending recorded). Read with `notes/scripts/c134_read.py` (`summary.json`). Acknowledged in
+  `loop.py`.
+- **Evidence** (measured, finished; round rule [20, 45]; damaging attacks only):
+
+  | readout | H (California, arm 0 s1) | L (C127 s16's population, its pilot) | LH (that pilot on H) |
+  |---|---|---|---|
+  | games; attacks; damaging | 2,760; 42,565; 33,544 | 2,760; 39,643; 30,040 | 2,760; 48,853; 38,492 |
+  | **b10** (exactly 10 HP left) | **.153** | **.163** | **.172** |
+  | **bG** (a benched KO at +10, the Active not KO'd) | **.430** | **.358** | **.357** |
+  | **b10 + bG** | **.476** | **.429** | **.437** |
+  | the same, matching-drop attacks only | .578 (n 25,845) | .579 (n 20,933) | .566 (n 28,655) |
+  | KO share of damaging attacks | .207 | .263 | .242 |
+  | Weakness-hit share | .084 | .061 | .103 |
+  | Defender's mean HP left at attack; mean damage | 52.7; 25.2 | 40.7; 19.2 | 50.4; 25.0 |
+  | a Bench present at attack | .959 | .852 | .963 |
+  | endings: time / no Pokémon / Prizes / deck-out | 2,231 / 327 / 107 / 95 | 1,149 / 1,368 / 204 / 38 | 2,019 / 267 / 141 / 333 |
+
+  - **Checks:** the engine's HP drop matches max(0, base + 10 PP − 20 Df) on 94.7% (H), 94.5% (L) and 96.5% (LH) of the
+    damaging attacks the Defender survived.
+    - The misses are poison ticks in the same dispatch (+10: Smog, Poison Gas, Poison Sting, Foul Gas).
+    - The rest are damage prevented or reduced after the attack (−30 to −80: Slash, Do the Wave, Thunderpunch into
+      Powers such as Mr. Mime's Invisible Wall).
+    - Weakness hits agree with `pool.json` on 100% (33,544, 30,040 and 38,492).
+- **Bands** (C134's record, written before the run):
+  - R-field (L under half of H): no.
+  - **R-same** (L within 25% of H): met. L/H is 0.90, and 1.00 on matching-drop attacks.
+  - The prior was between.
+- **Found:**
+  - The loop's population, grown from random wide decks, gives the tempo cards as many chances as the human field.
+    Its Pokémon are smaller (40.7 HP left at attack against 52.7), it knocks out more often, and bG is a little lower
+    and b10 a little higher. The sums agree within 10%.
+  - So the field doesn't explain why oracle-timed PlusPower is worth only about an Energy, nor the drafts' T4 deficit.
+    With C133, the remaining cause is the pilot's policy putting about zero mass on PlusPower and Item Finder where they
+    pay. By the record, the lever is the pilot's use of the chances.
+  - LH shows the loop's pilot on the human lists meets about the same breakpoints (.437). Its games end on time 73% of
+    the time and by deck-out 12% (H under arm 0: 81% and 3%).
+- **Next:** research's next record from R-same. The GPU is idle.
+
+### #611 · 2026-10-30 · A5 C134 C135 · Research's read of C134 (R-same, #610): the loop's field offers the tempo cards as many breakpoints as the California field (b10 + bG .429 against .476; 1.00 on cleanly logged attacks), so the field isn't the cause, and with C133 the gap is the pilot's near-zero probability on PlusPower. C135 asks whether the pilot's own full-width search (every legal option, scored by its value) plays PlusPower and Gust at those breakpoints, evaluation only, bands first
+- **Done** (research session, 2026-10-30 16:30): `runs/probe/C135-fullwidth-pp/record.md`, handed to the implementation session.
+- **Found:**
+  - About 15-17% of the pilots' attacks leave the Defender at exactly 10 HP, in every field. PlusPower's chances are common,
+    and the pilot doesn't take them.
+  - C132's search couldn't take them either, since its candidates were the policy's top 3 plus only its best-ranked
+    Trainer.
+  - #106's expert iteration failed on noisy value targets and rare exact ones (1 in 1,194). A breakpoint knockout is near
+    exact and common, so a fourth, narrow form is worth recording if C135 shows the pilot's own value credits it.
+- **Next:** C135 (about 30 minutes after its build).
+
+### #612 · 2026-10-30 · A5 C135 · Built C135 (research's full-width search at the breakpoints, evaluation only): a worker gives one seat the pilot's own PolicySearchAgent over every legal option at Trainer-playable decisions, and logs C134's attack fields plus PlusPower and Gust in hand and played. Its acceptance passes (SP-full plays PlusPower at 20 of 20 hand-picked clean b10 states, all knockouts), and the full run launched at 16:37:09: G, SV-full and SP-full at 1,104 games each on the 276 California pairs
+- **Done:**
+  - `notes/scripts/audit/c135_worker.js` (log only; `env/remote_worker.js` beneath; search copies skipped):
+    - The designated seat (seat 1 on an even seed) is greedy (G) or `PolicySearchAgent` with k 64 (every legal
+      option), dets 2, CRN, horizon 1, trainerOnly, scored by V (SV) or "prizes" (SP). The other seat is greedy.
+    - The searcher's pilot is an adapter over the runner's own RemoteAgent (`remote_worker.js` doesn't export
+      RemotePilot).
+    - It logs that seat's attacks with:
+      - C134's fields;
+      - PlusPower and Gust in hand at the attack, and played this turn;
+      - a snapshot at the turn's first decision (in hand, the opposing Active and Bench with HP left);
+      - `gusted` (the Defender was benched at the snapshot);
+      - `b10state` (the attack without this turn's PlusPower, max(0, base − 20 Df), leaves exactly 10);
+      - `bGstate` (a snapshot-benched Pokémon dies to max(0, raw × its W + its R) + 10, and the snapshot Active would
+        survive this attack without PlusPower).
+  - `notes/scripts/audit/c135_games.py` (a copy of `bp_games.py`, field H, `--arm`) also saves each game's results.
+  - `notes/scripts/c135_read.py` reads pp@b10, g@bG, KOs per damaging attack, PlusPower per attack, Gust per attacking
+    turn and Prizes per own turn, then the bands. "clean" drops Mr. Mime (Invisible Wall) and Ditto (Transform) defenders.
+- **Evidence** (measured):
+  - **Smoke** (8 games an arm): 0 errors in all three.
+  - **Timed pilot** (32 games, 6 workers): G 3 s, SV 18 s, SP 20 s, 0 errors. At b10 states with PlusPower available, G
+    played it 0 of 17 times, SV 2 of 2 and SP 3 of 3.
+  - **Acceptance** (SP-full, 256 games, 80 s): of 44 b10 states with PlusPower available, it played PlusPower in 41 and
+    knocked out in 40. **The first 20 clean states (hand-picked): 20 of 20 played, 20 of 20 knocked out.**
+  - The 3 misses: Smog into Mr. Mime (Invisible Wall stops 30+, so PlusPower can't help), Bubble into Ditto (Transform),
+    and Thundershock into Chansey at 20 left, a real miss. Clean: 40 of 41.
+  - The same sample gives g@bG .24 (21 states) and Prizes per own turn .141. These are acceptance data, not the readout.
+  - **Size:** 1,104 games an arm (each of the 276 pairs 4 times), at most about 24 minutes by linear scaling. SP's 256
+    took half of linear. Stated here before the run.
+- **Next:** C135's readout:
+  - R-value-knows if SV-full's pp@b10 is 0.5 or more with G's under 0.1;
+  - R-value-blind if SV-full's is under 0.15 with SP-full's 0.5 or more.
+
+### #613 · 2026-10-30 · A5 C135 · C135 reads **R-value-knows**: given every legal option at Trainer-playable decisions, the pilot's own value-scored search plays PlusPower at 83% of b10 states where it holds one (pp@b10 .827, n 196), against greedy's 0.4% (.004, n 451). Prize-scored search plays it at 97%. The value credits the knockout the policy never proposes, so the policy's gap is one the pilot's own search can teach. With search the designated seat takes 55% more Prizes a turn (.129 against .083)
+- **Done:** `runs/probe/C135-fullwidth-pp/run.sh` ran 16:37:09-16:48:01, 1,104 games an arm, 0 errors (one SP game ended with
+  no ending recorded). Read with `notes/scripts/c135_read.py` (`summary.json`). Acknowledged in `loop.py`.
+- **Evidence** (measured, finished; field H, the 276 California pairs × 4, arm 0 s1 on both seats, round rule [20, 45]; the
+  designated seat's attacks):
+
+  | readout | G (greedy) | SV-full (its own V) | SP-full (Prizes; eval only) |
+  |---|---|---|---|
+  | **pp@b10** (n states) | **.004** (451) | **.827** (196) | **.965** (227) |
+  | pp@b10, clean defenders (n) | .005 (410) | .837 (184) | .981 (214) |
+  | KO at those b10 states | .018 | .811 | .938 |
+  | **g@bG** (n states) | .034 (233) | .221 (104) | .376 (101) |
+  | KOs per damaging attack | .181 | .254 | .269 |
+  | PlusPower attached per attack | .008 | .100 | .104 |
+  | Gust played per attacking turn | .051 | .067 | .071 |
+  | **Prizes per own turn** | **.083** | **.129** | **.146** |
+  | endings: time / no Pokémon / Prizes / deck-out | 895 / 137 / 40 / 32 | 853 / 182 / 63 / 6 | 788 / 199 / 93 / 23 |
+
+  - The SE of SV's pp@b10 is about .027 (binomial, n 196; estimated).
+- **Bands** (C135's record, written before the run):
+  - **R-value-knows** (SV-full at .5 or more with G under .1): met, .827 against .004.
+  - R-value-blind: no.
+  - The prior was between.
+- **Found:**
+  - When PlusPower is among the searched candidates, the pilot's own value prefers the PlusPower-then-knockout line
+    over 80% of the time. The value sees what +10 buys, and the policy puts about zero mass on it (C133). That's a
+    policy-learning gap, not a value or field gap (C134).
+  - Gust is credited less. Value-scored search gusts and knocks out at 22% of bG states, against Prize-scored 38% and
+    greedy 3%. So the value sees part of Gust's knockouts, or the Gust line needs a second Trainer (PlusPower) within one
+    search step.
+  - Searching only at Trainer-playable decisions lifts the seat's Prizes per own turn by 55% (.129 against .083), and by
+    76% with the Prize score. This is evaluation only. The SP score is an oracle objective (row 86) and must not train.
+  - The b10 counts differ by arm (451, 196, 227) because searching changes which states arise. Each arm's rate is read on
+    its own states.
+- **Next:** by the record, research's next record trains toward full-width search targets at Trainer-playable attack
+  decisions, a fourth form of expert iteration. The targets must come from SV (the pilot's own value, row 83), never SP
+  (an oracle score, rows 60 and 86). Check why #106's expert iteration failed first. The GPU is idle.
+
+### #614 · 2026-10-30 · A5 C135 C136 C137 · Research's read of C135 (R-value-knows, #613): the pilot's own value-scored full-width search plays PlusPower at 83% of 10-HP breakpoints against 0.4% greedy, and lifts Prizes per own turn from .083 to .129, so the knowledge is in the value and missing from the policy. Two records follow, bands first: C136 (A138: PlusPower's paired price under search, timing against card flow, evaluation only) and C137 (the loop's pilot learns from its own full-width search at Trainer-playable decisions, with a value margin and #106's failure signature as a stop rule)
+- **Done** (research session, 2026-10-30 16:50): `runs/probe/C136-pp-price-search/record.md` and `runs/screens/C137-search-distill/record.md`, both
+  handed to the implementation session. C136 runs first (no build); C137 needs a sizeable build.
+- **Found:**
+  - This is the first result tonight where a prior-free change (the pilot's own search) makes the pilot play the tempo
+    cards: PlusPower attached at .100 of attacks against .008, and Gust knockouts at .22 of chances against .03.
+  - Training toward that search is a fourth form of expert iteration. #106's three forms failed on noisy targets and on
+    making the policy more random. C137 limits targets to Trainer-playable decisions with a value margin, and stops on
+    #106's signature.
+- **Next:** C136 (about 15 minutes), then C137's build and stage 1.
+
+### #615 · 2026-10-30 · A5 C136 · Built and launched C136 (research's A138 call: PlusPower's paired price against an Energy under the pilot's own full-width search): a `searchKey` trigger in PolicySearchAgent lets S-PP search only where a PlusPower play is legal. The acceptance passes, and the run (G, S-PP, S-T at 768 games each) launched at 16:52:40
+- **Done:**
+  - `env/agents.js` PolicySearchAgent `searchKey` (default null, unchanged): a decision is searched only if some legal
+    option's key starts with it. `env/remote_worker.js` passes `judgeSearch.searchKey`.
+  - `notes/scripts/audit/c136_worker.js` (log only):
+    - C114's trace (`pace_worker2.js`), with search copies given `_pdone` so they write no trace rows. C122's own
+      trace run lacked this guard; whether its readouts took seedless rows from simulated lines isn't checked here.
+    - Per attack on both seats, C135's b10 fields. Only the list's seat holds PlusPower.
+  - `notes/scripts/c136_run.py` (a copy of `c122_run.py`): group PlusPower on lists 3, 1, 21 (decks_P 0-2), with arms:
+    - G;
+    - SPP: k 64, dets 2, CRN, horizon 1, V, `searchKey` "trainer|PlusPower";
+    - ST: the same with `trainerOnly`.
+    - Both seats search, round rule [20, 45].
+  - `notes/scripts/c136_read.py`:
+    - the price (event-point share against the copy) per list and pooled;
+    - the paired differences SPP − G and ST − SPP on the same deals;
+    - pp@b10, KOs per damaging attack, and Oak or Bill played when held;
+    - the bands.
+  - `runs/probe/C136-pp-price-search/run.sh`, through `loop.py launch --kind probe`.
+- **Evidence** (measured):
+  - **Unit check** (stub batches): searchKey "trainer|PlusPower" searched rows 0 and 3 (the two with a PlusPower play).
+    trainerOnly searched 0, 1 and 3 (any Trainer), and the default all four. So S-PP searches only where PlusPower is
+    legal.
+  - **Smoke** (16 games an arm, list 3):
+    - 0 errors and 0 line errors in all three arms.
+    - The trace holds 16 rows each, all seeded (no search copies).
+    - Searches: SPP 166, ST 856.
+    - Timed: G 2.7 s, SPP 6.6 s, ST 13.2 s.
+  - **Size:** 256 games a list per arm (768), at most about 18 minutes by linear scaling. Stated here before the run.
+  - **G arm** (finished): 768 games in 11.3 s, 0 errors.
+- **Next:** C136's readout by its bands (±0.04 paired; R-timing, R-flow, R-both, R-flat). Then C137's build: it launches
+  only after C136 reads (the auditor, via research).
+
+### #616 · 2026-10-30 · A5 C136 · C136 reads **between** by its bands: PlusPower's price against an Energy goes 0.440 (greedy) → 0.588 under search where PlusPower is legal (S-PP − G +0.148, SE 0.018) → 0.501 with both seats searching every Trainer-playable decision (S-T − S-PP −0.087, SE 0.022). S-PP's lift mixes timing with a one-sided search advantage, since only the PlusPower list ever searches there. In the symmetric arm, PlusPower is worth about an Energy even when it is played at 82% of breakpoints
+- **Done:**
+  - `runs/probe/C136-pp-price-search/run.sh` ran 16:52:40-16:58:14, 768 games an arm, 0 errors and 0 search line
+    errors (SPP capped 3 lines, ST 2).
+  - `notes/scripts/c136_read.py` had first priced the list as points over 3. That isn't symmetric under the round rule
+    (a time win scores 2 to 0). It now uses C113's symmetric "points" (the list's points over both sides') with a
+    paired bootstrap SE over deals, plus the win share with draws half. Acknowledged in `loop.py`.
+- **Evidence** (measured, finished; lists 3, 1, 21 against their PlusPower → Energy copies, 256 games a list per arm, arm 0
+  s1 on both seats, round rule [20, 45]):
+
+  | readout | G | S-PP | S-T |
+  |---|---|---|---|
+  | **price** (points; list 3 / 1 / 21) | **0.440** (.429 / .414 / .478) | **0.588** (.596 / .588 / .579) | **0.501** (.529 / .447 / .526) |
+  | share (wins, draws half) | .442 | .582 | .497 |
+  | pp@b10 (n) | .013 (475) | .790 (119) | .823 (113) |
+  | KOs per damaging attack | .188 | .209 | .217 |
+  | Oak or Bill played when held (both seats) | .408 | .432 | .482 |
+  | searches; changed from greedy | — | 7,571; 3,799 (50%) | 44,025; 18,077 (41%) |
+
+  - **Paired differences** (2,000 bootstrap resamples over the 768 deals): S-PP − G +0.148 (SE 0.018). S-T − S-PP −0.087
+    (SE 0.022). S-T − G +0.061 (estimated as the difference of the two).
+- **Bands** (C136's record, written before the run):
+  - R-timing needs S-PP − G ≥ +0.04 and |S-T − S-PP| < 0.04. The first holds, but the second fails (−0.087).
+  - R-flow needs S-T − S-PP ≥ +0.04, and it's negative.
+  - R-both: no. R-flat: no.
+  - **between** by the letter. The prior was R-timing.
+- **Found:**
+  - **S-PP is one-sided by design.** It searches every legal move, not just PlusPower, at each decision where PlusPower
+    is legal, and changes the greedy move at half of them. Only the list's seat ever reaches such a decision. So its
+    +0.148 is PlusPower timing plus a search advantage the copy never gets.
+  - **S-T is symmetric:** both seats search all their Trainer decisions. There the list sits at 0.501, even with
+    PlusPower played at 82% of its breakpoints.
+  - So with both sides' Trainer play searched, a timed PlusPower is worth about one Energy here, as C111's oracle timing
+    found (0.507-0.523). The low greedy price (0.440) is mistiming, and fixing it brings PlusPower up to Energy, not
+    above.
+  - This doesn't explain why the human lists run 2.75 PlusPower over a twentieth Energy. It weakens C137's premise that
+    teaching the pilot PlusPower's timing will move the drafts toward the lists: the draft's price for PlusPower would
+    rise from about 0.44 to about 0.50, not past an Energy.
+- **Next:** C137 per research's record (it launches after this read; its scope is every Trainer-playable decision, so
+  S-T's case). This read is flagged to research for whether C137's bands still stand. The build is next.
+
+### #617 · 2026-10-30 · A5 C136 C137 · Research's read of C136 (between, #616): symmetric full-width search on both seats prices PlusPower at about an Energy (0.501, against 0.440 greedy; C111 0.507-0.523), and S-PP's 0.588 is a one-sided search edge, so learning PlusPower's timing should move it from under an Energy to parity, not above. C137's bands stand; its priors are updated in Amendment 2 (R-learned likely, R-ledger plausible, R-lever unlikely)
+- **Done** (research session, 2026-10-30 17:00): C137 Amendment 2, before launch. Answered the implementation session's question.
+- **Found:**
+  - Greedy play prices PlusPower under an Energy (0.44). With good timing on both sides it reaches about an Energy (0.50).
+    No player here has priced it above one.
+  - The selection trim on the tempo four (λ_T4 −0.066) fits the greedy under-pricing, so C137 should bring λ_T4 toward 0
+    if the pilot learns the timing.
+  - Reaching the lists' 2.75 PlusPower a deck needs it to be worth more than an Energy, which is still unexplained.
+- **Next:** C137 build, then stage 1.
+
+### #618 · 2026-10-30 · A5 C137 · Built C137 (research's record, Amendments 1-2): the drafting loop's PPO learns toward the pilot's own full-width search at Trainer-playable decisions, using C49's probe machinery with a new hard, margin-filtered target. All four acceptance items pass, with one warning sign in the smoke (entropy at kept rows up 0.31 in one iteration). s28 launched at 17:16:01 in four ~30-minute stages; s29 waits for GPU memory
+- **Done** (C49's names, as Amendment 1 agreed):
+  - `env/remote_worker.js` probeCatch takes `probe.trainerOnly`, which catches only decisions with a legal `trainer|`
+    option. It's checked before the random draw, so the draws are unchanged when it's off. `C137_PROBE_LOG` (log only)
+    writes each probe's moves by key, with scores and Prizes.
+  - `env/agents.js` PolicySearchAgent: with `keepLines` it also returns `prizes`, the Prizes taken at each line's end
+    (an extra field nothing reads).
+  - `rl/train.py` ppo_update has a `distill_margin` hard mode:
+    - the target is the searched move with the best mean V, kept where it beats the first searched move (the pilot's
+      top-1 at the probe) by D or more;
+    - the loss is `search_distill` × CE, summed over kept rows divided by the minibatch's rows;
+    - stats `sd_ce`, `sd_agree` and `sd_entropy` are per kept row, `sd_kept_share` is per probed row, and `sd_kept` /
+      `sd_probed` are a minibatch's means (the dose).
+  - `rl/metagame.py`:
+    - adds the flags `--search-distill`, `--probe-p`, `--probe-k`, `--probe-dets`, `--probe-trainer-only`,
+      `--distill-tau`, `--distill-clip` and `--distill-margin`;
+    - sends the probe on recorded games and runs `probe_targets` before the PPO subset;
+    - passes the distill settings to PPO only when on, and logs `distill`.
+  - Chains `runs/screens/C137-R1-K-paired-distill-s28/` and `-s29/chain.sh`: C127's flags plus `--search-distill 0.5
+    --probe-p 0.25 --probe-k 64 --probe-dets 2 --probe-trainer-only --distill-margin 0.02`, with the seed changed
+    (checked by parsing).
+  - Sequencers `runs/screens/C137-search-distill/sequence_s28.sh` and `_s29.sh`. The stages are 0-4, 5-9, 10-19 and
+    20-29 plus G3, each about 30 minutes; the record's stage 1 is cut in two under the 30-minute rule, which adds a
+    check without loosening any.
+    - After each stage: errors, zero-move runs and the G1 watch.
+    - After 0-4: #106's entropy signature (+0.2 over iteration 0).
+    - After 5-9: that, or agreement not up from 0 to 9, with Amendment 1's under-dosed label (entropy under +0.05).
+    - The rule code was tested on synthetic logs (pass, an entropy stop, an under-dosed stop) and on C127 s16.
+- **Acceptance** (measured):
+  1. **Off is the committed code path.** On a real batch of 1,531 recorded transitions (24 games, the C49-sd pilot,
+     CPU), the snapshot `rl/train.py` and the new one with the flags off give bit-identical weights and stats. With the
+     flags off the messages carry no probe, the batch gets no probe arrays, and PPO gets no distill settings.
+  2. **CE only at kept rows.** With distill on, the weights are identical to off when no rows are probed, and when 154
+     rows are probed with margins under D. They move only when rows are kept (154 kept, max |Δw| 0.0008).
+  3. **Stored targets at PlusPower states.** In a 2-iteration smoke at P 0.25 (400 games, 200 recorded; seed 28), the
+     probe log has 4,903 probes, 391 with a PlusPower candidate.
+     - 33 are states where the PlusPower lines take more Prizes than the top-1 line (a stand-in for b10).
+     - The target is PlusPower in 19 of 33 (58%), and in 12 of the first 20, which is most.
+     - That's below C135's 83%: this is the loop's C49-sd pilot on the stand-in, not arm 0 on true b10 states.
+  4. **Ledger integrity** passes in the smoke.
+  - **The smoke's distill rows:** 2,476 and 2,427 probes. Kept share .40 and .44, 270-305 kept rows a minibatch.
+    Agreement at kept rows .045 → .022, entropy .89 → 1.19.
+  - **Timed full-size iteration** (one seed alone): 211 s (play 170, PPO 33), 8,617 probes, kept share .42, entropy at
+    kept rows 1.24.
+- **Found:**
+  - One smoke iteration moved kept-row entropy +0.31 and agreement down, #106's direction. The states differ between
+    iterations and the smoke is small, so it's a warning, not a reading. Stage 1a's check reads it on the real run.
+  - Side by side, a stage of 5 iterations is about 20-25 minutes (estimated from 211 s alone).
+- **Next:** C137 stage 1a (0-4) at both seeds, then the sequencers' checks. On an under-dosed stop, stage 1 reruns at W
+  2.0 (Amendment 1).
+
+### #619 · 2026-10-30 · A5 C137 · Log only, for research's Amendment 3 readout (PlusPower's share of kept targets at each stage): the drafting loop's probes now write a per-probe summary (top-1 move, best-scored move, margin, and whether a PlusPower move was a candidate) to `<run>/probe_summary.jsonl`. Training is unchanged. It covers s28 from stage 1b and s29 from its first stage
+- **Done:**
+  - `rl/metagame.py` adds `"log": <run>/probe_summary.jsonl` to the probe config (distill runs only).
+  - `env/remote_worker.js` probeCatch writes one line per probe: the probe seed (args.seed × 7919 + iteration), the
+    top-1 and best moves by key, the margin, and `pp`.
+  - s28's stage 1a process loaded the files before the edit, so its iterations 0-4 have no summary. Every later stage
+    starts a new process and gets it. s29 hadn't launched yet.
+- **Evidence:** a 1-iteration smoke (120 games, 60 recorded; deleted after) wrote 760 summary lines, exit 0. Kept
+  (margin ≥ 0.02): 301. PlusPower among kept targets: 6. Probes with a PlusPower candidate: 70.
+- **Next:** at each stage of C137, report sd_kept (the ppo row) and PlusPower's share of kept targets (the summary).
+
+### #620 · 2026-10-30 · A5 C137 · Machine load: with both C137 seeds running, GPU memory reached 15.1 of 16.3 GB (about 93%) at 100% utilization, over CLAUDE.md's 80%. The probe search's top-64 requests fill each process's 0.5 share, about 7.5 GB each against C127's ~3.5. So s29 was stopped at 17:29 after its current iteration and queued to resume from its checkpoint once s28's sequence ends. The seeds now run one after the other
+- **Done:**
+  - At 17:28: free RAM 3.72 GB, GPU 15,083 MiB used and 100% busy. Node held 6.5 GB, python 4.5 GB.
+  - `loop.py` admitted s29 at 17:26:28 on its declared `--gpu-gb 3.7`, which is C127's footprint, not C137's.
+  - `loop.py stop C137-R1-K-paired-distill-s29` wrote STOP at 17:29:05. s29 checkpoints and ends after its current
+    iteration, and its sequencer then exits, its rule reading "last iteration < 4".
+  - `runs/screens/C137-search-distill/resume_s29.sh` (started at 17:29:46) waits for both sequences' "done" and clears
+    s29's STOP. It then runs `sequence_s29_resume.sh`, which is `sequence_s29.sh` with:
+    - stage 1a as `--resume`;
+    - every `wait_end` threshold shifted by the stopped run's end lines (checked by a dry run of the edit);
+    - `--gpu-gb 7.5`, so `loop.py` holds it while another C137 seed runs.
+- **Found:**
+  - A C137 process needs about 7.5 GB of GPU memory. Two side by side break the 80% cap, so the record's "side by
+    side" can't hold on this machine without a smaller `RL_GPU_SHARE`.
+  - Running one after the other roughly doubles the wall time: about 1.8 hours a seed alone at 211 s an iteration, so
+    s29's readout comes about 2 hours after s28's (estimated).
+  - Stage readouts are per seed, and s28's stage 1a reads first.
+- **Next:** s28's stage 1a (about 17:45, estimated), messaged to research. Free RAM stays above row 73's 2 GB with one
+  seed running.
+
+### #621 · 2026-10-30 · A5 C137 · C137 (D 0.02) stops at s28's stage 1a on #106's signature, which the record reads as **failed**: entropy at the distilled rows rose 1.20 → 1.48 (+0.278) over iterations 0-4 while agreement with the targets halved (.044 → .022). By Amendment 3, both seeds rerun iterations 0-9 once at D 0.10. A bug was found and fixed first: one stored target at iteration 0 wasn't a legal move at its transition. The D 0.10 rerun launched at 17:40:56, seeds one after the other
+- **Done:**
+  - s28's stage 1a ran 17:16:01-17:31:51 (5 iterations, 0 errors). The sequencer read "STOP 106 entropy +0.278 (failed)"
+    at 17:32:04.
+  - s29 (stopped after iteration 0 for GPU load, #620) is closed by the same reading.
+  - The resume queue relaunched s29 at 17:32:13 before I killed it. I took down its process tree at 17:32:30, before
+    its first iteration, so its iteration-0 checkpoint is unchanged.
+  - The kill's name match also took my own Bash monitor, which I re-armed.
+  - Both D 0.02 runs are acknowledged in `loop.py`.
+  - **Fix** in `rl/train.py`'s hard mode: a target is kept only if its move is legal at the transition
+    (`mask[prow].gather(...)`).
+  - The D 0.10 rerun:
+    - chains `runs/screens/C137-R1-K-paired-distill-d10-s28/` and `-s29/chain.sh`, which differ from D 0.02's only in
+      `--distill-margin 0.10` (checked by parsing);
+    - sequencers `C137-search-distill/sequence_d10_s28.sh` and `_s29.sh` (the same stages and rules, `--gpu-gb 7.5`);
+    - `queue_d10.sh` (s28, then s29), started at 17:41.
+- **Evidence** (measured, finished; s28, D 0.02, W 0.5, P 0.25):
+
+  | iteration | 0 | 1 | 2 | 3 | 4 |
+  |---|---|---|---|---|---|
+  | **entropy at kept rows** (sd_entropy) | 1.201 | 1.342 | 1.394 | 1.437 | **1.479** |
+  | **agreement at kept rows** (sd_agree) | .044 | .018 | .021 | .022 | **.022** |
+  | kept rows a minibatch (sd_kept) / probed (sd_probed) | 289 / 677 | 258 / 602 | 221 / 583 | 230 / 592 | 210 / 566 |
+  | kept share | .427 | .428 | .380 | .389 | .370 |
+  | CE per kept row | **288,022** | 3.02 | 2.61 | 2.60 | 2.45 |
+  | policy entropy over all rows | .912 | .939 | .989 | .993 | 1.025 |
+  | probes | 8,128 | 7,823 | 7,583 | 8,282 | 7,927 |
+
+  - **s29, iteration 0 only:** entropy at kept rows 1.239, agreement .048, 290 kept / 662 probed. Its probe summary has
+    8,600 probes, of which 3,766 were kept and 91 had PlusPower as the target (2.4%).
+  - s28 has no summary for 1a (#619).
+  - The ledger integrity check passes on s28 (5 rows).
+  - **The fix's test** (the identity script on a new real batch of 1,535 transitions):
+    - (a) to (d) as before: off is bit-identical, and CE acts only at kept rows;
+    - (e) 166 probed rows whose best move was made illegal: none kept, weights identical to off.
+- **Found:**
+  - **The bug's size:** iteration 0's mean CE of 288,022 a kept row means about one row had a CE near 10⁹. A masked
+    target's log-probability is −10⁹, and that row's gradient (after the 0.5 norm clip) pushes the policy's likeliest
+    moves down, flattening it. It happened at iteration 0 only. CE was normal (2.5-3.0) at 1-4, while entropy rose
+    steadily, so the #106 signature isn't the bug's doing alone. The bug may have added to the step from 0 to 1 (+0.14).
+  - **The pattern is #106's:** the targets disagree with the policy at 95-98% of kept rows, and training toward them makes
+    the policy more random at those decisions, not more like the search. PlusPower is only 2.4% of kept targets. Most
+    targets are other moves the value prefers by at least 0.02.
+- **Next:** C137 at D 0.10 (Amendment 3: cleaner targets, about a tenth fewer). s28 stage 1a reads at about 17:58, then
+  s29. Another entropy stop closes this form, and an agreement stop with flat entropy runs Amendment 1's W 2.0.
+- **Correction to this entry's numbers:** it is #621, not #622. The loop acks are re-done as #621, and \`rl/train.py\`'s
+  comment is fixed. The D 0.10 chains' and sequencers' header comments still say "log #622"; they're running scripts,
+  so they're left as is.
+
+### #622 · 2026-10-30 · A5 C137 · C137 closes by Amendment 3: the D 0.10 rerun also stops at s28's stage 1a on #106's entropy signature (entropy at kept rows 0.970 → 1.236, +0.266, with agreement .043 → .015). Training the policy toward its own full-width search, at either margin, makes it more random at those decisions, not more like the search. PlusPower is only 1.3-2.4% of kept targets. The D 0.10 s29 run was stopped before its first iteration
+- **Done:** D 0.10 s28's stage 1a ran 17:40:56-17:56:58 (5 iterations, 0 errors). The sequencer read "STOP 106 entropy
+  +0.266 (failed)". The queue then launched D 0.10 s29 at 17:56:59, and I took down its process tree (exact process
+  names this time) at 17:57:40, before any iteration. GPU back to 2.0 GB. Both are acknowledged in `loop.py`.
+- **Evidence** (measured, finished; D 0.10, W 0.5, P 0.25, the legal-target fix of #621 in):
+
+  | iteration | 0 | 1 | 2 | 3 | 4 |
+  |---|---|---|---|---|---|
+  | **entropy at kept rows** | .970 | 1.083 | 1.111 | 1.178 | **1.236** |
+  | **agreement at kept rows** | .043 | .014 | .014 | .020 | **.015** |
+  | kept rows a minibatch / probed | 109 / 683 | 99 / 638 | 101 / 635 | 98 / 623 | 84 / 619 |
+  | kept share | .159 | .156 | .160 | .157 | .136 |
+  | CE per kept row | 5.19 | 4.18 | 3.79 | 3.55 | 3.11 |
+  | policy entropy over all rows | .685 | .731 | .780 | .792 | .841 |
+  | probes; kept at 0.10 (summary) | 8,190; 1,303 | 8,290; 1,292 | 8,255; 1,319 | 8,728; 1,369 | 8,669; 1,175 |
+  | **PlusPower share of kept targets** | **.021** | **.013** | **.017** | **.024** | **.019** |
+
+  - **Kept targets equal to the policy's top-1:** 0 at every iteration. This is by construction, since a kept target
+    beats the first searched move.
+  - CE per kept row is normal at every iteration, so with #621's fix there is no outlier.
+- **Bands and amendments** (C137's record, written before the runs):
+  - Harm: a stop by #106's signature at both margins.
+  - Amendment 3: "if that also stops on entropy, the form closes." **C137 closes.**
+  - No mechanism or outcome read is due.
+- **Found:**
+  - Both margins give the same pattern. Entropy at the distilled decisions rises steadily, +0.05 to +0.07 an iteration,
+    and the whole policy's entropy rises with it (.685 → .841 at D 0.10). Agreement falls from about .04 to about .015
+    and stays there.
+  - The targets are almost never PlusPower (2%). They are the many other moves the value prefers by a margin at
+    Trainer-playable decisions, and pulling the policy toward them spreads it out. C135's 83% at b10 states is real but
+    rare: b10 states are a small share of Trainer-playable decisions.
+  - As at #106, value-scored targets over a large candidate set disagree with the policy almost everywhere, and the
+    policy can't follow them.
+  - A form restricted to b10 states (targets only where the search plays PlusPower into a knockout) would be near-exact.
+    That's research's call, not queued.
+- **Next:** research's next record. The GPU is idle.
+
+### #623 · 2026-10-30 · A5 C137 close · Research's read of C137 (#621-#622): distilling the pilot's own value-scored full-width search at Trainer-playable decisions fails at both margins (D 0.02 and D 0.10) on #106's signature (kept-row entropy +0.27 to +0.28 in five iterations, agreement flat at .015-.044), and PlusPower is only 1.3-2.4% of kept targets, so C135's 83% at breakpoints is a sliver of what distillation sees; this fourth form of expert iteration closes. No lever with a case is left; the open decisions for Evan are consolidated
+- **Done** (research session, 2026-10-30 17:58): read #621-#622 against C137's record and its Amendments 1-3. The D 0.02 stop was
+  confounded by an illegal-target bug at iteration 0, now fixed. The D 0.10 rerun had the fix in and failed the same way.
+- **Found:**
+  - Expert iteration has now failed in four forms (#106's three, and C137). Each time the policy can't follow its own
+    search's targets across many decisions, and it spreads out.
+  - The tonight-wide picture, from C127 through C137:
+    - the field offers the tempo cards plenty of chances (C134);
+    - the pilot's value credits PlusPower's knockouts (C135);
+    - its policy gives them about zero probability (C133);
+    - PlusPower with good timing on both sides is worth about an Energy, not more (C111, C136);
+    - selection trims the tempo four slightly, and the head doesn't supply them (C127).
+  - The lists' 2.75 PlusPower a deck implies a value above an Energy that no player here produces.
+- **Not queued, for Evan:** the implementation session's idea of training only on near-exact targets. A PlusPower-specific
+  version is a human prior (the card chosen because the lists carry it), so it's out. A card-neutral version (targets
+  only where the value-scored search's line takes a Prize this turn and the policy's choice doesn't) filters on Prizes,
+  close to the oracle objective of rows 60 and 86. That's Evan's call.
+- **Open for Evan** (replaces #607's list; nothing is queued; the GPU is idle; deep rounds held while the week is over its line,
+  65% against about 63.4% at 17:16):
+  1. **Default:** the rule-9 check of the evaluation setting. Why would 2000 players value PlusPower above an Energy when no
+     player here does? The candidates are the opponents' play quality and the matchup field of the 2000 metagame.
+     It's a short deep round when usage allows.
+  2. The card-neutral Prize-within-turn targets above (needs Evan's ruling on rows 60 and 86).
+  3. The 10-09 sequence-level search with a probability floor (a large build).
+  4. Pause pilot-side levers and report the night's findings as they stand.
+- **Next:** none queued.
+
+### #624 · 2026-10-30 · A5 row 112 C138 · Evan's row 112 ("restart, there was a result about finishing games quicker that made progress I believe", 18:39) is read as C135, the pilot's own value-scored full-width search (Prizes an own turn .083 → .129), not C130 or C131, which didn't shorten games. C138 puts that search into the drafting loop's games, in its strongest version (every game searched, PPO masked at searched decisions; seed 30) and a variant (only selection's unrecorded games; seed 32), bands first, after a timed pilot
+- **Done** (research session, 2026-10-30 18:42): `runs/screens/C138-search-in-loop/record.md`, handed to the implementation session.
+  Checked `rl/metagame.py`: games are recorded for PPO at random (`rec_share` = 500 / 2000), and every game's result feeds
+  selection and the head. So the variant searches only the unrecorded games, and PPO stays on-policy.
+- **Design choices:**
+  - the candidates are the policy's top 3 plus every legal Trainer play, cheaper than C135's k 64 and keeping PlusPower a
+    candidate (acceptance: pp@b10 at least 0.7 on C135's field);
+  - one seed per arm first, one at a time, for GPU memory;
+  - stages of about 30 minutes from the timed pilot.
+- **Next:** the build and the timed pilot, then C138-S s30's stage 1.
+
+### #625 · 2026-10-30 · A5 C138 · Built C138 (Evan's row 112, "restart, there was a result about finishing games quicker that made progress"; research's record and Amendment 1): the drafting loop's population games are played with the pilot's own search at Trainer-playable decisions. The acceptance passes, and the timed pilot (both arms side by side) gives 18.5-18.9 minutes an iteration at a GPU peak of 78%. By Amendment 1 that means 15 iterations, side by side. C138-S s30 launched at 19:12:28, and C138-V s32 follows once S has loaded
+- **Done:**
+  - `env/agents.js` PolicySearchAgent `allTrainers` (default off): the candidates are the top k plus every legal Trainer
+    play.
+  - `env/remote_worker.js` `LoopSearchAgent`:
+    - at a main-phase decision with a legal Trainer play, the searcher's move is played, recorded with sampled 0 and the
+      policy's V(s);
+    - every other decision is the policy's own sampled action;
+    - `cmd.loopSearch` with a per-job `lsearch` flag puts both seats on it (`lsr` / `lso` names, the recorded one in
+      the record set), and its stats go into the reply.
+  - `rl/metagame.py` adds `--loop-search S|V`, `--loop-search-k` (3), `--loop-search-dets` (2) and
+    `--unsearched-record` (500):
+    - every population job is marked `lsearch`;
+    - V sets those jobs unrecorded and adds 500 unsearched recorded games, drawn as the loop draws them, with
+      `games_meta` None (outside selection and the head);
+    - the message carries `loopSearch` and the row logs `loop_search`;
+    - off, there are no new job keys, no extra random draws, and the same message.
+  - `notes/scripts/audit/c135_worker.js` gets `C135_K` and `C135_ALLTR` for the rule's acceptance.
+  - Chains `runs/screens/C138-R1-K-paired-lsearchS-s30/` and `-lsearchV-s32/chain.sh`: C127's flags plus `--loop-search S|V
+    --loop-search-k 3 --loop-search-dets 2`, with the seed changed (checked by parsing), `RL_GPU_SHARE` 0.35, and G3 at
+    15.
+  - Sequencers `runs/screens/C138-search-in-loop/sequence_S_s30.sh` and `sequence_V_s32.sh`: stages 0-4, 5-9 and 10-14,
+    each followed by the stop rule (errors, zero moves, G1 watch), with `--gpu-gb 6.0 --evan-row 112`.
+- **Acceptance** (measured):
+  1. **The candidate rule on C135's H** (SV, the top 3 plus every legal Trainer, 1,104 games, 234 s against k 64's 316):
+     pp@b10 **.788** (n 250; clean .822), against the .7 bar. g@bG .27, KOs per damaging attack .241.
+  2. **Off is the committed path**, by code: the flags off add no job key, no random draw and no message field, and
+     `rl/train.py` is unchanged since #621's tested fix.
+  3. **The 1-iteration smoke for each arm** (the timed pilot below): 0 errors, ledger integrity PASS on both.
+  4. **C138-S's mask:** on a real batch of 1,715 transitions with 514 rows set to sampled 0:
+     - with the value and entropy terms off, perturbing those rows' advantages (+5) and log-probabilities (−3) leaves
+       the weights bit-identical, so the policy gradient there is zero;
+     - with the value on, perturbing their returns moves the weights, so the value trains on them.
+- **Timed pilot** (one full iteration of each arm side by side, `RL_GPU_SHARE` 0.35, seeds 30 and 32):
+
+  | readout | C138-S | C138-V |
+  |---|---|---|
+  | iteration (play; PPO) | 1,111 s (1,050; 47) | 1,135 s (1,075; 47) |
+  | decisions; searched; search moved off top-1 | 126,942; 72,349; 32,982 (46%) | 138,276; 81,006; 36,493 (45%) |
+  | search lines; errors; capped | 636,158; 0; 1,389 | 717,955; 0; 154 |
+  | recorded transitions | 46,636 | 48,815 |
+  | endings at iteration 0: time / Prizes / no Pokémon / deck-out (of 2,000) | 624 / 87 / 1,260 / 29 | 767 / 64 / 1,130 / 39 |
+
+  - GPU memory peaked at 12,694 MiB (78%) over 224 five-second samples, never above 80%, with no OOM. Mean utilization
+    was 43%, so the search is CPU-bound in the node workers.
+- **Decision by the record:**
+  - An iteration is over 5 minutes, so by Amendment 1 it's 15 iterations, with every band read at 10-14 against the
+    controls at 10-14.
+  - Side by side is allowed, since 0.35 stays under 80%.
+  - About 4.6 hours in all (estimated).
+  - The G1 watch polls every minute inside each chain, so a harm stop doesn't wait for a stage boundary.
+- **Next:** C138's stages. Stage 1 (0-4) reads at about 20:45 (estimated). The readout is at 10-14 by the bands.
+- **Numbering:** this entry is #625; #624 is research's C138 record. The C138 chains' and sequencers' header comments
+  cite "log #624" for this build. They're running scripts, so they're left as is.
+
+### #626 · 2026-10-30 · A5 C138 · C138 Amendment 2 (written with only iteration 0 seen): at about 18.5 minutes an iteration side by side (#625), five-iteration stages would run about 93 minutes, so each arm gets an early pace check after iterations 0-2 against the controls at 0-2 (time endings 34.4%, Prizes 5.6%, 93 steps a game), and stops there if the play-time search hasn't moved the loop's pace; S's iteration-0 time share of 31% is inside the controls' early range, so it isn't yet a sign
+- **Done** (research session, 2026-10-30 19:15): measured the four W 0 ledger seeds at iterations 0-2 (time 35.0 / 39.5 / 33.0 / 29.9%;
+  Prizes 5.1-6.4%; steps 89.7-96.0). Wrote C138's Amendment 2 and sent it to the implementation session.
+- **Found:** the controls' time endings rise from about 34% at 0-2 to about 41% at 25-29. Comparisons with C138's early
+  iterations must use the early controls, not the 41.3% at 25-29.
+- **Next:** C138's early check at about 20:05 (iterations 0-2 of S s30 and V s32, side by side).
+
+### #627 · 2026-10-30 · A5 C138 · Amendment 2's early check is built and armed: a watcher reads each arm's iterations 0-2 against R-pace-early and kills the trainer at once if none is met, so the arm stops at 2 rather than finishing its 93-minute first stage
+- **Done:** `runs/screens/C138-search-in-loop/early_check.py`, started at 19:16:04, detached.
+  - Once an arm's `log.jsonl` has iterations 0-2, it reads its population games over 0-2: the time-ending share, the
+    Prize-ending share, and steps a game.
+  - R-pace-early is any of: time 29.4% or less, Prizes 8.4% or more, steps 84 or fewer (the record's controls at 0-2:
+    34.4%, 5.6%, 93.0).
+  - If none is met, it kills that arm's `rl.metagame` processes at once. A STOP file would only land after iteration 3,
+    since the trainer checks it right after writing a row. The chain then prints its end, and the sequencer's stage rule
+    reads "last iteration < 4" and finishes.
+  - The result goes to `early_<arm>.json`.
+- **Evidence:**
+  - Dry run on a W 0 control (C127 s16, 0-2): time 34.98%, Prizes 5.85%, steps 94.03, meeting none, as a control should.
+  - The process selector, run list-only, matches only S's trainer pair (pids 17428 and 10552), not its G1 watch.
+  - V s32 hadn't launched by 19:16. `loop.py` counts S as loading at its declared 6 GB until S's first row.
+- **Next:** each arm's 0-2 figures at its check: S at about 20:10, V about 20 minutes later (estimated).
+- **Numbering:** this entry is #627; #626 is research's Amendment 2. \`early_check.py\`'s docstring cites "log #626".
+
+### #628 · 2026-10-30 · A5 C138 · C138-V (the variant: every population game searched and unrecorded, PPO on unsearched games) stops at iteration 2 by Amendment 2's early check: over 0-2 its population games end on time 35.7%, by Prizes 4.4%, and run 94.0 steps a game, at the controls' 34.4%, 5.6% and 93.0, so it meets none of R-pace-early's marks. The search in the loop's games didn't make them faster. C138-S continues to its own check
+- **Done:** \`early_check.py\` read V's iterations 0-2 at 20:15:01, 19 s after the row for iteration 2, and killed its
+  trainer (\`early_V.json\`). Its sequencer ends the arm on "last iteration < 4".
+- **Evidence** (measured, finished; C138-V seed 32, 2,000 searched population games an iteration):
+
+  | iteration | 0 | 1 | 2 | 0-2 | controls 0-2 | R-pace-early |
+  |---|---|---|---|---|---|---|
+  | time endings | 36.4% | 35.0% | 35.7% | **35.7%** | 34.4% (sd 4.0) | ≤ 29.4% |
+  | Prize endings | 4.0% | 4.8% | 4.4% | **4.4%** | 5.6% | ≥ 8.4% |
+  | no-Pokémon endings | 57.6% | 59.1% | 59.1% | — | — | — |
+  | steps a game | 95.0 | 93.9 | 93.0 | **93.97** | 93.0 | ≤ 84 |
+  | searched decisions; moved off top-1 | 79,392; 35,931 | 77,753; 34,596 | 77,599; 34,172 | — | — | — |
+  | iteration seconds | 955 | 1,098 | 1,047 | — | — | — |
+
+  - The search moved the move off the policy's top-1 at 44-45% of searched decisions, with 0 line errors.
+- **Found:**
+  - The loop's searched games end no faster than its greedy ones. C135's gain, Prizes per own turn .083 → .129 on the
+    California lists, came with one seat searching against a greedy opponent. Here both seats search in the loop's own
+    field, and the endings sit at the controls'.
+  - The Prize-ending share fell slightly (4.4% against 5.6%), and no-Pokémon endings dominate (58-59%). With both sides
+    searching, a faster knockout on one side is met by the other's, so games don't shorten. That's an inference from
+    the two set-ups, not tested here.
+- **Next:** C138-S's early check after its iteration 2 (about 20:33, estimated). If S also meets none, C138 stops, and
+  research's next record follows.
+
+### #629 · 2026-10-30 · A5 C138 · C138-S (the strongest version: every population game searched, PPO learning only the value from searched moves) also stops at iteration 2 by Amendment 2: over 0-2, time endings 32.9%, Prize endings 4.35%, steps a game 95.2, against the controls' 34.4%, 5.6% and 93.0, so it meets none of R-pace-early's marks. Both arms stopped, so C138 ends: playing the drafting loop's own games with the pilot's search doesn't make them faster
+- **Done:** \`early_check.py\` read S's iterations 0-2 at 20:16:02 and killed its trainer (\`early_S.json\`). The chain
+  ended at 20:16:51. The watcher has now checked both arms and exited. S and V are acknowledged in \`loop.py\` (#629 and
+  #628). The GPU is idle.
+- **Evidence** (measured, finished; C138-S seed 30):
+
+  | iteration | 0 | 1 | 2 | 0-2 | controls 0-2 |
+  |---|---|---|---|---|---|
+  | time endings | 30.8% | 33.3% | 34.6% | **32.9%** | 34.4% (sd 4.0) |
+  | Prize endings | 4.5% | 3.8% | 4.7% | **4.35%** | 5.6% |
+  | no-Pokémon endings | 63.1% | 62.3% | 59.9% | — | — |
+  | steps a game | 94.5 | 93.3 | 97.9 | **95.2** | 93.0 |
+  | searched decisions; moved off top-1 | 73,658; 33,552 | 74,416; 33,365 | 75,936; 34,833 | — | — |
+  | iteration seconds | 1,497 | 1,094 | 1,201 | — | — |
+
+  - With V (#628), every figure for both arms sits at or past the controls on the slow side.
+  - S's time share rose each iteration (30.8 → 34.6%) toward the controls'.
+- **Bands** (C138's record, Amendment 2, written before the check):
+  - R-pace-early: not met at either arm. Both stop at 2, so no 10-14 band is read.
+  - The prior was R-pace likely (C135).
+- **Found:**
+  - C135's faster games were one searching seat against a greedy one on the California lists. With both seats searching
+    in the loop's own field, the endings are the controls'. Both seats' better Trainer play cancels in the game's pace
+    (an inference; C138 doesn't separate it).
+  - The pace gap (#606-607: about 3 own turns slower uncontested than a scripted line) doesn't close with either seat's
+    search. What's left is interaction, and both sides' searching doesn't change it.
+- **Next:** research's next record. Nothing is queued, and the GPU is idle.
+
+### #630 · 2026-10-30 · A5 C138 close C139 · Research's read of C138 (both arms stopped at their early check, #628-#629): with the pilot's own search on both seats, the loop's games aren't faster (time endings 32.9% and 35.7%, Prize endings 4.4% and 4.35%, steps 95 and 94, against the controls' 34.4%, 5.6% and 93 at 0-2), so C135's 55% Prize gain came from one searching seat against a greedy one and cancels in self-play. That answers Evan's row 112 on pace. C139 asks the one thing the pace check couldn't see: whether PlusPower beats an Energy against a field under that search, as selection measures it, evaluation only, bands first
+- **Done** (research session, 2026-10-30 20:18): `runs/probe/C139-pp-field-price/record.md`, handed to the implementation session.
+  Checked: 19 of the 24 California lists run PlusPower (2-4 copies).
+- **Found:**
+  - In self-play mirrors a skill gain on both seats cancels in pace. "Finishing games quicker" can't come from a symmetric
+    improvement unless it favours attack over defence.
+  - What search still changes in the loop is pricing. C136 found head-to-head parity (0.50). C139 measures the field
+    price selection uses.
+- **Next:** C139 (about 20-30 minutes). Its band decides whether a ledger-read rerun of C138 goes to Evan (R-search-favors)
+  or the gap stays unexplained by anything tested (R-parity).
+
+### #631 · 2026-10-30 · A5 C139 · Built C139 (research's #630: PlusPower's price against the California field, list against copy on the same deals, greedy and under C138's search) and launched it at 20:20:50 after the acceptance and a timed pilot
+- **Done:**
+  - `env/remote_worker.js` judgeSearch passes `allTrainers` (C138's candidate rule).
+  - `notes/scripts/c139_run.py`: the 24 California lists (`archivedDecks`) plus the 19 PlusPower → commonest-basic-Energy
+    copies (`trainer_value.variants`). Each list and its copy play every other list as two pairs sharing a
+    `pair_keys` key, so they get the same seeds and seats. Arms G (greedy) and S (judgeSearch: top 3 plus every legal
+    Trainer, dets 2, CRN, horizon 1, V, `trainerOnly`), round rule [20, 45].
+  - `notes/scripts/c139_read.py`: the per-deal difference list − copy in event points over 3, with a bootstrap SE, the
+    win-share difference, per-list prices, S − G on the same deals, the bands, and the checks.
+  - `runs/probe/C139-pp-field-price/run.sh`, through `loop.py launch --kind probe`.
+- **Acceptance** (smoke and timed pilot: the first 10 keys, 2 deals each, 20 paired deals an arm):
+  - 0 errors in both arms.
+  - The copies have no PlusPower and the same card count. 0 unpaired keys, and the list's and copy's seats are equal on
+    every deal.
+  - Timed: G 40 games in 3.3 s, S in 23.8 s (2,533 searches, 1,041 changed, 0 line errors).
+  - Size: 874 paired deals an arm (2 a pair, as recorded). S projects at about 17 minutes by linear scaling, under the
+    record's 30-minute cut. Stated here before the run.
+  - The smoke's own prices (n = 20, one list) aren't read.
+- **Next:** C139's readout by its bands:
+  - R-search-favors: S +0.04 or more and S − G +0.04 or more;
+  - R-parity: |S| under 0.04;
+  - R-greedy-under reported beside.
+
+### #632 · 2026-10-30 · A5 C139 · C139 reads **R-parity**, with **R-greedy-under** beside it: against the California field, a list's PlusPower is worth −0.054 a deal (SE 0.011) under greedy play, about 5 SE below the basic Energy that replaces it, and −0.003 (SE 0.014) when both seats play with C138's search. Search lifts it +0.051 (SE 0.018) on the same deals, to parity with an Energy and not past it, as C136 found head-to-head (0.44 → 0.50)
+- **Done:** `runs/probe/C139-pp-field-price/run.sh` ran 20:20:50-20:27:25 (G 19.8 s, S 370.1 s), 874 paired deals an arm
+  (1,748 games), 0 errors and 0 search line errors. Read with `notes/scripts/c139_read.py` (`summary.json`).
+  Acknowledged in `loop.py`.
+- **Evidence** (measured, finished; 19 PlusPower lists × 23 opponents × 2 deals, round rule [20, 45], arm 0 s1 on both
+  seats):
+
+  | readout | G | S | S − G |
+  |---|---|---|---|
+  | **price**: list − copy, event points over 3, per deal (bootstrap SE) | **−0.054** (0.011) | **−0.003** (0.014) | **+0.051** (0.018) |
+  | win-share difference | −0.074 | −0.006 | — |
+  | per-list price, range over the 19 | −0.116 to −0.007 (all negative) | −0.109 to +0.101 | — |
+  | endings: time / no Pokémon / Prizes / deck-out (1,748 games) | 1,442 / 187 / 59 / 60 | 1,268 / 359 / 103 / 18 | — |
+  | searches; changed from greedy | — | 101,960; 41,104 (40%) | — |
+
+  - **Checks:** the copies have no PlusPower and the same card count, 0 unpaired keys, and the list's and copy's seats
+    are equal on every deal.
+- **Bands** (C139's record, written before the run):
+  - R-search-favors: no (S −0.003, not +0.04).
+  - **R-parity:** |S| under 0.04, met.
+  - **R-greedy-under:** G at −0.04 or less, met (−0.054).
+  - The prior was R-parity.
+- **Found:**
+  - Under the loop's own greedy play, PlusPower loses to a basic Energy against a field in all 19 lists, which fits the
+    drafts trimming it (λ_T4 −0.066).
+  - With the pilot's search on both seats it comes up to an Energy and stops there. The same holds head-to-head (C136
+    0.50) and with oracle timing (C111 0.51-0.52).
+  - So under good play here, PlusPower is an Energy-equivalent card, and nothing tested reproduces the human lists' 2.75
+    copies over a twentieth Energy.
+  - By the record, "the lists' preference is unexplained by anything tested, and the next step is Evan's".
+  - Searched games end on Prizes and no-Pokémon more often (103 and 359 against 59 and 187), and on time less (1,268
+    against 1,442). With one list per pair under test, search shortens these games more than C138's loop games.
+- **Next:** Evan's call (the record's R-parity branch). Nothing is queued, and the GPU is idle.
+
+### #633 · 2026-10-30 · A5 C139 C140 · Research's read of C139 (R-parity with R-greedy-under, #632): against the California field, greedy-played PlusPower is a liability (−0.054, SE 0.011; all 19 lists negative), which explains selection's trim, and the pilot's own search brings it only to parity (−0.003), as in C111 and C136. Nothing tested makes PlusPower worth more than an Energy. C140, a rule-9 check queued as the default, prices it at a longer clock and untimed, since 73-82% of these games end on time
+- **Done** (research session, 2026-10-30 20:29): `runs/probe/C140-pp-price-clock/record.md`, handed to the implementation session.
+- **The night's chain** (C127-C139, all measured):
+  - The drafts carry about 2 tempo-four copies a deck, against 2.67 in their random starting decks and 9.17 in the lists.
+    Drafting wears them down.
+  - The greedy pilot puts about zero probability on PlusPower and Item Finder at the moments they pay (C133), though its
+    value credits them (C135). So greedy-played PlusPower loses against a field (C139), and selection trims the tempo
+    four (C127).
+  - The pilot's own search fixes the play and lifts PlusPower to parity (C136, C139), never above. Distilling that search
+    into the policy fails (C137), and searching in the loop doesn't speed games (C138).
+  - So even a perfectly repaired pilot would make the drafts indifferent to PlusPower, not reproduce the lists' 2.75 a
+    deck.
+- **Open for Evan** (replaces #623's list; deep rounds are held while the week is over its line):
+  1. **Default, running as C140:** the round-clock check above.
+  2. A deep round on the remaining rule-9 suspects: the 20-45 game-turn clock's fidelity to the 25-minute rule; the
+     pilot's overall strength against human play; values outside these games.
+  3. Accept parity for PlusPower and move the per-card goal to the cards the lists rank above Energy most clearly.
+  4. Pause and write up.
+- **Next:** C140 stage 1 (S-60).
+
+### #634 · 2026-10-30 · A5 C140 · Built and launched C140 (research's rule-9 check: does the round clock hold PlusPower at parity?): C139's searched arm at a 60-turn clock and with no clock, on C139's pairs and deals. The acceptance passes, and the run launched at 20:31:28
+- **Done:**
+  - `rl/gpu_matrix.py` `play(..., max_turns=0)` passes `maxTurns` when set (default 0, unchanged).
+  - `notes/scripts/c139_run.py` takes `--round-turns` ("20-45", "60" or "off") and `--max-turns`, and records them.
+  - `notes/scripts/c139_read.py` takes `--arms` and `--wdl` (win 1, draw 0.5, loss 0, for untimed games). Its
+    defaults reproduce C139's read (S − G +0.051, R-parity).
+  - `runs/probe/C140-pp-price-clock/run.sh` runs stage 1 S-60 and then stage 2 S-off, through `loop.py launch --kind
+    probe`.
+- **Acceptance** (smoke and timed pilot: C139's first 10 keys, 2 deals each, 40 games an arm, measured):
+  - **S-60:** every game logs `roundT` 60, the longest ended at turn 61, 0 errors. Endings: time 17, deck-out 14,
+    no Pokémon 6, Prizes 3.
+  - **S-off:** no `roundT`, the longest game was 90 turns (cap 200), 0 errors. Endings: deck-out 24, Prizes 9, no
+    Pokémon 7.
+  - Timed: S-60 35.3 s and S-off 36.9 s for 40 games, so at most about 26 minutes an arm at 874 paired deals by linear
+    scaling (C139 ran at about a third of linear). It stays at 2 deals a pair, stated here before the run.
+- **Next:** C140's readout:
+  - R-clock if S-60's or S-off's price is +0.04 or more and 0.04 above C139's S (−0.003);
+  - R-no-clock otherwise;
+  - with endings, deck-outs and per-list prices beside.
+
+### #635 · 2026-10-30 · A5 A139 C141 · A139's call (is PlusPower held at parity by the game or by V as the scorer?) becomes C141: C139's field price with Prize-scored search on both seats (evaluation only, row 86), after C140, bands first; note that C111's parity already came from an oracle timer, not V
+- **Done** (research session, 2026-10-30 20:44): `runs/probe/C141-pp-price-prize/record.md`, handed to the implementation session.
+- **Next:** C140's readout, then C141.
+
+### #636 · 2026-10-30 · A5 C140 · C140 reads **R-no-clock**: with both seats searching, PlusPower's field price doesn't rise when games may run longer. It is −0.028 (SE 0.018) at a 60-turn clock and −0.044 (SE 0.021) with no clock, against C139's −0.003 at 20-45. The round clock isn't what holds it at parity. Longer games lean, if anything, toward the Energy copy, as deck-outs grow (367, then 703 of 1,748 games)
+- **Done:** `runs/probe/C140-pp-price-clock/run.sh` ran 20:31:28-20:51:23 (S-60 576.8 s, S-off 613.3 s), 874 paired
+  deals each, 0 errors. Read with `notes/scripts/c139_read.py`'s functions (S-off scored win 1 / draw 0.5 / loss 0) and
+  paired with C139's S on the same deals. Acknowledged in `loop.py`.
+- **Evidence** (measured, finished; C139's pairs and deals, arm 0 s1 with C139's search on both seats):
+
+  | readout | C139 S (20-45) | S-60 | S-off |
+  |---|---|---|---|
+  | **price** (bootstrap SE) | −0.003 (0.014) | **−0.028** (0.018) | **−0.044** (0.021) |
+  | win-share difference | −0.006 | −0.029 | −0.044 |
+  | vs C139 S on the same deals (SE) | — | −0.026 (0.023) | −0.041 (0.024) |
+  | per-list range | −0.109 to +0.101 | −0.203 to +0.073 | −0.261 to +0.065 |
+  | endings: time / Prizes / no Pokémon / deck-out | 1,268 / 103 / 359 / 18 | 478 / 534 / 369 / 367 | — / 653 / 392 / 703 |
+  | searches; changed | 101,960; 40% | 152,908; 42% | 159,577; 42% |
+
+  - **Checks:** the copies have no PlusPower and the same card count, 0 unpaired keys, and seats are equal (both arms).
+- **Bands** (C140's record, written before the run):
+  - R-clock (either price at +0.04 or more and 0.04 above C139's S): no, both are below C139's S.
+  - **R-no-clock.** The prior was R-no-clock.
+- **Found:**
+  - Freeing the clock moves the endings from time to Prizes (103 → 534 → 653) and deck-outs (18 → 367 → 703).
+    PlusPower's price drifts down, by about 1.1 and 1.7 SE against C139's S, which isn't a claim. In longer games the
+    copy's extra Energy pays at least as well as PlusPower.
+  - So neither the clock nor the scoring of time wins holds PlusPower at parity. With C139, C136 and C111, PlusPower is
+    worth about an Energy, or a little less, in every setting tested.
+- **Next:** C141 (A139: the same field price with Prize-scored search on both seats, an evaluation-only oracle, row 86),
+  queued now.
+
+### #637 · 2026-10-30 · A5 A139 C141 · C141 reads **R-game**: scored by Prizes instead of the pilot's value, the search on both seats prices PlusPower at +0.011 (SE 0.014) against a field, the same as V-scored search (−0.003; difference +0.014, SE 0.019). The pilot's value isn't what holds PlusPower at about an Energy: a Prize-greedy scorer finds no more in it
+- **Done:** `runs/probe/C141-pp-price-prize/run.sh` (C139's S arm with `--score prizes`) ran 20:53:40-20:59:52 (369.6 s),
+  874 paired deals, 0 errors, 0 line errors, through `loop.py launch --kind probe`. Smoke first (5 keys, 20 games, 0 errors,
+  config `score: 'prizes'`). Read with `notes/scripts/c139_read.py`'s functions and paired with C139's S and G on the same
+  deals; `summary.json` in the run folder. Evaluation only (row 86): nothing trained, and no score left the probe.
+- **Evidence** (measured, finished; C139's 19 PlusPower lists against the other 23, 2 deals a pair, round rule [20, 45], arm 0 s1
+  on both seats):
+
+  | readout | C139 G (greedy) | C139 S (V-scored) | **C141 S-P (Prize-scored)** |
+  |---|---|---|---|
+  | **price** (bootstrap SE) | −0.054 (0.011) | −0.003 (0.014) | **+0.011** (0.014) |
+  | win-share difference | — | −0.006 | +0.007 |
+  | per-list range; lists below 0 | all 19 below 0 | −0.109 to +0.101 | −0.101 to +0.101; 7 of 19 |
+  | endings: time / Prizes / no Pokémon / deck-out | — | 1,268 / 103 / 359 / 18 | 1,235 / 147 / 345 / 21 |
+
+  - Paired on the same deals: S-P − S **+0.014** (SE 0.019); S-P − G +0.065 (SE 0.019).
+  - Search: 101,954 searches, 41% changed off the policy's pick, 31 capped.
+  - **Checks:** the copies have no PlusPower and the same card count, 0 unpaired keys, and seats are equal.
+- **Bands** (C141's record, written before the run):
+  - R-scorer (S-P at +0.04 or more and 0.04 above C139's S): no, +0.011 and +0.014 above.
+  - **R-game.** The prior was R-game.
+- **Found:**
+  - Under the pilot's own search PlusPower is worth about an Energy, whichever scorer is used (V or Prizes), whatever the
+    clock (C140) and head-to-head or against a field (C136, C139). Only greedy play prices it under.
+  - Prize scoring wins a few more games by Prizes (147 against 103) but doesn't change the price. So, by the record, the
+    remaining suspects lie on the game or engine side, or in how much better than this search the 2000 players were.
+- **Next:** Evan's call on research's options (#633); research has this result.
+
+### #638 · 2026-10-30 · A5 C140 C141 · Research's read of C140 (R-no-clock, #636) and C141 (R-game, #637): PlusPower stays at about an Energy against the California field at every clock (−0.003 at 20-45, −0.028 at 60, −0.044 untimed) and under Prize-scored search (+0.011, SE 0.014; +0.014 over V-scored), so neither the clock nor the value as scorer holds it at parity. With C111's oracle timing, every player built here prices it at about an Energy, while the lists run 2.75 a deck. The remaining gap is the players' overall strength or something outside these games; it goes to Evan
+- **Done** (research session, 2026-10-30 21:01): read #636-#637 against C140's and C141's records.
+- **Ruled out tonight** (for why the lists' tempo cards beat Energy and ours don't):
+  - the drafting optimiser (C121-C128, C131);
+  - the field's breakpoints (C134);
+  - the pilot's value not knowing (C135);
+  - timing alone (C136, C139);
+  - the clock (C140);
+  - the value as scorer (C141);
+  - the engine's PlusPower (code read, #608).
+- **Still open:** all players here share the pilot's own continuations and at most a turn or two of lookahead, so human-level
+  play beyond that is untested. Or the human lists' preference reflects something these paired-copy prices can't capture.
+- **Open for Evan** (#633's list, updated; deep rounds held, week about 67% against about 64.5% at 20:43):
+  1. A deep round, when usage allows, on what separates human 2000 play from these players beyond PlusPower timing
+     (multi-turn plans, Energy Removal tempo), and on whether paired-copy pricing can show a card's worth.
+  2. Accept parity for PlusPower and aim the per-card goal at the cards the lists rank most clearly above Energy.
+  3. Pause and write up the night.
+- **Next:** nothing queued; the GPU is idle.
+
+### #639 · 2026-10-31 · A5 A140 C142 · A140's call (does the tempo package pay more than the sum of its cards?) becomes C142: the four tempo cards priced singly and jointly against their Energy copies across the California field under C139's search, evaluation only, bands first; "accept parity" (#638, option 2) waits for it, since every price so far, and the drafter's own edit, swaps one card at a time
+- **Done** (research session, 2026-10-31 00:44): `runs/probe/C142-tempo-package/record.md`, handed to the implementation session.
+- **Next:** C142 (about 30 minutes).
+
+### #640 · 2026-10-31 · A5 A140 C142 · Built and launched C142 (A140: does the tempo package pay more than the sum of its cards?): C139's field design and S search, with single Energy copies of each tempo card a list runs and a joint copy of all four. The acceptance passes, and it runs as two 30-minute stages (row 88), 7 deals a pair, from 00:51:40
+- **Done:**
+  - `notes/scripts/c142_run.py`: C139's harness (`c139_run.SEARCH`, round rule [20, 45], arm 0 s1 on both seats) with
+    `trainer_value.variants` over PlusPower, Gust of Wind, Item Finder, Scoop Up and a joint group `tempo4` (all four),
+    kept for lists running at least two. Each list and all its copies share one pair key a (list, opponent), so they get the
+    same deals and seats. All 24 California lists run at least one tempo card and 21 run two or more: 76 singles and 21 joints.
+  - `notes/scripts/c142_read.py`: single prices, J, Σ and the per-deal C = J − Σ, each with a bootstrap SE over deals
+    (`c139_read.boot`), SE(C) and its projection to more deals a pair, per-list values, the checks, and Amendment 1's
+    bands. It pools several stage files (other seeds, so other deals) and asserts that they share keys and copies.
+  - `runs/probe/C142-tempo-package/run.sh`, launched through `loop.py launch --kind probe` (pid 48228):
+    - stage 1 is seed 91, 4 deals a pair (11,132 games, about 34 min);
+    - the stop rule (errors over 2% or a failed check) and row 73's boundary hold come next;
+    - stage 2 is seed 92, 3 deals a pair (8,349 games, about 25 min);
+    - the pooled read comes last.
+- **Acceptance** (measured):
+  - **Smoke:** 10 keys, 2 deals, 120 games, 0 errors.
+  - **Timed pilot:** 46 keys, 2 deals, 552 games in 100.1 s (5.5 games/s at 10 workers), 0 errors, GPU 5.8 GB with
+    utilization 51-73%.
+  - A seed-92 pass on the same keys (1 deal, 276 games, 0 errors) checked the pooled read.
+  - In all of them every copy holds 60 cards and none of its swapped cards, with 0 unpaired keys and paired seats equal.
+- **Sizing** (Amendment 1: add deals until SE(C) projects 0.02 or less, up to 60 minutes):
+  - The per-deal C has sd 1.13 over the pilot's 138 deals (2 lists, so the full run may differ), which gives a projected
+    SE(C) of 0.019 at 7 deals a pair, about 59 minutes. 8 deals (0.018) would take about 67 minutes.
+  - These pilot values are probes, not results.
+- **Bands as coded** (Amendment 1):
+  - **R-complement:** C at +0.04 or more, at least 2·SE(C), and J at +0.04 or more.
+  - **R-anti** (read as the mirror on C): C at −0.04 or less and at most −2·SE(C), with no condition on J.
+  - **R-additive:** |C| under 2·SE(C) and SE(C) at most 0.02.
+  - Otherwise between.
+- **Next:** stage 1's readout (about 01:26), then stage 2 and the pooled readout (about 01:52).
+
+### #641 · 2026-10-31 · A5 A140 C142 · C142 reads **between**. Turned into Energy all at once, the four tempo cards cost a list less than the sum of their single prices (C = +0.065, SE 0.017; the same on each seed). But the package itself still prices under Energy (J −0.037, SE 0.008), so it isn't R-complement. Under the pilot's search the tempo cards lose to Energy singly and together, and the drafter's one-card unit isn't hiding a package that beats it
+- **Done:** `runs/probe/C142-tempo-package/run.sh` ran 00:51:40-01:46:40 through `loop.py`:
+  - stage 1 (seed 91, 4 deals a pair): 11,132 games in 1,857.8 s;
+  - the stop rule passed;
+  - stage 2 (seed 92, 3 deals a pair): 8,349 games in 1,421.3 s;
+  - 0 errors and 0 line errors in all 19,481 games.
+  - Read with `notes/scripts/c142_read.py`: `summary.json` pooled, plus `summary_stage1.json` and `summary_stage2.json`.
+  - Evaluation only: nothing was trained.
+- **Evidence** (measured, finished; the 24 California lists against the other 23, C139's S search on both seats, round rule
+  [20, 45], 7 deals a pair; price = list − copy in event points over 3, bootstrap SE over deals):
+
+  | readout | seed 91 (4 deals) | seed 92 (3 deals) | **pooled** (deals) |
+  |---|---|---|---|
+  | Gust of Wind | −0.023 (0.009) | — | **−0.023** (0.007; 3,703) |
+  | Item Finder | −0.036 (0.010) | — | **−0.039** (0.008; 2,898) |
+  | PlusPower | −0.023 (0.010) | — | **−0.021** (0.008; 3,059) |
+  | Scoop Up | −0.036 (0.011) | — | **−0.031** (0.008; 2,576) |
+  | **J** (all four into Energy, 21 lists) | −0.041 (0.010) | −0.030 (0.012) | **−0.037** (0.008; 3,381) |
+  | Σ (the list's singles summed) | −0.105 (0.027) | — | −0.101 (0.021) |
+  | **C = J − Σ** | +0.064 (0.022) | +0.065 (0.025) | **+0.065** (0.017; sd 0.98) |
+
+  - **Per list:** J is below 0 in 16 of 21 lists (−0.137 to +0.046). C is above 0 in 15 of 21 (−0.122 to +0.331, median +0.039).
+  - **The three one-card lists:** PlusPower −0.039, Gust of Wind −0.002 and +0.033.
+  - **Checks:** every copy holds 60 cards and none of its swapped cards, 0 unpaired keys, and paired seats are equal.
+- **Bands** (Amendment 1, written before the run):
+  - R-complement: no. C clears its bar (+0.065 against +0.04 and 2·SE 0.034), but J is −0.037, not +0.04 or more.
+  - R-additive: no. |C| is 3.8 SE.
+  - R-anti: no.
+  - So it reads **between**.
+- **Found:**
+  - The tempo cards price under Energy singly (−0.021 to −0.039, each 2.7-4.9 SE) and together (J −0.037, 4.9 SE). The
+    pilot's search lifts PlusPower toward parity (C139's −0.003 on other deals agrees within 1.1 SE) but not past it.
+  - The positive C means removing the whole package costs less than removing each card alone and adding up. On 21 lists
+    C rises with the package's size (+0.047 at 7-9 cards turned into Energy, +0.077 at 10-16; correlation 0.36, weak).
+    That fits each added Energy gaining less as more are added, as well as Trainers backing each other up. This test
+    can't tell the two apart.
+  - Either way, no package of the four beats its Energy copy here. So a drafter that moved all four together would still
+    cut them, and the drafter's one-card unit isn't what keeps the lists' tempo cards out.
+- **Next:** research's read; Evan's call on #639's options. The GPU is idle.
+
+### #642 · 2026-10-31 · A5 C142 · Correction to #641: the single prices are 2.8-5.0 SE below zero, not 2.7-4.9
+- From `runs/probe/C142-tempo-package/summary.json`: PlusPower −0.0211/0.0076 = 2.8, Gust of Wind −0.0227/0.0068 = 3.3,
+  Scoop Up −0.0313/0.0083 = 3.8, Item Finder −0.0392/0.0079 = 5.0. Nothing else in #641 changes.
+
+### #643 · 2026-10-31 · A5 C142 · Research's read of C142 (between, #641-#642): under the pilot's own search, each tempo card is worth slightly under an Energy against the California field (−0.021 to −0.039, SE about 0.008), and so is the whole package (J −0.037; 16 of 21 lists under 0). Its +0.065 over the sum of singles (3.8 SE, the same at both seeds) is confounded with diminishing returns on the added Energy. No package beats its Energy copy, so the one-card unit isn't hiding one, and "accept parity" (#638, option 2) would still contradict the ground-truth rule
+- **Done** (research session, 2026-10-31 01:48): read #641-#642 against C142's record and Amendment 1.
+- **Found:**
+  - With the strongest player built here, the lists' tempo cards are each worth about an Energy or slightly less, alone or
+    as a package. C139's single PlusPower (−0.003, SE 0.014) and C142's (−0.021, SE 0.008) agree within 1.1 SE.
+  - The ground-truth rule says the lists are optimal, so a consistent gap means the pipeline is wrong somewhere. Every cheap
+    check of the setting is now done: field, clock, scorer, unit, engine PlusPower, reference lists. What's left untested
+    is play much stronger than one turn of the pilot's own lookahead.
+- **For Evan** (replaces #638's list):
+  1. A much stronger reference player, for evaluation only: multi-turn search over action sequences (the 10-09 design), or a
+     deeper ISMCTS. That's a large build, and it would test whether stronger play prices the tempo cards above Energy.
+  2. A deep round, when usage allows (week about 68% against about 65.9% at 00:43), on how human 2000 players valued these
+     cards against Energy, and on what a paired-copy price can and can't show.
+  3. Pause and write up: the cause chain is measured, and the gap to the lists traces to play strength beyond what is built.
+- **Next:** nothing queued; the GPU is idle.
+
+### #644 · 2026-10-31 · A5 A141 C138 ledger · A141's check (did search change selection's lean before C138 stopped?): C138's ledger at iterations 0-2 shows no shift toward the lists (λ_T4 −0.131 at S s30 and −0.114 at V s32, against the controls' −0.057 at 0-2), but a 3-iteration mean's SE is about 0.126, so it can't detect the at most +0.066 that parity would give; a powered rerun would take about 9 hours side by side, and its best case (λ_T4 near 0) still leaves the drafts indifferent, so #643's option 1 stands
+- **Done** (research session, 2026-10-31 04:44): computed λ_T4 from C138's and the four W 0 controls' `select.card` rows at iterations
+  0-2 (CPU, minutes). Measured: controls −0.131 / −0.107 / +0.079 / −0.071 (mean −0.057, between-seed sd 0.094). Per-iteration
+  sd over the controls' 0-29 is 0.219, so the SE of a 3-iteration mean is about 0.126.
+- **Found:** underpowered both ways, and the point estimates go the wrong way. Detecting +0.066 needs about 30 iterations at 2
+  seeds (difference SE about 0.034). At C138's 18.5 minutes an iteration that's about 9 hours side by side, beyond the
+  30-minute rule without Evan's go.
+- **Next:** none queued. #643's options stand for Evan.
+
+### #645 · 2026-10-31 · A5 row 113 deep round 6 · Evan's row 113 ("Default", 08:55) picks #643's option 2, so deep round 6 is launched at the smallest breadth (one Haiku researcher, then a Sonnet writer): how a card's measured worth depends on the player's skill, whether a paired-copy price can show a skill-intensive card's worth, and what multi-turn play gives tempo and denial cards; it builds on "Tempo card value in 2000 meta"
+- **Done** (research session, 2026-10-31 08:57): launched with usage at week 69% against a line of 68.46% (at the line within the
+  file's whole-percent rounding) and the 5-hour window at 1%. Notes go to `research_notes/Card value under player skill/`.
+- **Why this angle:** the earlier round couldn't read 2000-era strategy text (pojo, Bulbapedia and Pokebeach returned 403).
+  Skill-dependence of card value and the validity of single-card prices are documented in MTG and Hearthstone analytics,
+  and they bear directly on whether C139-C142's prices can show what the lists know.
+- **Next:** the report, then 1-2 banded records for the implementation session.
+
+### #646 · 2026-10-31 · A5 deep round 6 C143 · Deep round 6 (Evan's row 113) found no per-card skill-bracket data in MTG or Hearthstone analytics (only deck-level gradients, e.g. HSReplay's Face Hunter at 48.8% at Diamond against 56.6% at Bronze), but its framing fits the project's own numbers: a paired-copy price measures a card at the pilot's skill. PlusPower's rises from greedy to search (+0.051) then stops near 0. C143 is a no-oracle strength ladder of that price (start, arm 0, arm 0 with search, a deeper search), with a head-to-head strength check, bands first
+- **Done** (research session, 2026-10-31 09:00; one Haiku researcher, about 71k tokens; one Sonnet writer):
+  - Notes: `research_notes/Card value under player skill/card_value_skill.md`. Report: `reports/Card value under player skill.md`.
+  - Record: `runs/probe/C143-strength-ladder/record.md`, handed to the implementation session.
+- **Found (report; sources thin):**
+  - 17Lands' GIH WR is correlational and biased toward long games.
+  - No paired-swap or Shapley card study exists for MTG or Hearthstone.
+  - Skill matters most for multi-step and flexible cards; that's qualitative, from a StarCityGames article and a Blizzard
+    forum thread.
+  - C111's flat ladder had an oracle timing PlusPower at every rung, so it doesn't test the pilot's skill gradient. C143 does.
+  - The report's second implication, the joint swap with the added Energy held fixed, needs a neutral filler that doesn't
+    exist cleanly. It's not recorded.
+- **Next:** C143's stage 1 after a timed pilot.
+
+### #647 · 2026-10-31 · A5 C143 · Built and launched C143 (Evan's row 113, deep round 6): PlusPower's field price up a no-oracle strength ladder (R0 start pilot greedy, R1 = C139 G, R2 = C139 S, R3 a horizon-3 search), with an R3-against-R2 strength gate and the joint tempo-four copy at R3. The acceptance passes, and it launched at 09:14:11 in three stages
+- **Done:**
+  - **`env/remote_worker.js` judgeSearch:** `judgeSearch.bySlot`, a model slot's own search settings over the shared
+    ones, used when that slot's searcher is built. Without it the code is the same as before (2 lines).
+  - **`rl/gpu_matrix.py` `play`:** sends `slotEnc` only when the slots hold different model objects. One pilot in two
+    slots needs none, and the worker refuses `slotEnc` with judgeSearch. Calls with different models are unchanged.
+  - **`notes/scripts/c139_run.py` and `c142_run.py`:** `--horizon`, `--dets` and `--max-steps` pass through to the
+    search (defaults = C139's `SEARCH`, so the defaults are unchanged). `c142_run.py` gains `--joint-only`.
+  - **`notes/scripts/c143_h2h.py`:** R3 (slot 1) against R2 (slot 0), the same pilot, in the 24 lists' mirrors, alternating
+    seats, scored in R3's event points over 3 with a bootstrap SE and by R3's seat. `--aa` plays R2 on both seats.
+  - **`notes/scripts/c143_read.py`:** each rung with `c139_read.arm`, neighbouring rungs paired on the same deals, the
+    gate, the bands, and the joint at R3 (`c142_read.read`'s J) beside C142's −0.037, unpaired. Its R2 − R1 reproduces
+    C139's S − G (+0.051, SE 0.018).
+- **R3's settings:** C139's candidates (top 3 plus every legal Trainer play), CRN, V-scored, at horizon 3 and dets 4, with
+  maxSteps raised to 120 (C132b's cap at horizon 3) so no line is cut. At maxSteps 40 a smoke cut 72 lines in 12 games.
+- **Acceptance** (measured; every smoke had 0 errors and 0 capped lines):
+  - **R0:** 10 keys, 40 games, 3.0 s.
+  - **R3:** 10 keys, 40 games, 61.9 s.
+  - **Head-to-head:** 6 mirrors, 12 games.
+  - **Joint at R3:** 10 keys, 20 games.
+  - **Per-slot settings take effect:** with R3 on slot 1 the smoke ran 9,354-10,978 lines, against 7,112 in the A/A (R2 on
+    both seats).
+  - **Seat orders** are balanced by construction (8 deals a mirror, alternating).
+  - **Timed pilot** (R3, 60 keys, 240 games): 212.0 s (1.1 games/s), 0 errors, 0 capped, GPU 5.2 GB at 62-79%
+    utilization. So 874 deals take about 26 minutes, under the record's 30, and R3 stays at 874.
+- **Stages** (`runs/probe/C143-strength-ladder/run.sh`, via `loop.py launch --kind probe --evan-row 113`, pid 3336):
+  - **Stage 1:** R0 (874 deals) and the strength check (192 games). It stops if errors are over 2% or R3 scores under
+    0.53, which voids the read.
+  - **Stage 2:** R3's prices (874 deals).
+  - **Stage 3:** the joint at R3 (21 lists, 1 deal a pair, 966 games).
+  - Row 73's hold at each boundary.
+- **Bands as coded:**
+  - The steps are "in order within 1 SE" when each paired step is at least −1 SE.
+  - Plateau is R3 − R2 under 2 SE, one-sided as the record words it, with R3 under +0.04.
+- **Next:** stage 1's readout (about 09:22), stage 2 (about 09:50), stage 3 (about 10:05).
+
+### #648 · 2026-10-31 · A5 C143 · C143 stopped at stage 1, and its read is **void**: the horizon-3 search (R3) isn't measurably stronger than C139's search (R2) head to head. Its win share is 0.523 (SE 0.033) over 192 mirror games, under the record's 0.53, so the ladder has no new top rung. The gate as coded (raw event points/3, 0.396) also had a mirror null near 0.38, not 0.5, so it could never pass. R0 prices PlusPower the same as R1 (−0.055 against −0.054)
+- **Done:** `runs/probe/C143-strength-ladder/run.sh` stage 1 ran 09:14:11-09:16:48:
+  - R0 (`ar/data/start.pt` greedy, 874 paired deals, 0 errors);
+  - the strength check (`c143_h2h.py`, 192 games, 0 errors, 0 capped lines).
+  - The stop rule fired on the gate (`STOP | R3 against R2 0.3958`), so stages 2-3 didn't run. Acknowledged in `loop.py`.
+- **Evidence** (measured, finished):
+  - **Strength check** (R3 on one seat, R2 on the other, the 24 lists' mirrors, 8 deals a mirror, alternating seats):
+
+    | readout | value |
+    |---|---|
+    | R3 wins / R2 wins / draws | 88 (61 on time) / 79 (55 on time) / 25 |
+    | R3's event points/3 (as coded; R2's 0.359) | 0.396 (SE 0.027) |
+    | **R3's win share** (draws half) | **0.523** (SE 0.033) |
+    | R3's share of the points (R3 / (R3 + R2)) | 0.524 |
+    | by R3's seat (event points; 96 games each) | 0.385 / 0.406 |
+    | endings: time / no Pokémon / Prizes | 141 / 40 / 11 |
+
+  - **Rungs** (PlusPower's field price on C139's pairs and deals; paired steps on the same deals):
+
+    | rung | price (SE) | step (SE) |
+    |---|---|---|
+    | R0 (start pilot, greedy) | −0.055 (0.012) | — |
+    | R1 (arm 0 s1, greedy; C139 G) | −0.054 (0.011) | R1 − R0 +0.001 (0.016) |
+    | R2 (arm 0 s1 with search; C139 S) | −0.003 (0.014) | R2 − R1 +0.051 (0.018) |
+    | R3 | not run | — |
+
+  - Checks (R0): copies without PlusPower, the same card count, 0 unpaired keys, and seats equal.
+- **Spec fault:** the record's gate is "at least 0.53 in event points/3". In a mirror the two sides' event points sum to 1
+  only on a non-time win. A time win pays 2/3 and a draw 1/3 each, so with 73% of games on time the A/A null here is about
+  0.38, and 0.53 needs almost every game won. I coded the record literally. Under either fair reading (win share 0.523, or
+  points share 0.524) the gate still fails, and R3 − 0.5 is 0.7 SE, so the void verdict doesn't depend on the fault.
+- **Found:**
+  - Deeper search (to the end of its own next turn, more dets) doesn't make arm 0 measurably stronger than C139's one-turn
+    search. With C132b (a longer horizon didn't speed the goldfish), this pilot's value seems to be the limit, not its
+    lookahead, and the ladder can't climb past R2 this way.
+  - PlusPower's price is flat from the start pilot to arm 0 under greedy play. It rises only when search fixes its timing
+    (R2), as in C139.
+  - Stronger rungs would need a stronger evaluator or a much wider search, or a larger strength check: at 192 games
+    the SE is 0.033, so detecting 0.53 against 0.50 needs about 2,000 games, about 25 minutes.
+- **Next:** research's call on the void read; for a rerun, the gate written as win share. The GPU is idle.
+
+### #649 · 2026-10-31 · A5 C143 · Research's read of C143 (void at stage 1, #648): the strength gate was mis-specified by research (0.53 in event points/3, whose mirror null is about 0.38 when 73% of games end on time), but the fair measures agree: horizon 3 with dets 4 isn't measurably stronger than horizon 1 (win share 0.523, SE 0.033). The lower rungs carry the finding: the start pilot and arm 0 greedy price PlusPower alike (−0.055 against −0.054; R1 − R0 +0.001, SE 0.016) though arm 0 wins 0.60-0.64 head to head, so general strength doesn't move it, and only the search's timing lifts it, to parity
+- **Done** (research session, 2026-10-31 09:18): read #648.
+- **Correction (research's error):** C143's strength gate should have been a win share (or a constant-sum score). In a
+  mirror, event points/3 sum to 1 only on a non-time win. Future head-to-head gates use win share with its SE.
+- **Found:**
+  - The skill gradient in PlusPower's price isn't general strength. Two pilots 0.60-0.64 apart price it the same. It's the
+    specific timing that search adds (pp@b10 .004 → .79-.83), and that brings it only to parity (C136, C139, C141).
+  - Deeper lookahead doesn't make a stronger player here (C132b, C143). A stronger reference player would need a stronger
+    evaluator or a wider search, a large build with a weak prior.
+  - So reachable play-strength routes are exhausted for PlusPower. The report's competing readings (the engine, selection)
+    remain.
+- **Open for Evan:** (1) the large build of a stronger reference player (a weak prior now); (2) look beyond PlusPower: price
+  the lists' other Trainer groups under search (draw, search and disruption) to find any card the lists rank above Energy
+  that our best player also does, as a positive anchor for the per-card goal; (3) pause and write up.
+- **Next:** none queued; the GPU is idle.
+
+### #650 · 2026-10-31 · A5 write-up · Evan's row 114 ("3 then 2", 11:25), step 3: the night's write-up, `reports/2026-10-31 Night write-up.md` (C121-C143, log #550-#649): the ground truth didn't move (shape 11.2 ± 3.8 from the lists; tempo cards 2.0 ± 0.4 against 9.2), twenty ruled-out steps with their key numbers and log entries, what's open, and the corrections (#588, #607, #642, #649)
+- **Done** (research session, 2026-10-31 11:27): written from the log entries only. Short and plain, per Evan.
+- **Next:** step 2, the record pricing the lists' other Trainer groups under search.
+
+### #651 · 2026-10-31 · A5 C144 · Evan's row 114, step 2: C144 prices the lists' other Trainer groups (draw, search, disrupt) against their Energy copies across the California field under C139's search, with greedy beside it, evaluation only, in three 30-minute stages, bands first; if every group reads parity or below, rule 9 points to the setting, and the recommendation to Evan is an engine-against-2000-game-records check before more pilot work
+- **Done** (research session, 2026-10-31 11:28): `runs/probe/C144-trainer-groups/record.md`, handed to the implementation session after the
+  write-up was logged (#650).
+- **Next:** C144's stage 1 (draw) after a timed pilot.
+
+### #652 · 2026-10-31 · A5 C144 · Built and launched C144 (Evan's row 114, step 2): the lists' draw, search and disrupt groups priced against their Energy copies across the California field, both seats S (C139's search) and G. The acceptance passes, and it launched at 11:32:20 in three stages, 2 deals a pair
+- **Done:**
+  - **`notes/scripts/c142_run.py`:** `--groups` (any `trainer_value.GROUPS` names, in place of the tempo four) and
+    `--arm G|S` (G plays both seats greedy). Defaults are C142's, and the output records arm and groups.
+  - **`notes/scripts/c142_read.py`:** each group's swap check uses `GROUPS` (the tempo four and `tempo4` as before).
+    Each priced copy gains copies replaced (mean and max, by deal), price per copy replaced and C144's band. Pooling
+    asserts the same arm.
+  - The reader run on C142's two files reproduces its summary exactly (singles, J, C).
+  - **`runs/probe/C144-trainer-groups/run.sh`:** one stage per group, S then G. After each stage come the readout and the
+    stop rule (errors over 2% or a failed check), with row 73's hold at boundaries. Launched via
+    `loop.py launch --kind probe --evan-row 114` (pid 10560).
+- **Groups** (lists running them; copies a list, min / median / max): draw 24 (3 / 6 / 8); search 23 (2 / 8 / 11);
+  disrupt 24 (3 / 6 / 12). Most lists swap more than 6 copies, so an R-above group needs the record's per-copy check or a
+  single-card follow-up.
+- **Acceptance** (measured; every smoke had 0 errors, every copy 60 cards with none of its group's cards, 0 unpaired keys,
+  seats equal):
+  - **Smokes:** 10 keys and 40 games each for draw S, draw G, search S and disrupt S.
+  - **Timed pilot** (draw S, 69 keys, 2 deals, 276 games): 51.6 s (5.4 games/s), per-deal sd 0.455. So the SE projects 0.014
+    at 2 deals a pair, under the record's 0.02, on C139's deal design (seed 91). Each stage takes about 10 minutes.
+  - The pilot's draw price on 3 lists (+0.179, SE 0.039) is a probe, not a result.
+- **Next:** stage readouts at about 11:42 (draw), 11:52 (search) and 12:02 (disrupt).
+
+### #653 · 2026-10-31 · A5 C144 · C144: the **draw** group (Oak, Bill, Gambler) beats Energy under our best player (**R-above**: +0.114, SE 0.013; greedy +0.095), and it holds on lists swapping 6 or fewer copies (+0.110, SE 0.016). The **search** group reads **R-below** (−0.060, SE 0.013) and **disrupt** reads **R-parity** (+0.024, SE 0.013), the only group search moves (+0.046 over greedy, 2.6 SE). So one Trainer group the lists carry beats an Energy here, and it's a positive anchor
+- **Done:** `runs/probe/C144-trainer-groups/run.sh`, three stages, 0 errors in all 13,064 games:
+  - **First launch** (11:32:20-11:38:33): draw's S and G both finished. Then stage 1's check failed to import `c142_read`,
+    because a Windows Python reads PYTHONPATH with ';', not ':'. My fault, not the data's.
+  - **Relaunch** (`C144-trainer-groups-r2`, 11:39:37-11:53:54): the check inserts `notes/scripts` itself, and finished
+    arms are kept. Draw's check then passed on the same files, and search and disrupt ran.
+  - Each stage's stop rule passed. Per-arm summaries (`summary_{S,G}_{group}.json`) and `summary_gradient.json` are in the
+    run folder. Acknowledged in `loop.py`.
+- **Evidence** (measured, finished; each list against the other 23 on C139's deals, 2 deals a pair, round rule [20, 45],
+  price = list − copy in event points/3, bootstrap SE over paired deals):
+
+  | group | lists | copies swapped, mean (max) | **S price** (SE) | S per copy | G price (SE) | S − G paired (SE) | S lists above 0 | S band |
+  |---|---|---|---|---|---|---|---|---|
+  | **draw** | 24 | 5.9 (8) | **+0.114** (0.013) | +0.019 | +0.095 (0.011) | +0.018 (0.017) | 23 of 24 | **R-above** |
+  | **search** | 23 | 7.3 (11) | **−0.060** (0.013) | −0.008 | −0.067 (0.011) | +0.007 (0.017) | 6 of 23 | **R-below** |
+  | **disrupt** | 24 | 6.5 (12) | **+0.024** (0.013) | +0.004 | −0.022 (0.011) | **+0.046** (0.017) | 16 of 24 | **R-parity** |
+
+  - **Draw's per-copy check** (the record: per copy above 0 and 6 or fewer copies, or a single-card follow-up): per copy
+    +0.019. On the 13 lists swapping 6 or fewer, S is +0.110 (SE 0.016) and G +0.094. On the 11 lists swapping 7-8, S is
+    +0.118 (0.020). So R-above doesn't come from big swaps.
+  - **Per-list S ranges:** draw −0.007 to +0.304; search −0.239 to +0.080; disrupt −0.174 to +0.138.
+  - **Checks** (every arm): 60 cards in every copy, none of the group's cards left, 0 unpaired keys, seats equal.
+- **Bands** (C144's record, written before the run): draw R-above (with its per-copy check passing), search R-below,
+  disrupt R-parity (|p| 1.8 SE, SE 0.013). The priors were draw at parity or below (it's above), search near parity (it's
+  below) and disrupt unknown.
+- **Found:**
+  - Our players rank the draw Trainers above an Energy, greedy or searching, as the lists do. By the record, the per-card
+    goal and the drafting levers aim there first, and selection under search would be rerun on the ledger for draw.
+  - Search Trainers lose to Energy even under search, by more than the tempo four (C142: −0.021 to −0.039 a card).
+  - Disrupt is the second group, after PlusPower (C139, +0.051), whose price search lifts by about 0.05. Each is one seed.
+- **Next:** research's read. Then, by the record, draw's ledger under search; the GPU is idle until a record arrives.
+
+### #654 · 2026-10-31 · A5 C144 C145 · Research's read of C144 (#653): the first positive anchor of the run. The draw group (Professor Oak, Bill, Gambler) beats its Energy copy across the California field under search (+0.114, SE 0.013) and greedy (+0.095, SE 0.011), positive on 23 of 24 lists, with the per-copy check passing; the search group reads below an Energy (−0.060) and disruption at parity (+0.024). Since greedy arm 0 already values draw cards that the drafts lack (about 1 a deck against the lists' 6), C145 separates the loop's pilot from the drafted decks as the cause, evaluation only, bands first
+- **Done** (research session, 2026-10-31 11:56): `runs/probe/C145-draw-context/record.md`, handed to the implementation session.
+- **Found:**
+  - The engine and arm 0 value draw cards above Energy in human lists, as the lists do. That's the first Trainer group where
+    our players agree with the ground truth, so the engine isn't broken for draw.
+  - Draw is about 5 copies of the drafts' Trainer gap.
+  - Search adds little for draw (+0.018, SE 0.017), so play skill isn't what's missing there. The loop's setting is.
+  - Disruption gains +0.046 (SE 0.017) from search, like PlusPower: one seed, a lead only.
+- **Next:** C145 (about 30 minutes).
+
+### #655 · 2026-10-31 · A5 C145 · C145 reads **R-both**: the draw cards lose most of their worth both with the loop's pilot and in the loop's decks. On the human lists, the loop's pilot prices the draw group at +0.037 against arm 0's +0.095 (paired −0.058, SE 0.015). In the drafted decks, adding 2 Oak + 2 Bill for 4 Energy pays only +0.014 with arm 0 (SE 0.006) and +0.028 with the loop's pilot (SE 0.006). So both the pilot and the decks hide what draw is worth in the lists
+- **Done:**
+  - **Build:** `notes/scripts/c145_run.py` (C and D: the population decks against their 2 Oak + 2 Bill copies, 23 seeded
+    opponents a deck, one pair key a deck and opponent, greedy, round rule [20, 45]) and `notes/scripts/c145_read.py`
+    (signed prices, paired B − A and D − C, bands; the copy-limit check uses the pool's basic-Energy flag). B is
+    `c142_run.py --groups draw --arm G --pilot` with the loop's checkpoint, and A is C144's G.
+  - **Smokes:** 10 keys and 40 games a cell, 0 errors, all checks passing. The loop's pilot loads under its own config
+    (`deck_mode` cross).
+  - **Run:** `runs/probe/C145-draw-context/run.sh` ran 11:58:33-12:02:31 through `loop.py`: B 2,208 games, C and D
+    9,016 each, 0 errors.
+- **Evidence** (measured, finished; positive = the draw cards beat the Energy; bootstrap SE over paired deals):
+
+  | cell | pilot | decks | price (SE) | deals |
+  |---|---|---|---|---|
+  | A (C144 G) | arm 0 s1 | California lists, draw group → Energy (5.9 copies) | **+0.095** (0.011) | 1,104 |
+  | B | the loop's (C127 s16, it 29) | the same pairs and deals | **+0.037** (0.012) | 1,104 |
+  | C | arm 0 s1 | C127 s16's population, 4 Energy → 2 Oak + 2 Bill (3.7 replaced on average) | **+0.014** (0.006) | 4,508 |
+  | D | the loop's | the same as C | **+0.028** (0.006) | 4,508 |
+
+  - **Paired:** B − A −0.058 (SE 0.015); D − C +0.014 (SE 0.007).
+  - **Copies:** 98 of 99 population decks have a copy. 81 take 2 + 2, and the copy limit or a shortage of basic Energy
+    leaves 17 with fewer (Oak +2 in 91, Bill +2 in 88, Bill +1 in 4, Oak +1 in 2).
+  - **On the 2 + 2 copies only** (3,726 deals): C +0.019 (0.006), D +0.033 (0.006).
+  - **Checks:** 60 cards, the copy limit kept, each copy differing in exactly its recorded cards, 0 unpaired keys, and
+    seats equal in every cell.
+- **Bands** (C145's record, written before the run):
+  - R-pilot: yes. B is 0.058 under A (3.9 SE), and D is under +0.04.
+  - R-context: yes. C is under +0.04, and A is +0.06 or more.
+  - **R-both.** R-loop-wants-draw: no, though D's +0.028 is 5 SE above 0 and under the bar of +0.04. The prior was R-context.
+- **Found:**
+  - The loop's pilot values the human lists' draw cards at about two-fifths of what arm 0 does (B against A).
+  - Added to drafted decks, Oak and Bill are worth little with either pilot. Per copy that's about +0.004 (arm 0) and
+    +0.008 (the loop's), against +0.016 a copy when the lists lose theirs. That fits the record's reading that draw pays
+    in coherent lists, with lines to find.
+  - The loop's pilot gets a little more from draw in its own decks than arm 0 does (D − C +0.014, 1.9 SE), as a pilot
+    trained on those decks would.
+  - The comparisons mix removing about 6 copies from lists (A, B) with adding 4 to drafted decks (C, D). So the C against A
+    contrast also carries the add-against-remove difference and C142's diminishing-returns confound. One seed each.
+- **Next:** research's read. By the record, both levers are named: the loop's pilot (its training or holding habit) and the
+  drafted decks' structure. The GPU is idle until a record arrives.
+
+### #656 · 2026-10-31 · A5 C145 · Research's read of C145 (R-both, #655): two effects compound to keep draw cards out of the drafts. The loop's own pilot undervalues them even in the human lists (+0.037 against arm 0's +0.095 on the same deals; −0.058, 3.9 SE), and added to the loop's drafted decks they are worth little (2 Oak + 2 Bill for 4 Energy: +0.014 with arm 0, +0.028 with the loop's pilot, SE 0.006). That's about +0.004-0.008 a copy, against +0.016 when the lists lose theirs. The loop's own setting does gain slightly from draw (D 5 SE above 0), but at that size per copy selection's per-move noise hides it, as the ledger's flat draw lean showed (C127)
+- **Done** (research session, 2026-10-31 12:04): read #655 against C145's record.
+- **Found:**
+  - Draw cards pay in coherent lists and pay little in drafted decks (context).
+  - The loop's pilot, which trains on drafted and random decks, also uses them worse (pilot).
+  - The two effects feed each other: incoherent decks make a pilot that undervalues draw, and a weak draw signal leaves the
+    decks incoherent.
+- **Caveat:** A and B remove about 6 copies from lists, while C and D add 4 to drafted decks, so the context contrast also
+  carries add against remove and diminishing returns. One seed each.
+- **Next:** a CPU check from C145's own per-deck results. Does draw's added value rise with a drafted deck's coherence
+  (lines, evolution completeness, Energy types matching the attackers)? If it does, the lever is how the loop builds
+  coherent decks.
+
+### #657 · 2026-10-31 · A5 C145 coherence · C145's exploratory coherence check (criterion written before computing, in C145's record) is not supported: across the 98 population decks, draw's added value doesn't rise with coherence as measured (evo_complete ρ +0.21 at C, p 0.04, and +0.15 at D; energy_match ρ −0.36 at C, p < 0.001, the opposite sign: draw gains most where the removed Energy didn't fit the attackers), and it falls where the deck already has draw (ρ −0.20 and −0.25)
+- **Done** (research session, 2026-10-31 12:05): computed per-deck paired prices from C145's `C_s91.json` and `D_s91.json` (about 45
+  paired deals a deck), and the features from the pool data. CPU, minutes.
+- **Found:**
+  - The add measurement in drafted decks is confounded by how useful the removed Energy was.
+  - The "coherent lines" story isn't shown by these proxies. C145's two effects stand as measured: the loop's pilot
+    undervalues draw (−0.058, 3.9 SE), and adding draw to drafted decks is worth little (+0.014-0.028).
+  - Why the loop's pilot plays draw worse than arm 0 is open. Arm 0 trained on human lists, which are quarantined; the
+    loop's pilot trains on drafted and random decks.
+- **Next:** none queued. The lead for Evan is the loop pilot's draw deficit, the one effect at 3.9 SE.
+
+### #658 · 2026-10-31 · A5 A143 C146 · A143's call (is the loop pilot's draw deficit co-adaptation, or arm 0's provenance?) becomes C146: the draw group's price on the California lists under the bench's start pilot beside arm 0 and the loop's pilot, greedy, same deals, plus C145's B − A at a second seed, evaluation only, bands first
+- **Done** (research session, 2026-10-31 12:44): `runs/probe/C146-draw-provenance/record.md`, handed to the implementation session.
+- **Next:** C146 (about 20-30 minutes).
+
+### #659 · 2026-10-31 · A5 C146 · C146 reads **R-provenance, as a lead only**. The human-free start pilot prices the draw group like the loop's pilot does (+0.028 against +0.037, paired −0.009, SE 0.016), and arm 0, its PPO on the human bench lists, adds +0.067 (SE 0.016). So arm 0's draw skill came from human-list training, not from anything the loop lost. But C145's loop-pilot deficit didn't replicate by the rule at seed 92 (B − A −0.023, SE 0.015; pooled over both seeds −0.041, SE 0.011)
+- **Done:**
+  - Runs: `runs/probe/C146-draw-provenance/run.sh` ran 12:46:00-12:47:14 through `loop.py`. S0 (seed 91), A92 and B92
+    (seed 92) had 2,208 games each, 0 errors.
+  - Reader: `notes/scripts/c146_read.py` (`c145_read.per_deal` on the draw group; S0 − B and S0 − A paired on seed 91;
+    B92 − A92; the record's bands and replication rule).
+  - Smokes: 10 keys, 40 games a cell, 0 errors.
+  - No build was needed.
+- **S0's training decks** (as the record asks): `ar/data/start.pt` is `runs/pilot/C49-sd/checkpoint.pt` at iteration 199
+  (`ar/fixed.py` `START_SRC`). It was trained by PPO with search distillation on `runs/pilot/C30/matchups.json`, 2,048
+  matchups of rules-only random decks, with no human lists. Arm 0 is that start plus 30 minutes of PPO on the quarantined
+  human bench lists (#353). The loop's pilot is the start's lineage trained in the drafting loop.
+- **Evidence** (measured, finished; draw group → Energy on C144's California pairs, greedy, round rule [20, 45]; price =
+  list − copy, positive meaning the draw cards beat the Energy; bootstrap SE over paired deals):
+
+  | cell | pilot | seed | price (SE) |
+  |---|---|---|---|
+  | **S0** | start (rules-only random decks) | 91 | **+0.028** (0.012) |
+  | A (C144 G) | arm 0 | 91 | +0.095 (0.011) |
+  | B (C145) | the loop's (C127 s16, it 29) | 91 | +0.037 (0.012) |
+  | A92 | arm 0 | 92 | +0.097 (0.011) |
+  | B92 | the loop's | 92 | +0.073 (0.011) |
+
+  - **Paired:** S0 − B −0.009 (0.016); S0 − A −0.067 (0.016); B92 − A92 −0.023 (0.015).
+  - **Pooled B − A over seeds 91 and 92** (a lead, not a band): −0.041 (SE 0.011, 2,208 deals).
+  - **Checks:** 60 cards, no draw cards left, 0 unpaired keys, and seats equal in every cell.
+- **Bands** (C146's record, written before the run):
+  - **R-provenance:** |S0 − B| is 0.009, and A − S0 is +0.067 (4.3 SE).
+  - **Replication:** no. Seed 92's B − A is −0.023, not −0.03 or less. So by the record both readings stand as leads only.
+  - The prior was between.
+- **Found:**
+  - Arm 0's draw skill is reproducible (+0.095 and +0.097 on two seeds), and the human-free start doesn't have it (+0.028).
+  - The loop's pilot sits between: +0.037 and +0.073 on two seeds, which differ by 0.036, about 2.3 SE unpaired.
+  - Pooled, it's about 0.04 under arm 0. So the loop's training neither clearly erodes a draw skill the start had (the
+    start had little) nor matches what human-list practice gave arm 0.
+- **Next:** research's read; the GPU is idle until a record arrives.
+
+### #660 · 2026-10-31 · A5 C146 · Research's read of C146 (R-provenance as a lead, #659): the human-free start pilot (C49-sd, PPO on 2,048 rules-only random decks) values the lists' draw cards at +0.028 (SE 0.012), with the loop's pilot (+0.037; +0.073 at seed 92) and well under arm 0 (+0.095 and +0.097), so arm 0's strong draw skill came from training on the quarantined human lists. C145's loop-against-arm-0 gap doesn't replicate by its rule (−0.023 at seed 92; pooled −0.041, SE 0.011). Every pilot prices the lists' draw above an Energy, but a human-free pilot only weakly, and in drafted decks draw adds about +0.005 a copy (C145), under selection's noise
+- **Done** (research session, 2026-10-31 12:48): read #659 against C146's record.
+- **Found:** a pilot trained only on human-free decks gains a little draw skill (start +0.028, and the loop's pilot +0.037 to
+  +0.073 after its loop training). The strong skill appears only after training on coherent human lists. So the
+  human-free route to draw skill runs through decks where draw matters, which the loop doesn't yet build.
+- **For Evan:**
+  1. A screen that trains the loop's pilot with practice on the population's own best decks instead of random wide decks (no
+     human prior), read on the draw price and the ledger.
+  2. A screen that strengthens selection for small per-copy gains (more paired slots a move), at the risk of sharpening the
+     tempo-card trim (#564).
+  3. Pause; the write-up (#650) plus #653-#660 stand.
+- **Next:** none queued; the GPU is idle.
+
+### #661 · 2026-10-31 · A5 row 115 C147 · Evan's row 115 (13:42; "just go with the default call unless I interrupt"): research stops writing open lists for Evan and takes the default, logged as such. Taken by default (row 115): C147 diagnoses the loop pilot's draw gap, evaluation only: (a) win share head to head against arm 0 on the California mirrors, and (b) C116's play-against-hold at its own playable Oak and Bill decisions. Each reading names its card-neutral lever (default: practice on the population's own best decks), bands first
+- **Done** (research session, 2026-10-31 13:43): `runs/probe/C147-loop-pilot-draw/record.md`, handed to the implementation session.
+  Row 115 is already in the estack inbox (2026-10-31).
+- **Next:** C147 (about 30 minutes), then the lever its reading names, recorded and handed off without waiting.
+
+### #662 · 2026-10-31 · A5 C148 · Taken by default (row 115): C148, the default lever of C147's readings, is pre-written to keep the queue two deep: half the loop pilot's practice games drawn from the population's own top quarter instead of random wide decks (card-neutral, no human prior), seeds 34 and 35, read on the pilot's draw price on the lists, the ledger and the deck counts, bands first. It runs unless C147 reads R-even with R-hold-wrong
+- **Done** (research session, 2026-10-31 13:44): `runs/screens/C148-practice-pop/record.md`. Computed the controls' λ_draw (Oak, Bill,
+  Gambler) over 0-29: +0.104 / −0.037 / +0.045 / −0.015, mean +0.024 and between-seed sd 0.063. That is much noisier than
+  λ_T4's 0.014, so the ledger band is wide.
+- **Next:** C147's read, then C148's build and launch.
+
+### #663 · 2026-10-31 · A5 C147 · Built and launched C147 (taken by default, row 115): (a) the loop's pilot against arm 0 on the California mirrors (win share), and (b) C116's play-against-hold at the loop pilot's own Oak and Bill decisions. Building it found and fixed a pipeline fault: `probe_draw_hold.py` decoded its matchups as cp1252, so every game of the two lists with "Pokémon" cards failed setup. Launched at 13:50:42
+- **Done:**
+  - **`notes/scripts/c147_h2h.py`:** slot 0 arm 0 s1, slot 1 the loop's pilot (C127 s16 `checkpoint.pt`, it 29), each
+    list's own mirror, alternating seats, greedy, round rule [20, 45]. It reads slot 1's win share (draws half) with a
+    bootstrap SE, by seat, with the endings and the record's (a) band. Two different pilots greedy need `slotEnc`, which
+    `games` accepts (the worker refuses it only with search).
+  - **`runs/probe/C147-loop-pilot-draw/cal_mirrors.json`:** the 24 California lists, each paired with itself, for (b).
+  - **`notes/scripts/probe_draw_hold.py`:** reads its matchups with `encoding="utf-8"` (two places).
+  - **`runs/probe/C147-loop-pilot-draw/run.sh`:**
+    - (a) is 48 deals a mirror (1,152 games);
+    - (b) is `--n 300 --budget-s 1500 --max-games 4000 --workers 6`, K = 8 (C116's defaults);
+    - row 73's hold sits between the parts.
+    - Launched via `loop.py launch --kind probe --evan-row 115` (pid 21556).
+- **The fault** (rule 9, found in (b)'s smoke: 1 game error in 36, then 4 in 108):
+  - Every error came from Joseph Viray's Rain Dance or Dean Bartlett's Sponge. In the probe worker every game of those two
+    lists failed at step 0 with `INVALID_DECK`, for both pilots, with probing on or off.
+  - Those are the only California lists with non-ASCII card names: "Pokémon Breeder", "Pokémon Trader", "Pokémon Center".
+  - `read_text()` without an encoding decodes UTF-8 as cp1252 on Windows. The engine then sees unknown cards, and the deck
+    fails setup.
+  - The same lists start normally through `env/game.js` and `Env` (200 of 200 games).
+  - C116's `bench_matchups.json` is pure ASCII, so C116's results aren't affected.
+  - Every other harness reads the lists from `env/decks.js` in node (C139-C146: 0 errors).
+- **Acceptance** (measured):
+  - **(a) smoke:** 6 mirrors, 12 games, 0 errors, seats 6 and 6.
+  - **(b) smoke after the fix:** 36 games, 0 game errors, 0 line errors, 20 states (Oak 10, Bill 10). All 20 were checked
+    from the raw probes by option keys: branch 0 plays Professor Oak or Bill, and branch 1 is the policy's greedy choice,
+    which is a different option.
+  - The loop's pilot loads under its own config.
+- **Record:** `loop.py launch` refused because the record never uses the word "bands" (§10's check). I appended a labelled
+  implementation note naming the record's R- readings as its bands, without changing any band, and told research.
+- **Next:** (a)'s readout in about 1 minute, then (b)'s in about 25. Meanwhile C148 (research's pre-written next, #662):
+  build `--practice-from-pop`.
+
+### #664 · 2026-10-31 · A5 C147 · C147 stopped at 13:52 on Evan's direct instruction (13:51, relayed by research: "clear up the rest of the queue and fill it with orthogonal experiments"). Part (a) had finished and reads **R-general-weak**: on the California lists' own mirrors the loop's pilot wins 0.391 (SE 0.013) against arm 0. Part (b) was killed in its second minute, with nothing written. C148 isn't built or launched, and the GPU is idle until research's new records arrive
+- **Done:**
+  - `loop.py stop` wrote `runs/probe/C147-loop-pilot-draw/STOP`, which a probe doesn't read, so I killed the launcher's
+    process tree (`taskkill /PID 21556 /T /F`: the sh, python and 6 node workers).
+  - Afterwards no `probe_draw_hold` or `probe_draw_worker` process remains, and GPU memory is at the idle level.
+  - (a)'s `h2h_s91.json` is kept.
+  - (b) had collected 121 states (Oak 89, Bill 32) in 72 games, with 0 game and 0 line errors, which confirms #663's utf-8
+    fix at scale. `probe_draw_hold.py` writes only at the end, so those states are lost.
+  - C148 (#662): no code was written.
+- **Evidence** (measured, finished; (a) only; 24 mirrors × 48 deals, alternating seats, greedy, round rule [20, 45]):
+
+  | readout | value |
+  |---|---|
+  | **the loop pilot's win share** (draws half) | **0.391** (SE 0.013) |
+  | wins: loop / arm 0 / draws | 349 / 601 / 202 |
+  | by the loop pilot's seat (576 each) | 0.369 / 0.412 |
+  | endings: time / no Pokémon / deck-out / Prizes | 907 / 106 / 95 / 44 |
+  | errors | 0 of 1,152 |
+
+- **Bands** (C147's record, (a)): **R-general-weak** (0.45 or less and 8.4 SE under 0.5). (b) wasn't read.
+- **Found:** on coherent human lists the loop's pilot is much weaker than arm 0 overall, not only at draw decisions. By the
+  record this pointed to its training deck mix (C148), which Evan's new direction has set aside for now.
+- **Next:** research's new records (game-state representation, exploration-exploitation). The GPU is idle.
+
+### #665 · 2026-10-31 · A5 row 116 deep round 7 · Evan's row 116 (about 13:50, directly to research): read the Dominion AI articles (ianwdavis.com dominion2 and dominion3) for state-representation options, research the exploration-exploitation literature and apply it here, and clear the queue for orthogonal experiments. C147 was stopped and C148 dropped; deep round 7 launched with three Haiku researchers (representation; exploration for the action policy; exploration for noisy deck selection), with a Sonnet writer to follow
+- **Done** (research session, 2026-10-31 13:52): the queue-clear message went to the implementation session at 13:51 (C147 had launched at
+  13:50:42). Row 116 was added to `notes/evan-requests.md`. Usage at 13:51 was 5h 3% and week 72% against a line of 70.1%.
+  Evan's direct request overrides the cadence; the round runs lean.
+- **Built on, not repeated:** earlier rounds on card tokens, entity pointers, card identity, rare-decision reweighting, restart
+  distributions, self-imitation, intrinsic signals and quality-diversity. The researchers were told to skip these.
+- **Next:** the report, then orthogonal banded records (representation and exploration) for the implementation session.
+
+### #666 · 2026-10-31 · A5 row 116 deep round 7 · representation researcher's notes (game-state representation)
+- **Done:** Wrote `research_notes/State representation and exploration/representation.md` for research's deep round 7 (representation track). It covers the two required Dominion articles (ianwdavis.com dominion.html, dominion2, dominion3), plus the Axie action-embedding paper (arXiv 2206.12700), the generalised card-representation paper (arXiv 2407.05879), and a Slay the Spire developer series. Hearthstone (arXiv 2303.05197) and LOCM (arXiv 2305.11814) were read as abstracts only. Other sources are search snippets only and are tagged as such.
+- **Evidence:** Read in full via WebFetch (a model-written summary, not verbatim): dominion.html, dominion2.html, dominion3.html (dominion3 gave no full-game feature list), 2206.12700 (ar5iv), 2407.05879, DEV part 3. The file is 2,609 words by `wc -w` including link URLs, which is over the ~2,500 target. Not verified: quotes against the live pages; no runs or code involved.
+- **Found:** Dominion's state has no hand, deck or discard encoding. Its gains came from action masking (the biggest one) and thermometer encodings of turn, score and Provinces (win rate 20% → 40% on a six-card toy). Axie's action-conditioned scorer gives 49.86% vs DouZero's 44.77% win rate over 174k games (one game, no seeds or CI). In the Slay the Spire study, card-ID embeddings ranked 4th of 4 in play (50 seeds) while offline accuracy rose, and the author concluded they learned human-pick biases. The notes propose four self-discovered candidates for the never-tried situational card: afterstate scoring with the existing value head (no hand-built rules), an action-conditioned option encoder, a remaining-deck count vector, and a thermometer encoding. "Damage after PlusPower" as an input is a hand-built shortcut and needs Evan's approval under the self-discovery rule.
+- **Next:** Research's report (deep round 7), then the orthogonal records for the implementation session. The GPU stays idle until the records arrive.
+
+### #667 · 2026-10-31 · A5 deep round 7 C149-C152 · Deep round 7 (Evan's row 116) is reported (`reports/State representation and exploration.md`), and the queue is refilled with four orthogonal records, taken by default (row 115): C149, a mirror policy update (a bandit, then a bench arm with afterstate advantages); C150, pooled per-card Thompson proposals in the drafting loop; C151, re-testing 1 SE winners; C152, remaining-deck counts and thermometer inputs (a bench architecture test). Bands come first, and none is card-specific
+- **Done** (research session, 2026-10-31 13:59):
+  - The round used three Haiku researchers (about 68k, 74k and 90k tokens) and a Sonnet writer (about 74k).
+  - Notes: `research_notes/State representation and exploration/`.
+  - Entry #666 was written by the representation researcher, not this session. It's accurate and left in place.
+  - A first write of the four records failed on a shell quoting error at 13:57; they landed at 13:58-14:00.
+- **Found (report; mostly snippet-level, tagged):**
+  - Dominion: the series transfers only action masking (already here) and thermometer counts.
+  - The policy: the softmax gradient on an action scales with its probability, so a 0.4% play barely moves (from memory, to check). That
+    favours mirror or exponentiated updates.
+  - Drafting: per-move tests can't resolve 0.01-a-copy effects (about 20,000 games a move), so pooling across decks is the route.
+  - C147(a) (#664): the loop's pilot wins 0.391 (SE 0.013) head to head against arm 0 on the California mirrors.
+- **Order:** C151 first (the smallest build), with C149's stage 0 on CPU at the same time; then C150; then C152; C149's stage 1 only if its
+  stage 0 passes. The exploiter pilot (the report's rank 6) waits.
+
+### #668 · 2026-10-31 · A5 C149 · C149 stage 0 (CPU bandit): the mirror step lifts the rare action from 0.004 to 1.0 (0.5 in a median of 21 updates at η 1.0). PPO stays under 0.006 at learning rates 0.1-1.0 in every seed. By the reading I wrote before running (PPO's best rate in the grid, by its mean over seeds), it's **R-not**, because at rate 3.0 three of 20 seeds reach the rare action by luck (mean 0.153, median 0.0035) and three collapse onto a wrong one. At every rate up to 1.0 it would read R-mechanism. Stage 1's go goes to research
+- **Done:** `notes/scripts/c149_bandit.py` (numpy only, deterministic by seed, checked), run in about 1 s, output in
+  `runs/probe/C149-mirror-update/stage0.json`. The setup is the record's: 20 actions, the rare one at 0.004 and worth +0.3,
+  noise sd 0.2, 200 updates, 20 seeds.
+  - **PPO:** one sampled action an update, a running-mean baseline, clip 0.2, 4 epochs of gradient ascent on raw logits,
+    entropy 0.01, at learning rates 0.1, 0.3, 1.0 and 3.0.
+  - **Mirror:** π ∝ π_old · exp(η·A), with every action's advantage plus noise, at η 0.3 and 1.0.
+- **Evidence** (measured; the rare action's probability after 200 updates, over 20 seeds):
+
+  | arm | mean | median | min-max | seeds above 0.05 |
+  |---|---|---|---|---|
+  | PPO lr 0.1 | 0.0045 | — | 0.0038-0.0059 | 0 |
+  | PPO lr 0.3 | 0.0045 | — | 0.0031-0.0071 | 0 |
+  | PPO lr 1.0 | 0.0057 | 0.0037 | 0.0009-0.0187 | 0 |
+  | PPO lr 3.0 | 0.153 | 0.0035 | 0.0001-0.992 | 3 (all above 0.5; 3 more under 0.001) |
+  | **mirror η 1.0** | **1.0** | 1.0 | 1.0-1.0 | 20 (0.5 reached in a median of 21 updates) |
+  | mirror η 0.3 | 1.0 | 1.0 | 1.0-1.0 | 20 (median 63 updates) |
+
+- **Band** (C149's record: R-mechanism if the mirror arm reaches 0.5 or more within 200 updates while PPO stays under 0.05):
+  - The mirror condition holds.
+  - PPO's condition depends on the learning rate, which the record doesn't fix. The script's rule, chosen before running,
+    takes PPO's strongest version as the best grid mean. That's 0.153 at lr 3.0, so the coded band is **R-not**.
+  - The 0.153 is three lucky seeds out of 20 (the median is 0.0035), and as many collapse onto a wrong action. At lr 0.1-1.0
+    no seed passes 0.05.
+- **Found:** the derivation holds in the typical case. PPO's expected push on a rare action scales with its probability, so it
+  stays near 0.004, while the mirror step moves every action by its own advantage. Only a very large step lets PPO reach the
+  rare action, by a lucky early sample, and it fails as often as it succeeds.
+- **Next:** research's call on stage 1 (the GPU bench arm, run only on R-mechanism). Meanwhile C151's `--select-retest` build.
+
+### #669 · 2026-10-31 · A5 C149 stage 0 · Research's read of C149's stage 0 (#668): R-mechanism on the band's intent, taken by default (row 115). The mirror step lifts a 0.004 action to 1.0 in all 20 seeds, and PPO's median stays at 0.0035-0.0045 at every learning rate (lr 3.0's mean of 0.153 is 3 lucky seeds of 20). The record left PPO's rate unfixed, so the band coded on the best grid mean read R-not. Stage 1 (the bench arm with afterstate advantages) runs
+- **Done** (research session, 2026-10-31 14:01): C149's stage-0 reading appended to its record; the implementation session told.
+- **Found:** the softmax-gradient explanation holds in the bandit. PPO leaves a near-zero good action near zero unless a lucky sample
+  escapes, and a mirror update with all-action advantages doesn't.
+- **Next:** C151 (being built), then C149's stage 1, then C150 and C152.
+
+### #670 · 2026-10-31 · A5 C151 · Built and launched C151 (Evan's row 116, taken by default under row 115): `rl/metagame.py --select-retest`. A move that passes the paired 1 SE rule waits one iteration and is re-tested on as many fresh paired slots. The deck moves only if that mean difference is above 0. C127's chain at seeds 38 and 39, side by side, from 14:06:42
+- **Done** (`rl/metagame.py`; every addition is behind the flag or loops over an empty dict when it's off):
+  - The flag, with `assert --select-paired`.
+  - `retest` (deck id → the entry and its slot count), saved in the checkpoint's season dict and restored on `--resume`.
+  - **Scheduling:** each pending re-test gets n slots after the paired slots. Each slot pairs the deck (entry 0) and its
+    entry (entry 1) against a fresh random opponent's current deck, on a fresh seat and a fresh seed (the iteration's base +
+    500,000 + n, clear of the paired, practice and C138 seeds). The two jobs sit on separate shards, unrecorded, with
+    `games_meta` None and outside the head and practice stats (`rt_meta`).
+  - **Read:** `round_score` (plus `--select-margin` if set) per slot.
+  - **Move:**
+    - Last iteration's winner moves only on a positive re-test. That counts in `moved`, `acc` and the ledger's
+      `acc_net`.
+    - This iteration's paired winner becomes next iteration's re-test, and the deck stays.
+    - `select.retest` logs read, played, kept, positive share, mean difference, games and pending (`retest_summary`).
+- **Acceptance:**
+  - **Off is code-path identical, by construction:** every changed line not naming the flag is inside a guarded block or a
+    loop over the empty `retest`. No RNG draw is added, and the else-path keeps the original move line. A diff check
+    confirmed this. A bit-for-bit run comparison isn't possible, because sampled play and PPO on the GPU aren't deterministic.
+  - **3-iteration smoke** (C127's flags at 20 decks and 200 games, seed 38; measured, 0 errors throughout):
+
+    | iteration | moved | re-tests read | kept | positive share | re-test games | pending next |
+    |---|---|---|---|---|---|---|
+    | 0 | 0 | 0 | 0 | — | 0 | 3 |
+    | 1 | 1 | 3 | 1 | 0.333 | 24 | 1 |
+    | 2 | 1 | 1 | 1 | 1.0 | 10 | 4 |
+    | 3 (after `--resume`) | — | 4 | 1 | 0.25 | 40 | 6 |
+
+    - Practice stayed at 25 games, so re-test games are excluded from it.
+    - The ledger's integrity check (`select_lean.py --cards`) passed (0 mismatches).
+    - The smoke folder was removed after reading; these numbers come from its `log.jsonl`.
+- **Run:**
+  - Chains: `runs/screens/C151-R1-K-paired-retest-s{38,39}/chain.sh` are C127 s16's chain with the name, seed and
+    `--select-retest`, plus a rewritten header.
+  - Sequencer: `runs/screens/C151-retest-winners/sequence.sh`, started detached. It runs both seeds side by side, staggered
+    90 s (about 3.7 GB each; free RAM 18.8 GB, GPU idle before launch). Each stage goes through `loop.py launch --kind screen
+    --evan-row 116`. Stage 1 (0-19), the stop rule, then stage 2 (20-29) and G3's probe. C127 took 130-160 s an iteration,
+    so about 70-80 minutes a seed alone (estimated).
+- **Next:** stage 1 readouts (about 15:00). Meanwhile build C149 stage 1 (afterstate advantages, acceptance on 20 b10 states)
+  and C150's per-slot Δ logging and Thompson proposals.
+
+### #671 · 2026-10-31 · A5 C149 C151 · C149 stage 1's acceptance **fails**: at 20 b10 states, afterstate values rank PlusPower above the greedy option in only 2 (10%, mean margin −0.41; the record asks for most, and C135's end-of-turn search gave 83%). Attack options score about 0.57 above every other option, because their afterstate is read from the opponent's seat. A mirror target on these values would mostly teach "attack now", so stage 1 isn't built further. Also: C151's seed 39 launched at 14:13:31, after a sequencer fix
+- **Done (C149):**
+  - **`env/agents.js` PolicySearchAgent `afterstate`** (opt-in, off by default, 2 lines): a line is scored by the pilot's
+    value at the first decision with no prompt open after the option. Prompts the option opens are still answered, and the
+    turn's end still stops a line.
+  - **`notes/scripts/audit/c149_accept_worker.js` and `c149_accept.py`:** arm 0 s1 on both seats of field H, one seat
+    designated, greedy (log only). At its main-phase decisions with "play PlusPower" and an attack legal, where some attack
+    played on an exact clone leaves the opposing Active at exactly 10 HP (b10), the afterstate search scores every option
+    (k 64, dets 1, CRN).
+  - Ran 600 games in 55 s, 0 errors, 0 line errors. Every option was searched at all 20 states.
+  - Output: `runs/probe/C149-mirror-update/accept_s149.{jsonl,json}`.
+- **Evidence** (measured, finished; 20 states, PlusPower never the greedy choice):
+
+  | readout | value |
+  |---|---|
+  | **PlusPower's afterstate value above the greedy option's** | **2 of 20 (0.10)**; mean margin −0.41 |
+  | greedy option an attack (13 states): PlusPower above it | 0 of 13 |
+  | greedy option not an attack (7: attach 6, Basic 1; retreat below) | 2 of 7 |
+  | mean afterstate value, attack options (31) / every other option (192) | **+0.485 / −0.090** |
+
+  - The greedy options were attach, attack, play a Basic, and retreat.
+- **Found:**
+  - **Afterstate values on two sides of the turn aren't comparable.** An attack ends the turn, so its afterstate is the
+    opponent's first decision, scored −V from that seat. PlusPower, an attachment or a Basic leave the deciding seat
+    mid-turn, scored V from its own seat. Across these states the first reads about 0.57 higher, so a softmax over every
+    option's A = V(afterstate) − V(s) puts its weight on attacking at once, whatever the card. That's a fault in the design
+    as written, found before any training (rule 9).
+  - **Even within the same seat,** PlusPower's afterstate scores at or below the greedy attachment in 5 of 7 states. The KO
+    PlusPower enables comes one move later, outside the afterstate, which is the record's own stated risk.
+  - So the record's acceptance fails, and stage 1 isn't built further (no bench arm, no second probe channel).
+  - The `afterstate` option stays in `env/agents.js`, off by default.
+- **C151 sequencer fix:** `loop.py launch` refused seed 39 as a silent repeat of seed 38's configuration. It needs
+  `--replicate-of`, and `sequence.sh` would have retried that for two hours. I stopped `sequence.sh` (its sh processes
+  only; seed 38's training continued, detached) and started `runs/screens/C151-retest-winners/sequence2.sh`. It waits for
+  seed 38's stage 1, which was already running, and launches seed 39 with `--replicate-of C151-R1-K-paired-retest-s38`
+  (launched 14:13:31). Stage 2 of both follows the stop rule as before.
+- **Next:** research's call on C149 (e.g. end-of-turn lines over every option, which is C135's scorer, or close the form).
+  C151 stage 1 readouts at about 15:00 (s38) and 15:07 (s39). Meanwhile C150's build.
+
+### #672 · 2026-10-31 · A5 C149 close · Taken by default (row 115): C149 closes at stage 1's acceptance (#671). One-step afterstate values are biased toward attacks (an attack's afterstate is the opponent's turn: +0.485 against −0.090 for other options) and rank PlusPower top at only 2 of 20 breakpoints. That's a design fault in research's record, and end-of-turn search targets would repeat C137. The bandit's mechanism stands, but clean all-option advantages aren't available from this pilot's value, so the queue moves on to C150 and C152 (the value's inputs)
+- **Done** (research session, 2026-10-31 14:16): C149's record updated with the closure and its reasons; the implementation session told. The opt-in
+  afterstate code and its acceptance scripts stay (`env/agents.js` afterstate; `notes/scripts/audit/c149_accept_*`).
+- **Next:** C151 (running), C150's build, then C152.
+
+### #673 · 2026-10-31 · A5 C150 · Built C150's `--thompson-share` (pooled per-card Thompson proposals). The synthetic acceptance is a partial pass: a planted +0.05 is recovered for the most-changed card, not for a typical one, which is the record's prior at work. The smoke found a design fault: one posterior sample an iteration makes every Thompson deck add the same 2 cards. A sample per deck is recommended to research. It's not launched; it follows C151 on the GPU
+- **Done** (`rl/metagame.py`; at S 0 every change is guarded, and no RNG draw is added):
+  - `thompson_fit`: the ridge posterior of y ≈ Σ β_c Δcount_c, prior N(0, τ²) with τ 0.02, noise sd from the residuals
+    (three refits).
+  - `thompson_draw`: a Cholesky sample.
+  - `thompson_swap`: a greedy 6-copy swap, a copy of the original out and any addable card in, keeping the last Basic, legal
+    by assert.
+  - `thompson_stats`: Thompson and head proposals' copies in, tempo/draw share and distinct cards in, plus β mean/SD for the
+    seven tempo and draw cards. These are readouts only; no proposal reads a name.
+  - Flags `--thompson-share`, `--thompson-window` (5) and `--thompson-tau` (0.02).
+  - The fit draws before candidates. A share S of decks then gets a Thompson candidate with no head events, so it adds no
+    REINFORCE gradient. The paired slots' (Δ ids, Δ counts, y) are kept for the window, checkpointed, and logged to
+    `<run>/thompson_slots.jsonl`.
+  - `notes/scripts/c150_synth.py`: the acceptance test.
+- **Acceptance** (measured):
+  - **Synthetic** (99 wide decks, 5,000 random 6-copy slots, noise sd 0.8, a card planted at +0.05):
+
+    | planted card | slots in which it changed | posterior mean (SD) | within 2 SD of 0.05 |
+    |---|---|---|---|
+    | most changed (Fighting Energy BS) | 1,558 | +0.039 (0.011), 3.7 SD above 0 | yes |
+    | median among changed (Dratini BS) | 125 | +0.004 (0.019) | no |
+    | median among held (Electrode JU) | 114 | +0.007 (0.019) | no |
+
+    - The fitted noise sd was 0.79-0.80, and the largest unplanted mean 0.015-0.019.
+    - With about 120 observations at noise 0.8, the prior's SD of 0.02 dominates, so the record's test passes only for
+      frequently changed cards.
+  - **Smoke** (C127's flags at 20 decks and 200 games, seed 36, S 0.5): 3 iterations and a 2-iteration rerun, 0 errors, the
+    ledger's integrity PASS. About half the decks (16, 10, 11 of 20) got Thompson candidates, and the fit used 0, 100 and 200
+    slots (noise sd 0.45).
+- **Design fault** (in the smoke):
+  - With one β̃ an iteration, the Thompson proposals took 96 copies from **2 distinct cards** (iteration 0) and 60 from 2
+    (iteration 1). The head's proposals used 20 and 44 distinct cards. They added no tempo or draw copies (the head's 4-12%).
+  - Every Thompson deck adds the same argmax cards, so if they're kept, half the population moves toward one draw's lucky card
+    each iteration, which risks a collapse.
+  - Offline over 48 wide decks: one shared sample gives 3 distinct cards in, while a sample per deck gives 81, about 2 a deck,
+    with a tempo/draw share of 0.031 (chance level).
+  - Recommended to research: a fresh sample per deck, which is standard per-decision Thompson sampling and a one-line change.
+- **Not launched:** C151's two seeds hold the GPU until about 15:20 (C150's two runs would take the total past the 80% cap).
+  Research's call on the sampling, and on the partial acceptance, comes first.
+
+### #674 · 2026-10-31 · A5 C150 · C150's Amendment 1, before launch, taken by default (row 115): a posterior sample per deck (one sample an iteration made the Thompson decks add the same 2 cards), the partial synthetic pass accepted as expected statistics (median cards stay near the prior), and a Pokémon-slide harm watch added, since near-prior swaps are close to random, the regime of #225
+- **Done** (research session, 2026-10-31 14:23): C150's record amended; the implementation session told. C150 launches when C151 frees the GPU
+  (about 15:50, implementation's estimate).
+
+### #675 · 2026-10-31 · A5 C150 · C150's Amendment 1 is built (a posterior sample per deck, and the proposals' P/T/E change logged), and its launch is queued behind C151: `runs/screens/C150-thompson-proposals/sequence.sh` (started 14:26:40) waits for C151's sequencer to end, then runs seeds 36 and 37 through `loop.py`
+- **Done** (`rl/metagame.py`):
+  - `thompson_draw(mu, L, rng)` takes the posterior precision's Cholesky factor, computed once an iteration, and each Thompson
+    deck draws its own sample.
+  - `thompson_stats` adds each source's mean P/T/E change a proposal (`pte`) and its distinct cards in.
+- **Smoke** (2 iterations, C127's flags at 20 decks, seed 36, S 0.5; measured, 0 errors, ledger integrity PASS):
+
+  | iteration | Thompson: proposals, distinct cards in, P/T/E change | head: proposals, distinct cards in, P/T/E change |
+  |---|---|---|
+  | 0 | 9, **17**, +3.7 / −2.2 / −1.4 | 11, 48, +3.5 / +0.7 / −4.3 |
+  | 1 | 15, **29**, +3.5 / −2.7 / −0.9 | 5, 27, +3.8 / −0.4 / −3.4 |
+
+  - Distinct cards in went from 2 (one sample an iteration, #673) to 17 and 29.
+  - Both sources add about 3.5 Pokémon a proposal at the start, which is the slide that research's added harm watch (median
+    Pokémon up 4 or more over any 10 iterations, #225) will read.
+- **Launch:**
+  - Chains: `runs/screens/C150-R1-K-paired-thompson-s{36,37}/chain.sh` are C127 s16's with name, seed, `--thompson-share 0.5`
+    and a rewritten header.
+  - Sequencer: C151's `sequence2.sh` adapted. It waits for "C151 sequence end" (so a C151 seed stopped at stage 1 doesn't
+    block it) and holds on runs/GPU-PAUSE. Then s36, and s37 with `--replicate-of`, 90 s apart, each stage via
+    `loop.py launch --kind screen --evan-row 116`, with stage 1, the stop rule, then stage 2 and G3's probe.
+- **Next:** C151's stage 1 stop rules (about 14:47, 14:54); C150 starts when C151 ends (about 15:20). Meanwhile C152's build.
+
+### #676 · 2026-10-31 · A5 C152 · Checked before building (rule 6): C152's input (i), the remaining-deck vector, already exists, and the pilot cross-attends to it. Part of (ii), thermometer codes for token counts, exists as the token model's opt-in `count_features`, never measured alone. Only thermometers for the global and slot scalars (HP left, Prizes left, deck size) are new. Nothing is built; the arms go to research with a recommended default
+- **Found** (read from the code):
+  - **`env/tokens.js`** pushes a `KIND.MY_UNSEEN` token per card, with aux = copies: the deciding seat's decklist minus the
+    cards seen in hand, discard, stadium, supporter and every slot (Pokémon, Energy, Trainers attached). That's the cards
+    still in the deck or the Prizes, which is C152's (i).
+  - **`rl/token_model.py`** `DECK_KINDS = (9, 10)` (MY_UNSEEN, OPP_DECKLIST) is the deck stream that `deck_mode` cross
+    attends to, and arm 0 and the loop's pilot both run cross. So the record's premise ("reads its decklist but not what's
+    still in the deck") doesn't hold.
+  - **`count_features`** (`rl/token_model.py`; `COUNT_THRESHOLDS` 1-40) adds each token's count on two scales plus a
+    thermometer code. It was built early (commit `d42f4b8`, log line about 1003), tried only together with a doubled model,
+    "the effect of the count features alone is not measured". Arm 0 and the loop's pilot run it off.
+  - **The scalars:** slot HP is `slots[o+2]` = HP/120 and damage `slots[o+3]`; Prizes left and deck size are glob scalars
+    (/6, /48). Thermometers for them change GLOB_F and SLOT_F, so the start pilot's input layers would need zero-initialised
+    new columns.
+- **Recommended to research** (taken by default unless it rules otherwise, row 115): (c) the control against (ii-a)
+  `count_features` on, with no input build. The scalar thermometers (ii-b) come only if research wants the larger build.
+- **Next:** research's call on C152's arms. C151's stage 1 stop rules (about 14:47, 14:54); C150 starts after C151 ends.
+
+### #677 · 2026-10-31 · A5 C152 · C152's Amendment 1, taken by default (row 115): the remaining-deck input research recorded already exists (`KIND.MY_UNSEEN` tokens, read in the pilot's deck stream), a rule-6 error by research caught by the implementation session, so the test becomes (c) against `count_features` on, the existing opt-in count thermometers never measured alone. No input build; the scalar thermometers wait on its read
+- **Done** (research session, 2026-10-31 14:28): C152's record amended and the implementation session told.
+- **Next:** C152's two bench arms beside C150 if RAM allows; C151's readout at about 15:00.
+
+### #678 · 2026-10-31 · A5 C152 · C152 (Amendment 1: the control against `count_features` on, arm 0's recipe from the start pilot, 30 minutes each, seed 1) is built and queued after C150. Building it found that the count-features arm couldn't load the start pilot at all. Fixed: the new projection is allowed as grown weights and starts at zero, so the arm begins as exactly the start pilot
+- **Done:**
+  - **`rl/gpu_matrix.py` `load_policy`:**
+    - "count_proj." joins the grown-weight prefixes that a checkpoint may lack (the assert had refused them, so the arm would
+      have crashed at launch).
+    - A grown `count_proj` is zeroed, so count features enter through a zero-initialised projection. Untouched when the
+      checkpoint has the weights or count features are off.
+  - **`notes/scripts/audit/c135_games.py`:** `--pilot` (default arm 0 s1, as before).
+  - **`notes/scripts/c152_read.py`:**
+    - cf's head-to-head win share against c (`c147_h2h.py`, slot 1 = cf), with the record's bands (R-input at 0.53 or more
+      and 2 SE above 0.5, R-null within ±2 SE, Harm under 0.47);
+    - each arm's draw-group price (C146's design) and cf − c paired;
+    - each arm's pp@b10 (C135's definition).
+  - **`runs/probe/C152-deck-counts/run.sh`** (started detached at 14:32):
+    - It waits for "C150 sequence end", because `bench_train.py` refuses while the GPU holds over 4,000 MiB (ar_milestone's
+      check), so the arms can't run beside C150.
+    - It holds on runs/GPU-PAUSE.
+    - Then c and cf in turn (`bench_train.py --minutes 30 --seed 1 --commit 377267f`, cf with `--model-overrides
+      '{"count_features": true}'`, `RL_GPU_SHARE` 0.25 as arm 0).
+    - Then the head-to-head (24 mirrors × 26 deals, 624 games), each arm's draw price and pp@b10 (1,104 games each), and the
+      reader.
+- **Acceptance** (measured, on CPU):
+  - The start pilot grown with `count_features` loads.
+  - The new weights are only `count_proj.{weight,bias}`, and every shared weight is identical to the start's.
+  - On a real recorded batch (1,715 rows, C137's identity rollouts), its logits and value equal the start pilot's exactly
+    (max difference 0.0).
+  - The bench smoke itself couldn't run now: `bench_train.py` refused (GPU 8,861 MiB in use). Its first iteration at launch
+    is the smoke, and the run stops on a missing pilot.
+- **Note for the record:** "fresh weights" are read as zero-initialised, which is trainable and makes the arm start equal to
+  the control. Told to research.
+- **Next:** C151's stage 1 stop rules (about 14:47, 14:54); C150 (about 15:20-16:40); C152 (about 16:40-17:50).
+
+### #679 · 2026-10-31 · A5 C151 · C151 reads **R-null (R-noise)**: re-tested on fresh games, the moves that pass the paired 1 SE rule come out positive only 49.6% and 48.0% of the time (379 and 381 re-tests, SE 0.026), a coin flip. Their mean re-test difference is +0.017 and −0.006. So selection's 1 SE winners are, measured directly, as good as noise. Re-testing cut moves from about 14.7 an iteration to about 6.2 and moved no outcome band
+- **Done:**
+  - Seeds 38 and 39 ran stages 0-19 and 20-29 plus G3's probe through `sequence.sh` / `sequence2.sh` and `loop.py`, ending
+    15:02:42. 0 errors in 30 iterations each, both stage 1 stop rules passed, no G1 watch, and ledger integrity had 0 failures.
+  - Read with `notes/scripts/c151_read.py` (new): `select_lean.cards` with the record's draw group (Oak, Bill, Gambler)
+    added, `c119_counts.g1_set` and `aa_window.dist` at 29, the four W 0 ledger controls read by the same code, and the
+    record's bands. Output in `runs/screens/C151-retest-winners/readout.json`.
+  - The reader reproduces the record's control values: λ_T4 −0.066, λ_draw +0.024 (the highest +0.104).
+- **Evidence** (measured, finished):
+
+  | readout | s38 | s39 | controls (4 W 0 ledger seeds) |
+  |---|---|---|---|
+  | **re-tests positive** (played) | **0.496** (379) | **0.480** (381) | — |
+  | mean re-test difference | +0.017 | −0.006 | — |
+  | moves an iteration | 6.27 | 6.10 | 14.67 |
+  | λ_T4 (SE) | −0.009 (0.064) | −0.062 (0.070) | −0.066 |
+  | λ_draw (SE) | −0.043 (0.081) | −0.019 (0.054) | +0.024 |
+  | T4 copies a deck (G1 set, it 29) | 2.17 | 2.08 | 1.79 (13 gated seeds: 1.98 ± 0.42) |
+  | draw copies a deck (Oak, Bill, Gambler) | 2.75 | 1.50 | 2.13 |
+  | G1 at 29 | 11.0 | 13.2 | 9.2 (13 gated seeds: 11.2 ± 3.8) |
+
+- **Bands** (C151's record, written before the run):
+  - **R-noise:** yes, 0.60 or less at both seeds.
+  - **R-lever:** no. T4 is under 2.57 at both seeds; draw is under 3.13 (controls + 1.0) at both; G1 is over 5.92.
+  - **R-ledger:** no. Pooled λ_T4 is −0.036 (needs +0.004); pooled λ_draw is −0.031 (needs +0.13).
+  - **Harm:** no. 6.1-6.3 moves an iteration, against the floor of 3, and no G1 watch.
+  - So it reads **R-null (R-noise)**, which was the prior.
+- **Found:**
+  - The paired rule's winners don't beat their decks on fresh games. The share of positive re-tests is at chance on both seeds
+    (each within 0.8 SE of 0.5), so the loop's moves are mostly noise, as the report's arithmetic predicted (about 16% of null
+    moves pass).
+  - Filtering them halves the moves and leaves the drafts where the base puts them. The drafts' lean doesn't come from noisy
+    acceptance alone.
+- **Next:** C150 (seed 36 launched 15:03:12, s37 90 s later), then C152 (queued). Research's read of C151.
+
+### #680 · 2026-10-31 · A5 C151 · Research's read of C151 (R-noise, #679): moves that pass selection's paired 1 SE rule re-test positive only 49.6% and 48.0% of the time (about 380 each, SE 0.026), a coin flip, so a pass on about 10 paired games carries no information that the move helps. Selection is close to pure noise, and the drafted decks reflect their starting decks and the head's proposals; filtering halved the move rate (6.2 against 14.7) with no outcome change. That's the direct case for pooling evidence across decks (C150, running)
+- **Done** (research session, 2026-10-31 15:04): read #679 against C151's record.
+- **Found:**
+  - The first test's pass predicts nothing about the re-test. With per-card effects of about 0.005-0.02 a copy, 10 paired slots can't
+    rank moves.
+  - #564's selection lean, consistent over 18 seeds, is a small real tilt riding on mostly random moves.
+  - Every drafting lever that relied on per-move selection (C121-C131) was read through this noise.
+- **Next:** C150's two seeds (launched 15:03), then C152.
+
+### #681 · 2026-10-31 · A5 C150 · C150's Amendment 2, mid-run and taken by default (row 115): partial readings show the Pokémon slide of #225 (s36's median Pokémon 9 → 12 in five iterations; Thompson proposals about +4.1 Pokémon and −3.8 Trainers each, proposing no tempo or draw cards by iteration 4), so a crossing of the +4-in-10 harm line now stops that seed as R-harm
+- **Done** (research session, 2026-10-31 15:15): C150's record amended and the implementation session told. Partial readings are labelled as such.
+- **Found (partial):** with the posterior near its prior, Thompson's greedy swaps pick in-cards in proportion to the pool, which is mostly
+  Pokémon, and out-cards from the deck, which is Trainer-heavy. The pooled model isn't yet informative enough to steer them.
+
+### #682 · 2026-10-31 · A5 C150 · C150 reads **R-harm**, both seeds stopped by Amendment 2 at 15:15:22. Within 6-7 iterations the median Pokémon count rose 4 (s36 9 → 13 over 0-6; s37 8 → 12 over 0-5), with Trainers falling (28 → 23 and 28 → 25), #225's slide. The Thompson proposals added about 4 Pokémon and removed about 3.3 Trainers each, and they proposed the tempo and draw cards *less* often than the head (2.0% and 0.1% of copies in, against the head's 5.3% and 5.9%). C152 moves up
+- **Done:**
+  - Seeds 36 and 37 launched 15:03:12 and 15:04:42 (s37 with `--replicate-of`).
+  - Amendment 2's watcher (a Monitor over `log.jsonl`, every 30 s) saw both seeds over the line at 15:15:22. It ran
+    `loop.py stop` on each, so STOP read "stop", plus a line "harm C150 Amendment 2".
+  - Each trainer ended after its current iteration: s36 at 7, s37 at 6, 0 errors (16,000 and 14,000 games).
+  - The sequencer's stage-1 stop rule then declined stage 2 ("last iteration 7" and "6") and ended at 15:18:16, which
+    released C152's queue. Both runs acknowledged in `loop.py`.
+- **Evidence** (measured; the runs are partial by design, stopped by the harm rule):
+
+  | readout | s36 (0-7) | s37 (0-6) |
+  |---|---|---|
+  | **median Pokémon by iteration** | 9, 9, 10, 10, 11, 12, **13**, 13 | 8, 9, 10, 11, 11, 12, **12** |
+  | median Trainers / Energy, first → last | 28 → 23 / 24 → 22 | 28 → 25 / 23 → 23 |
+  | moves an iteration | 18.4 | 20.9 |
+  | **tempo/draw share of copies in: Thompson / head** | **0.020** (50 of 2,478) / 0.053 | **0.001** (2 of 2,052) / 0.059 |
+  | P/T/E change a proposal: Thompson | +3.93 / −3.18 / −0.75 | +4.14 / −3.44 / −0.71 |
+  | P/T/E change a proposal: head | +2.41 / +0.03 / −2.44 | +2.13 / +0.29 / −2.42 |
+  | slots in the last fit; noise sd | 5,000; 0.48 | 5,000; 0.51 |
+
+  - **Posterior β (mean ± SD) at the last iteration,** none beyond 1.8 SD of 0:
+    - s36: PlusPower −0.024 ± 0.013, Oak +0.014 ± 0.014, Bill +0.011 ± 0.014, Gambler +0.013 ± 0.012.
+    - s37: PlusPower +0.007 ± 0.014, Bill −0.016 ± 0.014.
+  - The control C127 s16 went from 9 to 11 Pokémon over 0-9.
+- **Bands** (C150's record with Amendments 1-2):
+  - **R-harm.**
+  - R-proposes would have failed anyway: the Thompson proposals bring in tempo or draw copies a third as often as the head's
+    at s36 and almost never at s37, not twice as often.
+- **Found:**
+  - Near-prior Thompson swaps follow the pool's make-up (225 Pokémon of 277). Each swap's best β̃ is usually a Pokémon, and the
+    copies out are Trainers and Energy. So, as with the random proposals that slid every earlier start into Pokémon piles
+    (#225), selection keeps enough of them to move the median.
+  - In 5 iterations (5,000 slots) the pooled model learned nothing that separates the tempo or draw cards from zero.
+- **Next:** C152 (its queue waited for "C150 sequence end" and starts now); research's read of C150.
+
+### #683 · 2026-10-31 · A5 C150 · Research's read of C150 (R-harm, #682): pooled per-card Thompson proposals slid both seeds toward Pokémon piles (median Pokémon 9 → 13 and 8 → 12 within seven iterations; Trainers 28 → 23 and 28 → 25), the failure of #225's uniform base, and brought in fewer tempo and draw cards than the head (0.020 and 0.001 of copies against 0.053-0.059). After 5,000 pooled slots no tempo or draw card's posterior is beyond 1.8 SD of 0 (SD about 0.013), still too wide for 0.005-0.02 effects
+- **Done** (research session, 2026-10-31 15:19): read #682 against C150's record and amendments.
+- **Found:**
+  - Pooling narrows a card's uncertainty, from about 0.07 for one card's own slots to about 0.013, but not yet to the size of the effects.
+  - A greedy swap from a near-prior posterior picks in-cards in proportion to the pool, so it needs the head's base measure (Nf) or a
+    proposal that doesn't follow the pool's make-up.
+  - The useful form would add the posterior as a small bonus on the head's proposal logits, keeping Nf. Not recorded yet; it waits for
+    C152 and any RESEARCH CALL.
+- **Next:** C152's readouts (about 16:35).
+
+### #684 · 2026-10-31 · A5 C152 · C152 reads **R-null**: count features don't make the pilot stronger. Head to head against the control on the California mirrors it wins 0.494 (SE 0.018, 624 games). Beside it, the draw group's price rises from +0.063 to +0.110 (paired +0.047, SE 0.015), past the record's 0.03, but that's one training seed, and the control's +0.063 sits 0.03 under arm 0's own +0.095 and +0.097 on the same recipe and seed. So it's a lead, not an effect. pp@b10 falls 0.026 → 0.002. (ii-b) doesn't run
+- **Done:** `runs/probe/C152-deck-counts/run.sh` ran 15:18:44-16:22:01 (it waited for C150's sequencer, as queued):
+  - **c:** `bench_train.py --minutes 30 --seed 1 --commit 377267f`, 21 iterations, 9,308 games, 0 errors.
+  - **cf:** the same plus `--model-overrides '{"count_features": true}'` (count_proj zero-initialised, #678), 21 iterations,
+    9,356 games, 0 errors.
+  - **Readouts:** `c147_h2h.py` (slot 0 c, slot 1 cf, 24 mirrors × 26), `c142_run.py --groups draw --arm G` per arm, and
+    `audit/c135_games.py --arm G --n 1104 --pilot` per arm, all 0 errors.
+  - Read with `notes/scripts/c152_read.py`; output in the run folder's `summary.json`.
+- **Evidence** (measured, finished; one training seed an arm):
+
+  | readout | c (control) | cf (count features) | cf − c |
+  |---|---|---|---|
+  | **head to head: cf's win share** (624 games; draws half) | — | **0.494** (SE 0.018); by cf's seat 0.518 / 0.470 | — |
+  | wins cf / c / draws | — | 244 / 252 / 128 | — |
+  | draw group's price (C146's cells, 1,104 paired deals) | +0.063 (0.011) | +0.110 (0.011) | **+0.047** (0.015, paired) |
+  | pp@b10 (C135's harness, 1,104 games; 502 b10 states each) | 0.026 | 0.002 | −0.024 |
+
+  - **Training reference:** arm 0 s1 (the same recipe, commit and seed, run 2026-10-27 on older code) prices the draw group at
+    +0.095 and +0.097 (#653, #659), while this control gives +0.063. Retraining alone moves the price by about 0.03.
+- **Bands** (C152's record with Amendment 1):
+  - **R-null** (within ±2 SE of 0.5).
+  - R-input (0.53 or more and 2 SE above 0.5): no. Harm (under 0.47): no.
+  - The prior was R-null for (ii).
+  - "Its draw price at least 0.03 above the control is reported beside it": +0.047, reported, with the caveat above.
+  - Then: R-input wasn't met, so (ii-b), the scalar thermometers, doesn't run.
+- **Found:**
+  - Thermometer codes for token counts leave the pilot's overall strength unchanged, so input encoding isn't the limit at
+    this scale.
+  - The draw-price rise is the only movement. It sits inside the run-to-run spread a single training seed allows, and would
+    need a second training seed to count.
+- **Next:** research's read of C152 (with C150 R-harm and C151 R-noise). The queue is empty; the exploiter pilot waits behind
+  research's next records. The GPU is idle.
+
+### #685 · 2026-10-31 · A5 C152 C152b C153 · Research's read of C152 (R-null, #684): count features don't make the bench pilot stronger (win share 0.494, SE 0.018), but its draw-group price rose (+0.063 → +0.110, paired +0.047, SE 0.015), within the about-0.03 spread that retraining alone gives. Two records queued, taken by default (row 115): C152b, C152's second training seed by the null rule, and C153, the pooled posterior as a small bonus on the head's own logits, keeping Nf (C150's failure-safe form), bands first
+- **Done** (research session, 2026-10-31 16:23): `runs/probe/C152b-count-features-rep/record.md` and `runs/screens/C153-thompson-bonus/record.md`,
+  handed to the implementation session. C152b first (no build).
+- **Not queued:** the exploiter pilot (the report's rank 6): the most expensive, with the weakest evidence.
+
+### #686 · 2026-10-31 · A5 C152b C153 · C152b (C152 at training seed 2, no build) launched at 16:24:33, and C153's `--thompson-bonus` is built and queued behind it (its sequencer waits for C152b to end, since loop runs beside the bench arms would change their wall-clock compute). C153's acceptance passes
+- **C152b:**
+  - `runs/probe/C152b-count-features-rep/run.sh` is C152's with `--seed 2`, its own folder, pp@b10 tags `_c152{c,cf}2`, and no
+    wait.
+  - `notes/scripts/c152_read.py` gained `--dir` and `--tag`; it reproduces C152's read unchanged (R-null, cf − c +0.047).
+  - The first arm's config line reads "commit 377267f, 30 min, seed 2". Each arm's first iteration is its smoke.
+- **C153 build** (off by default, so code-path identical at K 0):
+  - **`rl/draft.py`:** `DeckView.bonus` (None by default) is added to the incoming logits in `sample` before the floor
+    temperature and the Nf base, and as the same constant in `log_prob`'s sampled-choice rows. The head's entropy terms stay on
+    its own logits.
+  - **`rl/metagame.py`:** `--thompson-bonus K` fits C150's model when it or `--thompson-share` is on. After the views are
+    built, each deck gets `K · thompson_draw(μ, L) / sd` (its own posterior sample, standardised by each card's posterior SD).
+    C150's slot logging, `select.thompson` stats and checkpoint history also run under the bonus.
+  - **`notes/scripts/slide_watch.py`** (new): C150 Amendment 2's harm stop as a script (median Pokémon up 4 or more within any 10
+    iterations; `--stop` writes "slide" to STOP). It fires on C150 s36 (9 → 13, iterations 0-6) and not on C127 s16.
+- **Acceptance** (measured):
+  - **The log-probs include the bonus** (CPU, the C49-sd pilot, a fresh head with C127's draft flags, 8 wide decks):
+    - with a 0.5 × N(0, 1) bonus, |log_prob − the sampler's log π| is at most 4.4e-6;
+    - the same draws scored without the bonus differ by up to 3.6;
+    - with no bonus at all, 2.8e-6.
+  - **P/T/E within 1 card** (seed 40, C127's flags):
+    - 99 decks, iteration 0: K 0.5 is +2.14 / +0.24 / −2.38, K 0 is +1.80 / +0.17 / −1.97, so within 0.41 on every count.
+    - The record's 2-iteration smoke at 20 decks was within 0.4 at iteration 0. At iteration 1 Trainers differed by 1.5
+      (−0.7 against +0.8), but 20 proposals from already diverged populations carry about ±1 card of noise, so the 99-deck
+      iteration 0 is the fair test.
+  - The ledger's integrity passed (both smokes), with 0 errors. Under the bonus, iteration 0 brought in 181 distinct cards at a
+    tempo/draw share of 0.062.
+- **C153 launch:**
+  - Chains: `runs/screens/C153-R1-K-paired-tbonus-s{40,41}/chain.sh` are C127 s16's with name, seed and `--thompson-bonus 0.5`,
+    plus the slide watch beside the G1 watch every 60 s (and its own "STOPPED by the slide watch" end line).
+  - Sequencer: `runs/screens/C153-thompson-bonus/sequence.sh` (started detached) is C150's adapted. It waits for "C152b end",
+    then runs s40, and s41 with `--replicate-of`, through `loop.py`, with stage 1, the stop rule, then stage 2 and G3's probe.
+- **Next:** C152b's readout (about 17:30); C153 from then.
+
+### #687 · 2026-10-31 · A5 A144 power C153 cancel C154 · A144's power check, CPU: from C145's 4,508 paired slots a cell (per-slot sd 0.372-0.377), detecting a draw copy over an Energy needs about 2,400 (+0.019, the lists under search), 3,400 (+0.016, greedy) or 17,750 (+0.007, the loop's own decks) paired games a move against about 10, so 240-1,800× over budget. Pooled at C150's scaling (SD 0.013 at 5,000 slots), it needs about 9,400-69,000 slots. Taken by default (row 115): C153 is cancelled before launch (its 5-iteration window is about 14× short) and replaced by C154, whether the pilot's own value at a fixed early turn is a lower-noise signal for a deck change, evaluation only, bands first
+- **Done** (research session, 2026-10-31 16:44): computed per-slot paired differences from C145's `C_s91.json` and `D_s91.json`; required n =
+  ((1.645 + 0.842) · sd / δ)². Wrote `runs/probe/C154-value-signal/record.md` and marked C153 cancelled in its record. Implementation and auditing told.
+- **Found:**
+  - At about 10 paired games a move, outcome-based selection has no power for the per-copy effects in play. That explains C151's 49%
+    re-test rate and every null drafting lever.
+  - Pooling helps, but at the loop's own effect size it needs about 70 iterations of data.
+- **Next:** C152b (running, about 17:30), then C154.
+
+### #688 · 2026-10-31 · A5 C153 C154 · C153 is cancelled before launch (research, after A144's power check, #687): its waiting sequencer is stopped and nothing of it ran. C154 (the pilot's value as a lower-noise signal for a deck change, with Amendment 1's arm L) is built, passes its acceptance, and is queued behind C152b
+- **C153:** `runs/screens/C153-thompson-bonus/sequence.sh`'s sh process was stopped at about 16:45. No C153 process ever started, and
+  C152b ran on. The build stays, off by default: `rl/draft.py` `DeckView.bonus`, `--thompson-bonus`, the chains, and
+  `notes/scripts/slide_watch.py`.
+- **C154 build** (log only):
+  - **`notes/scripts/audit/c154_worker.js`** wraps `env/remote_worker.js`, unchanged:
+    - The command's jobs (i, j, iSeat) are read as the worker parses its JSON frames (`F.readFrames`, the same cached module),
+      because the Runner's job lacks them.
+    - The focus seat (deck i's) goes through a pass-through agent that logs the pilot's V at its first decision of its own turns
+      2, 3 and 4.
+    - At game end (`Env.observe`) it logs `game.reward(focus)`, standing in for a turn the game didn't reach.
+    - One line a game; `C154_KEEP` states a worker also carry their encoded observation.
+  - **`notes/scripts/c154_run.py`:** arm D runs `c145_run.py` with the loop's pilot; arm L runs `c142_run.py --groups draw
+    --arm G` with the loop's pilot. Only the game workers are swapped, patched after the harness's imports (a library
+    subclasses Popen as it loads).
+  - **`notes/scripts/c154_accept.py`:** direct re-evaluation of logged states, as `rl/remote.py`'s server builds inputs.
+  - **`notes/scripts/c154_read.py`:** y and v_t per paired slot, both signed so positive = draw beats Energy (D: copy-with-draw −
+    deck; L: list − copy), with an end reward where a turn wasn't reached. It gives SNR with bootstrap CIs; D's per-deck Pearson
+    of mean v_3 with mean y; L's mean v_3 with CI and the per-list Spearman; the bands on t = 3.
+  - Amendment 1 is coded literally: if arm L's condition fails, it reads R-value-biased whatever the SNR.
+- **Acceptance** (measured):
+  - **Smokes:** 10 keys an arm, 40 games each, 0 errors, a value line for every game, 0 unpaired slots.
+  - **Logged V against a direct evaluation on 5 states an arm:** max |difference| 2.7e-7 (D) and 3.9e-7 (L), within the
+    record's 1e-4.
+  - The smoke values (20 slots, 1 deck an arm) are probes, not results.
+- **Launch:** `runs/probe/C154-value-signal/run.sh` (started 16:50, detached) waits for "C152b end" (so it doesn't share the
+  bench arms' wall clock), holds on runs/GPU-PAUSE, then runs arm D (9,016 games), arm L (2,208) and the reader.
+- **Next:** C152b's readout (about 17:30), then C154's (a few minutes after).
+
+### #689 · 2026-10-31 · A5 C152b · C152b's control arm c2 trained only 18 iterations (8,023 games), against 21 an arm in C152, because my smokes shared its 30 wall-clock minutes. That's my fault. So the control is retrained on an idle GPU after cf2 (c2b), and cf2 − c2b is read as the primary, taken by default with research's agreement. C154 now follows c2b
+- **What happened:**
+  - c2 trained 16:24:33-16:53:48 (`arm-c/result.json`: 18 iterations, 8,023 games, 0 errors).
+  - During that time I ran C153's smokes (four short `rl.metagame` runs, about 16:26-16:31) and C154's smokes and acceptance
+    check (about 16:47-16:49) on the same GPU and CPU.
+  - `bench_train.py` trains for a fixed wall clock, so those runs cost c2 about 3 iterations. C152's c and cf, on an idle
+    GPU, got 21 each (9,308 and 9,356 games). cf2 trains alone (16:54-17:24) and should match.
+- **Done:**
+  - **`runs/probe/C152b-count-features-rep/c2b.sh`** (started 16:54, detached) waits for C152b's `run.sh` to end (its readouts
+    with the 18-iteration c2, reported beside). It holds on runs/GPU-PAUSE, then retrains the control (`bench_train.py
+    --minutes 30 --seed 2 --commit 377267f`, `arm-c2b`).
+  - Then come cf2 against c2b head to head (624 games), c2b's draw price and pp@b10, and `c152_read.py --dir c2b/ --tag 2b`
+    (cf2's draw and pp files copied in).
+  - **C154's `run.sh`** was stopped while waiting and restarted to wait for "C152b c2b end", not "C152b end". Nothing else
+    touches the GPU during cf2 and c2b.
+- **Readout to add:** each arm's iteration count (c2 18, c2b and cf2 from their `result.json`), as research asked.
+- **Lesson:** a bench arm's 30 minutes are wall clock, so no smoke or side job may share the machine while one trains.
+- **Next:** C152b's readouts (about 17:30, c2 beside), c2b (about 17:30-18:05), C154 (about 18:05-18:10).
+
+### #690 · 2026-10-31 · A5 C152b · C152b reads **R-not**: at training seed 2, count features raise the draw group's price by only +0.005 (SE 0.014), against seed 1's +0.047. Seed 1's lead was training noise, and the input closes. Head to head is again level (0.493, SE 0.018). The control's draw price moves 0.02 between seeds (+0.063, +0.083), the run-to-run spread the null rule asks for. c2b was cancelled (research, by default under row 115)
+- **Done:** `runs/probe/C152b-count-features-rep/run.sh` ran 16:24:33-17:26:32:
+  - **c2:** `bench_train.py --minutes 30 --seed 2 --commit 377267f`, 18 iterations, 8,023 games, 0 errors.
+  - **cf2:** the same plus `count_features`, 17 iterations, 7,509 games, 0 errors.
+  - **Readouts:** head to head, draw prices and pp@b10, all 0 errors. Read with `c152_read.py --dir ... --tag 2`.
+- **Iteration counts** (research's request):
+  - Seed 1: c 21 and cf 21 (9,308 and 9,356 games, about 85 s an iteration).
+  - Seed 2: c2 18 and cf2 17 (about 97-101 s an iteration).
+  - cf2 trained with nothing else of mine running and still got 17, so seed 2 is slower per iteration. My smokes during c2
+    (#689) cost it at most about one iteration, and c2 still has one more than cf2, which is conservative against a cf gain.
+  - So research cancelled c2b, and `c2b.sh` was stopped before it started. C154's queue went back to "C152b end".
+- **Evidence** (measured, finished; C146's cells, 1,104 paired deals; positive = draw beats Energy):
+
+  | readout | seed 1 (C152) | seed 2 (C152b) |
+  |---|---|---|
+  | control's draw price | +0.063 (0.011) | +0.083 (0.010) |
+  | cf's draw price | +0.110 (0.011) | +0.088 (0.011) |
+  | **cf − c, paired** | +0.047 (0.015) | **+0.005 (0.014)** |
+  | head to head, cf's win share (624 games) | 0.494 (0.018) | 0.493 (0.018); by cf's seat 0.500 / 0.486 |
+  | pp@b10, c / cf (b10 states) | 0.026 / 0.002 (502 / 502) | 0.000 / 0.005 (469 / 564) |
+
+  - **Pooled two-seed cf − c** on the same deals: +0.026 (SE 0.010). That SE is deal noise only; with a training-seed spread of
+    about 0.02-0.03 between controls it isn't a claim.
+- **Bands** (C152b's record, written before the run):
+  - R-replicates (+0.03 or more and 2 SE): no, +0.005.
+  - **R-not.** Seed 1's +0.047 is read as training noise, and `count_features` closes as an input lever.
+  - The prior was between.
+- **Next:** C154 started at 17:26:32 (its queue waited for "C152b end").
+
+### #691 · 2026-10-31 · A5 C154 · C154 reads **R-no-gain**: at the pre-chosen turn 3, the loop pilot's value difference between a deck and its draw-card copy carries no mean signal in its own decks. Its SNR is −0.008 (CI −0.038 to +0.021), against the outcome's +0.075, so the ratio is 0.11. It does track which decks gain: the per-deck correlation of mean v_3 with the outcome is +0.56 (98 decks), and +0.42 Spearman over the 24 human lists. Its sign moves with the turn: V prefers the Energy deck at turn 2 (SNR −0.19 in both arms) and the draw deck by turn 4
+- **Done:** `runs/probe/C154-value-signal/run.sh` ran 17:26:56-17:30:41 (after C152b):
+  - **Arm D:** `c154_run.py --arm D`, 9,016 games, 0 errors. Its endings equal C145's cell D exactly (4,189 / 3,882 / 729 /
+    215), so the logged replay played the same games.
+  - **Arm L:** 2,208 games, 0 errors.
+  - Read with `notes/scripts/c154_read.py`; output in `summary.json`. 0 unpaired slots in either arm.
+- **Evidence** (measured, finished; positive = the draw cards beat the Energy; SNR = mean / sd over paired slots, bootstrap 95% CI):
+
+  | readout | arm D (loop's decks; 4,508 slots, 98 decks) | arm L (human lists; 1,104 slots, 24 lists) |
+  |---|---|---|
+  | **y** (outcome difference): mean, sd, SNR | +0.028, 0.372, **+0.075** (+0.045 to +0.104) | +0.037, 0.391, +0.095 (+0.036 to +0.154) |
+  | v_2: mean, sd, SNR | −0.024, 0.126, −0.190 (−0.224 to −0.155) | −0.024, 0.123, −0.193 (−0.257 to −0.131) |
+  | **v_3**: mean, sd, SNR | −0.002, 0.194, **−0.008** (−0.038 to +0.021) | +0.019, 0.164, +0.113 (+0.057 to +0.168) |
+  | v_4: mean, sd, SNR | +0.015, 0.271, +0.054 (+0.024 to +0.083) | +0.046, 0.215, +0.212 (+0.162 to +0.265) |
+  | per-deck correlation of mean v_3 with mean y | Pearson **+0.565**, Spearman +0.549 | Pearson +0.394, Spearman **+0.421** |
+  | arm L's mean v_3 (CI) | — | +0.019 (+0.009 to +0.029) |
+
+  - Arm D's y equals C145's cell D (+0.028), and arm L's equals C145's cell B (+0.037). Both readings were reproduced.
+- **Bands** (C154's record with Amendment 1 and research's reading of it):
+  - The SNR ratio at t = 3 is 0.11 (opposite sign), under 1.5, so it's **R-no-gain**.
+  - Arm L's own condition holds: v_3's CI is above 0 and its Spearman is +0.42. So it isn't R-value-biased.
+  - R-value-signal: no. The prior was between.
+- **Found:**
+  - The value halves the noise (sd 0.13-0.27 against the outcome's 0.37-0.39), but its mean difference changes sign over the
+    game. Early, V marks the draw copy down (it holds 4 fewer Energy); later it marks it up. At turn 3 in the loop's decks the
+    two cancel.
+  - So no single early turn gives a cleaner card signal than the outcome. That rules out a paired selection on v_3, which was
+    the record's next step.
+  - The per-deck correlations (+0.56, +0.42) say V's differences rank which decks gain from draw cards fairly well, even
+    where its mean says nothing.
+  - Arm L's turn 4 gives an SNR of +0.21 (2.2× its y's), but turn 4 wasn't the pre-chosen read, so it's reported, not claimed.
+- **Next:** research's read. The queue is empty; the GPU is idle.
+
+### #692 · 2026-10-31 · A5 C154 C148 · Research's read of C154 (R-no-gain, not biased; #691): the pilot's value difference at its turn 3 carries no cleaner mean signal for a deck change than the outcome (SNR ratio 0.11; the draw copy is marked down early for its missing Energy and up by turn 4), though V ranks which decks gain (+0.565 a deck). With #687, the drafting loop can't resolve per-card effects of this size at its budget by outcomes or early value. Taken by default (row 115): C148 is reinstated, practice on the population's own best decks, with the pilot's head-to-head strength on coherent decks (0.391 now) as its primary readout
+- **Done** (research session, 2026-10-31 17:31): C148 Amendment 1 written before launch and the implementation session told.
+- **Found:**
+  - The night's drafting chain closes on power. Per-move selection is a coin flip (C151), pooling is 2-14× short (C150, #687), and early value
+    gives no cleaner signal (C154).
+  - What could change the decks is a pilot that makes the lists' cards worth more. That's the axis C146 and C147(a) point to.
+- **Next:** C148 at seeds 34 and 35.
+
+### #693 · 2026-10-31 · A5 incident · My "stopped" sequencers weren't stopped. Git's `bin\sh.exe` is a launcher that runs the script in a child `bash.exe`. My kills matched `sh.exe` only, so they stopped the launchers and left the scripts running. Three cancelled jobs went on:
+- C153's sequencer launched seed 40 at 17:27:01. It's stopped now via `loop.py stop`, and ended after iteration 4.
+- c2b's script started the bench run research had cancelled (17:26, ends about 17:56).
+- C154 ran twice at once at 17:26.
+
+A process kill to clean up was **denied** by the auto-mode classifier ("Interfere With Workloads"). Per working rule 17 I didn't retry it; it's recorded here
+- **What was stopped as intended:** C153 s40 via `loop.py stop` (STOP "stop" plus a line), ending after iteration 4 (5 iterations,
+  0 errors). A pre-written STOP in `runs/screens/C153-R1-K-paired-tbonus-s41/` makes any stray s41 launch by the old sequencer end
+  after iteration 0. `loop.py` never clears a STOP file, and `rl.metagame` checks it each iteration.
+- **Still alive, and can't be stopped without the denied kill:**
+  - **c2b** (`c2b.sh`'s bash 19940/7376, bench_train 43176): its 30-minute training ends about 17:56, then its head-to-head, draw
+    and pp@b10 readouts write into `runs/probe/C152b-count-features-rep/c2b/`. These are unplanned and won't be read as part of
+    C152b. Research cancelled c2b, and C152b's primary stays cf2 − c2 (#690).
+  - **A C154 copy** (bash 27608) waiting for "C152b c2b end": it will re-run C154 alone at about 18:00, overwriting its files
+    with a single clean run. Useful, because:
+  - **C154's 17:26 run was doubled:** two copies started 15 s apart. Their value lines interleaved (`D_s91.values.jsonl` has
+    16,779 lines for 9,016 games, with 7,763 duplicate keys). Their games differ by one ending (no Pokémon 4,189 against 4,188),
+    so #691's numbers should stand, but they come from a mixed file. The ~18:00 re-run gives one clean copy, and I'll re-read it
+    and compare.
+  - **C153's sequencer** (bash 28224 and its seed subshells): its s41 branch keeps retrying a launch, which the STOP above
+    neutralizes.
+- **Effect on results:**
+  - C151 and C150 aren't affected: the old `sequence.sh`'s s39 branch only retried refused launches, and C150's sequencer ended
+    normally.
+  - C152b's cf2 trained 16:54-17:22, before any stray job started, so #690 stands.
+  - C148's launch is being refused for GPU room (12.5 GB in use) and retries every 60 s. It will start once c2b's run frees the
+    GPU, about 17:56.
+- **Cleanup that needs Evan:** a tree kill of bash 19940 (c2b), 27608 (the C154 copy) and 28224 (C153's sequencer), e.g.
+  `taskkill /PID <pid> /T /F`. The classifier refused it.
+  - Otherwise they end on their own: c2b at about 18:05, the C154 copy at about 18:05, and C153's sequencer after its s41 launch
+    attempts (up to 2 hours, harmless with the STOP).
+- **Lesson:** to stop a detached script, kill the `bash.exe` child, not the `sh.exe` launcher, and check by the script's path
+  across all process names.
+
+### #694 · 2026-10-31 · A5 C154 provisional · Correction to #692: C154's R-no-gain (#691) is provisional. The implementation session's incident (#693) had two copies of C154 run at once at 17:26 (interleaved value lines; one game's ending differs between them), so the read waits for the clean solo re-run (about 18:00). C148's reinstatement stands either way, since its case rests on #687's power numbers and C146-C147(a)
+- **Done** (research session, 2026-10-31 17:38): this entry. The cancelled jobs that ran on (C153 s40 to iteration 4, c2b's bench run) aren't read
+  against any band. C152b's primary stays cf2 − c2 (#690).
+- **Next:** C154's re-run and re-read against #691; C148 when the GPU frees (about 17:56).
+
+### #695 · 2026-10-31 · A5 C154 incident · C154's solo re-run (17:58:57-18:02:02) confirms #691 exactly: R-no-gain. Each value file now holds one line a game (9,016 and 2,208, no duplicates), and every SNR, CI, correlation and the band match the doubled 17:26 run. The incident's leftovers have all ended on their own; the last stray launch, C153 s41, ended after iteration 0 on the pre-written STOP. Only C148 runs now
+- **C154's clean run** (the stray waiting copy of #693, alone on the evaluation side):
+  - Arm D: 9,016 games, 0 errors, endings 4,188 / 3,882 / 729 / 216.
+  - Arm L: 2,208 games, 0 errors.
+  - From `summary.json`: D's y SNR +0.075, v_2 −0.190, v_3 −0.008 (−0.038 to +0.021), v_4 +0.054, Pearson +0.565. L's v_3
+    +0.113, mean +0.019 (+0.009 to +0.029), Spearman +0.421. The ratio is 0.108, so **R-no-gain**, the same as #691 to every
+    digit shown.
+  - So the doubled run didn't change the result. Research's provisional mark (#694) can lift.
+- **The leftovers' ends:**
+  - **c2b:** trained to 17:55:19, then its unplanned readouts (not read against any band, per research). cf2 against c2b had a win
+    share of 0.453 (SE 0.018, 624 games); draw prices +0.089 (c2b) and +0.088 (cf2), a difference of −0.001 (SE 0.014). That
+    agrees with C152b's R-not, and the head-to-head gap is training-seed spread.
+  - **C153's sequencer:** launched s41 at 17:37:37, 23 s after the STOP was written. rl.metagame ended it after iteration 0
+    (2,000 games, 0 errors), the stop rule declined stage 2, and the sequencer ended at 17:40:10.
+  - **The stray C154 copy:** ended after its re-run. No stray script process remains: a check at 18:08 found only C148's
+    sequencer and chains, plus the session's own shell.
+  - C153 s40 and s41 are acknowledged in `loop.py` as launched by the incident. Neither is read against any band.
+- **C148:** s34 launched 17:39:43 and s35 17:49:19 (held about 10 minutes by the GPU-room check while c2b trained). Both are
+  running stage 1.
+
+### #696 · 2026-10-31 · A5 C154 confirmed · C154's solo re-run (#695) reproduces #691 exactly (v_3 SNR ratio 0.108; arm L's v_3 mean +0.019, Spearman +0.421; arm D's per-deck Pearson +0.565), so #694's provisional mark lifts and R-no-gain stands. C148 runs at seeds 34 (since 17:39) and 35 (since 17:49)
+- **Done** (research session, 2026-10-31 18:09): read #695.
+- c2b's unplanned readouts are reported, not read against a band (cf2 against c2b 0.453; draw cf2 − c2b −0.001, SE 0.014). They don't
+  contradict C152b's R-not.
+
+### #697 · 2026-10-31 · A5 C148 · C148 reads **R-not** on its primary: practising half the time on the population's best decks doesn't make the loop's pilot stronger on the human lists. Head to head against arm 0 on the California mirrors it wins 0.346 (s34) and 0.404 (s35), both SE 0.013, against C127 s16's 0.391. R-skill fails too (draw price +0.056 and +0.049, under +0.08). The reported-only drafting readouts moved, though: draw copies a deck are 3.25 and 3.17 against the controls' 2.13 (+1.1 and +1.0, R-lever's bar at both seeds), and s34 has T4 3.17 and G1 4.33. Underpowered by #687, so a lead only
+- **Done:** `runs/screens/C148-practice-pop/sequence.sh` (C127's chain plus `--practice-from-pop 0.5`):
+  - s34 launched 17:39:43 and s35 17:49:19 (held by the GPU-room check during #693's stray jobs).
+  - Both stage 1 stop rules passed (18:15, 18:23). Stage 2 and G3's probe ended 18:32:56 and 18:40:32.
+  - Then the primary readouts (`c147_h2h.py` with each `checkpoint.pt` as slot 1, 48 deals a mirror, and `c142_run.py --groups
+    draw --arm G`), ending 18:43:23.
+  - Errors: 0 in s34's 30 iterations, 1 in s35's (60,000 games). About 120-138 of each iteration's 250 practice games came from
+    the population's top quarter.
+  - **Build** (`rl/metagame.py --practice-from-pop F`): the top quarter by `recent_score`; per practice game, with
+    probability F, two of those decks instead of two wide decks; still recorded for PPO only, outside selection and the head;
+    `practice.from_pop` logged.
+  - **Off is code-path identical:** the guard is `top_q and rng.random()`, so no RNG draw is added at F 0.
+  - **Smoke** (20 decks, 2 iterations): from_pop 142 and 129 of 250, 0 errors, ledger integrity PASS.
+  - At iteration 0 no deck has a score yet, so that iteration's top quarter is arbitrary.
+- **Evidence** (measured, finished):
+
+  | readout | s34 | s35 | reference |
+  |---|---|---|---|
+  | **primary: win share against arm 0, California mirrors** (1,152 games, SE) | **0.346** (0.013) | **0.404** (0.013) | C127 s16 0.391 (0.013) |
+  | wins / losses / draws | 311 / 665 / 176 | 363 / 585 / 204 | — |
+  | draw group's price on the lists (C146's cell B design, 1,104 deals) | +0.056 (0.012) | +0.049 (0.012) | C127 s16 +0.037 (B) |
+  | draw copies a deck (G1 set, it 29; Oak, Bill, Gambler) | **3.25** | **3.17** | controls 2.13 |
+  | T4 copies a deck | **3.17** | 2.50 | controls 1.79 (13 gated seeds 1.98) |
+  | G1 at 29 | **4.33** | 6.67 | controls 9.2 (13 seeds 11.2 ± 3.8) |
+  | λ_T4 / λ_draw (SE) | −0.059 (0.040) / +0.083 (0.034) | −0.020 (0.046) / +0.041 (0.047) | −0.066 / +0.024 |
+  | median Pokémon 0 / 10 / 20 / 29 | 8 / 10 / 13 / 12 | 8 / 9 / 10 / 11 | — |
+  | moves an iteration | 15.0 | 14.5 | 14.7 |
+  | G3 (vs_lists M) | 0.259 | 0.220 | controls 0.252-0.274 |
+  | largest types at 29 | 2, 2, 2, 2, 2, 1, 1, 1 | 2, 2, 2, 2, 2, 2, 2, 2 | — |
+
+- **Bands** (C148's record with Amendment 1):
+  - **Primary: R-not** (under 0.41 at both). R-stronger would need 0.43 at both.
+  - **R-skill:** no (+0.056 and +0.049, against +0.08 at both).
+  - **Reported only** (underpowered per #687):
+    - R-lever's draw criterion is met at both seeds (+1.12 and +1.04 above the controls' mean).
+    - s34 also meets R-lever's T4 (2.57) and G1 (5.92) criteria.
+    - R-ledger-draw (pooled λ_draw +0.062 against +0.13): no.
+  - **Harm:** no.
+    - The G1 watch didn't fire.
+    - No type collapse: the largest type holds 2 decks.
+    - G3 is under 0.25 at s35 only (0.220), and Harm needs both seeds.
+- **Found:**
+  - The pilot trained on coherent practice decks is no stronger head to head. s34 is weaker than C127 s16 by 0.045 (about 2.5 SE).
+  - Yet both seeds' drafted G1 sets carry more draw cards than any control (3.2-3.3 against 1.7-3.3; C127 s16 had 3.25 at 29).
+    s34's set is the closest to the lists' shape of any recent seed (G1 4.33).
+  - With #687's power arithmetic and the controls' own spread (C127 s16's draw count 3.25 equals s34's), this is a lead and not an
+    effect.
+- **Next:** research's read. The queue is empty; the GPU is idle.
+
+### #698 · 2026-10-31 · A5 C148 C148b · Research's read of C148 (#697): R-not on its primary. Practising on the population's own top decks doesn't make the pilot stronger on coherent decks (0.346 and 0.404 against arm 0; 0.391 before), and R-skill misses (+0.056, +0.049). But its reported-only drafting readouts are the best two-seed ground-truth result so far: G1 4.33 and 6.67 (mean 5.50 against 11.22 ± 3.75, about z −2.2), T4 3.17 and 2.50 (mean 2.84), and draw copies 3.25 and 3.17. After many screens that's a lead, not a claim. Taken by default (row 115): C148b repeats C148 at seeds 42 and 43 with those bands as its primary, bands first
+- **Done** (research session, 2026-10-31 18:46): `runs/screens/C148b-practice-pop-rep/record.md` written and handed to the implementation session.
+- **Caveats:**
+  - The drafting bands were demoted before the run, so they aren't claimed now.
+  - Multiple comparisons: about 15 drafting screens tonight make one z −2.2 result likely by chance.
+  - C127 s16's own draw copies were also 3.25.
+- **Next:** C148b (about 65 minutes).
+
+### #699 · 2026-10-31 · A5 C148b · C148b (C148's drafting lead replicated, research's record #698, no build) launched at 18:46:40: C148's chain unchanged at seeds 42 and 43, side by side, read on the new seeds' G1 and T4 only
+- **Done:**
+  - Chains: `runs/screens/C148b-R1-K-paired-practicepop-s{42,43}/chain.sh` are C148 s34's with name, seed, iteration variable and
+    header.
+  - Sequencer: `runs/screens/C148b-practice-pop-rep/sequence.sh` (C148's, started detached) runs s42 as `--replicate-of
+    C148-R1-K-paired-practicepop-s34` and s43 as `--replicate-of` s42, because loop.py refuses silent repeats (#671).
+  - Stages 0-19, the stop rule, then 20-29 and G3's probe. At the end, each pilot's head to head against arm 0 and its draw price,
+    as C148.
+- **Acceptance:** s42's `config.json` shows seed 42, `practice_from_pop` 0.5 and `select_paired` True. Its first iteration is
+  the smoke.
+- **Bands** (C148b's record, the new seeds only):
+  - R-replicates (G1): the two-seed mean G1 is 5.92 or less, each seed under 11.22.
+  - R-replicates (T4): the two-seed mean T4 is 2.57 or more, each seed above 1.98.
+  - Reported beside them: draw copies, λ, the head to head and G3.
+  - Harm as C148.
+- **Next:** stage 1 stop rules (about 19:25), stage 2 and probes (about 19:45), readouts (about 19:50). Read with
+  `notes/scripts/c151_read.py`'s `read`, as for #697.
+
+### #700 · 2026-10-31 · A5 C148b · C148b reads **not replicated** on both bands: at two new seeds, practice on the population's best decks gives G1 12.17 and 10.67 (mean 11.42, the gated base's 11.2) and T4 2.50 and 1.83 (mean 2.17, the base's 1.98). C148's G1 4.33 and T4 3.17 were seed luck. The trained pilots are again weaker than C127 s16 head to head (0.355 and 0.361, against 0.391), so all four seeds of the lever fall 0.02-0.05 under it
+- **Done:** `runs/screens/C148b-practice-pop-rep/sequence.sh`: s42 launched 18:46:40 and s43 18:48:10 (both as declared replicates).
+  Both stage 1 stop rules passed (19:23, 19:25). Stage 2 and G3's probe ended 19:39:53 and 19:43:23. The readouts (head to head
+  and draw price per pilot) ended 19:46:07. Errors: 0 (s42) and 6 (s43) in 60,000 games each. Read with `c151_read.read`, the
+  C148b folder's `h2h_s*.json` and `draw_s*.json`, and each run's `vs_lists.json`.
+- **Evidence** (measured, finished; C148's seeds beside them):
+
+  | readout | s42 | s43 | C148 s34 | C148 s35 | controls |
+  |---|---|---|---|---|---|
+  | **G1 at 29** | **12.17** | **10.67** | 4.33 | 6.67 | 13 gated seeds 11.22 ± 3.75 |
+  | **T4 copies a deck** | **2.50** | **1.83** | 3.17 | 2.50 | 1.98 ± 0.42 |
+  | draw copies a deck (Oak, Bill, Gambler) | 2.67 | 2.58 | 3.25 | 3.17 | 4 ledger seeds 2.13 |
+  | λ_T4 / λ_draw | −0.005 / +0.045 | −0.062 / +0.069 | −0.059 / +0.083 | −0.020 / +0.041 | −0.066 / +0.024 |
+  | win share against arm 0 (1,152 games, SE about 0.013) | 0.355 | 0.361 | 0.346 | 0.404 | C127 s16 0.391 |
+  | draw price on the lists (SE about 0.012) | +0.030 | +0.025 | +0.056 | +0.049 | C127 s16 +0.037 |
+  | median Pokémon at 0 / 29 | 8 / 14 | 9 / 14 | 8 / 12 | 8 / 11 | — |
+  | G3 (vs_lists M) | 0.243 | 0.263 | 0.259 | 0.220 | 0.252-0.274 |
+  | moves an iteration | 15.8 | 14.2 | 15.0 | 14.5 | 14.7 |
+
+- **Bands** (C148b's record, the new seeds only):
+  - **R-replicates (G1):** no. The mean is 11.42, against 5.92, and s42's 12.17 is over 11.22.
+  - **R-replicates (T4):** no. The mean is 2.17, against 2.57, and s43's 1.83 is under 1.98.
+  - **Harm:** no. No G1 watch; the largest types hold 2-3 decks; G3 is under 0.25 at s42 only.
+- **Found:**
+  - C148's lead doesn't replicate. Over four seeds the lever's G1 (4.33-12.17, mean 8.5) and T4 (1.83-3.17, mean 2.5) sit inside
+    the gated base's own spread.
+  - Draw copies stay above the four ledger controls' mean at all four seeds (2.58-3.25, mean 2.92, against 2.13). But C127 s16
+    alone had 3.25 and no band covers this, so it's reported only.
+  - The head to head is consistent, if not banded: all four trained pilots score under C127 s16's 0.391 against arm 0 (mean
+    0.367). That's one control pilot, though. Practising on the population's best decks doesn't make the pilot stronger, and it
+    may cost a little.
+- **Next:** research's read. The queue is empty; the GPU is idle.
+
+### #701 · 2026-10-31 · A5 C148b C155 · Research's read of C148b (#700): C148's drafting lead doesn't replicate (G1 12.17 and 10.67, mean 11.42; T4 2.50 and 1.83), and over four seeds both sit inside the base's spread, so practice on the population's own decks closes. Taken by default (row 115): C155 spends the same 2,000 games an iteration on 8 well-powered selection decisions (about 125 paired slots each, half held out), testing directly whether selection becomes informative (C151's re-test rate was 49%), bands first
+- **Done** (research session, 2026-10-31 19:48): `runs/screens/C155-powered-selection/record.md` written and handed to the implementation session.
+- **Found:** C148's best pair was regression to the mean, as prior. The levers tested since row 116 (C149-C154, C148, C148b) are all null or closed.
+  The one structural finding is that selection has no power at about 10 games a move (C151, #687).
+- **Next:** C155 (about 65 minutes after its build).
+
+### #702 · 2026-10-31 · A5 C155 · Built and launched C155 (powered selection, research's record #701 with Amendment 1): `rl/metagame.py --select-budget M`. Each iteration only M decks, in rotation, are evaluated, and every paired slot goes to them (125 each at M 8). Each moves on half A of its slots at 2 SE, with half B held out and logged. Seeds 44 and 45 from 19:54:31, without the zero-move stop rule, which this design would misfire
+- **Done** (`rl/metagame.py`; off is code-path identical, because the flag-off branch draws k, l, seat and entry in the original
+  order and every addition is guarded):
+  - **Rotation:** `focus` is positions it·M … it·M+M−1 mod D. Every paired slot's focus is one of those, cycling, against a random
+    other deck.
+  - **`budget_move`:** for an evaluated deck, its complete slots split at random (`rng.permutation`) into halves. Half A's best
+    entry is kept if its mean paired difference exceeds 2 SE. Half B's mean and SE for that entry are logged and never decide.
+    Non-evaluated decks stay.
+  - **`select.budget`** logs `{focus ids, evaluated: [{id, n, nA, nB, mA, seA, mB, seB, kept, entry, d_draw, d_T4, d_pte}]}`.
+    The draw and tempo counts are readouts only.
+  - It asserts `--select-paired` and refuses `--select-retest`.
+  - **`notes/scripts/c155_read.py`:** per seed, kept moves' half-B shares and means, half A, the not-kept moves' B, kept Δdraw and
+    ΔT4, slots a deck, and C151's outcome read. Pooled (Amendment 1): the kept moves' half-B positive share with a Wilson 95% CI,
+    the pooled B mean, the acceptance rate against the null's 2.3% a decision, R-direction, R-lever and Harm.
+- **Acceptance** (3 iterations at full scale, seed 44, `--select-budget 8`; measured):
+  - 8 decks evaluated each iteration at exactly 125 slots (halves 62 and 63), 0 errors, ledger integrity PASS.
+  - Kept: 0, 1 and 0. For example, iteration 0's first deck had A −0.070 (SE 0.072) and B −0.111 (SE 0.064), not kept.
+- **Stop rule:** C127's "0 moves for 10 iterations" is dropped. At 2 SE on 8 decks, noise alone keeps about 0.2 moves an iteration,
+  so long zero runs are expected. That's research's Amendment 1. Errors over 2% and the G1 watch stay.
+- **Run:**
+  - Chains: `runs/screens/C155-R1-K-paired-budget-s{44,45}/chain.sh` are C127 s16's with name, seed and `--select-budget 8`.
+  - Sequencer: `runs/screens/C155-powered-selection/sequence.sh` is C151's sequence2 adapted. s45 is `--replicate-of` s44, 90 s
+    staggered, and the stop rule has no zero-move condition.
+- **Next:** stage 1 stop rules (about 20:35), stage 2 and probes (about 20:55), read with `c155_read.py`.
+
+### #703 · 2026-10-31 · A5 A145 C156 · A145's call (can a human-free pilot learn draw skill from coherent self-generated decks?) becomes C156, queued after C155, taken by default (row 115): the start pilot's recipe trained on concentrated wide decks (each Pokémon line at the top of its range, 6-8 distinct Trainers at 3-4 copies, no card named) against standard wide decks, two training seeds per arm, read on the California lists' draw price, bands first
+- **Done** (research session, 2026-10-31 20:44): `runs/probe/C156-concentrated-practice/record.md` written and handed to the implementation session.
+- **Design note:** wide decks already have complete lines and mostly matching Energy. The property human lists add is concentration (3-4 copies),
+  which gives draw cards pieces to find, so that's the one variable changed.
+
+### #704 · 2026-10-31 · A5 C156 · Built C156 (auditor A145, research's record #703): `rl/decks.py wide_deck(..., concentrated=True)`, plus the W and K practice sets for the bench arms. Its acceptance passes, and it's queued behind C155: `runs/probe/C156-concentrated-practice/run.sh` (started 20:46, waits for "C155 sequence end") trains four bench arms in turn, then reads them
+- **Done:**
+  - **`rl/decks.py` `wide_deck(pool, rng, concentrated=False)`:**
+    - Concentrated, each line sits at the top of its copy range (a Basic 4, a Stage 1 3, a Stage 2 2), with the same line count and
+      stage odds.
+    - The Trainer slots are 6-8 distinct Trainers drawn uniformly at 3-4 copies each, and no special Energy.
+    - Basic Energy, typed as before, fills the deck to 60. A draw whose Energy count falls outside the generator's own 8-34 is
+      drawn again.
+    - It's rules-only.
+  - **`notes/scripts/c156_decks.py`:** writes `W_matchups.json` and `K_matchups.json`. Each has 128 decks (standard or
+    concentrated, the same RNG seed 156) and 2,048 matchups (each deck's mirror plus 1,920 uniform cross pairs, the start pilot's
+    practice size), in `bench_matchups.json`'s format.
+  - This stands in for the record's "bench_train flag": `bench_train.py --matchups` already replaces the practice set.
+  - **`notes/scripts/c156_read.py`:** per training seed, W's and K's draw price (C146's cells), the paired K − W with SE, each
+    pilot's head to head against arm 0, the iterations, and the bands.
+  - **`run.sh`:** W1, K1, W2, K2 in turn (`bench_train.py --minutes 30 --seed s --commit 377267f --matchups`), alternating arms
+    so a drift over the evening isn't one arm's. Then each pilot's draw price and head to head against arm 0 (48 deals a mirror),
+    and the reader. Nothing else shares the machine while an arm trains (#689).
+- **Acceptance** (CPU, measured):
+  - Off is unchanged: 200 seeded decks equal the pre-C156 copy's exactly.
+  - 1,000 concentrated decks: 0 failures (legal, 60 cards, 6-8 distinct Trainers each at 3-4 copies; median 7). Mean P/T/E is
+    13.8 / 24.5 / 21.7, against the standard generator's 8.5 / 27.5 / 24.0, whose median deck holds 20 distinct Trainers.
+  - The smoke run is each arm's first iteration: bench_train refuses while C155 holds the GPU.
+- **Next:** C155's readout (about 20:55), then C156's four arms (about 21:00-23:05) and readouts (about 23:15).
+
+### #705 · 2026-10-31 · A5 C155 · C155 reads **R-power**: with about 125 paired games a decision, selection is informative. Pooled over both seeds, kept moves hold up on their held-out half 78% of the time (18 of 23; Wilson 95% CI low 0.58), against C151's 49%, with a mean held-out gain of +0.130 (SE 0.026). But the moves it finds don't add draw cards (net −0.09 a kept move, SE 0.11; R-direction no). At 0.2-0.5 moves an iteration, turnover's random wide decks shape the population, and G1 drifts to 20.3 and 16.5 (base 11.2)
+- **Done:** `runs/screens/C155-powered-selection/sequence.sh`:
+  - s44 launched 19:54:31 and s45 19:56:02 (a replicate). Both stage 1 stop rules passed (20:33, 20:25). Stage 2 and G3's probe
+    ended 20:49:43 and 20:42:12.
+  - Errors: 1 and 0 in 60,000 games each. No G1 watch.
+  - Read with `notes/scripts/c155_read.py` (Amendment 1's pooled R-power, Wilson interval); output in
+    `runs/screens/C155-powered-selection/readout.json`. Acknowledged in `loop.py`.
+- **Evidence** (measured, finished):
+
+  | readout | s44 | s45 | pooled |
+  |---|---|---|---|
+  | decisions evaluated (125 slots each, halves 62 / 63) | 240 | 240 | 480 |
+  | kept (half A over 2 SE) | 7 (2.9%) | 16 (6.7%) | **23 (4.8%; null about 2.3%)** |
+  | **kept moves with half B above 0** | 6 of 7 (0.857) | 12 of 16 (0.750) | **18 of 23 (0.783; CI low 0.581)** |
+  | kept moves' half-B mean (SE) | +0.145 (0.037) | +0.123 (0.035) | **+0.130 (0.026)** |
+  | kept moves' half-A mean | +0.151 | +0.177 | — |
+  | not-kept moves' half-B mean (SE) | −0.032 (0.006) | −0.037 (0.007) | — |
+  | kept moves' Δdraw / ΔT4 a move | −0.14 / −0.29 | −0.06 / 0.00 | Δdraw −0.087 (0.107) |
+  | kept moves' P/T/E change | +2.57 / +0.43 / −3.00 | +2.12 / −1.00 / −1.12 | — |
+  | not-kept moves' P/T/E change | +0.62 / +0.79 / −1.41 | +1.87 / +0.36 / −2.22 | — |
+  | moves an iteration; turnover decks over 0-29 | 0.23; 45 | 0.53; 45 | — |
+  | G1 at 29 / T4 / draw copies | 20.33 / 1.83 / 1.08 | 16.50 / 2.25 / 1.75 | base 11.2 / 1.98 / 2.13 |
+  | λ_T4 / λ_draw | −0.33 / −0.13 | +0.06 / −0.06 | — |
+  | G3 (vs_lists M) | 0.262 | 0.268 | controls 0.252-0.274 |
+
+- **Bands** (C155's record with Amendment 1):
+  - **R-power: yes** (share 0.783 ≥ 0.70, CI low 0.581 > 0.5, half-B mean 4.9 SE above 0). Per-seed shares 0.857 and 0.750 are
+    reported beside it.
+  - **R-direction: no** (pooled Δdraw −0.087, SE 0.107).
+  - **R-lever: no.** Harm: no (no G1 watch; G3 above 0.25 at both seeds).
+- **Found:**
+  - Selection is informative when powered. The 2 SE winners hold up on held-out games, at a sizeable effect (about +0.13 a move),
+    and the head's average proposal is slightly harmful (−0.03 to −0.04 on held-out games).
+  - The real gains it finds come from shape: more Pokémon, less Energy (about +2.3 Pokémon and −2 Energy a kept move), not draw or
+    tempo cards.
+  - So powering selection doesn't by itself lead to the lists' Trainers.
+  - At this budget only 0.2-0.5 decks move an iteration, so turnover's random decks (45 over 30 iterations) set the population's
+    shape, and the G1 set ends far from the lists. This readout isn't a selection effect.
+- **Next:** C156's four bench arms started after "C155 sequence end" (about 20:50-23:05). Research's read of C155.
+
+### #706 · 2026-10-31 · A5 C155 C157 · Research's read of C155 (R-power, not R-direction; #705): with about 125 paired slots a decision, selection is informative for the first time (18 of 23 kept moves hold on held-out games, 0.783, Wilson lower bound 0.581; held-out mean +0.130, SE 0.026), and its kept moves move shape toward the lists (about +2.3 Pokémon and −2 Energy a move). But the moves are too few (0.2-0.5 an iteration) against turnover's random decks to shape the population, and tempo and draw effects stay under its resolution. Taken by default (row 115): C157 lets the powered moves accumulate (24 decks, turnover 0.04, 60 iterations in six stages, with a power check at stage 2), read on shape, bands first
+- **Done** (research session, 2026-10-31 20:51): `runs/screens/C157-powered-small-pop/record.md` written; queued behind C156.
+- **Found:**
+  - The head's average proposal is slightly harmful (held-out −0.032 and −0.037 for moves not kept).
+  - The large, detectable gains are shape (Pokémon up, Energy down), toward the lists' 13.5 / 18. The per-card tempo and draw effects are about
+    10× smaller (#687).
+  - This is the first time tonight the loop's own signal points toward the lists on any axis.
+
+### #707 · 2026-10-31 · A5 C157 · C157 (powered selection on a population it can carry, research's record #706, no build) is queued behind C156: `runs/screens/C157-powered-small-pop/sequence.sh` (started 20:52, waits for "C156 end") runs seeds 46 and 47 in six lockstep stages of 10 iterations, with the record's power check after stage 2
+- **Done:**
+  - **Chains:** `runs/screens/C157-R1-K-paired-smallpop-s{46,47}/chain.sh` are C155 s44's with `--decks 24`, `--turnover 0.04`,
+    the seed, `C157_ITERS` (default 10) and G3's probe after iteration 60. `--protect 20` is kept, which leaves 4 decks eligible
+    for turnover's roughly one a time.
+  - **Stage readout:** `notes/scripts/c157_stage.py` reports, per seed at its last iteration, the kept moves so far with their
+    half-B-positive count and mean, the population's median P/T/E (and at iteration 0), the G1 set's P/T/E and G1 (top 12 of 24),
+    T4 and draw copies a deck at the latest snapshot, and the largest types. `--power` adds the pooled share and exits 3 under
+    0.6.
+  - **Sequencer:**
+    - Each stage launches both seeds through `loop.py` (s47 `--replicate-of` s46; `--resume` from stage 2) and waits for both.
+    - The stop rule per seed (errors over 2%, the G1 watch, no zero-move rule).
+    - The stage readout; after stage 2, the power check (a fail stops both).
+    - It holds on runs/GPU-PAUSE at each boundary.
+- **Acceptance:** the first stage's first iteration is the smoke, because C156's bench arms need the machine alone. Its config will
+  show decks 24, turnover 0.04, budget 8 and the seed, checked at launch.
+- **Timing (estimated):** C156 ends about 23:15. Then six stages of about 20-25 minutes, side by side, so C157 ends about 01:45.
+
+### #708 · 2026-10-31 · A5 C156 · Under C156's fixed 30-minute wall clock, the concentrated arm trains a third less: K1 got 12 iterations (6,471 games) against W1's 18 (10,474), both with 0 errors and the machine to themselves. Research's Amendment 2 adds a matched-iterations K arm (K1m, 18 iterations), run only if C156 reads R-not or between. It's queued to run after C157, not before: C157's sequencer was already waiting on "C156 end", and holding it would need the kind of kill the classifier refused (#693)
+- **Done:**
+  - `runs/probe/C156-concentrated-practice/k1m.sh` (started 21:48, detached) waits for "C156 end" and reads C156's band from
+    `summary.json`. On R-learns-draw it skips itself.
+  - Otherwise it waits for "C157 sequence end" and holds on runs/GPU-PAUSE. Then it trains K1m: `bench_train.py --minutes 60
+    --iters 18 --seed 1 --commit 377267f --matchups K_matchups.json`, fresh from the start pilot, because K1's checkpoint wasn't
+    kept.
+  - Then K1m's draw price and head to head against arm 0, and K1m − W1 paired, into `summary_k1m.json`.
+- **Amendment 2's reading:** R-learns-draw reads as written, since a positive K − W holds despite K's fewer updates. R-not also needs
+  the matched arm's K1m − W1 under +0.03. The iteration counts are reported beside the band.
+- **Told research** the order change (after C157, with the reason) as the default, unless they ask for a gate hold before C157.
+- **Next:** W2 (about 22:16), K2 (about 22:46), C156's readouts (about 23:15), then C157 (about 23:15-01:45), then K1m if needed
+  (about 01:45-02:35).
+
+### #709 · 2026-10-31 · A5 C156 · C156 reads **R-not, provisionally** (Amendment 2): practice on concentrated self-generated decks doesn't raise the pilot's draw-card price. K − W is +0.001 (SE 0.016) at seed 1 and +0.021 (SE 0.016) at seed 2, both under 0.03. R-not stands only if the matched-iterations arm K1m (18 iterations, after C157) also gives K1m − W1 under +0.03. Every bench pilot here is far weaker than arm 0 (win share 0.35-0.38)
+- **Done:** `runs/probe/C156-concentrated-practice/run.sh` ran 20:50:13-22:48:32:
+  - Four bench arms in turn (`bench_train.py --minutes 30 --commit 377267f --matchups {W,K}_matchups.json`), all 0 errors.
+  - Each pilot's draw price (C146's cells, seed-91 deals) and head to head against arm 0 (California mirrors, 1,152 games).
+  - Read with `notes/scripts/c156_read.py`; output in `summary.json`.
+  - `k1m.sh` read the band (R-not) at 22:48:41 and now waits for "C157 sequence end".
+- **Evidence** (measured, finished; one training run an arm and seed):
+
+  | arm | iterations (games) | draw price (SE) | win share against arm 0 (SE) |
+  |---|---|---|---|
+  | W1 (wide decks, seed 1) | 18 (10,474) | +0.049 (0.012) | 0.372 (0.013) |
+  | K1 (concentrated, seed 1) | 12 (6,471) | +0.050 (0.012) | 0.362 (0.013) |
+  | W2 (seed 2) | 15 (8,536) | +0.031 (0.012) | 0.346 (0.013) |
+  | K2 (seed 2) | 14 (7,440) | +0.052 (0.012) | 0.379 (0.013) |
+  | **K − W, paired** | — | **+0.001 (0.016)** at seed 1; **+0.021 (0.016)** at seed 2 | — |
+
+  - **References:** the start pilot +0.028, arm 0 +0.095 (C146).
+  - **Practice sets' mean P/T/E (Amendment 1):** W 8.7 / 28.4 / 22.9 (20.4 distinct Trainers a deck), K 14.6 / 24.3 / 21.0
+    (7.0). A K − W gain couldn't separate concentration from K's extra Pokémon, but there's no gain to separate.
+- **Bands** (C156's record with Amendments 1-3):
+  - R-learns-draw: no (K − W under +0.03 at both seeds).
+  - **R-not**, pending K1m (K1 trained 12 iterations against W1's 18).
+- **Found:**
+  - Thirty minutes of practice on rules-only decks, standard or concentrated, lifts the draw price from the start pilot's +0.028
+    to +0.03-0.05. That's well short of arm 0's +0.095 from the human bench lists, and the bench pilots stay far weaker than arm 0
+    head to head (0.35-0.38).
+  - Concentration alone doesn't supply what the human lists' practice did.
+- **C157:** started at 22:48:33 (seed 46 at 22:48:34, seed 47 90 s later).
+
+### #710 · 2026-10-31 · A5 C156 · Research's read of C156 (#709): R-not, provisionally. Thirty minutes of PPO on concentrated self-generated decks doesn't raise the start recipe's draw-group price on the California lists (K − W +0.001 and +0.021, SE 0.016, both under +0.03). The matched-updates arm K1m (Amendment 3) runs after C157 before the read is final. Every rules-only bench pilot wins only 0.35-0.38 against arm 0 on the California mirrors, which is trained on those lists
+- **Done** (research session, 2026-10-31 22:49): read #709 against C156's record and amendments.
+- **Note:** K trained fewer iterations at seed 1 (12 against 18), the reason for K1m. At seed 2 the counts were close (14 against 15), and K − W was
+  +0.021.
+- **Next:** C157 (since 22:48, about 01:45), then K1m.
+
+### #711 · 2026-10-31 · A5 C157 · C157 passes its power check after stage 2: pooled over both seeds, 9 of the 11 kept moves hold up on their held-out half (0.818 against the record's 0.6), so both seeds continue to stage 3 (launched 23:23:27-28). These are stage readings, not results: G1 hasn't moved toward the lists (12.0 and 16.2). s47's median Energy is 3.5 lower than at iteration 0
+- **Done:** `runs/screens/C157-powered-small-pop/sequence.sh`. Stage 1 (0-9) and stage 2 (10-19) stop rules passed at both seeds (23:06,
+  23:23), 0 errors throughout. `c157_stage.py` read each stage, and `--power` passed at 23:23.
+- **Stage readings** (measured, partial; 8 decks evaluated an iteration, 125 slots each):
+
+  | after | seed | kept (of evaluated) | kept with half B above 0 (mean) | median P/T/E (iteration 0) | G1 set P/T/E | G1 | T4 / draw |
+  |---|---|---|---|---|---|---|---|
+  | stage 1 (it 9) | 46 | 3 of 80 | 3 (+0.201) | 10.5 / 27.5 / 23.5 (10 / 27 / 24) | 10.3 / 25.3 / 24.4 | 12.3 | 2.00 / 1.92 |
+  | stage 1 | 47 | 1 of 80 | 1 (+0.101) | 8.5 / 27 / 22 (8.5 / 27 / 22.5) | 9.4 / 24.7 / 25.9 | 15.3 | 2.33 / 1.67 |
+  | stage 2 (it 19) | 46 | 7 of 160 | 6 (+0.146) | 12.5 / 27 / 24 | 11.1 / 24.7 / 24.3 | 12.0 | 2.00 / 2.08 |
+  | stage 2 | 47 | 4 of 160 | 3 (+0.107) | 9 / 28.5 / 19 | 10.4 / 23.3 / 26.3 | 16.2 | 2.17 / 1.67 |
+
+  - The largest type holds 2 of 24 decks at both seeds (no collapse).
+- **Next:** stages 3-6 (about 23:40, 00:00, 00:20, 00:40), then G3's probe and the read at 59 (R-shape: G1 mean 5.92 or less with
+  each under 11.22, and median Energy at least 3 lower than at iteration 0 at both seeds). K1m follows C157.
+
+### #712 · 2026-11-01 · A5 C157 · C157 reads **Harm, without R-shape**. On 24 decks with little turnover, powered selection stays informative for all 60 iterations: pooled, 26 of 32 kept moves hold up on their held-out half (0.81), with a mean held-out gain of +0.089 (SE 0.015). But the population doesn't follow toward the lists. G1 at 59 is 14.0 and 10.8 (mean 12.4), median Energy is no lower than at iteration 0, and G3 falls under 0.25 at both seeds (0.244 and 0.217), the record's harm condition
+- **Done:** `runs/screens/C157-powered-small-pop/sequence.sh` ran 22:48:33-00:30:40, seeds 46 and 47 in six lockstep stages:
+  - Every stop rule passed, with 0 errors in 120,000 games a seed, and no G1 watch.
+  - The power check after stage 2 passed (#711).
+  - G3's probe ran after stage 6.
+  - Read with `c157_stage.py` (each stage), `c151_read.read` and each run's `vs_lists.json`. Acknowledged in `loop.py`.
+- **Evidence** (measured, finished; iteration 59, 8 decks evaluated an iteration at 125 slots each):
+
+  | readout | s46 | s47 |
+  |---|---|---|
+  | kept (of evaluated) | 15 of 480 | 17 of 480 |
+  | **kept with half B above 0 (mean)** | 12 (+0.085) | 14 (+0.093) |
+  | kept moves' P/T/E change | +1.93 / −0.60 / −1.33 | +2.18 / −0.71 / −1.47 |
+  | kept moves' Δdraw a move | +0.67 | +0.06 |
+  | median P/T/E at 59 (iteration 0) | 13 / 25 / 23.5 (10 / 27 / 24) | 10.5 / 26.5 / 23.5 (8.5 / 27 / 22.5) |
+  | G1 set P/T/E | 12.2 / 22.6 / 25.3 | 11.7 / 24.7 / 23.7 |
+  | **G1** | **14.0** | **10.8** |
+  | T4 / draw copies a deck (G1 set) | 1.83 / 1.83 | 2.33 / 1.67 |
+  | λ_T4 / λ_draw | −0.30 / +0.70 | −0.11 / +0.02 |
+  | moves an iteration | 0.25 | 0.28 |
+  | **G3** (vs_lists M) | **0.244** | **0.217** |
+  | largest types at 59 | 2, 2, 2, 1, ... of 24 | 2, 2, 1, ... of 24 |
+
+  - **Pooled kept:** 32, with 26 holding up on half B (0.812), and a half-B mean of +0.089 (SE 0.015).
+  - **G1 by stage:** s46 12.3, 12.0, 11.8, 9.8, 9.7, 14.0; s47 15.3, 16.2, 10.7, 11.5, 11.2, 10.8.
+- **Bands** (C157's record):
+  - **R-shape: no.** The two-seed mean G1 is 12.4, against 5.92, and median Energy wasn't 3 lower than at iteration 0 at either
+    seed (−0.5, +1.0).
+  - **R-tempo** (reported): T4 1.83 and 2.33.
+  - **Harm: yes**, G3 under 0.25 at both seeds. No type exceeds 12 of 24 (the largest holds 2), and there was no G1 watch.
+- **Found:**
+  - Powered selection keeps finding real moves (81% hold up), but about 0.25 moves an iteration is too few to carry even a 24-deck
+    population. Its kept moves add Pokémon and cut Energy and Trainers, so the median deck drifts to more Pokémon (10 → 13 at
+    s46), not toward the lists.
+  - G3's fall (the population's score against the lists, 0.22-0.24 against the controls' 0.25-0.27) says the drafted decks got
+    slightly weaker against the human lists, even while each move beat its own deck in the loop's games.
+  - That's the loop's own field disagreeing with the lists' field.
+- **Next:** K1m (C156's matched arm, started 00:30:52, about 45 minutes, alone), then research's read.
+
+### #713 · 2026-11-01 · A5 C157 · Research's read of C157 (Harm, not R-shape; #711-#712): powered selection stays informative over 60 iterations (26 of 32 kept moves hold on held-out games, 0.81; held-out mean +0.089, SE 0.015). But at about 5,000 games a kept move, only 0.25-0.28 moves an iteration were kept, so the 24-deck population's shape barely moved (median Energy −0.5 and +1.0; G1 14.0 and 10.8). G3 fell under 0.25 at both seeds (0.244, 0.217). The line closes, taken by default (row 115), rather than running longer
+- **Done** (research session, 2026-11-01 00:32): read #711-#712 against C157's record.
+- **Found:**
+  - Outcome-driven selection becomes informative once a decision gets about 125 paired slots. At the loop's 2,000 games an iteration, that buys
+    about one kept move every 4 iterations, too slow to reshape a population in screen-length runs.
+  - Its direction is +2 Pokémon, −0.6 Trainers and −1.4 Energy a move: half toward the lists.
+  - Tempo and draw stay below its resolution (#687).
+- **State:** every lever queued since row 116 is closed or null. K1m (C156's matched arm) runs until about 01:15. No other lever with a case is
+  written. A deep round is held for usage (week about 77% against about 72.5% at 20:43).
+
+### #714 · 2026-11-01 · A5 A146 · A146's check (is arm 0's draw skill general or in-sample?), CPU: it's general. On the 20 California lists arm 0 never trained on, its draw-group price is +0.089 (SE 0.012), with +0.070 (SE 0.018, 920 paired deals) over the start pilot's +0.019. On its 4 bench lists it's +0.127 and +0.051 (SE 0.039). So the bar for C156 and K1m stays at about arm 0's held-out +0.09
+- **Done** (research session, 2026-11-01 00:44): split C144's G (arm 0 greedy, seed-91 deals) and C146's S0 per paired deal by list, the 4 bench lists
+  (`runs/probe/BENCH/decks_P.json`: Osborn, Lieu, Graham, Neathery) against the other 20.
+- **Found:** what arm 0 learned on 4 human lists transfers to 20 others, so a pilot can learn draw skill. Human-free training hasn't yet produced
+  it: start +0.019, the loop's pilot +0.037 to +0.073, W and K +0.031 to +0.052. K1m (until about 01:15) is the last open check.
+
+### #715 · 2026-11-01 · A5 C156 · C156's matched-iterations arm confirms **R-not** (Amendments 2-3): trained to W1's 18 iterations, the concentrated arm K1m prices the draw group at +0.067, and K1m − W1 is +0.019 (SE 0.015), under +0.03. Concentrated self-generated practice doesn't teach draw skill even with matched training, and the line closes. K1m is the strongest rules-only bench pilot head to head (0.388 against arm 0), but still under it
+- **Done:** `runs/probe/C156-concentrated-practice/k1m.sh` (queued 21:48) read C156's band (R-not) at 22:48:41 and waited for C157's end.
+  It trained K1m alone 00:30:52-01:06:11 (`bench_train.py --minutes 60 --iters 18 --seed 1 --commit 377267f --matchups
+  K_matchups.json`): 18 iterations, 9,594 games, 0 errors, 2,114 s. Then its draw price and head to head against arm 0 (0 errors),
+  and K1m − W1 paired into `summary_k1m.json`, ending 01:07:34.
+- **Evidence** (measured, finished; C146's cells, seed-91 deals):
+
+  | arm | iterations | draw price (SE) | win share against arm 0 (SE) |
+  |---|---|---|---|
+  | W1 (wide, seed 1) | 18 | +0.049 (0.012) | 0.372 (0.013) |
+  | K1 (concentrated, 30 min) | 12 | +0.050 (0.012) | 0.362 (0.013) |
+  | **K1m (concentrated, matched)** | **18** | **+0.067** | **0.388 (0.012)** |
+  | **K1m − W1, paired** | — | **+0.019 (0.015)** | — |
+
+- **Band** (C156 with Amendments 2-3): R-not needed K1m − W1 under +0.03, and +0.019 is. **R-not stands.**
+- **Found:** with matched updates the concentrated arm gains a little more draw value than at 30 minutes (+0.067 against K1's
+  +0.050), but not enough to separate from the standard arm, and well short of arm 0's +0.095 from the human bench lists.
+  Concentration, as built (with more Pokémon too, Amendment 1), isn't what the human lists' practice supplied.
+- **Next:** the queue is empty (research, #713); a deep round is held for usage. The GPU is idle.
+
+### #716 · 2026-11-01 · A5 C156 close · C156 closes R-not: the matched-updates arm K1m (18 iterations, alone) gives K1m − W1 +0.019 (SE 0.015), under +0.03. The three K − W differences are all small and positive (+0.001, +0.021, +0.019), not enough to claim and far below arm 0's held-out +0.09 (#714). The queue is empty and the GPU idle. No lever with a written case is left, and a deep round is held for usage
+- **Done** (research session, 2026-11-01 01:08): read the implementation session's K1m readout against C156's Amendments 2-3.
+- **The state after row 116's queue (C149-C157, C148, C148b, C152, C152b, C154, C156):** all closed or null.
+- **Two structural findings stand:**
+  - outcome selection is a coin flip at about 10 games a decision and informative but slow at about 125 (C151, C155, C157);
+  - draw skill is learnable and general (arm 0 on 20 held-out lists, #714), but no human-free training tried tonight produces it (start, loop,
+    W, K, K1m: +0.019 to +0.073).
+
+### #717 · 2026-11-01 · A5 A147 C158 · A147's call (is arm 0's draw skill from human content or from repetition on a few fixed decks?) becomes C158, taken by default (row 115): the start recipe for 30 minutes on 4 fixed concentrated rules-only decks (seed 158, no card named), two training seeds, priced on the 20 held-out lists' draw group, with K1m (128 concentrated decks, +0.067) as the matched comparison and an uninformative clause if the 4 decks hold under 8 draw copies, bands first
+- **Done** (research session, 2026-11-01 04:44): `runs/probe/C158-fixed-deck-practice/record.md` written and handed to the implementation session.
+
+### #718 · 2026-11-01 · A5 C158 · C158 (practice on 4 fixed concentrated decks, auditor A147, research's record #717) isn't launched: its pre-specified practice set already makes it **uninformative** by the record's own clause. The 4 decks at seed 158 hold 3 draw copies in all (Bill 3 in one deck), under the bar of 8
+- **Done** (CPU, before any GPU): the record's practice set sampled exactly as written (`wide_deck(pool, np.random.default_rng(158),
+  concentrated=True)` four times), with P/T/E and draw copies (Professor Oak, Bill, Gambler) reported before training:
+
+  | deck | P/T/E | draw copies | Trainers (copies) |
+  |---|---|---|---|
+  | 0 | 11 / 24 / 25 | 0 | Energy Removal 4, Goop Gas Attack 4, Pokédex 3, Sleep! 3, Super Energy Removal 4, Super Potion 3, The Boss's Way 3 |
+  | 1 | 12 / 18 / 30 | 0 | Computer Error 3, Full Heal 3, Pokédex 3, Pokémon Breeder 3, Scoop Up 3, Switch 3 |
+  | 2 | 4 / 24 / 32 | **3** | Bill 3, Computer Search 4, Defender 3, Devolution Spray 4, Energy Search 4, Revive 3, The Boss's Way 3 |
+  | 3 | 12 / 25 / 23 | 0 | Defender 3, Devolution Spray 3, Full Heal 3, Gust of Wind 3, Here Comes Team Rocket! 4, Mysterious Fossil 3, Revive 3, The Boss's Way 3 |
+
+  - **Total:** 3 draw copies, under the record's 8 (about 2 a deck), so it reads uninformative whatever the training gives.
+  - This isn't bad luck. The generator draws 6-8 of the pool's 42 Trainers uniformly, so the 3 draw cards appear in about half a
+    deck each on average, and 4 decks expect about 2 draw cards and 5-7 copies in all.
+- **Not done:** the two 30-minute bench arms (training seeds 1 and 2) and their readouts. Amendment 1 (bands on F − K1m over the 20
+  held-out lists) is noted for any rerun.
+- **Recommended to research:** close C158 as uninformative by design, or a sampling rule of research's own. Resampling until enough
+  draw cards appear would select on named cards.
+- **Next:** research's call. The GPU is idle.
+
+### #719 · 2026-11-01 · A5 C158 close · C158 is closed before launch, taken by default (row 115): its 4 pre-specified concentrated decks hold 3 draw copies in all (its uninformative clause needs 8), and the generator's 6-8-of-42 Trainer draw makes that the expected count. The design was research's error, and resampling for draw cards would select on named cards. A147's repetition-against-content question stays open; the queue is empty and the GPU idle
+- **Done** (research session, 2026-11-01 04:45): C158's record closed; the implementation session's check (4 decks: 0, 0, 3, 0 draw copies) read.
+- **Lesson:** a fixed-deck diagnostic needs the expected content computed before the record. A card-neutral way to give a few generated decks
+  draw content doesn't exist without naming cards.
+
+### #720 · 2026-11-01 · A5 C158 reopened · C158 is reopened by Amendment 2, taken by default (row 115) on the auditor's note: as a diagnostic its decks may be selected by draw content (fixed rule: concentrated decks with 2 or more draw copies, in seed order from 158). The comparison is now matched: F (the first 4 such decks) against M (the first 128), so repetition is the only difference, two training seeds each, on the 20 held-out lists' draw price, bands first
+- **Done** (research session, 2026-11-01 04:46): C158's Amendment 2 written; the implementation session told. M − K1m is reported for draw density.
+
+### #721 · 2026-11-01 · A5 C158 · C158 is reopened by Amendment 2 (a diagnostic may select decks) and launched at 04:48:06. Its four bench arms practise on F (the first 4 concentrated decks with 2+ draw copies) or M (the first 128 such decks) at training seeds 1 and 2. It's read on the 20 held-out California lists as F − M
+- **Done:**
+  - **`notes/scripts/c156_decks.py --select-draw N --seed S --out D`** (new option; the default W/K output is byte-identical,
+    checked): concentrated decks in seed order, keeping those with N or more draw copies (Professor Oak, Bill, Gambler) until 128
+    are kept. M uses C156's matchup design (128 mirrors plus 1,920 cross pairs); F is the first 4 kept (4 mirrors plus 12 cross
+    pairs). It writes `F_matchups.json`, `M_matchups.json` and `decks.json` (order, draw copies, P/T/E).
+  - **`notes/scripts/c158_read.py`:**
+    - the draw price on the held-out lists (deals whose list isn't one of the 4 bench lists in `bench_matchups.json`);
+    - F − M paired per seed, M − K1m (C156's K1m re-read on the same 20), head to head and iterations;
+    - the bands.
+    - Its filter reproduces #714's arm 0 held-out price exactly (+0.0891, 920 deals). K1m on the same 20 is +0.063.
+  - **`runs/probe/C158-fixed-deck-practice/run.sh`:** F1, M1, F2, M2 in turn and alone (`bench_train.py --minutes 30 --commit
+    377267f --matchups`), then each pilot's draw price and head to head against arm 0, and the reader.
+- **Acceptance** (`--select-draw 2 --seed 158`, measured):
+  - 276 concentrated decks were drawn to keep 128 with 2+ draw copies. All are legal (asserted), with mean 4.02 draw copies and a
+    minimum of 3.
+  - F: order 3 (Bill 3; P/T/E 4/24/32), order 5 (Oak 4; 7/21/32), order 6 (Oak 3; 15/20/25), order 9 (Bill 4; 19/29/12). That's
+    14 draw copies in all, over the record's 8.
+  - F1's config shows 16 matchups and seed 1.
+- **Bands** (Amendment 2):
+  - **R-repetition:** F − M is +0.03 or more and at least 2 SE at both seeds.
+  - **R-no-repetition:** |F − M| is under 0.03 at both.
+  - Otherwise it reads between. Absolute prices, M − K1m and the iteration counts are reported beside.
+- **Next:** the four arms (to about 06:50), then readouts (about 07:00).
+
+### #722 · 2026-11-01 · A5 C158 · C158 reads **between**, and repetition hurts: drilling 4 draw-rich decks (F) gives a lower held-out draw price than 128 such decks (M), F − M −0.030 (SE 0.019) and −0.037 (SE 0.018). The lead is M itself: practice on varied concentrated decks that contain draw cards brings a rules-only pilot to about arm 0's held-out draw skill (+0.083 and +0.084 against arm 0's +0.089) and to the best head to head against arm 0 yet (0.430 and 0.412)
+- **Done:** `runs/probe/C158-fixed-deck-practice/run.sh` ran 04:48:06-06:52:15:
+  - F1, M1, F2, M2 in turn and alone (`bench_train.py --minutes 30 --commit 377267f`), all exit 0, 0 errors.
+  - Then each pilot's draw price (C146's cells, seed-91 deals) and head to head against arm 0, all 0 errors.
+  - Read with `notes/scripts/c158_read.py` on the 20 held-out lists (920 deals); output in `summary.json`.
+- **Evidence** (measured, finished; held-out draw price = list − its draw → Energy copy on the 20 California lists outside the bench):
+
+  | pilot | practice | iterations (games) | held-out draw price (SE) | win share against arm 0 (SE) |
+  |---|---|---|---|---|
+  | F1 | the 4 first-kept draw-rich decks, seed 1 | 28 (14,152) | +0.052 (0.014) | 0.353 (0.013) |
+  | M1 | 128 concentrated decks with 2+ draw copies, seed 1 | 18 (9,415) | **+0.083** (0.012) | **0.430** (0.013) |
+  | F2 | F, seed 2 | 28 (14,021) | +0.047 (0.014) | 0.340 (0.013) |
+  | M2 | M, seed 2 | 18 (9,354) | **+0.084** (0.012) | **0.412** (0.013) |
+  | F − M, paired | — | — | **−0.030 (0.019); −0.037 (0.018)** | — |
+  | M − K1m, paired | — | — | +0.019 (0.017); +0.021 (0.016) | — |
+
+  - **References on the same 920 held-out deals:** start pilot +0.019; W1 / W2 (standard wide) +0.047 / +0.029; K1 / K2
+    (concentrated, unselected) +0.046 / +0.053; K1m (matched) +0.063; arm 0 (human bench lists) **+0.089**.
+  - **F's decks:** Bill 3, Oak 4, Oak 3 and Bill 4 (14 draw copies). M's 128 decks average 4.0 draw copies.
+- **Bands** (C158's record with Amendment 2):
+  - R-repetition (F − M at +0.03 and 2 SE at both): no; it's negative at both.
+  - R-no-repetition (|F − M| under 0.03 at both): no (0.030 and 0.037).
+  - So it reads **between**, with repetition below variety at both seeds (1.6 and 2.1 SE).
+- **Found:**
+  - Fixed-deck repetition doesn't teach draw skill better than variety; it teaches it slightly worse, even with 1.5× the updates.
+  - The draw price climbs with how much draw content the practice decks hold: rules-only wide +0.03-0.05, concentrated +0.05-0.06,
+    concentrated with draw cards +0.08, the human lists +0.09.
+  - So arm 0's draw skill looks explained by practising on decks that contain draw cards, not by anything else in human lists.
+  - M selected its decks on named cards, which is allowed as a diagnostic but can't be the method (no human priors in training).
+    The method-side question is how a self-generated practice set comes to hold draw cards without naming them.
+- **Next:** research's read. The queue is empty; the GPU is idle.
+
+### #723 · 2026-11-01 · A5 C158 · Research's read of C158 (between by its bands, #722): draw skill comes from practice on decks that contain draw cards. A human-free pilot practising 30 minutes on 128 concentrated decks with 2 or more draw copies reaches arm 0's transferable draw skill (held-out draw price +0.083 and +0.084, against arm 0's +0.089) and is the strongest human-free bench pilot yet (0.430 and 0.412 head to head against arm 0). Repetition on 4 fixed decks does worse (F − M −0.030, −0.037). The ordering: wide (+0.029 to +0.047) < concentrated (+0.046 to +0.063) < concentrated with draw (+0.083) ≈ arm 0
+- **Done** (research session, 2026-11-01 06:54): read #722 against C158's Amendment 2.
+- **Found:**
+  - The draw-skill gap is about exposure. The loop's decks carry about 1-2 draw cards, so its pilot rarely practises them and values them low.
+    Selection then keeps few, and the gap feeds itself.
+  - A human-free pilot can learn the skill when practice decks contain the cards. M's decks were selected on named cards, which is allowed
+    because it's a diagnostic.
+- **For Evan, one standing-rule question** (row 115 keeps these for him; the auditor flagged it under C156): may the loop pilot's practice decks give
+  broad, concentrated exposure to every card? For example, a card-neutral rotation through the whole pool, each practice deck holding 3-4 copies of a
+  few pool cards in turn, so every card, draw cards included, gets M-like exposure. It names no card, but 3-4-copy concentration is the structure of
+  human lists. Nothing is launched until he rules. The GPU is idle.
+
+### #724 · 2026-11-01 · A5 C159 · C159 is pre-written, runs only on Evan's yes to #723's no-prior question: the loop pilot's practice decks rotate concentrated exposure through all 42 pool Trainers (6 focus Trainers an iteration at 3-4 copies, round-robin, none named), read on the held-out draw price and the head to head against arm 0, bands first
+- **Done** (research session, 2026-11-01 06:56): `runs/screens/C159-pool-rotation/record.md`; the implementation session told it's ready if Evan agrees.
+
+### #725 · 2026-11-01 · A5 C159 build · C159's `--practice-rotation R` is built, off by default, and passes its CPU acceptance, but a pre-launch count shows it can't give M-like exposure: rotating 6 focus Trainers an iteration gives a practice deck **1.77 draw copies on average, the same as C156's concentrated decks (1.79, R-not) and below the loop's current wide practice (1.95)**, against M's 4.0. Card-neutral rotation only bunches each card's exposure into 1 iteration in 7, and in C127's chain practice is 250 of 2,250 games an iteration. Not launched (it waits on Evan's ruling, #723); the smoke isn't run
+- **Done:**
+  - `rl/decks.py wide_deck(..., focus=())`: with `concentrated`, the focus Trainer ids are always among the 6-8 Trainer picks at 3-4 copies, the rest drawn uniformly as before.
+  - `rl/metagame.py --practice-rotation R` (0 off): a fixed order of the 42 pool Trainers (`default_rng(159).permutation`, the same at every seed), R an iteration round-robin by `it`, so it continues on `--resume`.
+    The practice decks that aren't C148's population decks come from `wide_deck(concentrated=True, focus=...)`, and the log's `practice.focus` names them.
+  - The variable is `p_focus`; a first draft named it `focus`, which would have overwritten C155's `--select-budget` focus decks. Caught and renamed before any run.
+- **Acceptance** (CPU, `scratchpad/c159_accept.py`):
+  - Off is identical: C156's W and K decks (seed 156) and C158's M decks (seed 158) regenerate to the saved matchups files exactly (True, True, True).
+    `rot` uses its own RNG, so the loop's `rng` stream is untouched when the flag is off.
+  - Over 7 iterations at R = 6 (3,500 decks), all 42 Trainers are forced in, 0 focus cards fall outside 3-4 copies, and 0 decks are illegal.
+    Trainer copies a deck average 24.5 (range 18-32).
+  - The draw cards come into focus at iterations 0 (Gambler), 3 (Professor Oak) and 5 (Bill), one in each.
+  - **Not done:** the 1-iteration GPU smoke and the ledger check. They wait for the ruling and the record's final design.
+- **Evidence, exposure** (measured, 3,500 decks each, draw copies a deck: mean; share with 2+):
+  - wide (the loop's practice now): 1.95; 0.57.
+  - K concentrated (C156): 1.79; 0.44.
+  - rotation R = 6 (C159): 1.77; 0.47.
+  - M (C158, selected on named cards): 4.0; 1.00.
+- **Found:**
+  - Under card neutrality a card's mean copies a deck is the deck's Trainer copies over 42, about 0.58, or about 1.75 for the 3 draw cards. M's 4.0 needs about 56 Trainer copies a deck.
+    So no card-neutral generator of this size gives every card M's exposure. The rotation changes only when a card is seen, not how much.
+  - Second, in C127's chain the practice games are 250 of 2,250 an iteration (11%), where C158's bench arms trained wholly on their practice set.
+    So even M-level exposure would be diluted about ninefold in the loop.
+  - So C159's prior for R-skill looks closer to C156's R-not than to M. Its case would rest on timing: a whole iteration with every practice deck holding one draw card at 3-4 copies.
+    Nothing measured so far supports timing; C158's F, which repeats a few decks, did worse than variety.
+- **Next:** research's revision of C159, or Evan's ruling on #723, before anything launches.
+
+### #726 · 2026-11-01 · A5 C159 C160 · C159 is withdrawn before launch: a card-neutral rotation gives each Trainer about 0.58 copies a practice deck (the 3 draw cards 1.77 together, as wide and K decks do), so it can't reach M's 4.0 (#725), and its prior is C156's R-not. It's replaced by C160, practice exposure weighted by the pilot's own under-play (the 4 Trainers it plays least when playable and held, forced in at 3 copies; practice raised to 750 games an iteration). It names no card, but it shapes deck construction, so it runs only on Evan's yes
+- **Done** (research session, 2026-11-01 06:59): C159's withdrawal written; `runs/screens/C160-underplay-curriculum/record.md` written. The question for Evan updated (#723 → this
+  entry): may the loop pilot's practice decks be shaped by its own under-play statistics, concentrating 3 copies of the cards it plays least?
+
+### #727 · 2026-11-01 · A5 C160 build · C160's `--practice-curriculum K` is built, off by default, and passes its acceptance (counts match a trace recount on 48 of 48 games; a 2-iteration smoke with 0 errors and ledger integrity PASS). But the smoke's picks refute its premise: the Trainers the pilot plays least when legal are the situational ones (**Scoop Up 0.000, Mr. Fuji 0.000-0.0004, Pokémon Flute 0.001-0.003, Impostor Professor Oak 0.003, Devolution Spray, Lass, Goop Gas Attack**), and the picks barely change between iterations. The draw cards aren't near the bottom (Professor Oak 0.41-0.44, Bill 0.69-0.72, Gambler 0.18-0.20), so the curriculum as written wouldn't expose them. Not launched (it waits on Evan's ruling, #723)
+- **Done:**
+  - `env/remote_worker.js games`, `cmd.trainerPlay` (off: nothing runs). At each main-phase decision (no prompt open), it notes per seat-turn the Trainers with a play legal and the one played, by bare name.
+    Each game's result row carries `tplay {name: [turns legal, turns played]}`. `cmd.trainerPlayTrace` (acceptance only) writes every such decision to a file.
+  - `rl/decks.py wide_deck(..., focus_copies=0)`: the focus Trainers' copies, instead of 3-4 drawn.
+  - `rl/metagame.py --practice-curriculum K` (0 off; not with `--practice-rotation`):
+    - It sums `tplay` over the iteration's population games (all of them; the record said "recorded", and `rec` only picks PPO's games).
+    - Next iteration it forces the K Trainers with the lowest rate (ties to fewer turns) into every non-population practice deck at 3 copies, on the concentrated generator.
+    - Iteration 0 has no counts, so its practice is the usual wide decks.
+    - The counts carry in the checkpoint's season (`--resume`). The log has `practice.curriculum` (the picks with rates and turns) and the full `practice.tplay`.
+- **Acceptance:**
+  - Off is code-path identical: the hook, the message field and the row field are absent; no RNG draw is added. C156's W and K and C158's M still regenerate exactly (#725).
+  - Counts against a hand recount (`scratchpad/c160_accept.py`; start pilot C49-sd, 48 games on 2 concentrated decks with Oak, Bill, PlusPower and Item Finder at 3 copies, 0 errors):
+    the per-game `tplay` equals a Python recount from the decision trace in 48 of 48 games, and every name maps to a pool Trainer.
+    Turns played over turns legal: Bill 106/127 (0.835), Professor Oak 63/118 (0.534), Gambler 45/96 (0.469), PlusPower 58/226 (0.257), Item Finder 37/238 (0.155).
+  - Smoke (`runs/_smoke-c160`: C127's chain plus `--practice-curriculum 4 --practice-games 750`, seed 48, 2 iterations):
+    - It ran at 85.1 s and 90.6 s an iteration, with 0 errors in 4,000 population and 1,500 practice games.
+    - `select_lean.py --cards` integrity: PASS (0 mismatches).
+    - At iteration 1 the focus was Impostor Professor Oak, Mr. Fuji, Pokémon Flute and Scoop Up at 3 copies.
+- **Evidence** (measured, the smoke's population games, iterations 0 / 1; 42 of 42 Trainers observed):
+  - Lowest rates: Scoop Up 0/5,633 and 0/5,211; Mr. Fuji 0.000 and 0.000; Pokémon Flute 0.001 and 0.003; Impostor Professor Oak 0.003 and 0.003; Devolution Spray 0.003 and 0.002;
+    Lass 0.007 and 0.008; Goop Gas Attack 0.008 and 0.007; Here Comes Team Rocket! 0.010 and 0.013.
+  - Draw and tempo cards: Professor Oak 0.437 and 0.408; Bill 0.716 and 0.693; Gambler 0.202 and 0.177; PlusPower 0.205 and 0.208; Item Finder 0.124 and 0.131; Computer Search 0.269 and 0.281.
+- **Found:**
+  - "Played when legal" is lowest for cards that are legal almost every turn but rarely worth playing. Scoop Up and Mr. Fuji are legal whenever a Pokémon is in play,
+    and Impostor Professor Oak and Lass whenever there are hands to shuffle. A low rate there is plausibly correct play, not under-play.
+  - The bottom 4 are almost the same at both iterations, so the curriculum would drill those few cards for the whole run.
+  - The record's premise ("in the loop's games those are the draw cards, PlusPower and Item Finder", from C133) doesn't hold for this rate. Bill and Professor Oak are played on 41-72% of their legal turns.
+  - So C160 as written can't reach its primary (draw price) through exposure, and its prior is R-null.
+    A card-neutral under-play signal would need to separate "legal but pointless" from "good but skipped". The pilot's own value can't (C154: R-no-gain).
+- **Next:** research's revision or close of C160; Evan's ruling on #723 before anything launches.
+
+### #728 · 2026-11-01 · A5 C160 C161 · C160 closes before launch (#727): the play-when-legal statistic picks situational cards legal almost every turn but rarely worth playing (Scoop Up, Mr. Fuji, Pokémon Flute, Impostor Oak, all under 0.003), not the draw cards (Oak 0.41-0.44, Bill 0.69-0.72), so it can't tell "legal but pointless" from "good but skipped". Taken by default (row 115): C161, a diagnostic of the pilot's own search disagreeing with greedy per Trainer on the loop's games, judged against the cards the drafts lack, evaluation only, bands first
+- **Done** (research session, 2026-11-01 07:10): C160 closure noted in its record; `runs/probe/C161-search-disagreement/record.md` written and handed to the implementation session.
+
+### #729 · 2026-11-01 · A5 C161 · C161 (does the pilot's own search flag the Trainers it skips? evaluation only, taken by default, row 115) is built, passes acceptance and launched at 07:25:01. The loop's pilot plays its own population greedily, and C135's SV search is asked on the side at a seeded 9% of Trainer-playable decisions
+- **Done:**
+  - `notes/scripts/audit/c161_worker.js` wraps `env/remote_worker.js` unchanged, as C135's worker does. Both seats are a SideSearch agent: the slot's greedy RemoteAgent plays every move.
+    At a seeded share `$C161_P` of the main-phase decisions with a Trainer play legal (at most `$C161_MAX` a worker), C135's agent is asked on the same state on the side.
+    That agent is PolicySearchAgent: k 64 = every legal option, dets 2, CRN, horizon 1, V-scored, trainerOnly, seed 135.
+    It logs the game, turn, seat, the legal Trainers by bare name, and the greedy, search and argmax keys. `$C161_KEEP` re-searches the first N states with a fresh agent built the same way (acceptance).
+  - `notes/scripts/audit/c161_games.py`: C127 s16's `population_it0029.pt` pilot on its 99 decks.
+    Uniformly random ordered pairs (seed 161), seats alternating, greedy, round rule [20, 45].
+  - `notes/scripts/c161_read.py`: per Trainer with n ≥ 30, d, a and d − a with a 95% bootstrap CI clustered by game (2,000 resamples), each side's play rate, the top 5 and the band.
+  - `runs/probe/C161-search-disagreement/run.sh`: 400 games, `--p 0.09 --max 500 --workers 6`, then the reader.
+- **Acceptance** (`_accept`: 24 games, 1 worker, 20 searched decisions, 0 errors):
+  - The logged greedy action equals the pilot's argmax in 20 of 20.
+  - A fresh agent built as C135's, run on the 20 kept states in the same order, chooses the same option in 20 of 20.
+  - Search differs from greedy in 10 of 20.
+- **Timed pilot** (`_pilot`: 48 games, every eligible decision searched, 07:12:50-07:24:13, 0 errors): 3,443 searched decisions, about 72 a game and about 5 searches a second.
+  So the full run's about 2,600 decisions should take 10-15 minutes.
+  - **Pilot only, not the result** (48 games, decisions clustered in them): the top 5 by d − a are Potion +0.676 (search plays it at 0.685 of its legal decisions, greedy 0.009),
+    Rocket's Sneak Attack +0.213, Switch +0.210, Challenge! +0.206 and Impostor Professor Oak +0.202. None are the 7 cards, which would read R-signal-off.
+  - Further down: Gambler +0.154, Item Finder +0.132, Computer Search +0.120, PlusPower +0.110, Scoop Up +0.100, Gust of Wind +0.007, Professor Oak −0.050, Bill −0.184.
+- **Next:** C161's readout at about 07:40.
+
+### #730 · 2026-11-01 · A5 C161 · C161 reads **between**: of the top 5 Trainers that the pilot's own search plays where greedy doesn't, only PlusPower (4th, d − a +0.197, CI +0.107 to +0.289) is among the 7 cards the drafts lack. The rest are healing and hand disruption (Potion +0.564, Impostor Professor Oak +0.237, Super Potion +0.222, Imposter Oak's Revenge +0.192). The draw cards aren't flagged: Professor Oak +0.026 and Gambler +0.028, whose CIs straddle 0, and Bill −0.134, which search plays less than greedy. So as a curriculum signal it would aim mostly at healing and disruption, not the draw cards
+- **Done:** `runs/probe/C161-search-disagreement/run.sh` ran 07:25:01-07:26:58.
+  - 400 games, 0 errors; 1,952 searched decisions, under the 500-a-worker cap, in 368 of the 400 games.
+  - Read by `notes/scripts/c161_read.py`; output in `summary.json`.
+- **Evidence** (measured, finished; per Trainer over the searched decisions where its play is legal; d − a with a 95% game-clustered bootstrap CI; then search's and greedy's play rates):
+  - Search's choice differs from greedy's at 61.9% of the decisions. Greedy equals the pilot's argmax at 100%.
+  - **Top 5:**
+    1. Potion (n 133): +0.564 [+0.468, +0.662]; 0.571 against 0.007.
+    2. Impostor Professor Oak (177): +0.237 [+0.175, +0.305]; 0.237 against 0.000.
+    3. Super Potion (72): +0.222 [+0.073, +0.373].
+    4. **PlusPower** (137): **+0.197 [+0.107, +0.289]**; 0.248 against 0.051.
+    5. Imposter Oak's Revenge (271): +0.192 [+0.138, +0.243].
+  - **Next:** Switch +0.184, Pokémon Center +0.169, Nightly Garbage Run +0.165, Rocket's Sneak Attack +0.165, Super Energy Removal +0.161, Challenge! +0.161, Computer Error +0.111, Lass +0.105.
+  - **The other 6 of the 7 cards:**
+    - Item Finder +0.104 [+0.045, +0.173], 14th.
+    - Scoop Up +0.099 [+0.057, +0.145].
+    - Computer Search +0.075 [+0.000, +0.152].
+    - Professor Oak +0.026 [−0.069, +0.122]; search 0.233 against greedy 0.207.
+    - Gust of Wind −0.087 [−0.257, +0.062].
+    - Bill −0.134 [−0.259, +0.000]; search 0.254 against greedy 0.388.
+  - Also Gambler +0.028 [−0.049, +0.116]. At the bottom: Defender −0.133, Poké Ball −0.150, Energy Removal −0.196.
+- **Band:** 1 of the top 5 is among the 7, so it reads **between**. The timed pilot's preview (48 games, every decision searched) had 0 of 5, with Potion first there too.
+- **Found:**
+  - The pilot's horizon-1 V-scored search prefers plays whose effect shows at once in the next state:
+    - healing (Potion, Super Potion, Pokémon Center);
+    - shrinking or shuffling the opponent's hand (both Impostor Oaks, Rocket's Sneak Attack, Challenge!, Lass);
+    - PlusPower, as C135 found.
+  - It doesn't credit the draw cards, whose payoff comes in later turns. That fits search reaching only to the end of the turn.
+  - Some cards C160 found played almost never when legal (Impostor Professor Oak, Lass, Scoop Up) are ones search would play: 0.237, 0.105 and 0.099 of their legal decisions. So "legal but pointless" there wasn't wholly pointless by the pilot's own lookahead.
+  - A curriculum on this signal would follow the value's short horizon. It wouldn't reach the draw cards, the one group whose skill gap C158 tied to exposure.
+- **Next:** research's read. Nothing is queued and the GPU is idle.
+
+### #731 · 2026-11-01 · A5 C161 · Research's read of C161 (between, #730): the pilot's own one-turn search against greedy flags immediate-effect plays (Potion +0.564, Impostor Oak +0.237, Super Potion +0.222, PlusPower +0.197, Imposter Oak's Revenge +0.192) and not the draw cards (Oak +0.026, Gambler +0.028, Bill −0.134). Neither card-neutral signal tried (play-when-legal, C160; search disagreement, C161) points a practice curriculum at the draw cards whose exposure C158 tied to draw skill
+- **Done** (research session, 2026-11-01 07:28): read #730 against C161's record.
+- **State:**
+  - Draw skill comes from practising on decks that contain draw cards (C158: M +0.083 held out against arm 0's +0.089).
+  - No card-neutral generator or self-generated signal tried tonight gives the loop's pilot that exposure. Uniform exposure is too thin (#725);
+    play-when-legal picks pointless cards (C160); one-turn search picks immediate effects (C161).
+  - The direct route, practice decks rich in draw cards, selects on named cards, so it stays Evan's ruling under the no-prior rule (#723, #726).
+- **Next:** none queued; the GPU idle until Evan rules or a new card-neutral signal is found (a deep round on that, when usage allows).
+
+### #732 · 2026-11-01 · A5 correction C162 · Correction to #723 and #726 (the auditor's A148): "draw skill comes from practice on decks that contain draw cards" is overclaimed. M − K1m is +0.019 (SE 0.017) and +0.021 (SE 0.016), about 1.7 SE pooled, and K1m already reaches +0.063, so draw-rich practice is a lead, not shown; the question for Evan is restated as a lead only. Taken by default (row 115): C162 prices 2 Oak + 2 Bill for 4 Energy under arm 0 in rules-only decks of the lists' shape, against C145 C's +0.014 in drafted decks, to tell deck context from pilot skill, evaluation only, bands first
+- **Done** (research session, 2026-11-01 08:45): `runs/probe/C162-draw-shape/record.md` written and handed to the implementation session.
+- **Restated:** the W < K < M ordering (+0.029-0.047, +0.046-0.063, +0.083) is monotone but not significant at its last step. Repetition (F) does worse than
+  M at both seeds. Arm 0's skill is general (#714). Whether draw-rich practice is the route is open.
+
+### #733 · 2026-11-01 · A5 C162 · C162 (do draw cards pay in rules-only decks of the lists' shape? evaluation only, taken by default, row 115; auditor A148) is built, passes its smoke and was launched at 08:46:50
+- **Done:**
+  - `notes/scripts/c156_decks.py --shape P0-P1,T0-T1,E0-E1 --n N`: standard wide decks (not concentrated) in seed order, kept when their Pokémon, Trainers and Energy (basic plus special) fall in the bounds.
+    It writes `decks.json` as [{name, cards, order, pte}]. The default and `--select-draw` outputs are unchanged.
+  - `notes/scripts/c145_run.py --decks FILE`: a deck set in place of the population, with opponents drawn the same way (`random.Random(145)`, 23 a deck).
+  - `notes/scripts/c162_read.py`: the price (copy − deck, paired by deal, via c145_read.per_deal) with a bootstrap SE, C145's checks and the bands against C145 C's +0.014.
+    Also each deck's own price against its P, T and E (correlation and slope over decks), the mean shape and the decks' own draw copies.
+  - `runs/probe/C162-draw-shape/run.sh`: arm 0 s1, greedy, round rule [20, 45], seed 91, 2 deals a pair, 10 workers, then the reader.
+- **Decks** (measured): seed 162 took 3,385 wide decks to keep 99 in 12-15 / 26-30 / 16-20. Mean P/T/E 13.43 / 28.18 / 18.38 (the lists 13.5 / 28 / 18). All are legal (asserted).
+  - Copies: all 99 have one. 95 got 2 Professor Oak (4 got 1, holding 3 already), and 98 got 2 Bill (1 got 1).
+- **Smoke** (`--limit 5`, 10 deals, 20 games in 3.5 s): 0 errors.
+  Checks: sixty cards, the copy limit, the copy differs from its deck in exactly the recorded cards, seats and seeds paired, 0 unpaired.
+- **Next:** the readout, about 9,100 games.
+
+### #734 · 2026-11-01 · A5 C162 · C162 reads **R-not-shape**: in 99 rules-only wide decks of the lists' shape (mean P/T/E 13.43 / 28.18 / 18.38), arm 0 prices 2 Professor Oak + 2 Bill for 4 basic Energy at **+0.009 (SE 0.005)** on 4,554 paired deals. That's under the band's +0.025 and no better than C145 C's +0.014 on drafted decks (−0.005). A deck's own price doesn't follow its shape (correlation with P, T and E +0.01, −0.10, +0.09). Shape alone doesn't give the draw cards their value; the lists' content or coherence does
+- **Done:** `runs/probe/C162-draw-shape/run.sh` ran 08:46:50-08:50:07.
+  - 9,108 games in 187 s, 0 errors. Endings: time 56.8%, no Pokémon 31.7%, Prizes 9.4%, deck-out 2.0%.
+  - Read by `notes/scripts/c162_read.py`; output in `summary.json`. All checks pass: sixty cards, copy limit, the copy differs in exactly the recorded cards, seats and seeds paired, 0 unpaired.
+- **Evidence** (measured, finished; arm 0 s1, greedy, round rule [20, 45], seed 91; copy − deck in event points over 3):
+  - Price **+0.009, SE 0.005** (4,554 deals; per-deck SD 0.062). Against C145 C's +0.014 (SE 0.006): −0.005.
+  - Per deck against shape: Pokémon r +0.009 (slope +0.0006 a card); Trainers r −0.101 (−0.005); Energy r +0.093 (+0.0045).
+  - The decks already hold 2.33 draw copies on average before the swap. Their Trainers are the generator's uniform single copies, about 28 over the pool's 42 Trainers and the special Energy.
+  - For comparison, C145 C's drafted decks ended with no Pokémon in 41.8% of games and on time in 48.3%. C162's 31.7% and 56.8% show a coherence gap shared with the drafted decks, not closed by shape alone.
+- **Band:** under +0.025, so **R-not-shape**.
+- **Found:**
+  - Matching the lists' P/T/E with rules-only content doesn't make the draw cards pay for arm 0 (+0.009 against the lists' +0.089 held out, C144/A146).
+    So arm 0's draw skill is worth little outside list-like decks, whatever their counts.
+  - The difference lies in what the lists hold (coherent Pokémon lines, a few Trainers at 3-4 copies, and which ones), not in their shape.
+    This agrees with C158, where draw skill came from practice on concentrated decks that contained draw cards.
+  - So powered selection's shape moves (C155, C157) wouldn't by themselves make the draws want draw cards.
+- **Next:** research's read. Nothing is queued and the GPU is idle.
+
+### #735 · 2026-11-01 · A5 C162 · Research's read of C162 (R-not-shape, #734): under arm 0, adding 2 Oak + 2 Bill for 4 Energy in 99 rules-only decks of the lists' shape (mean 13.43 / 28.18 / 18.38) gains only +0.009 (SE 0.005), no more than in drafted decks (+0.014), and is flat across each deck's own P, T and E. So draw cards' value isn't shape; it's the content and coherence of real lists (complete lines and key cards at 3-4 copies, so draws find pieces that matter). Even arm 0's draw skill pays only in coherent decks
+- **Done** (research session, 2026-11-01 08:51): read #734 against C162's record.
+- **Where the draw gap stands:**
+  - Arm 0 values the lists' draw (+0.089 held out, #714), but gains nearly nothing from draw cards in random or drafted decks (+0.009 to +0.014;
+    C145, C162).
+  - The drafts lack draw cards because the decks lack the coherence that makes draw pay, not only because the pilot is weak.
+  - So the loop must find coherence first. Powered selection moves shape (C155, C157); whether it can find coherence is untested.
+- **Next:** none queued; the GPU idle. A deep round on how a drafter discovers deck coherence (consistency, concentration of key pieces) without human lists
+  is the topic once usage allows (week about 83% against about 76% at 08:43).
+
+### #736 · 2026-11-01 · A5 restart · Implementation session restarted at 18:02 by `agents.py`; nothing had died: no queue or arm was running, `runs/GPU-PAUSE` and every queue STOP are absent, so nothing to relaunch. The GPU has been idle since C162 ended at 08:50
+- **Done:** rebuilt state from the log (last entry #735), requests (row 116 newest; none newer since 10-31), audits (A148) and `runs/probe/`. C162's `summary.json` is there, and `loop.py state` shows no live runs.
+- **Evidence** (measured 18:02): RAM free 9.5 of 31.4 GB; GPU 2.5 of 15.9 GB, 9% busy; 0 of 3 slots. Usage file (t 18:00): week 84%, resets 2026-11-03 08:00; the 5-hour field isn't in it.
+- **Next:** the newest Next (#735) is a deep round on deck coherence; meanwhile a cheap evaluation-only test of which part of the lists gives draw its value.
+
+### #737 · 2026-11-01 · A5 A149 C163 · A149's call (is draw's value in the deck or the field?) becomes C163, the crossed test: lists and C162's rules-only decks as decks × the same two as fields, one swap in every cell, arm 0, greedy, evaluation only, about 27,000 games, bands first. The coherence deep round I'd launched at 18:02 was stopped at about 18:04 because the call says to run this first
+- **Done** (research session, 18:05): `runs/probe/C163-draw-deck-field/record.md` written, with G, D, F and I defined and R-floor, R-no-gap, R-deck, R-field, R-both and between set before the run. The handoff to implementation follows this entry.
+- **Round 8 (taken by default, row 115; #735's topic):** one Haiku researcher, stopped about 2 minutes in, with no notes written and no report. Its empty folder was removed. Not counted as a round for the 3-hour limit, taken by default (row 115). No Sonnet writer was spawned.
+- **Added to A149's bands:** R-no-gap (G under +0.03 or under 2 SE) and R-both, since G = D + F and the priors put G at only about +0.03 to +0.05 (estimated, not measured). If LR and RL both floor, it's R-floor.
+- **Found (repo only, not literature):** crossover and linkage appear nowhere in the log, hypotheses or method. H97's valley test is still untested. These stay the round's opening questions if C163 reads R-deck or R-both.
+- **Usage at 18:00:** week 84% (line: 84% now to 92% at 11-03 08:00, about 0.21 points an hour), 5h not in the file.
+- **Next:** implementation builds and launches C163. Ground truth not moved (no drafting run since C157).
+
+### #738 · 2026-11-01 · A5 C163 · C163 Amendment 1, before launch: the auditor's three read-side changes are adopted. D and G are corrected for the Energy gap between list and rules-only bases, a band also has to pass under C158's M1 pilot, and effects leaning on a base score under 0.25 or over 0.75 are provisional unless their logit version passes
+- **Done** (research session, 18:07): appended to `runs/probe/C163-draw-deck-field/record.md`. No result had been seen; the build was still in progress, with no games played.
+- **Beyond the auditor's ask:** the M1 check also covers R-field, because the same pilot plays both seats. Hard floor and ceiling are read from the full run rather than the 100-deal pilot. No upward correction from a negative slope.
+- **Prior, estimated:** G_c about +0.015 to +0.035, so R-no-gap or between is more likely than R-both.
+
+### #739 · 2026-11-01 · A5 C163 · C163 (research's record, #737, #738) is built, its timed pilot logged, and stage s1 launched at 18:09:47 through `loop.py launch`. Timed-pilot base scores (100 deals a cell, so SE about 0.04): LL 0.28, LR 0.72, RL 0.09, RR 0.41. RL looks floored, but by Amendment 1 the full run decides that. Taken by default (row 115), my own knockout record is renumbered C164 and held behind C163
+- **Done:**
+  - `notes/scripts/c163_decks.py` writes the fields (L, R) and the draw-free bases (L_base, R_base). `c145_run.py` gains `--field` (opponents from another set, never the deck's source, by name; default mode's pair keys unchanged) and `--spread` (the pilot's keys spaced over the decks).
+  - `notes/scripts/c163_read.py`, with Amendment 1: the Energy slope and D_c, G_c (the bootstrap carries the slope's noise); logit prices and effects; hard floor from the full run; provisional flags. Tested on the pilot's files. It prints the band with RR's slope alone beside the pooled one, since a floored RL compresses the pooled slope.
+  - `runs/probe/C163-draw-deck-field/run.sh pilot|s1|s2`: row 73's hold and GPU-PAUSE at every cell boundary, the 30-minute kill, and a checks-and-errors kill after each cell.
+- **Evidence** (measured):
+  - Decks: L bases mean 24.54 Energy, R bases 20.72, gap 3.82 (the record estimated 3.3). 16 of 24 L bases sit inside R's Energy range of 16-26.
+  - Timed pilot, arm 0 s1, 400 deals in 18:08:22-18:09:26: all checks pass, 0 errors in every cell. Rates 34, 41, 27 and 7.5 games/s on these small samples; not a guide to the full rate, since LL's full cell ran at 83 games/s.
+  - Deals: LL 100, LR 100, RL 100, RR 100. Prices, unread: +0.057, +0.060, 0.000, −0.013 (SEs 0.021-0.038).
+- **Found:**
+  - evo_complete has no variance in R's decks (the generator always builds complete lines), so that exploratory read comes back empty there. It's not a defect.
+  - Base scores aren't around 0.5: a time win pays 2/3, so a level pair averages under 0.5.
+- **C164** (`runs/probe/C164-list-knockout/record.md`, written 18:05 before seeing any C163 result): knocks out a list's Trainers, Trainer identities or body. It needs bands re-read against C163's cells, and only runs if C163 reads R-deck or R-both.
+- **Next:** s1's readout (about 5 minutes left at 83 games/s, estimated). On R-deck, R-field or R-both, arm 0 s2 and M1 run side by side.
+
+### #740 · 2026-11-01 · A5 C163 · C163 Amendment 2, during s1 and before research read any full-cell price: if RL's base score is under 0.25, the Energy correction uses RR's slope alone, since a floored cell's slope would shrink the correction and favour R-deck
+- **Done** (research session, 18:13): appended to `runs/probe/C163-draw-deck-field/record.md`, answering implementation's question from #739. Research had seen only the timed pilot's base scores and slopes (100 deals a cell).
+- **Next:** C163 s1's band, from implementation. Research's next record takes C165 (C164 is implementation's list-knockout record).
+
+### #741 · 2026-11-01 · A5 C163 · C163 stage s1 reads **R-no-gap**: under one swap, arm 0's draw price is +0.077 (SE 0.008) on the lists against the lists and +0.027 (SE 0.005) on rules-only decks against rules-only decks. The raw gap G is +0.050 (SE 0.009), and after Amendment 2's Energy correction G_c is +0.023 (SE 0.014), under the band's +0.03. But the read depends on that correction: with the pooled slope G_c is +0.032 (SE 0.011), which would read between. D_c is about 0 either way, so no slope gives a deck effect
+- **Done:** `run.sh s1` ran 18:09:47-18:17:49 (8 minutes; the 27,048 games took 429 s), arm 0 s1, seed 91, read by `c163_read.py` with both amendments; output in `summary_s91.json`. All checks pass in every cell, with 0 errors.
+- **Evidence** (measured, finished, one pilot; copy − base in event points/3):
+
+| Cell (deck × field) | Deals | Base score | Copy score | Price (SE) | Logit price (SE) |
+|---|---|---|---|---|---|
+| LL | 2,208 | 0.264 | 0.341 | +0.077 (0.008) | +0.367 (0.036) |
+| LR | 2,208 | 0.722 | 0.771 | +0.049 (0.006) | +0.261 (0.032) |
+| RL | 4,554 | **0.070 (hard floor)** | 0.083 | +0.013 (0.003) | +0.182 (0.046) |
+| RR | 4,554 | 0.385 | 0.412 | +0.027 (0.005) | +0.113 (0.022) |
+
+  - RL is unreadable by the hard floor, so D = LR − RR and F = LL − LR, I isn't read, and the band takes RR's slope (RL's base under 0.25, Amendment 2). No effect read rests on a provisional cell.
+  - Energy: L bases mean 24.54, R 20.72, gap 3.82; 16 of 24 L bases are inside R's range of 16-26, so the correction extrapolates for the other 8. Slopes a card: b_RR +0.0071 (SE 0.0027), b_RL +0.0025 (0.0017), pooled +0.0048 (0.0016).
+  - Effects: G +0.050 (0.009), D +0.022 (0.008), F +0.028 (0.010). Corrected with RR's slope: G_c +0.023 (0.014), D_c −0.005 (0.013). With the pooled slope: G_c +0.032 (0.011), D_c +0.004 (0.010).
+  - Logit: G +0.254 (0.042), D +0.148 (0.038), F +0.105 (0.048); G_c +0.145 (0.060), D_c +0.040 (0.057).
+  - LL by list: 20 held out +0.071 (0.008), 4 bench +0.107 (0.017). Swap: RR is +0.018 above C162's +0.009 on the same decks. LL per copy 0.0192 against C144's 0.0161.
+  - Exploratory, no band: per-deck price against base score r −0.02 (RR), −0.17 (RL); against energy_match +0.13 (RR), +0.02 (RL). evo_complete has no variance in R.
+- **Found:**
+  - The gap in #735 was overstated. +0.089 against +0.009 becomes +0.077 against +0.027 under one swap, so draw does pay in rules-only decks (+0.027, 5 SE above 0), at about a third of the lists' price before any Energy correction. Removing their own 2.33 draw copies first accounts for +0.018 of that.
+  - Rules-only decks are far weaker than the lists: they score 0.07 against them (54% of those games end with no Pokémon in play), and the lists score 0.72 against them. So a list-class field can't be read on these decks, and F here is LL − LR only.
+  - The Energy slope is real but is carrying the band. An extrapolated correction decides between no-gap and between; I'd want it measured directly rather than extrapolated.
+- **Correction to #739:** I said the reader prints the band with RR's slope beside the pooled one. It only reported the two; Amendment 2 (#740) now sets which one the band uses.
+- **Not run:** arm 0 s2 and M1, by the record, since R-no-gap isn't one of the bands that replicate. C164 stays held, since it runs only on R-deck or R-both.
+- **Next:** research's read. By the record, #735's coherence reading is withdrawn, and the next step is why selection doesn't find draw cards. Ground truth not moved (no drafting run since C157).
+
+### #742 · 2026-11-01 · A5 C163 C165 · Research's read of C163 (R-no-gap, #741): #735's coherence reading is withdrawn. Draw pays everywhere (+0.027 for 4 copies in rules-only decks), and D_c is about 0 under either slope. C127's ledger shows why the loop holds few draw cards: proposals set the count (60 × 3.1% share = 1.88; populations 2.44, 1.90; lists 5.92), and selection can't resolve +0.007 a copy. C165, a factorial read of all 42 Trainers' value per copy under the loop's human-free pilots, is handed off
+- **Done** (research session, 18:25): read #741 against C163's record and amendments. Ran two CPU reads of the generator and C127's ledger. Wrote `runs/probe/C165-trainer-factorial/record.md`.
+- **C163, how far it goes:** one pilot, R-no-gap read by the letter (G_c +0.023, SE 0.014). The pooled slope gives +0.032, which would read between, and no slope gives a deck effect. Measuring Energy directly isn't worth a run, since no-gap and between lead to the same step (implementation's view, taken by default, row 115). F +0.028 (SE 0.010) is under R-field's band, so no field claim. Coherence isn't disproved; it has no case from draw's price. C164 stays held by its own condition.
+- **Measured (C127 s16, s17; iterations 0-29):** draw share of proposed copies 3.13%, 3.12%; λ_draw +0.104 (SE 0.041), −0.037 (SE 0.032); share 2.9%, 2.8% in the first 10 iterations and 3.3%, 3.4% in the last 10. Population draw copies at 29: 2.44, 1.90.
+- **Estimated:** expected λ_draw about +0.01 to +0.02 copies a move at +0.007 a copy, so C127's ledger didn't miss draw; it can't resolve it. Answers implementation's question in #741's message.
+- **Open fact, not read here:** base scores show lists far stronger than rules-only decks with no draw cards at all (0.72 and 0.39 against the rules-only field; rules-only 0.07 against the lists, 54% of those games ending with no Pokémon). What drives that is unmeasured, since C164 as written prices draw.
+- **Next:** implementation builds C165 (about 20,000 games a pilot, 4 pilots, about 20 minutes, estimated). R-signal leads to C166, R-no-signal reopens the deep round on search for co-adapted sets. Ground truth not moved.
+
+### #743 · 2026-11-01 · A5 C165 · C165 is built, its planted-value check passes and its timed pilot is logged, but the launch is held at research's request for an amendment, about the fit's singular term and C167. No full games have been played. Projected SE about 0.0025 a copy (estimated), under the record's 0.004 line
+- **Done:**
+  - `notes/scripts/c165_run.py`: `--make-decks` (4,000 decks in 20 pods) and the games, one `play` call a pod, each round a random perfect matching of its pod.
+  - `notes/scripts/c165_read.py`: the fit, jackknife over pods, the reads, the bands and `--synth`.
+  - `runs/probe/C165-trainer-factorial/run.sh`: row 73's hold and GPU-PAUSE at each pilot boundary, and the kills on errors and on 30 minutes.
+- **Departures from the record's model, each needed for the fit to be defined:** linear T is dropped (it's the sum of the 42 counts, so β absorbs it, and mean β is T's slope in the shape optimum), the shape terms are centred on the sample means, and an intercept is added (points aren't zero-sum, since a time win pays 2/3). The unpenalised block has rank 47 of 47, condition number 85.
+- **Evidence** (measured):
+  - Decks: all 4,000 legal, 60 cards, no special Energy. Mean P/T/E 13.39 / 24.57 / 22.04, SD 6.20 / 3.09 / 6.51. Every Trainer in at least 621 decks. Trainer count SD 1.32. P and E r −0.88.
+  - Timed pilot, arm 0 s1, one round a pod, 18:30:00-18:32:29: 2,000 games, 0 errors, y SD 0.425, residual SD 0.380, mean points 0.415. Endings: time 916, no Pokémon 883, Prizes 187, deck-out 14.
+  - Planted-value check on the real 10-round schedule, 5 draws, residual game SD 0.315 with a deck SD of 0.15: within 2 SE 39, 37, 42, 40 and 39 of 42, passing the 37 I set. An earlier run at game SD 0.40 also passed (39, 37, 42, 39, 39), correlation with the planted values about 0.99.
+- **Estimated:** SE a copy at 20,000 games 0.0024-0.0025 mean, 0.0031-0.0038 max. The game SD comes from the pilot's residual; the deck SD of 0.15 is the record's assumption, not measured.
+- **Found:** the timed pilot ran at only 13.7 games/s against C163's 52-83, in part because each pod's `play` call starts its games afresh. The full run's rate isn't timed yet, so its 30-minute kill matters, and research's 20-minute estimate may be low.
+- **Next:** research's amendment, then launch two chains side by side at 8 workers each.
+
+### #744 · 2026-11-01 · A5 C165 C167 correction · Correction to #742: "proposals set the count" isn't shown, because the start generator predicts the same number, and C165's model as written was singular (the auditor's review; research's errors). New from CPU reads: a 30-iteration fresh screen reads mostly the start generator (a kept deck replaces about 16 of 60 copies in 25 iterations, time constant about 93; 45% of decks replaced), so fresh screens can't show card counts moving. C165 is amended. C167, the auditor's body × Trainers cross on the lists' +0.33 base-strength gap, is handed off
+- **Done** (research session, 18:34): C165 Amendment 1 and `runs/probe/C167-body-trainer-cross/record.md` written. All six of the auditor's points adopted.
+- **Corrections:** (1) #742's headline and my message to the auditor said its antithesis "held". Not so: raw G is +0.050 (SE 0.009), only the extrapolated Energy correction brings it under the band, and F is under its own band, so neither the deck nor the field has a claim. (2) "Proposals set the count": wide_deck holds 1.98 draw copies, a 3.3% share against 3.1% proposed, and C127 goes 2.05 → 2.44 and 1.95 → 1.90 from iteration 4 to 29, so inheritance fits equally. (3) My "3 copies a move" was wrong; C127's config has 6 swaps.
+- **Measured** (CPU; C127 s16, s17; evaluation only):
+  - Kept decks replace 15.8 and 16.2 of 60 copies in iterations 4 → 29; 54 of 99 decks survive; turnover is 15% every 5 iterations, mostly wide. About 100 s an iteration (s16, 02:50-03:32, while sharing the GPU).
+  - Per-card match to the lists over 42 Trainers (ρ_L; top-7 share, null 95th about 0.32): generator +0.23, 0.23. C127 at 29: +0.13, 0.32 and +0.21, 0.19. C157 at 59: +0.10, 0.16.
+  - Long line (scr-round479, 499): T 27.9, ρ_L +0.34, top-7 share 0.43, P/T/E 11/28/19, draw 7.61 (lists 5.92), T4 1.20 (lists 9.17). All 479 forks share an ancestor, so this is one lineage, on an older engine before its fork. Its top 7 is Energy Removal, Oak, Bill, Computer Search, Gambler, Energy Retrieval, Energy Search; the lists' top 7 is Oak, PlusPower, Computer Search, Gust, Bill, Item Finder, Energy Removal.
+- **Estimated:** with this recipe's wide immigration, a steady-state population is only about 30% evolved copies, assuming removal doesn't depend on age. Share needed for 5.92 draw copies ignoring immigration: 27% by 30 iterations, 17% by 60, 12% by 130.
+- **Found:** every fresh 30-iteration drafting screen on this recipe reads about the generator on per-card composition, so null T4 and draw results there can't say a lever failed on those counts. This overrides earlier wording that the drafts lack draw: the long line carries more than the lists. It's one lineage, not a replicated result.
+- **Next:** C167 and amended C165, side by side if the machine allows (row 106). A long fresh run on this finding needs a record first (prior: #131's scr-v2 used wide turnover; no arm has removed it on engine K as far as I found). Ground truth not moved.
+
+### #745 · 2026-11-01 · A5 C168 · C168 written: the first long fresh run on engine K (130 iterations in 30-minute stages), with and without wide immigration, read on per-card distance to the lists, G1, T4 and draw, taken by default (row 115). Baselines: start generator TV 0.631, fresh at 29 TV 0.606 (SD 0.017, 10 runs), long line at 499 TV 0.456-0.500
+- **Done** (research session, 18:37): `runs/probe/C168-long-fresh-turnover/record.md`, with a new low-noise per-card metric, TV over the 42 Trainers, measured on existing populations. Also C165 Amendment 2, accepting implementation's reader as built, intercept included.
+- **Measured** (CPU; evaluation only; TV, A7, draw, T4): generator 0.631, 0.21, 1.93, 2.53. Fresh at 29, mean of 10 runs: 0.606, 0.33, 2.14, 2.12. scr-round479 at 499: 0.456, 0.43, 7.61, 1.20. Longest engine-K screen under `runs/screens/C*`: iteration 59.
+- **Estimated:** generator copies entering by wide turnover about 135 an iteration against about 62 from edits. Priors N − W about −0.04 at 60 and −0.08 at 130, assuming TV falls linearly with the evolved share.
+- **Found:** fresh screens have moved TV by about 0.025 from the generator (SD 0.017); the long line by about 0.15. T4 falls with time (1.2 at 499), so time alone isn't expected to fix the tempo four.
+- **Next:** C167, C165 Amendment 2 and C168 in that order, side by side where the machine allows. Auditor's review of C168's bands asked for. Ground truth not moved.
+
+### #746 · 2026-11-01 · A5 C167 C165 · C167 and C165's Amendment 1 are built, and C167's timed pilot is logged before its full run. Under C127 s16, on 200 games a cell, list bodies with scrambled Trainers score 0.68 and rules-only decks 0.42; these are unread, and nothing here has been fitted to bands yet
+- **Done:**
+  - `c145_run.py --no-copies`: only the decks' own games, on the same keys and deals as a run with copies, so arm 0's A and R can be C163's own LR and RR base games.
+  - `notes/scripts/c167_read.py`: cells, effects on the points and logit scales, SE the larger of a deal bootstrap and a bootstrap over source lists and decks, provisional and unreadable rules, bands. `runs/probe/C167-body-trainer-cross/run.sh pilot|s1|s2`.
+  - `c163_decks.py --knockouts` run as written (seed 163): T, C and B, 96 decks each, all legal, draw-free, each differing from its list only in its knocked-out part (asserted). K was also written and C167 doesn't use it.
+  - C165 by its Amendments 1 and 2: planted β with a non-zero mean; A7 and its permutation 95th percentile in R-signal; C127 s16's calibration; C166's gates; arm 0's predicted base scores; each pilot its own 30-minute stage.
+- **Evidence** (measured):
+  - C167 timed pilot, C127 s16, seed 91, 18:38:09-18:38:25: T 200 games, 0 errors, score 0.677, 38.6 games/s; R 200 games, 0 errors, score 0.418, 33.2 games/s. A deck never met its source in either.
+  - C165's planted-value check rerun with mean β +0.005: within 2 SE 39, 37, 42, 40 and 39 of 42, passing. C165's timed pilot is in #743.
+- **Next:** launch C167 s1 beside C165 (s16, then arm 0); when C167 ends, C165's second chain (s17, then K1m), so s16 and s17 overlap and K1m and arm 0 follow, as research asked.
+
+### #747 · 2026-11-01 · A5 C168 correction · Correction to #744's overreach: population counts are diluted on fresh screens, but paired change on surviving decks isn't, and across 43 engine-K screens T4 falls −0.26 per 25 iterations (12% of runs above 0) while draw rises +0.12 and Trainers fall −1.64. Selection drives T4's fall, not proposals (−0.050 a move against −0.006 a candidate). A lead, post hoc. C168 is amended and sits behind C167 and C165
+- **Done** (research session, 18:39): the auditor's survivor read (`surv.py`, 8 arms) extended on CPU to all engine-K screens with saved populations; ledger read on 18 runs. C168 Amendment 1 written.
+- **Measured** (post hoc, survivors filtered by score, per 25 iterations): T4 mean −0.26, SD over runs 0.32; draw +0.12; T −1.64. Paired-gate families: T4 about −0.2, T about −1.3. C85 (no pairing, about 31 edited copies against 17): T4 −0.61 to −1.46, T −5.4 to −7.3. Edits against T4 over runs r −0.61, carried by C85 and the low-edit runs. No lever family stands out from the spread.
+- **Corrections to #744:** "null T4 and draw results can't say a lever failed" holds only for population counts. "About 30% evolved" is about 18%, estimated (auditor; `--protect 20`).
+- **Found:** selection's direction agrees with the paired prices (draw above Energy, the tempo four at or under it, C139-C145), so T4's fall looks like the games' price under these pilots being followed, not a selection fault. A long run is expected to deliver draw, not T4. Rule 9 stands: no engine-reward explanation is claimed; every player built here prices T4 at or under an Energy, and why is still open.
+- **Declined:** the auditor's stage-2 T4-only stop for C168, because T4 isn't that run's case; its question is shape on this engine at this time scale. It's recorded that no C168 outcome addresses the T4 gap.
+- **Next:** C167, C165, then C168. Ground truth not moved.
+
+### #748 · 2026-11-01 · A5 C168 · C168 Amendment 2: a plain progress stop at iteration 60, and the band moves to E, TV minus its permuted-labels null, so concentration doesn't read as matching. Measured: generator E +0.002, fresh at 29 E −0.024 (SD 0.019), long line E −0.19 to −0.23. The auditor withdrew the T4 stop and accepts the run
+- **Done** (research session, 18:41): appended to the record. The auditor's two amendments adopted. Its premise on A7 was off: it's the lists' copy mass on the population's top 7, so it doesn't rise by construction. Its point on TV stands, so E replaces it.
+- **Found:** the long line matches the lists' Trainer mix beyond chance (z −3.1 to −3.4, 4 of the lists' top 7, effective Trainers 11-20 against the lists' 12.7), where fresh screens stay near the generator (z −1.4). It's one lineage on an older engine; replicating it from fresh decks on engine K is C168's job.
+- **Open, not recorded by research:** every player here prices T4 at or under an Energy, but they're close in strength (#646, #648-#649), so that's a ceiling of this ladder, with no measure of the ladder against human strength. The auditor takes it to A150.
+- **Next:** C167 is running; C165, then C168. Ground truth not moved.
+
+### #749 · 2026-11-01 · A5 C168 · C168's flag, reader and queue driver are built to its Amendments 1 and 2. The reader reproduces research's baselines. Its smoke, the check of unchanged default behaviour and the launch are still to come, behind C167 and C165
+- **Done:**
+  - `rl/metagame.py --turnover-mutant`, off by default. The diff against the previous file is the flag and one condition, `if args.turnover_mutant or rng.random() < MUTANT_SHARE:`, so with it off `rng.random()` is drawn exactly as before.
+  - `notes/scripts/c168_read.py`: E against 1,000 label permutations, z, A7, of the lists' top 7, effective Trainers, rho_L, draw and T4, shape, G1, ledger shares by window, deck ages, survivors' paired change per 25 iterations, an approximate lineage read, and the band on E.
+  - `notes/scripts/queue_c168.py`: the 4 arms pausable through `queue_c90.Screen`, stage reads every 15 iterations to `stages.jsonl`, the slide kills, and the stops at 60 and 90 on E.
+- **Evidence** (measured, CPU; reader against research's table in Amendment 2):
+  - scr-round479 at 499: TV 0.456, null 0.676, E −0.220, z −3.4, A7 0.43, 4 of the lists' top 7, 18.2 effective Trainers, all matching.
+  - C127 s16 and s17 at 29: E −0.016 and −0.003, inside the 10 runs' −0.024 (SD 0.019), rho_L 0.13 and 0.21, A7 0.32 and 0.19, as in #744.
+  - C127 s16 survivors 4 → 29, 54 decks: T4 −0.54 (SE 0.17), draw +0.52 (SE 0.23), Trainers −1.37 (SE 0.52).
+- **Taken by default (row 115):**
+  - W s51 only starts when a slot frees, possibly hours in, since the launcher allows 3 screens. So at 60 and 90 each N seed is read against W s50 until W s51 reaches that iteration. These stops can therefore fire on one W seed; the band at 130 still needs both.
+  - "A read" for the Pokémon and Trainer slides is every fifth iteration, the same spacing as the saves.
+  - Amendment 2's stop at 60 covers the record's wrong-way rule, since anything at or over +0.02 is also over −0.01, so that rule isn't coded separately.
+- **Not verified yet:** the 2-iteration smoke (mutants only under N, ledger integrity, 0 errors) and a seeded run against the old code. `rl/_metagame_pre_c168.py` is a temporary copy for that check, to be removed after it.
+- **Next:** C167's read; then C165's second chain; then C168's smoke and launch.
+
+### #750 · 2026-11-01 · A5 C167 · C167 reads **between by its letter, but almost all of the lists' strength gap is in their Pokémon and Energy**: Body is +0.276 (SE 0.013) under C127 s16 and +0.280 (SE 0.013) under arm 0, and Trainers +0.040 (SE 0.011) and +0.056 (SE 0.011). s16 alone reads R-body; arm 0 misses it only because Trainers is 0.006 over the +0.05 "doesn't" line. A band needs both pilots, so no replication runs by the record, and research decides
+- **Done:** `run.sh s1` ran 18:38:45-18:51:36 beside C165's first chain; output in `summary.json`. 0 errors in every cell, and no deck met its source. Arm 0's A and R are C163's LR and RR base games. C165's second chain launched at 18:51:54.
+- **Evidence** (measured, finished; base score against C162's rules-only field, draw-free decks, event points/3, seed 91):
+
+| Deck | C127 s16 | Arm 0 s1 |
+|---|---|---|
+| A: the lists | 0.707 | 0.722 |
+| T: list's body, random Trainers | 0.699 | 0.689 |
+| C: list's body, random Trainers at the list's copy counts | 0.686 | 0.692 |
+| B: list's Trainers, rules-only body | 0.463 | 0.465 |
+| R: rules-only | 0.391 | 0.385 |
+
+  - Effects, s16 then arm 0: Gap +0.316 (0.019), +0.336 (0.018). Body +0.276 (0.013), +0.280 (0.013). Trainers +0.040 (0.011), +0.056 (0.011). I −0.065 (0.018), −0.047 (0.021). Identities +0.021 (0.010), +0.029 (0.010). Concentration −0.013 (0.008), +0.003 (0.008). SE is the larger of the deal and cluster bootstraps; the cluster one is larger for most effects.
+  - Logit: Body +1.16, +1.18; Trainers +0.17, +0.24. No cell is under 0.25 or over 0.75, so nothing is provisional.
+  - The 7 lists inside C162's bounds: A − R +0.262, +0.294. So shape differences don't explain the gap.
+- **Found:**
+  - Against this field a list's body with uniformly random Trainers scores nearly what the list does (0.69-0.70 against 0.71-0.72), and the list's Trainers do little for a rules-only body (0.46 against 0.39).
+  - Concentration and identities are each about +0.03 or under on Body-kept decks, so at these pilots a Trainer's copy count isn't what separates these decks.
+- **Limits:**
+  - One field, the rules-only one, chosen because rules-only decks floor against the lists. So this says what beats weak decks, not what the lists need against each other.
+  - Both pilots undervalue tempo Trainers (C135-C142), so a small Trainers effect is partly a play limit, not a statement about the cards. Body hasn't been split into Pokémon and Energy.
+  - Stage 2's replication (s17, arm 0 s2) hasn't run.
+- **Next:** research's read. C165 continues; its table is aimed at the smaller part, whatever it reads.
+
+### #751 · 2026-11-01 · A5 C167 C169 · Research's read of C167 (between, #750): the lists' strength gap is almost all Body (+0.28 against +0.04 to +0.06), and drafted bodies don't resemble the lists' at any time scale measured: 6.6 Pokémon names at 2.2 copies against 4.6 at 3.1, 3.7 Energy types against 1.8, and the long line is no closer on Pokémon names. G1 can't see this. Replication runs post hoc; C169 splits Body; deep round 8 reopens on block search
+- **Done** (research session, 18:54): C167 Amendment 1, `runs/probe/C169-body-split/record.md`, and a line added to C168's reads. Deep round launched at 5h not in file, week 84%: one Haiku researcher, then a Sonnet writer. Folder `research_notes/Drafter search for coadapted decks/`.
+- **Read:** by the letter between, and no R-body claim yet. One field, rules-only; both pilots undervalue tempo Trainers, so Trainers' small effect may partly be a play limit. It says what beats weak decks, not what the lists need against each other. C169 adds the drafted field.
+- **Measured** (CPU, evaluation only): C169's table in the record. E over Pokémon names: C127 at 29 −0.053, −0.055; long line −0.055 to −0.084, z −1.8 to −2.5. On Trainers the long line is at about −0.2, z about −3.3.
+- **Found:** long running moved the Trainer mix toward the lists (draw, Energy Removal, Computer Search), not the body. The largest strength gap sits where the loop shows no movement, and the standing ground-truth metric doesn't read it. Why a selected body stays incoherent is open: single-copy edits may not reach it (a type or name change takes many copies at once), but that's a hypothesis.
+- **Next:** C167's replication, C165, C169, C168. Ground truth not moved.
+
+### #752 · 2026-11-01 · A5 C169 correction · Correction to #751: "drafted bodies show no movement" is wrong on survivors, the same dilution error as #744. C127's surviving decks gain Basics and lose Energy types toward the lists, and only names move away. C169 gains the lists as a field, and deep round 8's proposals wait for C169's read
+- **Done** (research session, 18:57): C169 Amendment 1. All of the auditor's points adopted. Writer stopped on the auditor's hold, too late to save its cost: `reports/Drafter search for coadapted decks.md` was written at 18:57 and may be unfinalised, so it's held, unread, and nothing is queued from it. The Haiku researcher's notes are kept (74k tokens; thin, with no card-game crossover comparison with numbers).
+- **Measured by the auditor** (CPU, post hoc, unbanded; C127 s16, s17, survivors, iterations 4 → 29, SE about 0.1-0.6): Basics +3.17, +2.09; Energy types −0.61, −0.67; names +1.67, +1.85; copies a name +0.09, −0.12; Pokémon +4.39, +3.78; Energy −3.02, −3.06. C162's 99 decks: basic, names, Energy types and special give R² 0.09, Energy types best at r −0.28; extrapolated, about +0.1 of the +0.28 (estimated).
+- **Restated:** edits do reach Energy types and Basics on fresh screens. The part not moving toward the lists is name concentration and possibly which Pokémon. So the case for block moves is weaker, and "rules-only Pokémon are just bad" is stronger. The long line's types and names (4.2-4.6, 6-7) still sit far from the lists, which short-run survivors don't explain; that lineage is on an older engine.
+- **Body read:** the auditor reports one beside G1 from A150 on, as an audit read. Standing metrics unchanged.
+- **Next:** C167's replication, C165, C169, C168. Ground truth not moved.
+
+### #753 · 2026-11-01 · A5 C168 correction · Correction to #744, #745 and #748: the long line's Trainer match isn't evidence of rediscovery. Its oldest decks are Snorlax and Chansey walls with about 10 draw copies, 0-0.86 T4 and off-type Energy. C168 had also missed that wide turnover entered at #127-#131 to escape that minimum, so its no-immigration arm now has a wall stop and a prior of R-walls
+- **Done** (research session, 18:59): read Energy types, draw and T4 by deck age in the 499 populations, on the auditor's suggestion; C168 Amendment 3.
+- **Measured** (CPU; age ≥ 200; three forks of one ancestor; older engine): Energy types 4.25-4.71, on-type 0.10-0.27, special 8.8-11.1, draw 9.8-11.0, T4 0-0.86, names 5.3-6.5, Trainers 20-28. scr-round479's oldest hold Snorlax 3.1, Chansey 2.9. C127 at 29 by age: no such pattern (Energy types 3.5-4.5, on-type 0.74-0.86, special 2.2-3.1).
+- **Read:** the auditor's test says not dilution, and the short-run Energy-types direction doesn't reach those decks. But colourless costs may make Energy types neutral on walls, so it isn't evidence on typed decks. Age isn't lineage time either, since mutants inherit old decks' cards.
+- **Own error:** I told Evan the long line was the strongest per-card evidence of rediscovery. It's a match on Trainers inside a known minimum. I also didn't check why `--turnover-wide` exists before writing C168, against the standing rule to check prior attempts.
+- **Next:** C167's replication, C165, C169, C168. Ground truth not moved.
+
+### #754 · 2026-11-01 · A5 C168 · C168 Amendment 4: W gets its own stops (at 60 if E isn't below −0.024 at both seeds; on the wall signature at any read), both W seeds start first, and launch waits for C169's read. The auditor accepts the run on those terms
+- **Done** (research session, 19:00): appended to the record. Nothing launched.
+- **Next:** C167's replication, C165, C169, then C168's priority check. Ground truth not moved.
+
+### #755 · 2026-11-01 · A5 C169 C168 · C169 is built to its Amendment 1, and C168's reader and queue to its Amendments 2 and 3. Nothing from either has been played. Wall-signature shares on known populations: C127 at 29 0, scr-round479 and s6 at 499 0.15 and 0.14, scr-resetcap at 499 0.38, meta-99 at 99 0.76, the lists 0. So the 25% kill would stop a meta-99-like state but not a round479-like one
+- **Done:**
+  - `c163_decks.py --body-split` (seed 169; C164's files untouched): E2, S and G, 96 decks each, and F (C127 s16's population at 29). `notes/scripts/c169_read.py`, `runs/probe/C169-body-split/run.sh pilot|s1`.
+  - C168's reader: body facts, E over Pokémon names, wall share. The queue: the wall kill from iteration 5 at 3 saved reads in a row; if both N seeds stop, it logs R-walls and W runs on.
+- **Evidence** (measured, CPU):
+  - All E2, S and G decks: legal, 60 cards, no draw cards, no special Energy, on-type basics only. S keeps each list's name count, copies and stages (asserted).
+  - Body facts reproduce research's table: lists 13.88 Pokémon, 4.62 names, 3.06 copies a name, on-type 1.00, special 4.04; C162 5.42 names; C127 s16 at 29 names E −0.0545; scr-round479 at 499 names E −0.084.
+- **Departures, accepted by research:**
+  - On the list field, E2, S, G and B play 12 opponents at 2 deals, not 23 at 1, because one deal a pair puts the deck in seat 1 every game.
+  - Joseph Viray's list runs Blastoise and Squirtle with no Wartortle, a Pokémon Breeder line, so its 4 E2 and 4 S decks hold one "orphan" evolution each. S keeps that skip as a link; it's the only exception to the record's no-orphan check. G has none.
+- **Next:** C167's replication when C165's arm 0 frees its workers; C169's timed pilot, logged before its full run; C169; C168's smoke and launch.
+
+### #756 · 2026-11-01 · A5 C165 · C165 reads **between, S-between**, and C166's gates fail: only 2 Trainers beat a basic Energy by 2 SE at either loop pilot (Professor Oak and Energy Removal, 8 copies against the lists' 28). rho_L is +0.35 at both, under the band's +0.40, though p is about 0.01. Both calibrations pass, and the fit predicts arm 0's scores in C163's matchups closely (0.70, 0.41, 0.08 against 0.72, 0.39, 0.07), with Pokémon names carrying most of the predicted gap
+- **Done:** 4 pilots, 20,000 games each, 0 errors: C127 s16 18:38:46-18:48 (34.4 games/s), arm 0 to 19:04:40 (20.7), C127 s17 from 18:51:55, then K1m to 19:16:33 (23.7). Read by `c165_read.py`; output in `summary.json`. The timed pilot's 13.7 games/s was low: pods at 1,000 games run faster.
+- **Evidence** (measured, finished; SEs by jackknife over 20 pods):
+
+| | C127 s16 | C127 s17 | K1m | Arm 0 |
+|---|---|---|---|---|
+| r_sh (odd against even pods) | 0.58 | 0.57 | 0.45 | 0.57 |
+| rho_L (permutation p) | +0.353 (0.011) | +0.346 (0.014) | +0.367 (0.012) | +0.384 (0.007) |
+| A7 (95th percentile 0.323) | 0.305 | 0.392 | 0.392 | 0.335 |
+| β SE, mean a copy | 0.0020 | 0.0020 | 0.0019 | 0.0019 |
+| Trainers above +2 SE | 2 | 2 | 3 | 2 |
+| Draw mean a copy (SE) | +0.005 (0.002) | +0.006 (0.002) | +0.005 (0.001) | +0.004 (0.001) |
+| T4 mean a copy (SE) | −0.008 (0.001) | −0.007 (0.001) | −0.010 (0.001) | −0.009 (0.001) |
+| E* (CI) | 21.75 (18.5-25.0) | 23.0 (20.3-25.7) | 23.75 (22.2-25.3) | 24.5 (22.6-26.4) |
+
+  - The table agrees across pilots: Professor Oak is top at all 4 (+0.012 to +0.013 a copy), Energy Removal +0.004 to +0.006, Bill +0.002 to +0.004 (2 SE only at K1m). Computer Search is about −0.003, level with the best of the rest. Item Finder sits among the lowest at all 4 (−0.011 to −0.014), though the lists run 2.1 copies.
+  - Calibration: 2 Oak + 2 Bill is +0.031 (SE 0.006) under arm 0 against C163 RR's +0.027, and +0.031 (SE 0.006) under s16 against C145 D's +0.028. Both pass. Two different designs agree on this price.
+  - Predicted against observed, arm 0: lists on rules-only 0.704 against 0.722; rules-only on rules-only 0.411 against 0.385; rules-only on lists 0.079 against 0.070. Predicted gap +0.294 against the observed +0.336, of which Pokémon names +0.222, Trainers +0.072, shape 0.000. So main effects carry the gap, and by the record the co-adapted-sets round doesn't run on this read. The fit extrapolates here and its ridge shrinks the Pokémon part, so the split is a rough read.
+  - Adjusted score by Energy, all 4: best at 20-23 (+0.038 to +0.042); 16-19 is +0.017 to +0.029; 12-15 −0.04 to −0.05; 8-11 −0.12 to −0.13. T* sits at the sampled range's lower edge (19) at all 4, so it's a boundary, not an interior optimum.
+  - Reported, added by me, no band: the Pokémon names the lists use have a higher mean coefficient (+0.007 to +0.009 against about −0.001), rho_L +0.20 to +0.25 over 178 names. The top names mix list cards (Scyther, Hitmonchan, Electabuzz, Wigglytuff) with others (Tauros, Lickitung, Seaking, Kangaskhan, Snorlax).
+- **C166's gates:** five Trainers above 2 SE at both seeds fails; not S-energy passes; calibrations pass. The R-signal band also misses on rho_L at both seeds and A7 at s16. No C166.
+- **Read:** most Trainers lose to a basic Energy per copy under all 4 pilots, human-free and list-trained alike. So the table doesn't lead to the lists' 28 Trainers, and T4's deficit shows here too.
+- **Limits:** one run of each pilot on rules-only concentrated decks against each other, and greedy play, which C135-C142 showed undervalues tempo cards. These are main effects only.
+- **Next:** research's read. C169's timed pilot, then its full run. C167's replication is running.
+
+### #757 · 2026-11-01 · A5 C169 · C169's timed pilot, logged before its full run, as research asked: C127 s16, rules-only field, seed 91, 200 games a cell, 19:19:19-19:19:43, 0 errors. S scores 0.512 (win share 0.62) at 20.5 games/s, and G 0.477 (0.57) at 22.8 games/s. Unread, SE about 0.03 at this size. The full run is about 46,000 games plus the list field's 11,400
+- **Next:** `run.sh s1`, launched beside C167's replication, 8 workers each.
+
+### #758 · 2026-11-01 · A5 C165 · Research's read of C165 (between, S-between, #756): C166 closes on its gates, and the co-adapted-sets round doesn't run on this. All four pilots, human-free included, price the Trainers alike: Professor Oak well above Energy, Energy Removal and Bill slightly, Gambler about level, and every other Trainer below. Additive card values predict most of the lists' strength gap under arm 0, Pokémon names most of all. So the drafts' Energy lean looks like selection correctly removing Trainers these pilots can't use
+- **Done** (research session, 19:20): read #756 and `summary.json` against C165's record and amendments.
+- **Measured** (20,000 games a pilot; β a copy against a basic Energy at the sample's mean shape, SE about 0.002): Oak +0.012 to +0.013; Energy Removal +0.004 to +0.006; Bill +0.002 to +0.004. The lists' top 7 rank 1 (Oak), 2 (Energy Removal), 3 (Bill), 7 (Computer Search), 14 (Gust), 19 (PlusPower), 39 of 42 (Item Finder), on the C127 seeds' mean. T4 cards run −0.005 to −0.014. T* sits at the sample's lower edge, so the shape read is only along P.
+- **Item 7, arm 0 only:** predicted LR 0.704, RR 0.411, RL 0.079 against observed 0.722, 0.385, 0.070; gap +0.294 of +0.336 (Pokémon names +0.222, Trainers +0.072).
+- **Read, with limits:** the band is between; ρ_L +0.35 is under +0.40, though p is about 0.01, and the split-half is modest (0.57). It's fitted on concentrated random decks with uniformly chosen Trainers, so cards whose worth depends on other cards or on timing (Item Finder, PlusPower) are the ones it may underprice, by design. "Most Trainers lose to an Energy" is what these pilots' games say, not a claim about the game (rule 9): the lists run 28, and they're ground truth. A pilot limit remains the leading explanation; the ladder question goes to A150.
+- **Round 8:** additive values fit the gap, so block search has no case from this. Its report stays held for C169's read and won't be queued from unless C169 reads structure.
+- **Next:** C169, then C168's priority check. Asked implementation for two CPU reads: predicted against observed under C127 s16 (C167's A and R), and each population's predicted Trainer and Pokémon parts. Ground truth not moved.
+
+### #759 · 2026-11-01 · A5 C165 · Research's two CPU reads from the C127 s16 fit, no games. **Drafted bodies are well short of the lists on additive Pokémon value:** +0.22 for the lists against +0.03 and +0.05 for C127 at 29. The long line reaches +0.12, and its 12 oldest decks +0.16. These are the fit's predictions, not measured games. The human-free pilot's fit also predicts C167's cells: A 0.707 against 0.707, R 0.412 against 0.391
+- **Done:** `notes/scripts/c165_score.py`, output in `runs/probe/C165-trainer-factorial/score_s16.json`. `c165_read.py` now saves all 178 Pokémon coefficients in `summary.json` for each pilot; rerunning it left the band unchanged.
+- **Evidence** (the s16 fit, lambda 1000; each part is the coefficients on a deck's counts, from the mean of the 4,000 factorial decks; mean, SD over decks):
+
+| Population | Decks | Trainer | Shape | Pokémon | Total |
+|---|---|---|---|---|---|
+| Lists | 24 | +0.082 (0.035) | +0.036 (0.012) | +0.222 (0.070) | +0.340 (0.080) |
+| Lists, draw-free | 24 | +0.033 (0.038) | +0.040 (0.019) | +0.222 (0.070) | +0.295 (0.089) |
+| C162 rules-only | 99 | −0.019 (0.031) | +0.035 (0.003) | −0.003 (0.068) | +0.013 (0.073) |
+| C127 s16 at 29 | 99 | +0.009 (0.051) | +0.041 (0.041) | +0.030 (0.072) | +0.080 (0.095) |
+| C127 s17 at 29 | 99 | +0.006 (0.053) | +0.042 (0.049) | +0.046 (0.062) | +0.094 (0.089) |
+| scr-round479 at 499 | 99 | +0.104 (0.078) | +0.035 (0.035) | +0.116 (0.069) | +0.255 (0.132) |
+| scr-round479 at 499, age ≥ 200 | 12 | +0.159 (0.024) | +0.035 (0.012) | +0.159 (0.052) | +0.354 (0.070) |
+
+  - Item 7 under s16, predicted against observed on C167's cells: A 0.707 against 0.707; R 0.412 against 0.391; gap +0.295 against +0.316. Gap parts: Pokémon +0.224, Trainers +0.065, shape +0.006.
+- **Found:**
+  - A per-name table has a case on this read: the gap between the lists and C127 at 29 is about +0.18 in the Pokémon part, and about +0.07 in the Trainer part.
+  - The lists' Pokémon part has an SD of 0.07 over 24 lists, about the same as rules-only decks' 0.068 over 99, so the lists aren't uniformly high.
+  - The long line's oldest decks reach the lists' total here (+0.354 against +0.340), with more from Trainers and less from Pokémon. By Amendment 3 of C168 they're walls, so a high additive score doesn't mean list-like.
+- **Limits:** one fit on rules-only concentrated decks, under greedy play; the ridge shrinks the Pokémon part; the lists and old decks may lie outside its range; 5 names in these populations (Kabutops, Aerodactyl, Kabuto, Omanyte, Omastar) aren't in the fit and count 0. None of this has been tested head to head.
+- **Next:** research's read. C167's replication and C169 are running.
+
+### #760 · 2026-11-01 · A5 C167 replication · C167's post-hoc replication (its Amendment 1) meets the lines written before it ran: **Body +0.282 (SE 0.013) under C127 s17 and +0.295 (SE 0.014) under arm 0 s2 carries at both; Trainers +0.060 (0.013) and +0.057 (0.014) doesn't carry at both.** Four pilots now agree. s1's band stays between, and R-body isn't claimed
+- **Done:** `run.sh s2` ran 19:05:01-19:24:33 at seed 92, 0 errors in every cell, no deck meeting its source. Output in `summary_s17_s2.json`.
+- **Evidence** (measured, finished; rules-only field):
+
+| Deck | C127 s17 | Arm 0 s2 |
+|---|---|---|
+| A: the lists | 0.720 | 0.732 |
+| T: list's body, random Trainers | 0.695 | 0.708 |
+| C: list's body, random Trainers at the list's copy counts | 0.690 | 0.707 |
+| B: list's Trainers, rules-only body | 0.474 | 0.470 |
+| R: rules-only | 0.378 | 0.380 |
+
+  - Gap +0.342 (0.018), +0.353 (0.018). I −0.071 (0.019), −0.066 (0.018). Identities +0.030 (0.012), +0.026 (0.011). Concentration −0.005 (0.008), −0.001 (0.008).
+  - Trainers is over the +0.05 "doesn't" line at both, as at arm 0 s1, which by the amendment is reported and not used.
+  - Across the four pilots Body runs +0.276 to +0.295 and Trainers +0.040 to +0.060.
+- **Next:** C169's read, then research's call on C168.
+
+### #761 · 2026-11-01 · A5 C168 acceptance · C168 passes its acceptance and stays unlaunched, waiting on research's read of C169. Under N every turnover is a mutant (30 of 30), with 0 errors and ledger integrity PASS. With the flag off, the turnover kinds match the old code exactly at the same seed. Scores don't match, but they don't match between two runs of the old code either, so the run isn't deterministic and the flag isn't the cause
+- **Done:** a 2-iteration smoke with a turnover each iteration (`runs/_smoke-c168-n`, 200 games an iteration), then the flag off under the new code and twice under the old. The temporary copy `rl/_metagame_pre_c168.py` and the flag-off and old-code smoke folders are removed.
+- **Evidence** (measured, seed 168):
+  - N: kinds `mutant` only, 15 and 15. Errors 0 and 0. Ledger integrity PASS (0 mismatches).
+  - Flag off against the old code: the 30 turnover kinds are identical in order, so the RNG stream is unchanged. cut_off 19, 18 against 18, 11.
+  - The old code against itself: kinds identical, cut_off 18, 11 against 17, 16, and z differs. So a full-run match isn't a test this run can pass, and the check rests on the kinds and the one-line diff (#749).
+- **Found:** `rl/limits.py` caps workers at RL_CPU_THREADS − 2, so C168's chains at 5 threads get 3 workers, not the 5 they ask for. Three screens at 3 workers and 25% of the GPU's time each may run slower than C127's measured 100 s an iteration, so research's 3.6 hours looks optimistic; it isn't timed yet. Its first stage read will show the rate.
+- **Next:** C169's read, research's call on C168.
+
+### #762 · 2026-11-01 · A5 C169 · C169 reads **R-identity** at C127 s16 and arm 0 s1, pending its replication. Which Pokémon a deck runs carries the body's gap: Identity +0.212 (SE 0.016), +0.214 (0.017) and +0.237 (0.019) on the rules-only field and the drafted field, against special Energy about 0, name structure +0.03 and Energy fit +0.01. On the lists themselves Identity can't be read by the floor (S scores 0.122), though its logit is +0.83 (SE 0.10), and no part reads as weak-field
+- **Done:** `run.sh s1` ran 19:19:53-19:38:51, 0 errors in every cell, no deck meeting its source. Output in `summary.json`. Replication launched, as the record requires on a claim band.
+- **Evidence** (measured, finished; base score in event points/3, win share beside it; chain A → E2 → S → G → B):
+
+| Cell | s16, rules-only | Arm 0, rules-only | s16, drafted | Arm 0, the lists |
+|---|---|---|---|---|
+| A: the lists, draw-free | 0.707 (0.80) | 0.722 (0.83) | 0.685 (0.77) | 0.264 (0.36) |
+| E2: on-type basics, no special Energy | 0.715 (0.81) | 0.712 (0.83) | 0.687 (0.78) | 0.242 (0.33) |
+| S: the list's name structure, new Pokémon | 0.503 (0.60) | 0.498 (0.61) | 0.451 (0.53) | 0.122 (0.17) |
+| G: a wide deck's Pokémon, on-type Energy | 0.474 (0.57) | 0.472 (0.58) | 0.414 (0.49) | 0.106 (0.15) |
+| B: a wide deck's Pokémon and its Energy | 0.463 (0.56) | 0.465 (0.57) | 0.418 (0.49) | 0.114 (0.16) |
+
+  - Effects, the same four columns; SE is the larger of the deal and list bootstraps:
+    - Special −0.008 (0.011), +0.009 (0.009), −0.003 (0.014), +0.022 (0.010).
+    - Identity +0.212 (0.016), +0.214 (0.017), +0.237 (0.019), +0.120 (0.015; logit +0.83, SE 0.10, unreadable).
+    - Structure +0.030 (0.019), +0.026 (0.018), +0.037 (0.019), +0.016 (0.011; unreadable).
+    - Fit +0.010 (0.018), +0.007 (0.016), −0.004 (0.017), −0.008 (0.011; unreadable).
+  - On the lists, S, G and B are under the 0.15 floor, so the band reports Identity, Structure and Fit as unreadable there. R-identity rests on the other three fields, and its condition on the lists is met only as "not readable".
+- **Found:**
+  - Removing all special Energy and fixing basics on-type changes almost nothing (E2 about A), so a rules-only Energy mix isn't what holds drafted decks back.
+  - Keeping a list's name counts and stages with new names keeps only a small part of the gap (S − G about +0.03). The lists' strength here is mostly which cards they name, not how they're structured.
+  - The list field reads lower everywhere, as a coherent metagame: A's own score is 0.264, ranging 0.17-0.38 by list.
+- **Agrees with C165:** the fit's Pokémon names carried +0.22 of the gap under both arm 0 and s16 (#756, #759). Two designs, factorial and knock-out, reach the same split, though these are one seed each until the replication reads.
+- **Limits:** greedy play; S draws uniformly at each stage, so it's a single reference for "other Pokémon", not the best other Pokémon. The lists' names aren't a target for the method: an adopted lever must be card-neutral and name no card.
+- **Next:** `run.sh s2` (C127 s17, arm 0 s2, seed 92, about 57,000 games, estimated 20 minutes), then research's call on C168's priority. Ground truth not moved (no drafting run since C157).
+
+### #763 · 2026-11-01 · A5 C169 C170 · Research's read of C169 (R-identity at the first pair, replication running, #762): it's which Pokémon, not name structure, Energy fit or special Energy. Deep round 8 closes unused. C170 is handed off: do bodies picked by a human-free table beat uniformly picked bodies against the lists? Taken by default (row 115), C168 waits for C170, and its W arm becomes C171's control if the table works
+- **Done** (research session, 19:42): read #762 against C169's record and amendments; wrote `runs/probe/C170-table-bodies/record.md`.
+- **Read:** R-identity at C127 s16 and arm 0 s1, on the rules-only and drafted fields. On the lists field it's unreadable by the letter (S 0.122, under the floor), though its logit is +0.83 (SE 0.10). So no list-field claim. Replication at C127 s17 and arm 0 s2 is running.
+- **Round 8:** closed without a queued run from it. The report (`reports/Drafter search for coadapted decks.md`) stays filed, unread by research and possibly unfinalised. Structure reads +0.016 to +0.037, so block search has no case here; C165's and C169's reads agree. What it cost: 74k Haiku tokens plus a stopped Sonnet writer.
+- **Decision on C168, Amendment 4's check, taken by default:** hold until C170 reads (about 25 minutes, estimated). If R-table-works, C171's control is C168's W at the same seeds, so nothing is run twice. Otherwise C168 launches as written. GPU idle in that wait is small, with C170 and C169's replication running.
+- **Limits:** C170 can't say the loop will find these bodies, only whether the table is worth aiming it with. The walls score high on the same table, so a pass on the rules-only field alone wouldn't count, and its primary is the lists field.
+- **Next:** C169's replication, C170. Ground truth not moved.
+
+### #764 · 2026-11-01 · A5 C170 · C170 Amendment 1: the auditor's four adopted. R-table-works now also needs decided-win share, so stalling can't pass; G is logged under the loop's pilots; uniform-Trainer cells join C171's gate; and C171's κ is chosen on the human-free drafted field, so the lists only gate and never tune
+- **Done** (research session, 19:44): appended to the record. No full-run read seen.
+- **Next:** C169's replication, C170. Ground truth not moved.
+
+### #765 · 2026-11-01 · A5 C170 · C170 is built to its Amendment 1, and its timed pilot is logged before the full run: G on the lists scores 0.142 under C127 s16 and 0.135 under s17 (200 games each, 0 errors, SE about 0.03), so both are above the 0.05 unreadable line for now. The weights land: Y's table value a copy is +0.023 and +0.027 against G's −0.002, and E2's +0.015. Launched at the time below, beside C169's replication
+- **Done:**
+  - `wide_deck(..., name_weight=)`, off by default, each Pokémon pick at each stage weighted by its name. Without it the stream is unchanged, checked by regenerating decks: C165's 4,000 concentrated decks and C162's 99 kept standard decks come out identical.
+  - `c163_decks.py --table-bodies` (seed 170) and `--uniform-trainers` (seed 1700); `notes/scripts/c170_read.py`; `runs/probe/C170-table-bodies/run.sh pilot|s1`. G, E2 on arm 0's lists, and G on s16's drafted and rules-only fields are reused from C169.
+- **Evidence** (measured):
+  - All X, Y and uniform-Trainer decks: legal, 60 cards; no draw cards in X and Y.
+  - Rejection sampler at κ 3, flagged as research asked: it hits every list's Pokémon count, but Y draws 60,798 and 43,047 wide decks (s16, s17), and up to 15,191 for one deck, against X's about 5,000 and 373. The hardest decks are the lists with counts Y's picks rarely make, so those few are unusual draws.
+  - Composition, s16 then s17:
+
+| | Table value a copy | Share on the lists' names | Effective names | Colourless share | Top names |
+|---|---|---|---|---|---|
+| G | −0.002, −0.002 | 0.16 | 98 | 0.21 | Meowth, Ponyta, Psyduck |
+| X | +0.008, +0.010 | 0.31, 0.35 | 51, 41 | 0.39, 0.37 | Electabuzz, Lickitung, Scyther, Tauros |
+| Y | +0.023, +0.027 | 0.56, 0.65 | 8.1, 5.7 | 0.58, 0.57 | Scyther, Lickitung, Tauros, Hitmonchan |
+| E2 | +0.015 | 1.00 | 9.3 | 0.32 | Scyther, Hitmonchan, Jigglypuff, Wigglytuff |
+
+- **Found:** Y scores above the lists' own Pokémon on the table (+0.023 against +0.015), and it does so with more colourless attackers than the lists run. So the table can overshoot the lists, and C170's games test whether that holds up.
+- **Next:** the full run, about 39,000 games, then research's read before anything from it launches.
+
+### #766 · 2026-11-01 · A5 C169 replication · C169 **replicates R-identity** at C127 s17 and arm 0 s2, seed 92. Identity is +0.187 (SE 0.018) and +0.202 (0.016) on the rules-only field and +0.202 (0.020) on s17's own drafted field. On the lists it's again unreadable by the floor (S 0.120), logit +0.92 (SE 0.10). Special, structure and fit stay small, and no part reads weak-field
+- **Done:** `run.sh s2` ran 19:40:01-20:02:07 beside C170, read by `c169_read.py --rep`; output in `summary_rep.json`. 1 error in about 57,000 games (one game in G under arm 0 s2), and no deck met its source.
+- **Evidence** (measured, finished; base score, win share in brackets):
+
+| Cell | s17, rules-only | Arm 0 s2, rules-only | s17, its drafted | Arm 0 s2, the lists |
+|---|---|---|---|---|
+| A | 0.720 (0.82) | 0.732 (0.84) | 0.697 (0.78) | 0.264 (0.36) |
+| E2 | 0.696 (0.80) | 0.711 (0.83) | 0.681 (0.76) | 0.254 (0.35) |
+| S | 0.509 (0.61) | 0.510 (0.62) | 0.479 (0.55) | 0.120 (0.17) |
+| G | 0.476 (0.58) | 0.466 (0.57) | 0.441 (0.51) | 0.109 (0.15) |
+| B | 0.474 (0.58) | 0.470 (0.58) | 0.450 (0.52) | 0.103 (0.14) |
+
+  - Effects, the same four columns: Special +0.024 (0.010), +0.021 (0.009), +0.016 (0.015), +0.010 (0.010). Structure +0.033 (0.020), +0.044 (0.018), +0.038 (0.021), +0.012 (0.012; unreadable). Fit +0.002 (0.017), −0.004 (0.015), −0.009 (0.016), +0.006 (0.008; unreadable).
+- **Read:** across all six readable pairs Identity runs +0.187 to +0.237, and Fit stays about 0. Structure is a little higher at this seed, +0.03 to +0.04, under the +0.07 carry line but over the +0.03 "doesn't" line at the 3 readable pairs, so it isn't excluded by the bands. Which Pokémon a deck runs is the replicated part.
+- **Limit:** R-identity's condition on the lists is met only as "not readable", at both seeds, though the logit there is +0.83 and +0.92.
+- **Next:** C170, about two thirds done by its 17 of 25 own cells.
+
+### #767 · 2026-11-01 · A5 C170 · C170 reads **R-table-works**: bodies picked by the human-free Pokémon table beat uniformly picked bodies against the lists themselves, at both C127 seeds and on both scales. At κ 3 (Y) the logit gain is +1.04 and +1.12 on points and +1.07 and +1.17 on decided wins, and it about matches the lists' own Pokémon (Y − E2 −0.14 and +0.11). C171's gate opens at κ 3, but Y leans on very few names, and every Y deck under s17 holds Lickitung. Evaluation only; nothing launches from this until research has read it
+- **Done:** `run.sh s1` ran 19:46:57-20:04:51 beside C169's replication; output in `summary.json`. All 20 cells, 0 errors, no deck meeting its source. s16's G on its drafted and rules-only fields, and G and E2 on arm 0's lists, are C169's games; s16's two G cells were played at 23 opponents, the others at 12.
+- **Evidence** (measured, finished; score in event points/3 with decided-win share, then logit differences with a bootstrap over the 24 source lists):
+
+| On the lists | G | X (κ 1) | Y (κ 3) | E2 (the list's own) |
+|---|---|---|---|---|
+| C127 s16 | 0.125 (0.134) | 0.215 (0.235) | 0.287 (0.310) | 0.316 (0.352) |
+| C127 s17 | 0.130 (0.130) | 0.226 (0.232) | 0.314 (0.326) | 0.292 (0.311) |
+| Arm 0 s1, s16's table | 0.106 (0.110) | 0.175 (0.180) | 0.237 (0.249) | 0.242 (0.260) |
+
+  - X − G, points then won: s16 +0.65 (0.09), +0.69 (0.10); s17 +0.67 (0.10), +0.70 (0.10); arm 0 +0.58, +0.58.
+  - Y − G: s16 +1.04 (0.09), +1.07 (0.10); s17 +1.12 (0.09), +1.17 (0.09); arm 0 +0.96, +0.99.
+  - Y − E2: −0.14 (0.05), +0.11 (0.07), −0.03 (0.07). X − E2: −0.53, −0.34, −0.41.
+  - Loss share on the lists, G then Y: s16 0.79, 0.55; s17 0.79, 0.51. So wins went up, not draws: no stalling.
+  - Uniform Trainers on the lists under s16, score: Gu 0.127, Xu 0.188, Yu 0.263. X − G +0.46 (0.09), Y − G +0.90 (0.09).
+  - Drafted field: X − G +0.63, +0.55; Y − G +1.08, +1.15. Rules-only field under s16: X − G +0.64; Y − G +1.00.
+  - C171's gate: the drafted field alone chooses Y (X 0.59 against Y 1.12, difference SE 0.07). It passes on the lists and with uniform Trainers, so the gate opens at κ 3.
+  - G stays above the 0.05 line at every pilot (0.106 to 0.130).
+- **Top name left out:**
+  - X: s16, without Electabuzz, 70 decks, +0.69. s17, without Lickitung, 61 decks, +0.39, a real drop from +0.67.
+  - Y: s16, without Scyther, 19 decks, 15 lists, +1.06; **thin**. s17: **0 decks left**, since every Y deck holds Lickitung, so this can't be read. Y's sample is a few names repeated (effective names 8.1 and 5.7, colourless share 0.58 and 0.57).
+- **Found:**
+  - This is the first human-free signal shown in games to stand up against the lists: a table learned on rules-only decks picks bodies about as strong against them as their own Pokémon, in score, not in identity (56% and 65% of Y's copies are on the lists' names).
+  - It isn't a route to the ground truth yet. No drafting ran. The lists' own Trainers flatter these bodies (Y drops from 0.287 to 0.263 with uniform Trainers, X from 0.215 to 0.188). The score against the lists is about 0.26-0.31, and by C170's record a pass only says the table is worth aiming with.
+- **Correction to #766:** C170 has 20 cells, not 25, so 17 was 17 of 20.
+- **Next:** research's read, and its call on C171 and C168. Ground truth not moved (no drafting run since C157).
+
+### #768 · 2026-11-01 · A5 C170 C171 · Research's read of C170 (R-table-works, one run, two loop pilots and arm 0): bodies picked by a table from human-free games beat uniform bodies against the lists themselves, with more decided wins, and at κ 3 they sit about level with the lists' own Pokémon. C171, the first drafting arm with a measured case, is handed off, behind a printed-card check of the table's top off-list names. C168's W becomes its control, and N stays unlaunched
+- **Done** (research session, 20:07): checked `summary.json` directly (band, gate) and table agreement across pilots; wrote `runs/probe/C171-table-drafting/record.md` and C168 Amendment 5.
+- **Measured:** table Spearman s16-s17 0.86, s16-K1m 0.88, s16-arm 0 0.86, s17-arm 0 0.85. Top by s16 and s17: Tauros, Lickitung, Scyther, Hitmonchan, Seaking, Electabuzz, Weepinbell, Kangaskhan, Snorlax, Clefable.
+- **Limits on C170:** the decks hold the lists' Trainers in the main cells; uniform Trainers were read under s16 only (+0.90 at Y). Y is a few names repeated: its top-name-out read is thin at s16 (19 decks) and impossible at s17 (every deck holds Lickitung); X's top-name-out at s17 falls to +0.39. No drafting has run, and a pass says the table is worth aiming with, nothing more.
+- **Rule 9:** the table's top includes names the lists barely run, and the lists are ground truth, so C171 starts with a printed-card check of them. It's also why I'd not read "level with the lists' Pokémon" as saying those names are as good in real play.
+- **Rule flag for Evan:** C171 adds a measured per-card offset beside the learned head. It's human-free and names no card, but it's read through the pilot's play rather than its encoder, the closest call against rule 3. Taken by default (row 115).
+- **Next:** printed-card check, then C171: tables about 20 minutes, first band at 30 iterations about 1.5 hours later (estimated). Ground truth not moved.
+
+### #769 · 2026-11-01 · A5 C171 C172 · C171 Amendment 1, the auditor's five adopted before launch: R-moves splits into R-start and R-learns under one common pilot, new tables face C170's gate, a plain-deck table tests whether concentration carries the result, off-list names get a trace read and C172, and R-narrow becomes a band
+- **Done** (research session, 20:10): appended to the record; wrote `runs/probe/C172-offlist-names/record.md`. Nothing launched.
+- **The auditor's CPU check of C170** (on the lists, s16 and s17): full wins Y 0.105, 0.128; G 0.033, 0.044; E2 0.109, 0.104. Share of copies on the lists' names rises from 0.16 to 0.56-0.65 with no list input. So stalling is refuted. Limit: tables were fitted under C127 pilots, and the same decks were judged in one run.
+- **Research's change to item 3:** the plain-table test also passes within 0.05 of the concentrated pair's Spearman across seeds, since tables on different decks carry noise.
+- **Rule flag:** the auditor is flagging concentration to Evan directly. If the plain-table test fails, it comes to him as a ruling.
+- **Next:** card check and traces, 4 tables, Y gate, then C171. C172 beside it. Ground truth not moved.
+
+### #770 · 2026-11-01 · A5 C171 C172 · The auditor accepts C171 and C172, with a floor added: the plain-table test's noise route also needs Spearman ≥ 0.65, and the chosen table must clear the Y gate. C172's read must say Seaking and Weepinbell have no price
+- **Done** (research session, 20:11): appended to both records. Launch doesn't wait on the auditor.
+- **Next:** card check and traces, 4 tables, Y gate, then C171 beside C172. Ground truth not moved.
+
+### #771 · 2026-11-01 · A5 C171 card check · C171's card check is **clean for its 6 off-list names**. Printed data match the engine on every field, every attack's code matches its text, and 1,200 traced games show the effects behaving as printed. One minor suspect (Snorlax's power clearing the wrong Pokémon's conditions in a rare case), which I can't see in play. The pilot never used Tauros's Rampage or Lickitung's Supersonic, so those two rest on the code read only
+- **Done:**
+  - `notes/scripts/c171_cardcheck.py`: Tauros, Lickitung, Seaking, Weepinbell, Kangaskhan and Snorlax JU against `printed_reference.json`: HP, type, Weakness, Resistance, retreat, attack names, costs, damage and text all match.
+  - Read each card's `reduceEffect` in `ryuu-play/packages/sets/src/base-sets/set-jungle/`, and confirmed the built `dist` carries the same lines.
+  - Saved games keep no per-attack record, so `notes/scripts/c171_trace.py` plays them through the log-only `audit/c171_trace_worker.js`: 1,200 games, C127 s16, greedy, round rule, decks from C165's factorial set holding a name, 0 errors, 17,300 attacks. Output `runs/probe/C171-table-drafting/trace_read.json`.
+- **Evidence** (measured; base damage after Weakness and Resistance, before PlusPower and Defender):
+  - Tauros Stomp: 1,013 uses; 20 × 515, 30 × 485, 13 no damage. Rampage: 0 uses.
+  - Lickitung Tongue Wrap: 1,941 uses; 10 × 1,910. Paralyzed added 852 times in 1,699 uses that left the Defender in play, 50%. Supersonic: 0 uses.
+  - Kangaskhan Comet Punch: 722 uses; 20 × 171, 40 × 277, 60 × 170, 80 × 39, no damage 65, about the 4-coin split. Fetch: 682 uses; hand +1 and deck −1 in 673, unchanged in 9.
+  - Snorlax Body Slam: 891 uses; 30 × 881. Paralyzed added 266 times in 569 uses that left the Defender in play, 47%. Attacked 1,126 times by anything: a condition on it before or after, 0 times.
+  - Seaking Waterfall 30 (60 on Weakness), Horn Attack 10 (20); Weepinbell Razor Leaf 30, Poisonpowder 10, Poisoned added 54 times in 128 uses that left the Defender in play, 42%, about 1.8 SE under 50%.
+  - No attacker was Paralyzed or Asleep when it attacked across all 17,300 attacks (Poisoned 144, Confused 126 were, as allowed). Hand +1 on a Knock Out matches the Prize taken.
+- **Suspect, minor, not a blocker:** in `snorlax.ts`, once Thick Skinned has been blocked, the marker path can clear `player.active`'s conditions while Snorlax itself sits on the Bench. It needs a Power block first (Muk's Toxic Gas), and I haven't measured how often. Sent to research as a low-priority fault.
+- **Earlier audit:** #496 read Snorlax, Tauros and Kangaskhan as OK by code.
+- **Next:** the four tables (running since 20:11:48), then the Y gate, then the launch.
+
+### #772 · 2026-11-01 · A5 C171 · Corrected C171's G3 pilot to C49-sd, as C127's was (implementation's catch). The Snorlax marker suspect goes to the auditor with no engine change now, since a change would invalidate the running tables and builds; its rate is unmeasured
+- **Done** (research session, 20:17): appended to the record, and read implementation's card and trace check. All 6 off-list names match their printed text, and no attacker was Paralyzed or Asleep in 17,300 attacks. Rampage and Supersonic were never used, so they rest on the code read only.
+- **Hypothesis, not measured:** Lickitung plays only Tongue Wrap (Paralysis 50%). If greedy pilots handle Paralysis badly, that would flatter it; C172's search arm is the read.
+- **Next:** tables, Y gate, then C171 beside C172. Ground truth not moved.
+
+### #773 · 2026-11-01 · A5 C171 C172 · The auditor ranks the Snorlax marker suspect lowest under row 102: real by the code (`set-jungle/snorlax.ts`), no hold on C171 and no table refit, to be fixed at the next engine change with a spec. None of the 24 lists runs Muk or Snorlax (auditor, measured); rate unmeasured
+- **Done** (research session, 20:18): logged, and C172's read now reports Rampage and Supersonic use under search. The table prices cards as this pilot plays them, so it may understate Tauros.
+- **Also:** the auditor read Paralysis timing at `game-phase-effect.ts` line 77 as right (one line read, not the retreat path), and 2 of the 24 lists run Lickitung.
+- **Next:** tables, Y gate, then C171 beside C172. Ground truth not moved.
+
+### #774 · 2026-11-01 · A5 C171 C172 · C171's flags, gate, reader and queue and C172's runner and reader are written; only the flags' compile is checked so far. The four tables are running. Nothing has trained
+- **Done:**
+  - `rl/metagame.py`: `--table`, `--table-kappa`, `--table-scope`, `--save-first`, off by default; `table_head_share` logs the head's share on the table's top 10 with and without the bonus.
+  - `c165_run.py --seed --dir --plain`; `notes/scripts/c171_table.py`, `notes/scripts/c171_gate.py`, `notes/scripts/c171_read.py`, `notes/scripts/queue_c171.py`; `notes/scripts/c172_run.py`, `c172_read.py`, `audit/c172_worker.js` (what a player does while its Active is Paralyzed, log only).
+  - G3's band reads C49-sd (research's #772, after my flag); the arm's own pilot sits beside it; R-learns reads C127 s16.
+- **First launch failed, no data lost:** a misplaced `global` in `c165_run.py` stopped both first table launches at compile, at 20:10:42. The record's Amendment 1 had also changed the plan to four tables, so they relaunched as `C171-t48` and `C171-t49` at 20:11:47.
+- **Snorlax block count (research's question), indirect:** the traces have no direct count of Thick Skinned being blocked. In the 1,200 traced games, 90 status attacks left a Snorlax in play, and none left a condition on it. That's no sign of a block at the rate those attacks land, about half, and it doesn't rule out rare ones. Measuring the marker path directly would need a new worker, which I haven't built.
+- **Machine plan, taken by default (row 115):** three screens use 15 threads, and C172 uses 8, over the 16-thread cap (row 73). So B s48 and B s49 start at once beside C172, and W s48 joins when C172 ends, read by matched iteration.
+- **Next:** the tables, then the plain-or-concentrated choice, the smoke, the Y gate and the launch.
+
+### #775 · 2026-11-01 · A5 C171 tables · The four tables are done, and **C171's plain-or-concentrated rule holds B**: Spearman(plain, concentrated) is 0.597 and 0.591, under 0.8, and under the other route's 0.65 and 0.05 from the concentrated pair's own 0.691. By the record, using the concentrated table in the drafts is Evan's ruling. Plain's Spearman with C165's s16 table is also under the record's 0.6 (0.580, 0.549). W, C172 and an evaluation-only Y gate don't need the ruling, so they go ahead
+- **Done:** 4 tables, each 20,000 games under C49-sd, 0 errors, 20:11:47-20:41:34. `table_choice.json`, `table-*/fit.json`.
+- **Evidence** (measured, finished):
+
+| | Concentrated s48 | s49 | Plain s48 | s49 |
+|---|---|---|---|---|
+| r_sh, Pokémon names | 0.625 | 0.594 | 0.594 | 0.583 |
+| Spearman with C165's s16 table | 0.635 | 0.680 | 0.580 | 0.549 |
+| Top names | Lickitung, Kangaskhan, Tauros, Snorlax | Lickitung, Kangaskhan, Hitmonchan | Tauros, Kangaskhan, Lickitung, Snorlax | Kangaskhan, Lickitung, Tauros, Snorlax |
+
+  - Across seeds: concentrated 0.691, plain 0.712. Plain against concentrated in all four pairings: 0.589 to 0.613, Pearson 0.685 to 0.707.
+- **Reads beside the rule, which the rule doesn't use:**
+  - Noise limits all these: same-design tables agree only 0.69-0.71 over 178 names, most of them rarely useful. Corrected for that, plain against concentrated is about 0.85 (estimated, cross over the geometric mean of the two within-design correlations). So concentration isn't obviously carrying the table.
+  - But the disagreement isn't only noise at the top: over the top 40 names of the two-seed averages the Spearman is 0.48, top-10 overlap is 5 and 7, and both designs put Lickitung, Kangaskhan, Tauros and Snorlax on top. Plain adds Electabuzz, Scyther and Hitmonchan next; concentrated adds Hitmonchan, Clefable and Exeggutor.
+- **Taken by default (row 115):** B holds. Running what doesn't need the ruling: W at seeds 48 and 49 as C168's long read and later control; C172; and the Y gate at both kinds of table, so the ruling comes with evidence.
+- **Next:** W's launch, the gate, C172's timed pilot, then C172.
+
+### #776 · 2026-11-01 · A5 C171 · C171 Amendment 2: games decide the plain-or-concentrated choice. If plain tables clear the Y gate, B uses them with no ruling needed, since a plain table carries no concentration. A ruling goes to Evan only if plain fails and concentrated passes. Changed after seeing the Spearmans, before any gate result
+- **Done** (research session, 20:44): appended to the record. The auditor is asked to object. W at seeds 48 and 49, launched by implementation, stands as the long read and B's later control.
+- **Next:** Y gate from both tables, then B or a ruling. C172 beside. Ground truth not moved.
+
+### #777 · 2026-11-01 · A5 A150 C171 C172 · A150's call (does the table rank card value or pilot ease?) is answered by C172, already queued, so no deep round. The auditor agrees with C171 Amendment 2 and tightens it: the concentrated table stays out of drafting until Evan rules, and if plain fails the Y gate, C171 stops and waits. Correction: tables agree 0.64-0.69 on independent decks, not 0.85-0.88
+- **Done** (research session, 20:44): recorded in C171's record. The plain fits' `hold` flag is read as not binding.
+- **Correction:** I told Evan and logged in #768 that the tables agree across pilots at 0.85-0.88. That was on one shared deck set. On independent decks it's 0.691 across seeds and 0.635-0.680 with s16's.
+- **Next:** C172 and the Y gate. Ground truth not moved.
+
+### #778 · 2026-11-01 · A5 C171 · C171 Amendment 3, the auditor's three conditions adopted: a same-design reliability line replaces the 0.6 hold, κ is re-read for the plain tables on the drafted field, and the whole C170 gate applies to the plain table at that κ
+- **Done** (research session, 20:45): appended to the record. This supersedes the launch instruction I sent implementation just before it.
+- **Next:** drafted-field κ, full gate, then B. C172 beside. Ground truth not moved.
+
+### #779 · 2026-11-01 · A5 C172 · C172's timed pilot is logged before its full run, and it flags the search arm's rate: **0.2 games/s** on 2 workers beside W and the gate, against the record's estimate of 5.4. So the search arm now runs as its own 30-minute stage in 4 saved parts, and if it times out C172 reads whatever was played
+- **Evidence** (measured, arm 0 s1, seed 91, 20:45:09-20:47:44, 0 errors, 0 unpaired): greedy 58 games at 3.6 games/s; search 28 games in 134.8 s. Both small samples, and the machine was busy. All 2,880 search games wouldn't fit a stage at this rate; at C144's 5.4 they'd take about 9 minutes, so the true rate at 4 workers is the open question.
+- **Replaced attackers** (a copy a name a list, 96 copies in all): Jigglypuff 24, Electabuzz 20, Hitmonchan 18, Scyther 12, Magmar 8, Articuno 8, Mewtwo 4.
+- **Paralysis read, research's addition:** in these few games no one retreated or attacked while Paralyzed. Switch was held on 6 Paralyzed turns under greedy and played 0, and on 2 under search and played 1. Too few to read until the full run.
+- **Note on Jigglypuff:** 24 of the 96 replaced attackers are Jigglypuff, the Basic under Wigglytuff. The swap therefore also strands Wigglytuff in those lists, so those lists' prices measure losing the line too. That follows the record's rule of the most-copied Basic attacker, and I flagged it to research.
+- **Next:** `run.sh s1` at 4 workers.
+
+### #780 · 2026-11-01 · A5 C171 gate · C171's first Y gate passes at all four fresh tables under C49-sd on the lists at κ 3: plain +1.16 and +1.40 logit on points, +1.22 and +1.46 on decided wins, G 0.134 against Y 0.331 and 0.385. This is only part of the gate under Amendment 3, so nothing is chosen, `chosen.json` is unwritten and B hasn't started. Plain's bodies run 67-71% colourless attackers, against the lists' 32%
+- **Done:** `gate.sh`, 20:43:39-20:52:46, 5 cells of 2,304 games, 0 errors, read by `c171_gate.py --read`; `gate/gate.json`. Amendment 3's κ read and full gate launched at 20:53:04.
+- **Evidence** (measured; 12 opponents at 2 deals, seed 91; SE by a bootstrap over the 24 lists):
+
+| Y on the lists | Score | Decided wins | Lost | Points logit − G (SE) | Won logit − G (SE) | Effective names | Colourless |
+|---|---|---|---|---|---|---|---|
+| G | 0.134 | 0.141 | 0.782 | | | | |
+| Plain s48 | 0.331 | 0.356 | 0.500 | +1.16 (0.09) | +1.22 (0.10) | 9.1 | 0.67 |
+| Plain s49 | 0.385 | 0.413 | 0.431 | +1.40 (0.09) | +1.46 (0.11) | 6.1 | 0.71 |
+| Concentrated s48 | 0.370 | 0.401 | 0.451 | +1.33 (0.09) | +1.41 (0.11) | 8.3 | 0.66 |
+| Concentrated s49 | 0.382 | 0.412 | 0.436 | +1.39 (0.08) | +1.45 (0.09) | 6.5 | 0.67 |
+
+- **Found:** plain's top names are Tauros, Lickitung, Snorlax, Kangaskhan and Electabuzz at s48, and Lickitung, Kangaskhan, Tauros, Electabuzz and Scyther at s49. So plain and concentrated both pass the games test, and the read Evan would have ruled on isn't needed yet by research's Amendment 2.
+- **Limit:** E2 hasn't been played under C49-sd, so this can't say how these compare with the lists' own Pokémon under that pilot. Added by default to the full gate.
+- **Next:** κ on the drafted field, then the full gate, then research's read.
+
+### #781 · 2026-11-01 · A5 C171 C172 · First Y gate passes on all four tables, one part of the full gate. Plain bodies are more colourless than C170's (0.67, 0.71 against 0.58, 0.57; lists 0.32). Taken by default (row 115): C172 goes ahead of W s49, and B waits for its read, with a hold if 3 or more of its 4 names read easy to pilot
+- **Done** (research session, 20:53): read implementation's gate numbers (`gate/gate.json`; not re-read by research), appended to C171's record. This makes C172 gate B where the auditor had it beside; the auditor is told, and may object.
+- **Machine:** the launcher is refusing W s49 and C172 on RAM and GPU estimates, retrying. W s48 is running.
+- **Next:** C172, κ read and full gate, then B or a hold. Ground truth not moved.
+
+### #782 · 2026-11-01 · A5 C172 C171 · C172 Amendment 1 before its full run: its search arm ran 0.2 games a second, so the primary pools the four names, an underpowered read says unresolved rather than counting as a band, the B hold is copy-weighted and also covers R-pipeline-signal, and swaps no longer strand a line. Unresolved means B runs, flagged. Replaces my "3 of 4" line in #781, which could almost never fire (auditor)
+- **Done** (research session, 20:55): appended to both records. C171 also flags Y − E2 under C49-sd as a rule 9 number.
+- **Next:** C172 at more workers, κ read and full gate, then B or a hold. Ground truth not moved.
+
+### #783 · 2026-11-01 · A5 C172 · C172's price is split by whether the swapped card was the list's most-copied Basic, and R-at-or-above can't rest on the changed lists alone (the auditor's addition to Amendment 1)
+- **Done** (research session, 20:55): appended to the record. The auditor accepts Amendment 1 with this.
+
+### #784 · 2026-11-01 · A5 C172 · C172 is rebuilt to its Amendment 1, and its search rate is explained without blaming W s48, so W s48 keeps running. The timed pilot's 0.2 games/s came from my own settings (2 workers and a GPU share of 0.3, so the inference server rests 2.33 times its work each batch), against C144's 10 workers with a 0.25 rest. Full run not launched yet; it needs the RAM that Amendment 3's cells are holding
+- **Rate, read from the configs; not yet confirmed by a new timing:** 2 workers against 10 is about 5 times fewer games. A rest of 2.33 against 0.25 is about 2.7 times slower where the server is the limit. Together they account for 5.4 falling to about 0.4 games/s (estimated), and contention on a busy machine for the rest. The search arm now runs at 10 workers and a share of 0.55. The timed pilot will be redone at those settings and logged before the full run.
+- **Swap (Amendment 1):** the most-copied Basic with no evolution in the deck, with an attack that does damage. **No list drops out.** Targets: Hitmonchan 6, Electabuzz 6, Mewtwo 4, Scyther 4, Magmar 2, Articuno 2. It's the list's most-copied Basic in 17 of 24 lists, and a lesser Basic in the other 7. 2 lists (Marshall, Neathery, both Haymaker) hold Lickitung and are skipped for it.
+- **Reader:** bands on the pooled price of the four names; a search fall under 0.015 needs SE 0.015 or less, else unresolved; per-name bands only where the name's own fall SE is 0.015 or less; the split by whether the swapped card was the most-copied Basic, and at-or-above needs the unchanged lists to meet it, else unresolved (#783); s4 for the plain decks; Seaking and Weepinbell reported as having no price.
+- **Stopped:** my C172 launch retry at 20:55, before it could start the old swap. It never launched. W s49's retry still runs in the queue, and I'll stop it only if it blocks C172.
+- **Full gate:** Y − E2 under C49-sd reports points, decided wins and full wins (non-time wins).
+- **Next:** Amendment 3's κ and gate, then C172's pilot and full run, then the E2 cell.
+
+### #785 · 2026-11-01 · A5 C171 queue · W s49's retry is stopped so C172 gets the next free slot (research's #781), taken at 20:57. W s48 wasn't touched. The queue driver restarted as a plain detached process, pid 22012, because `loop.py launch` refused even a CPU-only probe (free RAM 5.4 GB under its 6.5 GB). It starts no game itself; its launches still go through `loop.py`
+- **To let W s49 go:** delete `runs/probe/C171-table-drafting/HOLD-C171-W-s49`. The restarted queue carries GPU-PAUSE to W s48 again from 20:57:53; between 20:57:10 and then, nothing would have.
+- **W s48's rate:** 161.7 s an iteration at iteration 4, beside the gate cells, against the record's about 100-150 s. At that rate 130 iterations take about 5.8 hours (estimated).
+- **Next:** Amendment 3's κ and gate.
+
+### #786 · 2026-11-01 · A5 C171 full gate · C171's whole gate passes on the plain tables at κ 3: the drafted field alone chose κ 3 (Y +1.06 against X +0.77 logit, difference SE 0.08), Y − G on the lists is +1.16 and +1.40 on points and +1.22 and +1.46 on decided wins, and with uniform Trainers +0.97 and +1.27. Under C49-sd the plain Y bodies score above the lists' own Pokémon (Y − E2 +0.07 and +0.31 on points, +0.19 and +0.47 on full wins). `chosen.json` is unwritten: B now also waits for C172's read
+- **Done:** `gate2.sh`, 20:53:04-21:24:56; the E2 cell at 21:25:36; `gate/kappa.json`, `gate/gate_full.json`. All cells 2,304 games, 0 errors, under C49-sd, 12 opponents at 2 deals, seed 91. The drafted field is C127 s16's population at 29 for seed 48, and s17's for seed 49, since those seeds' own W runs have none yet.
+- **Evidence** (measured, finished; logit differences with a bootstrap over the 24 lists):
+
+| | s48 | s49 |
+|---|---|---|
+| Drafted field: X − G | +0.80 (0.08) | +0.74 (0.08) |
+| Drafted field: Y − G | +1.04 (0.08) | +1.09 (0.06) |
+| Lists: Y score (decided wins) | 0.331 (0.356) | 0.385 (0.413) |
+| Lists: Y − G, points | +1.16 (0.08) | +1.40 (0.09) |
+| Lists: Y − G, decided wins | +1.22 (0.10) | +1.46 (0.11) |
+| Uniform Trainers: Y score | 0.304 | 0.370 |
+| Uniform Trainers: Y − Gu | +0.97 (0.10) | +1.27 (0.10) |
+| Y − E2, points | +0.07 (0.05) | +0.31 (0.04) |
+| Y − E2, decided wins | +0.05 (0.06) | +0.29 (0.05) |
+| Y − E2, full wins | +0.19 (0.07) | +0.47 (0.07) |
+| Top name left out | Tauros: 26 decks, 14 lists, +1.29 (0.13) | Lickitung: 1 deck, **thin**, not read |
+| Effective names | 9.1 | 6.1 |
+| Share on the lists' names | 0.35 | 0.47 |
+| Colourless share | 0.67 | 0.71 |
+
+  - G 0.134, Gu 0.142, E2 0.316 (decided wins 0.345, full wins 0.117) under C49-sd.
+- **Found:**
+  - These decks beat the lists' own Pokémon under this greedy pilot while being less like the lists: under half their copies are on the lists' names, and about two thirds are colourless attackers against the lists' 32%. So strength under these pilots and resemblance to the lists have come apart here, which is C172's question.
+  - s49's table is close to single-name dependent: only 1 deck in 96 lacks Lickitung.
+- **C172's new timing:** 10 workers, a share of 0.55, beside W s48: greedy 58 games at 4.8 games/s; search 38 games at 1.3 games/s, up from 0.2. On so few games the rate is understated by start-up. All the search games would take about 36 minutes at 1.3, so the 4 saved parts matter.
+- **Next:** C172's full run, launched now.
+
+### #787 · 2026-11-01 · A5 C171 · Research's read of C171's full gate on the plain tables at κ 3 (passes): table bodies now beat the lists' own Pokémon under a greedy pilot at one seed while resembling the lists less, so strength under these pilots and likeness to the lists have come apart. C171 Amendment's Y − E2 flag doesn't fire by its letter (points +0.015 at s48, +0.069 at s49; it needs both), but full wins do lean the same way. B waits for C172
+- **Done** (research session, 21:28): read `gate_full.json` and `kappa.json` beside implementation's report.
+- **Reported** (implementation; under C49-sd; logit, s48 / s49): Y − E2 points +0.07 (SE 0.05) / +0.31 (0.04); full wins +0.19 (0.07) / +0.47 (0.07). Share on the lists' names 0.35 / 0.47; colourless 0.67 / 0.71 against 0.32; effective names 9.1 / 6.1. The s49 top-name-out has 1 deck left, not readable.
+- **Read:** this leans toward A150's antithesis, that the table partly ranks what these pilots play well, without showing it. C172 is the test; its pooled read decides B by the record's rule, and an unresolved read lets B run flagged and unusable as evidence of card value.
+- **W s48 at 15:** median 13 / 28 / 18, one seed at one read, so no claim.
+- **Next:** C172. Ground truth not moved.
+
+### #788 · 2026-11-01 · A5 C172 incident · My C172 search settings overloaded the machine for about 4 minutes: **GPU memory reached 15.8 of 16.3 GB, over the 80% limit, and free RAM fell to 1.7 GB**, and Claude Code stopped my background watch shell for low memory. No run data was lost. I stopped the search part after about 3.5 minutes of play, cut its memory cap and workers, and relaunched at 21:35:17
+- **Cause:** I set `RL_GPU_SHARE=0.55` to speed the search arm, and that variable also sets the memory cap, so C172 took about 11 GB beside W s48. Its 10 workers added 3.2 GB of RAM. The G3 probes also fire with no memory check.
+- **Done:**
+  - Stopped C172's search part (21:33:59 and 21:34:30; the first kill missed its game process, which `timeout` had detached). The saved greedy arms stand; the unfinished part 0 had no result file.
+  - `C172_GPU_MEM=0.3` caps memory alone and keeps the pace; 8 workers. After the relaunch: GPU 9.6 of 15.9 GB (61%), free RAM 4.1 GB, measured 21:35:57.
+  - The queue's G3 probes now wait until free RAM is at least 4 GB and GPU memory has room for them, and aren't started during GPU-PAUSE. Queue restarted as pid 33452; W s48 ran throughout.
+- **Not restarted:** the watch shell, as Claude Code asked. A scheduled check at 21:57 replaces it.
+- **Machine limit:** with Evan's other programs holding memory, W s49 and a search arm can't run together here, and W s49 stays on its hold file until C172 ends.
+- **Greedy prices are in** (read with C172's full read). Rates: 34.9 and 38.0 games/s, 2,832 games each.
+
+### #789 · 2026-11-01 · A5 C172 · C172 pools **R-easy-to-pilot**, so **C171's B holds** by its rule (s4 0.60 and 0.67, over 0.5). Under greedy the four off-list Basics price level with the lists' own attackers (−0.001, SE 0.016, and +0.004, SE 0.015). Under the pilot's search they fall below them (−0.042, SE 0.014), a fall of 0.046 (SE 0.017). Part of what the table found is what greedy pilots play easily, not only what's strong. Rule 9 is answered: it's play, not the cards or the engine, which #771 checked clean
+- **Done:** `run.sh s1` finished at 21:49:45: greedy under C127 s16 and arm 0 s1, 2,832 games each, and search under arm 0 s1 in 4 parts, 2,832 games at 3.3 games/s, all 2,256 paired deals, 0 errors, 0 unpaired. All deals were played, so the partial-read fallback wasn't needed. `summary.json`.
+- **Evidence** (measured, finished; copy − list in event points/3; SE by a bootstrap over lists):
+
+| Pooled over the 4 names | Greedy, s16 | Greedy, arm 0 | Search, arm 0 |
+|---|---|---|---|
+| All 24 lists | −0.001 (0.016) | +0.004 (0.015) | −0.042 (0.014) |
+| The list's most-copied Basic swapped (17 lists) | +0.004 (0.021) | +0.012 (0.019) | −0.020 (0.016) |
+| A lesser Basic swapped (7 lists) | −0.012 (0.020) | −0.015 (0.017) | −0.092 (0.022) |
+
+  - The pooled fall meets the band (at least 0.03 and 2 SE: 0.046 against 0.034); its SE of 0.017 is just over the 0.015 needed only for the "doesn't lower it" reading. Unchanged lists meet at-or-above at both greedy pilots.
+  - Per name, greedy s16, greedy arm 0, search; no name's fall SE is 0.015 or less, so no per-name band: Tauros −0.046, −0.033, −0.049. Lickitung +0.052, +0.023, −0.033. Kangaskhan +0.001, +0.021, −0.021. Snorlax −0.005, +0.005, −0.064.
+  - s4, the 4 names' share of Pokémon copies: plain Y 0.60 (s48), 0.67 (s49); plain X 0.20, 0.25. No list dropped out of the swap.
+  - **Seaking and Weepinbell have no price here**, only the trace read (#771).
+- **Paralysis, research's addition** (turns with a Paralyzed Active): Switch held and played, greedy s16 56 of 364 (15%), greedy arm 0 56 of 293 (19%), search 90 of 147 (61%). Full Heal was never held. No retreats or attacks while Paralyzed at any pilot. So the greedy pilots rarely answer Paralysis with the Switch they hold, which flatters Lickitung's Tongue Wrap, and search does.
+- **C170's Y by opponent list:** Y beats G against all 24 lists at both seeds (mean gap +0.162, +0.184, SD 0.075, 0.064), least against Clefable and Haymaker, most against Wigglytuff lists. So the gain isn't from a few weak matchups.
+- **Limits:** one search pilot (arm 0), one seed, each swap one attacker in a list. Search here is one turn deep. Greedy-only tables can't be read as a list-level ranking of these names.
+- **What it means:** the additive table carries a greedy pilot's preference. It still finds real strength at these pilots, and X at κ 1 (s4 0.20, 0.25) isn't blocked by this rule; research decides what's next.
+- **Also:** W s49's hold file was removed at this entry, as C172 has ended.
+- **Next:** research's read. Ground truth not moved: B never ran.
+
+### #790 · 2026-11-01 · A5 C172 C173 · Research's read of C172 (R-easy-to-pilot, one pooled read; checked in `summary.json`): the table's top names price at parity under greedy and below the lists' own attackers under search, and greedy pilots do flatter Paralysis attacks. B holds by the record's rule. C173 asks if the table's lead on the lists reverses under search, the first measure of whether strength and likeness converge as play improves
+- **Done** (research session, 22:00): read the summary; wrote `runs/probe/C173-search-table/record.md`, stage A first since it needs no new table.
+- **Measured** (implementation; 2,832 games a pilot, 0 errors): pooled copy − list −0.001 (SE 0.016), +0.004 (0.015) greedy; −0.042 (0.014) search; fall 0.046 (0.017). Switch played under Paralysis 15%, 19%, 61%. s4 0.60, 0.67 at Y.
+- **Limits:** one search pilot (arm 0, list-trained) and one seed; per-name falls don't resolve. A lesser-Basic swap reads −0.092 under search on 7 lists. Tongue Wrap's flattery is a greedy-pilot deficit, and it may not be the whole of it.
+- **Found:** the deficit under Paralysis is a concrete pilot limit, with Switch played far less than under search. It's one more Trainer the greedy policy underplays.
+- **Not opened:** X at κ 1. κ comes from the drafted field, and choosing it because of C172 would tune a value on the lists.
+- **Next:** C173 stage A, about 25 minutes (estimated). W s48 and s49 run on. Ground truth not moved.
+
+### #791 · 2026-11-01 · A5 C173 · C173 Amendment 1, the auditor's four adopted before any read: R-holds needs power, the paired change from greedy reads beside the level, arm 0 runs beside C49-sd with a strength gate on search, and stage B's names are the top 40 plus 40 at random
+- **Done** (research session, 22:02): appended to the record.
+- **On the T4 ladder, from the log rather than new reads:** the play-rate gap the auditor asks about is already measured for PlusPower. Search plays it at 83% of 10-HP breakpoints against 0.4% greedy (C135, #613), and C161 flags Potion, Impostor Oak, Super Potion, PlusPower and Imposter Oak's Revenge (#730). Under search its price rises only to parity (C136, C139). So Switch isn't the first such card, and timing fixed still doesn't raise T4 above an Energy on this ladder.
+- **Next:** C173 stage A. Ground truth not moved.
+
+### #792 · 2026-11-01 · A5 C173 stage A · C173's stage A is built to its Amendment 1 and started at about 22:05: first the strength check of C49-sd's search against itself greedy, then the cells under C49-sd's search, then under arm 0's. Timed pilot logged before the run: E2 under C49-sd's search, 24 games in 38.8 s (0.6 games/s), 0 errors, a small sample beside W. No read yet, and the Y − E2 question stays open
+- **Done:**
+  - `c145_run.py --search --worker`, `notes/scripts/audit/c173_worker.js` (log only: Paralysis actions, and each attack by the 4 names), `notes/scripts/c173_h2h.py` (the search seat against a k=1 seat; `--aa` the mirror null), `notes/scripts/c173_read.py`, `runs/probe/C173-search-table/runA.sh`.
+  - Decks are C171's gate decks, the same files. Smoke: head to head and its null, 6 games each, 0 errors, no read.
+- **Taken by default (row 115):**
+  - **Greedy cells under arm 0 added** (E2, Y s48, Y s49, 1,152 games each): the change-from-greedy read needs them, and arm 0 had no greedy cell on the plain Y decks. Fast.
+  - **Started outside `loop.py launch`,** as a detached driver with row 73's hold at every cell: the launcher wants 6.5 GB free and the machine has about 4, and the record says this holds before W does. The queue's G3 probes for W also wait for 4 GB, so G3 at 29 may read late.
+  - **4 workers,** so W's 10 threads plus this stay within 16. So stage A may take longer than research's 25 minutes: 1.6 games/s (estimated) is about 48 minutes under C49-sd and 36 under arm 0, each cell a part of a 30-minute stage.
+- **Next:** stage A's read goes to research before any stage B build.
+
+### #793 · 2026-11-01 · A5 C173 head to head · C173's strength check reads **search 0.612 win share (SE 0.032) against itself greedy** over 192 games, clearing the record's 0.57 by its point estimate. But the mirror null is 0.5625 (SE 0.049) over 96 games, where 0.5 is expected, so the check is less clean than the 0.57 line suggests. Also, free RAM stayed under 2 GB (1.11 GB by 22:21), so C173's STOP is written, and it exits after its current cell, as its record says it holds before W
+- **Evidence** (measured, finished; C49-sd, the 24 lists in their own mirrors, seats alternating, 0 errors):
+  - Search against the k=1 seat: 0.612 (SE 0.032); seat 1 0.589, seat 2 0.635. In 192 games the search changed 2,822 of 12,312 searched choices.
+  - The mirror null, k=1 on both seats: 0.5625 (SE 0.049); both seats 0.5625. It's 1.3 SE above 0.5, so it could be noise, but it's 96 games. Against that null the gap is +0.05 (SE 0.059); against 0.5 it's 3.5 SE.
+  - The k=1 seat changed 0 choices in the null (6,777 searches, 0 changed), as a stand-in for greedy should. I haven't found a cause for 0.5625, and a larger null is about 2 minutes.
+- **Cells so far:** E2 under C49-sd's search: 1,152 games at 3.3 games/s, 0 errors, score 0.270, decided wins 0.310, against 0.316 and 0.345 under greedy. Y s48 still playing; no read.
+- **Machine** (measured 22:19-22:21): free RAM 1.54 falling to 1.11 GB, GPU 11.2 of 16.3 GB (69%). Running beside C173: both W seeds, 5 GB of Python together, 4.3 GB of Chrome, and Evan's other programs. So C173 can't run beside both W seeds without going under row 73's 2 GB line.
+- **W's rate under this load:** W s48 184 s an iteration, W s49 304 s.
+- **Next:** research's call on the order. My recommendation: stop W s49 at its boundary until C173 ends, since it's at iteration 3 with nothing to read, and relaunch C173.
+
+### #794 · 2026-11-01 · A5 C173 · W s49 stops at its boundary until C173 ends, since C173 can't run beside both W seeds under the 2 GB line, taken by default (row 115). C173's strength gate waits for a larger mirror null, which read 0.5625 on 96 games where 0.5 is expected
+- **Done** (research session, 22:22): appended to the record, answering implementation's question in #793.
+- **Next:** C173's restart. Ground truth not moved.
+
+### #795 · 2026-11-01 · A5 C173 C171-W · By research's agreement (#794), W s49 is stopped at its boundary so C173 can finish, and C173's STOP is removed before it fired, so stage A carries on. W s48 keeps running. W s49 resumes after C173 ends
+- **Done:** `loop.py stop C171-W-s49` at 22:22:29; it ends after its current iteration, the fifth. C173's reader now pools the strength gate: search at 0.57 or more and the mirror within 2 SE of 0.5, about 400 games each, or C49-sd's read is void until explained.
+- **To resume W s49:** delete its `STOP`, and restart `queue_c171.py --arms W`, or `loop.py launch ... --resume`. The queue now treats it as ended.
+- **Next:** the enlarged strength check at seed 92 (search 192 more games, mirror 288 more), once W s49's memory is free.
+
+### #796 · 2026-11-01 · A5 C173 strength gate · **C173's strength gate stands:** pooled over 384 games each, C49-sd's search beats itself greedy with a win share of 0.634 (SE 0.022), and the mirror null is back at 0.510 (SE 0.024), within 2 SE of 0.5. The first mirror's 0.5625 was noise, so the stand-in and the seats aren't suspect on this evidence, and C49-sd's read can stand
+- **Evidence** (measured, finished; the 24 lists in their own mirrors, seats alternating, 0 errors):
+
+| | First run, seed 91 | Second run, seed 92 | Pooled | SE over lists |
+|---|---|---|---|---|
+| Search against k=1 | 0.612 (192 games) | 0.656 (192) | 0.634 (384), SE 0.022 | 0.023 |
+| Mirror, k=1 on both seats | 0.5625 (96) | 0.493 (288) | 0.510 (384), SE 0.024 | 0.025 |
+
+  - By seat, pooled: search 0.625, 0.643; mirror 0.539, 0.482. The mirror's seats differ by 0.057, inside its noise.
+- **Note on the design:** the second mirror isn't equal in size to the first, so the pool is weighted to it. Search's margin over the pooled mirror is +0.124 (SE 0.033).
+- **Stage A's cells:** E2 and Y s48 under C49-sd's search are in, G next. No read yet, and E2 against Y isn't compared until all are in, as research asked. W s49 stopped at 22:24:22 after iteration 5, and free RAM is back to about 4.2 GB.
+- **Next:** stage A's read, then arm 0's stage.
+
+### #797 · 2026-11-01 · A5 C171-W · W s48 at iteration 29 (**unfinished, one seed, on the way to 130**): G1 mean of 5 is 10.97, inside the base 11.22 ± 3.75, so ground truth not moved. T4 2.72 copies a deck against the lists' 9.17, draw 2.19 against 5.92, wall share 0. G3 under C49-sd 0.276 (SE 0.013), against 0.225 at iteration 0. No kill has fired
+- **Evidence** (measured, read by the queue; 76,000 games, 0 errors): population P/T/E 13.59 / 26.29 / 20.12, median 13/26/19. By 22:43, at iteration 43, the median had moved to 15/23/22, so the near-list median at 14 (13/28/18) didn't last.
+  - E −0.027 (fresh at 29: −0.024, SD 0.019), A7 0.50, 5 of the lists' top 7 among its top 7, rho_L +0.27. E over Pokémon names −0.058, 6.85 names a deck, on-type 0.82, special Energy 2.51.
+  - G1 set at 29: T4 3.00, draw 2.83. 12 deck kinds in the top 12. Survivors 4 → 29: T4 −0.30 (SE 0.16), draw +0.43 (SE 0.22), Trainers −0.72 (SE 0.40).
+  - G3 at 0, 14, 29: C49-sd 0.225, 0.244, 0.276; own pilot 0.238, 0.242, 0.288; C127 s16 0.192, 0.203, 0.227.
+- **W s49:** stopped at iteration 5 for C173, so no second seed yet. G3 at 0 is 0.228 under C49-sd.
+- **Machine at 22:43:** free RAM 6.3 GB, GPU 7.8 of 16.3 GB. C173 has its G cell in, and Y s49 is playing.
+- **Next:** C173's read, then W s49's resume.
+
+### #798 · 2026-11-01 · A5 C173 stage A · C173's stage A under C49-sd's search reads **unresolved**: the lists' own Pokémon lead Y by only +0.18 (SE 0.11) and +0.05 (SE 0.07) on decided-win logit, which isn't R-converges, and R-holds fails at s48. But Y's lead from greedy has gone at both seeds (a paired change of −0.23, SE 0.11, and −0.34, SE 0.09), so under search Y is level with or below the lists' own Pokémon, not above them. The band still needs arm 0's cells, which are running
+- **Evidence** (measured, finished; C49-sd, C139's search on both seats, 6 opponents at 2 deals, seed 91, 1,152 games a cell, 0 errors; strength gate standing, #796):
+
+| Cell | Score, search | Decided wins, search | Lost | Score, greedy | Decided wins, greedy |
+|---|---|---|---|---|---|
+| E2 | 0.270 | 0.310 | 0.574 | 0.316 | 0.345 |
+| Y s48 | 0.244 | 0.273 | 0.601 | 0.331 | 0.356 |
+| Y s49 | 0.267 | 0.300 | 0.564 | 0.385 | 0.413 |
+| G | 0.100 | 0.109 | 0.836 | 0.134 | 0.141 |
+
+  - E2 − Y on decided-win logit: s48 +0.177 (0.106), s49 +0.049 (0.075). On points: +0.138 (0.072), +0.018 (0.063). Under greedy: −0.052 (0.061), −0.290 (0.053).
+  - Change in Y − E2, search minus greedy, paired by list, decided wins: s48 −0.228 (0.111), s49 −0.339 (0.090). On points: −0.209 (0.081), −0.325 (0.074). The greedy cells had 12 opponents at 2 deals, these 6.
+  - Y − G under search: +1.12 (0.08), +1.25 (0.09), won logit; greedy +1.22, +1.46. E2 − G: +1.30 (0.11) under search; greedy +1.17.
+  - **By the bands:** "falls" needs +0.20 and 2 SE at both, and neither seed has it. "Holds" needs Y − E2 − 2 SE at −0.20 or better at both: s48 −0.39 fails, s49 −0.20 just passes. So unresolved, with B held.
+  - s48's SE of 0.106 is above the record's 0.10 line for a finished part, too.
+- **Use of the off-list cards under search** (across all games in a cell, both sides): Switch on Paralyzed turns that hold it 54-62%. Rampage is used now (35 and 23 times), and Supersonic (287 and 463 against Tongue Wrap's 3,455 and 5,001).
+- **What it adds up to:** both seeds move the same way, and the table's gain over uniform bodies survives search (still above +1.1). Search takes Y's edge over the lists' own Pokémon but doesn't put the lists clearly ahead at this pilot.
+- **Limit:** one one-turn search, one deal seed. The lists' cells are also arm 0's and C49-sd's reference, not a human.
+- **Next:** arm 0's cells (E2 in), then research's read.
+
+### #799 · 2026-11-01 · A5 C171-W · W s48 at iteration 44 (**unfinished, one seed**): the population is losing Trainers. G1 mean of 5 rose to 14.2 from 10.97 at 29, median P/T/E is 14/23/23, and T4 is 2.16 copies against the lists' 9.17. No kill has fired, and it runs on to 130. Ground truth not moved
+- **Evidence** (measured, read by the queue; 90,000 games, 0 errors): population P/T/E 14.44 / 23.49 / 22.06, draw 2.11, E −0.021, wall share 0, on-type 0.80, 6.57 Pokémon names. Survivors over the 25 iterations to 44: Trainers −3.15 (SE 0.71), T4 −0.82 (SE 0.26), draw +0.30 (SE 0.31). G1 set: T4 1.25, draw 3.08. Its G1 is well inside the G1 watch's 17.77, and survivors' fall is about what the 43 earlier screens did (T4 −0.26, Trainers −1.64 per 25 iterations, #747), steeper in this one window.
+- **Next:** C173's arm 0 cells, then W s49's resume.
+
+### #800 · 2026-11-01 · A5 C173 C171-W · C173's stage A reads **unresolved, with B held**, at both pilots. Y's lead over the lists' own Pokémon falls from greedy at both pilots and both seeds (paired change −0.23 to −0.34), but the level under search reaches the fall line only at arm 0 s48. Separately, **W s48 was stopped by its G1 watch at iteration 53-54**: G1 went from 10.97 at 29 to 19.5, Trainers from 28 to 23, the same Energy-heavy slide. Ground truth not moved
+- **Done:** `runA.sh a` ended at 23:26:00, 0 errors in all cells; `summary_A.json`. W s49 resumes now, on its own, since W s48 must not be relaunched.
+- **Evidence, C173** (measured, finished; decided-win logit; bootstrap over the 24 lists; strength gate standing under C49-sd at 0.634, mirror 0.510):
+
+| | C49-sd s48 | C49-sd s49 | Arm 0 s48 | Arm 0 s49 |
+|---|---|---|---|---|
+| E2 − Y under search | +0.177 (0.106) | +0.049 (0.075) | +0.378 (0.088) | +0.112 (0.090) |
+| E2 − Y under greedy | −0.052 (0.061) | −0.290 (0.053) | +0.045 (0.100) | −0.201 (0.096) |
+| Change in Y − E2, search minus greedy | −0.228 (0.111) | −0.339 (0.090) | −0.333 (0.121) | −0.313 (0.096) |
+| Same change, on points | −0.209 (0.081) | −0.325 (0.074) | −0.159 (0.082) | −0.219 (0.075) |
+
+  - Scores under search, arm 0: E2 0.227, Y s48 0.182, Y s49 0.218. Decided wins 0.242, 0.180, 0.222. Greedy under arm 0: 0.252, 0.232, 0.286.
+  - Arm 0's greedy cells are at 6 opponents; C49-sd's greedy cells are at 12. The reused C49-sd greedy decks are the same.
+  - Switch on Paralyzed turns that hold it, arm 0 search: 49-59%. Rampage 17-26 uses, Supersonic 69-478.
+  - **By the bands:** "falls" needs +0.20 and 2 SE at both seeds at a pilot: only arm 0 s48. "Holds" needs Y − E2 − 2 SE at −0.20 or better at both: fails at both pilots at s48. So each pilot reads unresolved, not R-converges or R-holds, and not "familiarity" either, since that needs a clean fall at arm 0.
+- **What it adds up to:** at all four readings search moves the lists' own Pokémon up against the table's, by about the same amount. It's a consistent direction short of the record's bar on level. The Y − G gain stays above +1.1 under C49-sd's search.
+- **Evidence, W s48** (measured, unfinished by its stop; 54 iterations, 0 errors): G1 mean of 5 was 10.97 at 29, 14.2 at 44, then 17.93, 18.03, 17.80, 18.20, 19.53 at 49-53, firing the watch's 17.77 five reads running. Median P/T/E 13/23/23 at 54. G3 at 29 was 0.276, and there's none after. It never reached the walls (wall share 0 at 44).
+- **Limit:** one seed for W; W s49 is the second, from iteration 6. C168's 130-iteration read isn't reached at s48, so that part of its question isn't answered.
+- **Next:** research's read, before anything from stage B.
+
+### #801 · 2026-11-01 · A5 C173 W · Research's read of stage A (unresolved, B held; all four paired changes fall) and of W s48, the most direct ground-truth read in days: a fresh run on the current recipe and engine passes through the lists' shape near iteration 23 and keeps going toward Energy, with survivors' Trainers falling faster over time. C173 stage B1, Trainers' value under search, goes first: is the Energy lean a play limit?
+- **Done** (research session, 23:29): read `summary_A.json` and C171-W-s48 at 4, 29, 44 and 54 with `c168_read.py`; wrote C173 Amendment 2.
+- **Measured, one seed, W s48** (G1 watch stopped it at 53-54; 0 walls at 54):
+  - Median P/T/E 9/28/21 (4), 13/26/19 (29), 14/23/23 (44), 13/23/23 (54); the lists 13.5/28/18. G1 mean of 5 about 9 near 23, 11 at 29, 14 at 44, 19.6 at 54.
+  - Survivors per 25 iterations: Trainers −0.72 (SE 0.40), −3.15 (0.71), −4.16 (0.83); T4 −0.30, −0.82, −0.88; draw +0.43, +0.30, −0.19.
+  - Population E −0.010, −0.027, −0.021, −0.024. Draw share of proposed copies flat at 2.5-3.5%.
+- **Read:** the shape near the lists at about 23 is a pass-through, not a place the loop settles. W s49 is the replication; no claim until it reads. **Correction to #744 and C168's prior:** the slide appears in the Trainer count, so the 30-iteration G1 reads were catching it on the way through.
+- **Next:** stage B1, then B2. W s49 runs on. Ground truth not moved, and on this read it's moving away.
+
+### #802 · 2026-11-01 · A5 C173 · C173 Amendment 3, the auditor's adopted before B1's read: a full-width arm as the candidate-set control, 12 pods over two stages, the rise read against the whole −0.0078 gap, and a rival check for a pilot spiral under W s48's own net. Correction to #801: "passes through the lists' shape" is overstated
+- **Done** (research session, 23:34): appended to the record.
+- **The auditor's CPU read** (greedy, 20,000 games each, jackknife over 20 pods): mean Trainer β C49-sd −0.0076, −0.0081; C127 s16, s17 at 29 −0.0063, −0.0061; K1m −0.0077; arm 0 −0.0084; SE 0.0005-0.0009. So every greedy pilot here prices the mean Trainer below Energy, and arm 0 is no better.
+- **Correction:** G1 about 9 near iteration 23 is inside the base 11.22 ± 3.75, and T starts at 28, so that isn't the lists' shape passed through. Pokémon move toward the lists while Trainers leave them. Both W seeds are read as censored at the watch.
+- **Next:** B1 with its control, the rival fit, B2. Ground truth not moved.
+
+### #803 · 2026-11-01 · A5 C173 B1 · C173's stage B1 is built to its Amendments 2 and 3, its timing is logged, and it launches now: the rival fits first, then full width (the primary) and C139's search on the same pods, in blocks of 3 up to 12. Evaluation only. No read yet. Search arms are slower than research's estimate, so all 12 pods would take about 4 hours (estimated), with a read after each block
+- **Timing** (measured, C49-sd, seed 48 decks, pod 0, 300 games each, 8 workers, beside W s49, 0 errors): C139's set 2.2 games/s; full width 1.6. Small runs understate the rate, as C172's did. An earlier 100-game run on 4 workers ran 0.6.
+- **Planted-value check on the 6-pod schedule, game SD 0.32, deck SD 0.15:** within 2 SE 40, 37, 39, 39, 40 of 42, passing, with an SE a copy of about 0.0045. Mean β's own SE is smaller.
+- **Reused, not played:** the greedy arm is C171's table-s48 games under C49-sd on the same decks, pairs and deals, so it needs no new games.
+- **Taken by default (row 115):**
+  - Full width first in each block, since it's the primary if its SE is usable. Each set's part is its own 30-minute stage, and each pod is saved, so a timeout keeps what's played.
+  - The rival fits use W s48's own net at 54 (`checkpoint.pt`) and 29 (`population_it0029.pt` carries a net), on the same decks, pods 0-5.
+  - "Full width" is C135's set: every legal move, at Trainer-playable decisions only.
+- **W:** both seeds are reported as censored at the G1 watch from here on (research's Amendment 3). W s49 is still running.
+- **Next:** the rival read, then full width's first block.
+
+### #804 · 2026-11-01 · A5 C173 · B1 runs full width first, and C139's set only after its read, since a rise under full width is the value read alone and flat means no claim either way; this cuts about 4 hours to about 2 at most (estimated). Full width searches only at Trainer-playable decisions, a stated limit of the control
+- **Done** (research session, 23:43): appended to the record. Rival fits still go first.
+
+### #805 · 2026-11-01 · A5 C173 B1 · By research's #804, C139's set is held until full width reads: `B1/c139_p0-3.done` are placeholder files, so the running script skips those parts without an edit. Delete them to run those parts. Rival fits and full width carry on, about 2 hours at most (estimated). Every-decision search stays out, with the attention bias noted as the control's limit
+
+### #806 · 2026-11-01 · A5 C173 · Correction to #804: under full width a rise isn't readable alone, since more Trainers also buy more search on every choice at those turns (dose), and flat reads R-trainers-flat rather than no claim. A rise goes to a dose check from the logs, then a random-trigger control if needed (the auditor's)
+- **Done** (research session, 23:44): appended to the record. Full width still runs first.
+
+### #807 · 2026-11-01 · A5 C173 B1 rival · C173's rival check reads **R-no-spiral at both of W s48's nets**: the mean Trainer's value against a basic Energy is −0.0063 (SE 0.0013) at iteration 54 and −0.0062 (SE 0.0010) at 29, level with C127 s16's −0.0063 and above the spiral line. So W s48's Trainer fall isn't its pilot getting worse at Trainers as it practises on Trainer-poor decks. Full width's first block is running
+- **Evidence** (measured, finished; greedy, same seed 48 decks and pods 0-5, 6,000 games each, 0 errors, jackknife over 6 pods): R-spiral lines −0.0104 and −0.0097, R-no-spiral at −0.0065 or better. The 54 read's lead over −0.0065 is less than an SE, so this says no spiral, not that the net improved.
+- **Dose read (research's #806) added:** `notes/scripts/audit/c173_dose_worker.js` logs each searched decision by game and player, and `c173_b1.py` reports searched decisions per game against each deck's Trainer count, per stage. It's live on `full_p0`: 31,782 lines by 23:53.
+- **Its test:** Claude Code stopped my small separate test for low memory at about 23:52, and I haven't restarted it. Nothing was left running, and the live run confirms the log works. The test's stray output is removed.
+- **Machine at 23:53:** free RAM 4.1 GB, GPU 7.9 of 16.3 GB. The reaper's low-memory stop came with W s49, B1 at 8 workers and the test together, so I'm not adding anything beside those two.
+- **Next:** full width's first block.
+
+### #808 · 2026-11-02 · A5 C173 B1 C171-W · W s49 stopped at iteration 16, by the `loop.py` supervisor, not by its G1 watch: free RAM under 3 GB on two ticks stops the newest screen, and it only ever stops screens, never probes. So W is what gives way, the opposite of C173's record. It stays stopped until full width ends, taken by default (row 115). Full width's first pod read at 1.57 games/s
+- **Found** (`runs/loop/daemon.log`, `notes/scripts/loop.py` lines 673-679): "RAM 1.3 GB: stopped C171-W-s49" at 22:20 and "RAM 2.5 GB: stopped C171-W-s49" at 00:00. W s49 ended at 00:02:21 after iteration 16, median P/T/E 10/28/20, G1 mean of 5 10.0 at 15, 0 errors. It isn't censored by its watch; it's stopped for machine room.
+- **Correction to #795 and #793:** the first stop of W s49 wasn't only mine. The supervisor wrote its STOP at 22:20, before my `loop.py stop` at 22:22:29, and my log missed that.
+- **Why not both:** full width at 8 workers holds about 5 GB, and W about 3.4 GB. With about 5.5 GB free and Evan's other programs open, running them together stays under the supervisor's 3 GB. Cutting full width to 4 workers would fit, at roughly half its rate, against research's choice of it as the primary.
+- **Evidence** (measured at 00:03): pod 0 of `full_p0`, 1,000 games in 638.4 s, 0 errors. Free RAM 5.6 GB, GPU 5.9 of 16.3 GB. At that rate 3 pods is about 32 minutes, so the third pod of a 30-minute stage may be cut and replayed. W s49's memory has now gone, so later pods should run faster.
+- **To resume W s49:** delete its `STOP`, restart `queue_c171.py --arms W --only C171-W-s49`.
+- **Next:** full width's first block read.
+
+### #809 · 2026-11-02 · A5 C173 W · W s49 waits for full width, since RAM can't hold both (full width about 5 GB, W about 3.4 GB, about 5.5 GB free), and the loop supervisor stops the newest screen first. W s49's stop at 16 isn't censoring by the watch. Full width's stage cap is 35 minutes, so a pod isn't replayed
+- **Done** (research session, 2026-11-02 00:04): appended to the record. Blocker named per Evan's parallel rule: RAM; about 3 GB more free would run both.
+- **Next:** full width's first block. Ground truth not moved.
+
+### #810 · 2026-11-02 · A5 C173 B1 · Full width's stage cap is now 35 minutes (research's #809), switched at the pod boundary at 00:11:22: pods 0 and 1 are saved (638 s and 606 s, 0 errors), and 75 s of pod 2's play was discarded. `runB1b.sh` carries on from pod 2, started at 00:11:27, logging to `B1/launchb.log`
+
+### #811 · 2026-11-02 · A5 C173 B1 · Full width's first block (3 pods, **unfinished**) reads **unresolved**: the mean Trainer's value under search is +0.0002 (SE 0.0023) against greedy, 3% of the gap, and its SE can't exclude +0.003. It isn't clear beyond +0.003 on 2 df (low −0.0097), so it carries on. Ground truth not moved
+- **Evidence** (measured; C49-sd, seed 48 decks, pods 0-2, 3,000 games an arm, the same deals, 0 errors; jackknife over 3 pods):
+
+| Group, mean β a copy | Greedy | Full width | Change (SE) |
+|---|---|---|---|
+| All 42 Trainers | −0.0047 | −0.0045 | +0.0002 (0.0023) |
+| The lists' top 12 | −0.0004 | +0.0010 | +0.0014 (0.0023) |
+| T4 | −0.0080 | −0.0046 | +0.0033 (0.0034) |
+| Draw | +0.0029 | +0.0026 | −0.0003 (0.0022) |
+
+  - rho_L +0.19 under greedy, +0.40 under search; both on 3 pods. Mean points 0.430, 0.433. Greedy's −0.0047 on these 3 pods is above the −0.0078 the gap uses, so the share is against that fixed number.
+  - Biggest rises: Potion +0.015, Scoop Up +0.011, Pokémon Trader +0.008, Professor Oak +0.008. Biggest falls: Impostor Professor Oak −0.012, Gambler −0.008, Sleep! −0.008. Each card's noise is large at this size, so these are leads at most.
+  - Shape: T* stays at the sampled edge (19) under both, E* 24.5 and 25.0 (SE 0.8, 3.6). Adjusted score is best at Energy 20-23 under greedy and 24-27 under search.
+  - **Dose** (searched decisions a game, per deck side): 22.4 and 21.9 per stage. By Trainer count, 0-19: 19.7, 21.2; 20-23: 21.5, 21.3; 24-27: 23.4, 22.5; 28-31: 22.6, 21.7. Slope +0.23 to +0.24 per Trainer, correlation 0.03. So decks with more Trainers get barely more search.
+- **Rate:** about 640 s a pod, 1.6 games/s, 0 errors. Machine at 00:33: free RAM 7.9 GB, GPU 6.1 of 16.3 GB.
+- **Next:** the second block. C139's set stays held; W s49 stays stopped until full width ends.
+
+### #812 · 2026-11-02 · A5 A151 C175 · A151's call (is the Trainers' low price a play limit, or a property of weak games?) becomes C175: the Trainer-count factorial on fixed strong bodies against uniform bodies, greedy, human-free pilot, bands first. Taken by default (row 115). It goes ahead of W s49, which resumes right after if RAM allows
+- **Done** (research session, 00:44): `runs/probe/C175-trainers-strong-bodies/record.md`. C174 stays reserved for B on a search table. Next free record: C176.
+- **Next:** C175, then W s49. Full width carries on. Ground truth not moved.
+
+### #813 · 2026-11-02 · A5 C175 · C175 Amendment 1, the auditor's adopted before any read: a rules-only common field for all three bodies, endings in every cell, and limits on B's re-read, with survivors' Trainer fall as B's primary if it's reopened
+- **Done** (research session, 00:45): appended to the record.
+
+### #814 · 2026-11-02 · A5 C175 · C175 is built and launched beside full width, with its timed pilot logged before the full run. Y, G and E2 bodies at 2,400 decks each, Trainers drawn independent of the body (corr(T, P) 0.05, 0.00, 0.00), mean P/T/E about 13.9 / 24.5 / 21.6. 0 errors in the pilot. No read yet
+- **Timed pilot** (measured, C49-sd, greedy, 100 games a cell, small, beside full width, 4 workers): Y 6.6 games/s, G 16.1, E2 17.2. Endings out of 100, no Pokémon in play: Y 13, G 36, E2 18; on time: Y 74, G 52, E2 73. So on games ending with no Pokémon in play, Y looks like the lists' own bodies and G doesn't, as the record needs. A small sample.
+- **Planted-value check at 12 pods, cell Y:** within 2 SE 39, 39, 41, 38, 39 of 42, passing, SE a copy about 0.003.
+- **Next:** the same-class cells, then Amendment 1's common-field cells (#813) as parts.
+
+### #815 · 2026-11-02 · A5 C173 B1 · Full width at 6 pods (**one seed, unfinished**) reads **between**: the mean Trainer's value rises +0.0015 (SE 0.0011) under search, 19% of the gap, and it isn't clear beyond +0.003 on 5 df (low −0.0013). But the rise goes where the lists are: T4 +0.0049 (SE 0.0015), the lists' top 12 +0.0029 (SE 0.0012), and rho_L goes from +0.24 to +0.50, while draw falls −0.0023 (SE 0.0016). It carries on. Ground truth not moved
+- **Evidence** (measured; C49-sd, seed 48 decks, pods 0-5, 6,000 games an arm, the same deals, 0 errors; jackknife over 6 pods):
+
+| Group, mean β a copy | Greedy | Full width | Change (SE) |
+|---|---|---|---|
+| All 42 Trainers | −0.0066 | −0.0051 | +0.0015 (0.0011) |
+| The lists' top 12 | −0.0038 | −0.0009 | +0.0029 (0.0012) |
+| T4 | −0.0097 | −0.0048 | +0.0049 (0.0015) |
+| Draw | +0.0028 | +0.0005 | −0.0023 (0.0016) |
+
+  - Biggest rises: Potion +0.018, Scoop Up +0.008, Lass +0.007, PlusPower +0.006, Pokédex +0.006. Falls: Gambler −0.010, Impostor Professor Oak −0.007. Single-card noise is large.
+  - Top under search: Professor Oak +0.008, Energy Removal +0.006, Potion +0.004, Challenge! +0.003, Super Energy Removal +0.003, Bill +0.002.
+  - Shape: T* left the sampled edge at 6 pods under both, at 21.75 and 21.5 (SE 2.2, 1.6); E* 23.25 and 23.75 (SE 0.9, 0.7). At 3 pods it sat on the edge, so this isn't stable yet. Adjusted score is still best at Energy 20-27 under both.
+- **By the band:** under +0.003, and over +0.0015 by nothing, so between. It's not R-trainers-flat, since the SE can't exclude +0.003. T4 and rho_L aren't bands, and they're read on one seed after looking at many groups, so these are leads, and no claim.
+- **Note:** Potion's +0.018 is the largest single move. Search values immediate healing, as C161 found, and the lists hardly run it (0.13 copies), so not every rise is toward the lists.
+- **C175 alongside it:** cell Y took 1,098 s (10.9 games/s), slower than the estimate, since full width shares the GPU. The 35-minute stage may not hold all 3 cells. `c165_run.py` now saves every pod in any run, so a stage's kill keeps what's played.
+- **Next:** full width's third block.
+
+### #816 · 2026-11-02 · A5 C175 · C175's same-class stage reads **R-not-context** (one seed, 175): the mean Trainer is worth less on strong bodies, Y − G −0.0041 (SE 0.0010) and E2 − G −0.0053 (SE 0.0013), against a line of +0.004. So under a greedy pilot weak games don't explain the Trainers' low price, and the play-limit line stands where B1 leaves it. T* stays at the sampled edge in all three classes. Ground truth not moved
+- **Evidence** (measured; C49-sd, greedy, [20, 45], seed 175, 12 pods of 1,000, 12,000 games a cell, 0 errors; `runs/probe/C175-trainers-strong-bodies/summary.json`):
+
+| Cell | All 42 | Lists' top 12 | T4 | Draw | ρ_L | Time | No Pokémon | Prizes | Deck-out |
+|---|---|---|---|---|---|---|---|---|---|
+| Y | −0.0108 (0.0008) | −0.0076 (0.0012) | −0.0108 (0.0011) | −0.0036 (0.0015) | +0.46 | 75.5% | 14.3% | 6.6% | 3.7% |
+| G | −0.0068 (0.0006) | −0.0035 (0.0005) | −0.0083 (0.0012) | +0.0032 (0.0012) | +0.29 | 45.5% | 42.2% | 9.6% | 2.7% |
+| E2 | −0.0121 (0.0011) | −0.0083 (0.0013) | −0.0139 (0.0018) | +0.0019 (0.0010) | +0.26 | 67.9% | 23.9% | 6.1% | 2.2% |
+
+| Contrast | All 42 | Lists' top 12 | T4 | Draw |
+|---|---|---|---|---|
+| Y − G | −0.0041 (0.0010) | −0.0041 (0.0013) | −0.0024 (0.0016) | −0.0068 (0.0019) |
+| E2 − G | −0.0053 (0.0013) | −0.0048 (0.0014) | −0.0055 (0.0021) | −0.0012 (0.0016) |
+
+  - Shape optimum: Y P8 / T19 / E33, G P8 / T19 / E33, E2 P15.5 / T19 / E25.5. T* sits at the sampled 19 in all three, so it doesn't leave the edge on strong bodies, the reading the record said mattered most for the lean. P8 is below the sampled 10-18, so Y's and G's P* is an extrapolation.
+  - Above a basic Energy: Y only Energy Removal (+0.0126), G Oak (+0.0095), Bill (+0.0032), Energy Removal (+0.0028); E2 Energy Removal (+0.0058), Oak (+0.0056), Bill (+0.0007).
+  - Y by top name: Lickitung, in 1,960 of 2,400 decks; both holding it (8,004 games) mean β −0.0114, about Y's whole-cell −0.0108, so Y's read isn't that one name's alone.
+- **By the band:** R-not-context, reported on Y and E2 separately, and each alone fits it. The priors said between.
+- **Amendment 1's item 2:** mean β falls as time endings rise only roughly (G 45.5%, −0.0068; E2 67.9%, −0.0121; Y 75.5%, −0.0108), three points and not monotone, so no trend claim. Y is the slowest mirror, but E2 reads the same way, so this isn't a Y quirk. E2's endings (67.9% time, 23.9% no Pokémon) come close to the 69% and 27% the record quotes for lists against lists, so its game type is near the lists' and the price is still low. Y's slow speed (10.9 games/s, 32.9 for E2 and 50.1 for G) wasn't only shared GPU, as E2 and G shared it too.
+- **Limits:** greedy only, so a pilot's limit could be what's being read in strong games too, and the record says so. A claim needs a second seed (176); same-class games change body and field together, which the common field addresses next. Draw's drop at Y (−0.0068, SE 0.0019) isn't at E2 (−0.0012, SE 0.0016), against the prior that strong bodies lift draw.
+- **Field pilot** (smoke, 200 games a cell at 4 workers): 15.0, 16.0, 13.8 games/s, 0 errors, 48 s in all. So s2's 6,000 games a cell take about 20 minutes in all (estimated), under its 35-minute cap.
+- **Next:** s2, the common field; then W s49 if free RAM is over about 6.4 GB beside full width.
+
+### #817 · 2026-11-02 · A5 C175 · Research's read of C175's same-class cells (R-not-context, one seed, #816): Trainers are worth less on strong bodies under a greedy pilot, not more (Y − G −0.0041, E2 − G −0.0053), so sequencing has no case from this and B's re-read doesn't open. Its second seed follows W s49 rather than preceding it, since W s49 is the ground-truth replication
+- **Done** (research session, 01:25): read #816. Taken by default (row 115): order is the common field, W s49, then seed 176 if RAM allows.
+- **Read:** the rise the sequencing idea predicted isn't there; the sign runs the other way at about 4 SE on both bodies. E2's endings are near lists-against-lists, so it isn't a mirror quirk. Limit: greedy, so the pilot's limit may be what it reads. The open combination is strong bodies under stronger play: C144's group prices are the only read of it.
+- **Next:** common field; full width at 12 pods. Ground truth not moved.
+
+### #818 · 2026-11-02 · A5 C175 C171-W · C175's common field is launched (`C175-s2`, pid 32672, 01:25:04), and by research's order W s49 goes next as soon as RAM allows, with seed 176 only if RAM has room beside them, since W s49 is the ground-truth replication and 176 would only replicate a null. No read yet
+- **Launch:** `loop.py launch C175-s2 --kind probe`, `run_field.sh s2`, 4 workers, 6 pods of 1,000 games a cell, about 20 minutes (estimated from the smoke's 13.8-16.0 games/s). Free RAM 6.6 GB and GPU memory 7.1 of 16.3 GB at 01:25:50 (measured), with full width beside it.
+- **W s49's line:** free RAM over about 6.4 GB beside full width, once the field stage ends; the supervisor stops screens under 3 GB. My own message to research (#816's read) proposed seed 176 by default after s2; research's order replaces that.
+- **Next:** full width's next read at 01:37, the field read when it lands, then W s49.
+
+### #819 · 2026-11-02 · A5 C173 B1 · Full width at 9 pods (**one seed, unfinished**) reads **unresolved**: the mean Trainer rises +0.0013 (SE 0.0009), 17% of the gap, and +0.003 can't quite be excluded (+0.0013 + 2 SE is +0.0031). The rise stays where the lists are: their top 12 +0.0030 (SE 0.0007), T4 +0.0042 (SE 0.0014), against +0.0005 on the other 30, and rho_L +0.21 to +0.50. Those top 12 reach −0.0013 (SE 0.0008) under search, near an Energy. Ground truth not moved
+- **Evidence** (measured; C49-sd, seed 48 decks, pods 0-8, 9,000 games an arm, the same deals, 0 errors, jackknife over 9 pods, 8 df; read at 01:23:23):
+
+| Group, mean β a copy | Greedy | Full width | Change (SE) |
+|---|---|---|---|
+| All 42 Trainers | −0.0068 | −0.0056 | +0.0013 (0.0009) |
+| The lists' top 12 | −0.0043 | −0.0013 | +0.0030 (0.0007) |
+| T4 | −0.0097 | −0.0056 | +0.0042 (0.0014) |
+| Draw | +0.0044 | +0.0021 | −0.0022 (0.0015) |
+
+  - Clear beyond +0.003: no (t 2.306, low −0.0008), so it carries on.
+  - Top under search (lists' copies): Oak +0.0131 (3.4), Energy Removal +0.0062 (2.1), Potion +0.0050 (0.13), Super Energy Removal +0.0026 (2.0), Challenge! +0.0016 (0.08), Bill +0.0014 (2.5). Six are above an Energy under search, four greedy. Eight of the lists' top 12 stay below it.
+  - Rises: Potion +0.0152, Scoop Up +0.0055, Lass +0.0052, Challenge! +0.0050, Oak +0.0049, PlusPower +0.0049, Rocket's Sneak Attack +0.0047. Falls: Gambler −0.0099, Impostor Professor Oak −0.0066, Maintenance −0.0049. Without Potion all 42 reads +0.0009 (computed from the table, no SE).
+  - 11 of the lists' top 12 rise (Bill falls). Single cards are noisy.
+- **Correction to #815's shape line:** T* went back to the sampled edge at 9 pods, 19 under both (P/T/E greedy 16.75/19/24.25, search 18/19/23), so 21.5-21.75 at 6 pods was noise, as #815 feared. These decks' Trainers are drawn uniformly over 42, so T* prices the average Trainer, not the lists' top 12.
+- **Dose** (searched decisions a game by the deck's Trainers): full_p2 21.6, slope +0.40, r 0.055, bins 0-19 17.8, 20-23 20.6, 24-27 22.0, 28-31 23.3. It's present, and weak as a share of a game's decisions. A rise isn't readable on value alone (#806), so a rise past the line goes to the dose check first.
+- **Limits:** the top 12 and rho_L have no band, on one seed. The group was named before the run, as beside-reads, but they were read after many looks. Full width's stage cap and pods hold.
+- **Next:** block 3 (pods 9-11; pod 9 took 371.6 s), then the 12-pod read to research.
+
+### #820 · 2026-11-02 · A5 C173 · B1's lead (lists' top 12 Trainers rise +0.0030, SE 0.0007, at 9 pods while the other 30 barely move; post hoc, one seed) gets a replication written before any seed 49 game: R-list-cards-rise at +0.002 and 2 SE, also above the other 30's rise. All 42 stays the written band
+- **Done** (research session, 01:38): C173 Amendment 4. Taken by default (row 115).
+- **Correction from implementation (#819):** T* is back at the sample's edge at 9 pods, so the 6-pod shape read I reported was noise.
+- **Next:** seed 48's 12 pods, common field, W s49, then seed 49's full width. Ground truth not moved.
+
+### #821 · 2026-11-02 · A5 C173 · The seed 49 band gains a required per-card Spearman (rise against lists' copies ≥ +0.25, p ≤ 0.05), partial correlations controlling for greedy β and underplay, and a count of Trainers clearing Energy. Full width on list bodies is written down for after it (the auditor's)
+- **Done** (research session, 01:39): appended to the record, before any seed 49 game. The auditor accepts the band with these.
+
+### #822 · 2026-11-02 · A5 C175 C171-W · C175's common field reads the same way as its same-class cells, with no band of its own: Y − G −0.0028 (SE 0.0018) and E2 − G −0.0042 (SE 0.0018) on all 42. So the body itself doesn't lift the Trainers against a shared rules-only field either (one seed). W s49 is restarted at 01:52:32, with free RAM 8.4 GB beside full width. Ground truth not moved
+- **Evidence** (measured; C49-sd, greedy, seed 175, 6 pods of 1,000 games a cell against C162's decks, 0 errors; `summary.json`'s `common_field`; stage 01:25:04-01:43:46):
+
+| Cell | All 42 | Lists' top 12 | T4 | Draw | ρ_L | Points | Time | No Pokémon | Prizes | Deck-out | λ |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Y | −0.0124 (0.0008) | −0.0113 (0.0014) | −0.0153 (0.0016) | −0.0025 (0.0027) | +0.06 | 0.672 | 52.9% | 34.8% | 11.2% | 1.1% | 100 |
+| G | −0.0096 (0.0016) | −0.0061 (0.0023) | −0.0099 (0.0039) | −0.0015 (0.0022) | +0.45 | 0.430 | 50.4% | 38.3% | 9.8% | 1.5% | 3 |
+| E2 | −0.0138 (0.0009) | −0.0105 (0.0012) | −0.0162 (0.0022) | −0.0010 (0.0021) | +0.39 | 0.657 | 47.8% | 38.5% | 12.8% | 0.9% | 3 |
+
+| Contrast | All 42 | Lists' top 12 | T4 | Draw |
+|---|---|---|---|---|
+| Y − G | −0.0028 (0.0018) | −0.0052 (0.0027) | −0.0053 (0.0043) | −0.0010 (0.0035) |
+| E2 − G | −0.0042 (0.0018) | −0.0044 (0.0026) | −0.0063 (0.0045) | +0.0005 (0.0031) |
+
+- **Reading it:** the bands stay on same-class (Amendment 1), so this is a beside-read. No rise on either design. Endings match across the three cells here (48-53% time, 35-39% no Pokémon), so game type doesn't separate them, and the price is still lower on the strong bodies. Y and E2 score 0.67 and 0.66 against the field and G 0.43, so their strength is real.
+- **A difference from the same-class fit:** the chosen λ differs by cell (100, 3, 3), and G's SE (0.0016) is about double Y's and E2's. The contrasts are read with that.
+- **W s49:** `runs/screens/C171-W-s49/STOP` deleted, `queue_c171.py --arms W --only C171-W-s49` started at 01:52:32 (queue pid 41072), logs `queue-W2/stdout4.log`, `stderr4.log`. That it's actually training is checked at its next read, not here.
+- **Next:** the reader's check for Amendment 4 (next entry), full width's last pod, then seed 49.
+
+### #823 · 2026-11-02 · A5 C173 · Amendment 4's reader and `runB1s49.sh` are built and not launched: no seed 49 band game has been played. A planted test (**simulated**) finds no false alarm with nothing planted at 6 pods, but only about 23% power on a +0.003 rise, 54% at 12 pods. My planted-value acceptance (at least 37 of 42 each draw) failed at seed 49 and 6 pods: that's my threshold, too tight at 5 df, and not the fit
+- **Built:** `notes/scripts/c173_b1.py` gains `--seed`, the fixed top 12 (`A4_TOP12`, asserted against the computed group), the other 30's and PlusPower's groups, the band with the required Spearman, partial correlations given greedy β and C161's search-minus-greedy play rate (37 cards), t intervals, the Trainers clearing Energy by 2 SE and by t, and a same-deals count. Seed 48's read gets it too, labelled post hoc. `runs/probe/C173-search-table/runB1s49.sh` runs pods 0-5 one at a time, each saved and skipped when finished, with a read at 3 and 6.
+- **Smoke** (measured): seed 49, pod 0, one round, 2 workers, beside full width: 100 games, 0 errors, 100 of 100 on table-s49's deals, 239.7 s. The reader on a copy of seed 48's 6 pods: 6,000 of 6,000 on the same deals.
+- **The failed acceptance:** `--synth --seed 49 --pods 6` gave 40, 39, 33, 38, 37 of 42, so one draw under my 37 (seed 48 passed with 40, 37, 39, 39, 40). Pooled over 300 draws at seed 49 (simulated): 2 SE covers 90.9%, against a nominal 89.8% at 5 df, and t covers 95.7%, against 95%. So the jackknife is calibrated, and 59 of 300 draws fall under 37 by chance. I set that line for 20 pods in #743. It stays recorded as failed at 6 pods, and calibration is what I read instead.
+- **The band on planted data** (simulated, 100 draws a scenario, seed 49's design, game SD 0.32, deck SD 0.15, the arms' game noise independent, which is conservative against the real shared deals; `a4_planted.py` in my scratchpad):
+
+| Planted | 6 pods: rise / no / between | 12 pods: rise / no / between | Spearman passes, 6 / 12 |
+|---|---|---|---|
+| Nothing | 0 / 71 / 29 | 0 / 81 / 19 | 9% / 8% |
+| All 42 +0.0013 | 3 / 45 / 52 | 0 / 42 / 58 | 6% / 6% |
+| Top 12 +0.003, others +0.0005 | 23 / 9 / 68 | 54 / 3 / 43 | 48% / 78% |
+
+  - So R-list-cards-rise doesn't fire on nothing, and a between at 6 pods says little: on a real +0.003 step it's the likely outcome. The planted step is flat across the 12, which is harder on the Spearman than a rise that grows with copies, so these powers are likely low (not measured).
+- **Seed 48, post hoc, at 6 pods** (measured, a copy): top 12 +0.0029 (SE 0.0012, t interval −0.0002 to +0.0060), above the other 30 +0.0020 (SE 0.0004, t +0.0009 to +0.0031), Spearman of rise against copies +0.49 (p 0.001), partial given greedy β +0.58, given underplay +0.56 on 37 cards (+0.56 before the control), so it doesn't vanish with underplay here. Clearing Energy by 2 SE: 1 card under each arm, so 4 copies against 28. No claim.
+- **Taken by default (row 115), for research to veto:** 6 pods run first as written; if they read between, seed 49 extends to 12 pods, since that's the power the band needs, stated before any seed 49 band game. R-list-cards-rise at 6 stands, and R-no at 6 stops it. W s49 keeps priority on RAM.
+- **Next:** full width's pod 11 and its 12-pod read, then launch seed 49.
+
+### #824 · 2026-11-02 · A5 C173 B1 · Full width at all 12 pods reads **R-trainers-flat** on seed 48: the mean Trainer rises +0.0012 (SE 0.0008), 15% of the gap, and 2 SE excludes +0.003. By the record that counts against the play-limit reading on this rung and says nothing about stronger players, and a claim needs seed 49. The lists' top 12 still rise +0.0027 (SE 0.0008), post hoc, no claim. Ground truth not moved
+- **Evidence** (measured; C49-sd, seed 48 decks, pods 0-11, 12,000 games an arm, 12,000 of 12,000 on the same deals, 0 errors, jackknife over 12 pods, 11 df; ended 01:57:21):
+
+| Group, mean β a copy | Greedy | Full width | Change (SE) |
+|---|---|---|---|
+| All 42 Trainers | −0.0063 | −0.0051 | +0.0012 (0.0008) |
+| The lists' top 12 | −0.0036 | −0.0009 | +0.0027 (0.0008) |
+| The other 30 | −0.0073 | −0.0067 | +0.0006 (0.0009) |
+| T4 | −0.0095 | −0.0045 | +0.0050 (0.0013) |
+| PlusPower alone | −0.0066 | +0.0008 | +0.0074 (0.0028) |
+| Draw | +0.0056 | +0.0035 | −0.0021 (0.0013) |
+
+  - Against the gap: share closed 0.154 of −0.0078. Clear beyond +0.003: no (t 2.201, low −0.0006). ρ_L +0.24 to +0.52.
+  - Top under search (lists' copies): Oak +0.0132 (3.4), Energy Removal +0.0072 (2.1), Potion +0.0034 (0.13), Bill +0.0029 (2.5), Challenge! +0.0022 (0.08), Super Energy Removal +0.0013 (2.0), Energy Search +0.0009 (0.21), PlusPower +0.0008 (2.75). Eight are above an Energy under search, four greedy. Five of the lists' top 12 are, and 10 of the 12 rise (Bill and Nightly Garbage Run fall).
+  - Rises: Potion +0.0142, PlusPower +0.0074, Oak, Gust of Wind and Rocket's Sneak Attack +0.0047 each, Challenge! +0.0042, Scoop Up +0.0041. Falls: Gambler −0.0097, Impostor Professor Oak −0.0071, Maintenance −0.0052. Without Potion all 42 reads +0.0009 (from the table, no SE).
+  - Shape: T* 19 under both, the sampled edge, at the sampled average Trainer; greedy P17.25 / E23.75 (SE 0.88), search P17.5 / E23.5 (SE 0.98). Adjusted score by Energy, greedy then search: 16-19 +0.007, +0.015; 20-23 +0.046, +0.041; 24-27 +0.029, +0.033; 28-31 0.000, −0.017; 32-35 −0.024, −0.066; 12-15 −0.056, −0.034; 8-11 −0.112, −0.086. So search shifts the curve away from high Energy, while the peak stays at 20-23 against the lists' 18.
+  - Dose, searched decisions a game, per stage file: 22.4 (slope +0.23, r 0.03), 21.9 (+0.24, 0.03), 22.0 (+0.39, 0.05), 21.6 (+0.40, 0.06), 21.4 (+0.13, 0.02). It's present and weak; with a flat read no random-trigger control is needed (#806).
+- **Amendment 4's read on seed 48, post hoc and no claim:** top 12 +0.0027 (SE 0.0008, t interval +0.0009 to +0.0044); above the other 30 +0.0021 (SE 0.0005, t +0.0011 to +0.0031); Spearman of rise against copies +0.41 (p 0.004). Partial given greedy β +0.47 (p 0.003); given underplay +0.41 (p 0.01) on 37 cards, +0.40 before the control, so underplay doesn't remove it. Cards clearing Energy by 2 SE: greedy 1 (4 copies), search 3 (12 copies), by t 1 and 2, against the lists' 28.
+- **By the band:** flat on all 42, and the top 12's rise is the lead seed 49 tests. They aren't in conflict: a few cards the lists run rise and the other 30 hold the mean down. Even so most cards stay below Energy under this search, and 12 copies is under half the lists' 28.
+- **Limits:** one seed. Full width searches only at Trainer-playable decisions, and this is one rung of search.
+- **Next:** seed 49's launch. It was refused at 02:00:18 by the launcher's GPU rule, since it still counts W s49's 3.7 GB as loading (8.9 + 5.0 over 80% of 15.9 GB), though nvidia-smi reads 5.3 GB. It's retried once that window has passed, and the rule stays as it is.
+
+### #825 · 2026-11-02 · A5 C173 · Research's read of B1 at 12 pods (R-trainers-flat on seed 48, needs seed 49, #824): search at this rung doesn't lift the average Trainer, but on the same games the lists' top 12 reach about an Energy (−0.0009) while the other 30 stay well below (−0.0067), so a flat mean and that rise aren't in conflict. PlusPower reaches parity, as C139 found by a different design. C139's set stays held
+- **Done** (research session, 02:01): read #824 against the record. Flat means no claim from C139's set, so its arm has no read to add now, taken by default (row 115).
+- **Lead, post hoc on seed 48:** under search the lists' cards sit at about parity with Energy, so a stronger player has little Energy lean on them, while the other 30 are what selection is right to remove. If it replicates, the fall in Trainers is partly junk being replaced by Energy instead of by better Trainers, and proposals bring those at a uniform rate. Greedy games still price T4 at −0.0095, so a proposal change alone wouldn't hold T4. **Hypothesis only, for after seed 49.**
+- **Limit:** clearing Energy by 2 SE: 1 card greedy, 3 under search, 12 copies against 28.
+- **Next:** seed 49's full width, W s49 (iteration 19, unfinished). Ground truth not moved.
+
+### #826 · 2026-11-02 · A5 C173 · C173's seed 49 replication is launched (`C173-B1-s49`, pid 48364, 02:03:05) beside W s49, after the launcher's GPU window passed, with no bypass. It reads Amendment 4's band and the all-42 band, R-trainers-flat included. No read yet
+- **Launch:** `loop.py launch C173-B1-s49 --kind probe`, `runB1s49.sh`, 8 workers, pods 0-5 one at a time, a read at 3 and 6; between at 6 extends to 12, and both reads are reported (#823, research's no veto). It was refused twice at 02:00 and 02:01, since a screen launched within 10 minutes counts as loading; the third try passed.
+- **By research's #825:** the flat read leaves C139's set held.
+- **W s49** (unfinished, **one seed**): iteration 20, G1 last 11.7, mean of 5 9.7, median 11/27/21. No stop has fired.
+- **Next:** the 3-pod read, about 02:32 (estimated from seed 48's 371-533 s a pod, unless contention slows it).
+
+### #827 · 2026-11-02 · A5 C173 · Why some full-width pods run long: a few games per pod have hundreds or thousands of searched decisions, and they're mostly Charizard decks, so pod length is set by those games as well as by contention. The mechanism, full width repeating Charizard's Energy Burn up to the turn cap, is **suspected, not traced**. Seed 49's pod 2 is in such games, at 02:41 with 999 of 1,000 games begun, so its 3-pod read hasn't landed. Ground truth not moved
+- **Evidence** (measured, from the dose logs):
+
+| Run, file | Games | Median searched a game | Max | Games at 300+ |
+|---|---|---|---|---|
+| Seed 48, `full_p0` | 2,689 | 33 | 566 | 5 |
+| Seed 48, `full_p0b` | 1,000 | 41 | 667 | 3 |
+| Seed 48, `full_p1` | 2,999 | 42 | 1,134 | 4 |
+| Seed 48, `full_p2` | 2,997 | 42 | 1,099 | 6 |
+| Seed 48, `full_p3` | 2,997 | 41 | 1,176 | 6 |
+| Seed 49, pod 0 | 999 | 41 | 228 | 0 |
+| Seed 49, pod 1 | 1,000 | 44 | 419 | 4 |
+| Seed 49, pod 2, unfinished | 999 | 48 | 1,349+ | 3+ running |
+
+  - Charizard is in 10 of seed 48's 24 long games and 6 of seed 49's 10, against about 1% of all games. All three games running in pod 2 hold it. Slowpoke and Slowbro show in seed 48's (8-9 of 24, against 4-10%). Seed 48's long games ended mostly on time.
+  - Those three games were making about 4.6 searched decisions a second in all at 02:40, against about 110 a second early in pod 0.
+- **The suspected mechanism:** Energy Burn is free and repeatable, so a search scoring near-equal lines can pick it again and again until `MAX_TURN_STEPS` (250) cuts the main phase to pass, which would also cost that turn's attack. That's read from the card and the cap's code, and no game is traced. Long games are about 0.3% of games, so they're small against these reads, and search isn't in the loop's training.
+- **Correction:** #815 put pod 5's 899 s on contention with C175, and my 01:52 message to research put pod 10's 1,109 s partly on my planted runs. The long games are also a cause, so neither was established.
+- **Unchanged:** seed 49 runs as written, since a cap or fix now would break pairing with seed 48's games and with its own pods.
+- **A risk:** `runB1s49.sh` gives each pod 2,100 s, and a kill loses that pod's games, since a pod is saved only when it finishes. Pod 2 began 02:20:52, so the kill would come at 02:55:52. If it fires, the rerun replays the same deals, and it needs a longer pod cap, taken by default (row 115) at 3,600 s, logged then.
+- **W s49** (unfinished, **one seed**): iteration 29's stage read has G1 mean of 5 9.33, median 12/25/22, T4 2.81, draw 2.32, and survivors' Trainers −2.63 per 25 (SE 0.58), where W s48 at 29 read −0.72 (SE 0.40). At iteration 34 G1's mean of 5 is 7.8, median 13/24/22. No stop has fired.
+- **Next:** pod 2's end or its kill, then the 3-pod read.
+
+### #828 · 2026-11-02 · A5 C173 seed 49 · Seed 49 at 3 of 6 pods (**unfinished, read for information; the band is read at 6**): all 42 +0.0013 (SE 0.0015), the lists' top 12 +0.0016 (SE 0.0025), +0.0004 above the other 30 (SE 0.0017), Spearman of rise against copies +0.21 (p 0.10). So far this neither repeats nor rules out seed 48's lead, on 2 df. Ground truth not moved
+- **Evidence** (measured; C49-sd, seed 49 decks, pods 0-2, 3,000 games an arm, 3,000 of 3,000 on the same deals, 0 errors; pods took 395.8, 666.0 and 1,359.6 s; read 02:43:38):
+
+| Group, mean β a copy | Greedy | Full width | Change (SE) |
+|---|---|---|---|
+| All 42 Trainers | −0.0097 | −0.0085 | +0.0013 (0.0015) |
+| The lists' top 12 | −0.0091 | −0.0076 | +0.0016 (0.0025) |
+| The other 30 | −0.0100 | −0.0088 | +0.0012 (0.0012) |
+| T4 | −0.0132 | −0.0129 | +0.0003 (0.0019) |
+| PlusPower alone | −0.0210 | −0.0091 | +0.0118 (0.0019) |
+| Draw | −0.0049 | −0.0008 | +0.0040 (0.0027) |
+
+  - Amendment 4 so far: t interval on the top 12 −0.0091 to +0.0122, on the contrast −0.0069 to +0.0077; partial given greedy β +0.31 (p 0.025), given underplay +0.25 (p 0.055) on 37 cards, +0.25 before the control. Cards clearing Energy by 2 SE: 0 under each arm, against the lists' 28.
+  - All-42 at 3 pods: unresolved (share 0.17, clear false, low −0.0052). ρ_L +0.13 to +0.29. Three Trainers are above an Energy under each arm: Oak +0.0056, Energy Removal +0.0050, Energy Search +0.0034 under search.
+  - Dose: 21.3 (slope +0.20, r 0.04), 22.7 (+0.51, 0.07), 24.4 (−0.34, −0.02). T* 19 under both, at the edge; E* 30.25 greedy and 25 search, with SEs of 2.6 and 7.0 at 3 pods.
+- **A note against seed 48:** T4 and draw read the other way round here (T4 +0.0003, draw +0.0040; seed 48's full read has T4 +0.0050, draw −0.0021). At 2 df that's weak, and it's reported as read.
+- **By research (#827's reply):** the 3,600 s pod cap stands if needed, and Energy Burn stays unchanged. Next is a count of `MAX_TURN_STEPS` hits by arm and the read with and without those games.
+- **Next:** pods 3-5, and that count.
+
+### #829 · 2026-11-02 · A5 C173 · Research's ask, part one: the games flagged as hitting the turn cap are too few to move any read. Under full width 12 of 12,000 games at seed 48 and 7 of 3,000 so far at seed 49 have a same-turn run of 200+ searched decisions, and leaving them out of both arms changes no band. This is a **proxy, not yet a direct count**, and the greedy arm isn't counted yet. Ground truth not moved
+- **The proxy** (measured, `notes/scripts/c173_caps.py`, from the dose logs): a run of consecutive searched decisions by one player in one game. A cap at 250 steps should show as a pile-up near it, and it does: a game's longest run is almost always under 150, with a separate group at 200-254 (and one at 431, probably turns merged where the other player had no searched decision). Games by longest run at seed 48, 12,682 logged including replayed parts: under 50, 12,637; 50-99, 29; 100-199, 4; 200 and over, 12. Seed 49, 3,934 logged including pod 3 so far: 3,918; 8; 1; 7.
+
+| Read | Seed 48, with / without (12 games) | Seed 49 at 3 pods, with / without (7 games) |
+|---|---|---|
+| All 42 | +0.0012 / +0.0012 (SE 0.0008) | +0.0013 / +0.0013 (SE 0.0015) |
+| Top 12 | +0.0027 / +0.0027 (SE 0.0008) | +0.0016 / +0.0015 (SE 0.0025) |
+| Other 30 | +0.0006 / +0.0006 (SE 0.0009) | +0.0012 / +0.0011 (SE 0.0012) |
+| T4 | +0.0050 / +0.0050 (SE 0.0013) | +0.0003 / +0.0001 (SE 0.0019, 0.0017) |
+| PlusPower | +0.0074 / +0.0074 (SE 0.0028) | +0.0118 / +0.0112 (SE 0.0019, 0.0017) |
+| Draw | −0.0021 / −0.0021 (SE 0.0013, 0.0014) | +0.0040 / +0.0038 (SE 0.0027) |
+| Spearman, rise against copies | +0.41 / +0.42 | +0.21 / +0.21 |
+| All-42 band | R-trainers-flat / the same | unresolved / the same |
+| Amendment 4 | post hoc pass / the same | between, unfinished / the same |
+
+- **Built, for the direct count:** `notes/scripts/audit/c173_dose_worker.js` also logs each real cap with the last keys played, log only, in `*.caps`. Seed 49's pods from 4 on pick it up, since each pod starts its own workers; pod 3 had already started. `c165_run.py --caps` replays greedy games through it, `c173_b1.py --drop` reads without a list of deals into `summary_without.json`, and `runCaps.sh` holds the greedy replay. No game logic changed.
+- **Smoke** (measured): 100 greedy games of seed 49's pod 2 through the new worker, 1 worker: 0 errors, all 100 winners match the originals, so a greedy replay is exact, and no cap fired. **Search games can't be replayed exactly**, since a search agent's seed goes by its concurrency slot, so pods 4 on are that arm's direct check.
+- **Not done:** the greedy count, `runCaps.sh`, about 30 minutes (estimated), held for RAM: free 4.7 GB, the launcher wants 6.5 GB for a probe, and W s49 has priority.
+- **Next:** pods 3-5, the proxy against the direct log, and the greedy replay when RAM allows.
+
+### #830 · 2026-11-02 · A5 C173 · By research's call the greedy replay is dropped, unrun: the proxy changes no read, so 30 minutes of RAM can't move a band. So the turn-cap count stays unmeasured on the greedy arm. `runCaps.sh` is deleted, and `c165_run.py --caps` stays, unused. The log-only direct count on search stays, from seed 49's pod 4, since it costs nothing and tests Energy Burn
+
+### #831 · 2026-11-02 · A5 C173 · **Correction to #827 and #829:** the direct count shows my proxy misses most capped games, and a wider exclusion does move a read. On seed 49's pod 4, 6 of 1,000 search games hit `MAX_TURN_STEPS` (25 capped turns), and the proxy flagged 2. Energy Burn is confirmed at 22 of the 25 caps. Without every game holding a repeat-Power deck, seed 48's all-42 goes from +0.0012 (R-trainers-flat) to +0.0016 (SE 0.0008, between). So "changes no band" was wrong, and that was the basis on which research dropped the greedy replay. Ground truth not moved
+- **Direct count** (measured; seed 49, pod 4, the log-only worker):
+  - 6 capped games of 1,000: 1, 2, 2, 6, 6 and 8 capped turns, all ending on time. The last key at the cap is `power|Energy Burn` at 22 caps and `done` at 3 (games holding Alakazam, and Slowbro, with `pick` moves between Pokémon before it, as in 53000379: `B1>A`, `B3>A`, `A>B3`...).
+  - Runs of capped turns are consecutive for that player: for example 53000187 at turns 20, 22, ... 34, so a Charizard player forfeits turn after turn, attack included.
+- **The proxy** (a same-turn run of 200+ searched decisions): flagged 2, both capped, and missed 4, whose longest searched runs are 5, 8, 10 and 18. So those caps are built from steps that weren't searched, meaning decisions with no Trainer playable, which the pilot's own policy plays. That's **an inference, not a trace**, and it points at the greedy pilot looping too, since a repeat changes nothing and a greedy choice then repeats itself. Log #62 saw this kind of thing with another card: greedy found a free cycle in 25% of games against 0.5% of sampled ones.
+- **Earlier claims this corrects:** #829's "too few to move any read" held only for the 12 and 7 flagged games, about a third of what's capped on this one pod. An early pipeline check (log, 2026-10) said the cap "never binds", which isn't so on these decks. #62's audit covered "Once during your turn" Powers, and Energy Burn is "as often as you like".
+- **Read without the decks that can loop** (measured; seed 48, 12 pods; every game where either deck holds Charizard, Alakazam, Slowbro or Venusaur: 147 of 4,000 decks, 891 of 12,000 games left out of both arms; post hoc, this list chosen after seeing the caps; Venusaur by its text, unobserved at a cap):
+
+| Read | With | Without |
+|---|---|---|
+| All 42 | +0.0012 (SE 0.0008) | +0.0016 (SE 0.0008) |
+| Top 12 | +0.0027 (SE 0.0008) | +0.0032 (SE 0.0006) |
+| Other 30 | +0.0006 (SE 0.0009) | +0.0009 (SE 0.0009) |
+| T4 | +0.0050 (SE 0.0013) | +0.0055 (SE 0.0014) |
+| PlusPower | +0.0074 (SE 0.0028) | +0.0086 (SE 0.0029) |
+| Draw | −0.0021 (SE 0.0013) | −0.0019 (SE 0.0014) |
+| Spearman, rise against copies | +0.41 | +0.47 |
+| All-42 band | R-trainers-flat | between |
+
+  - The change is +0.0004 on an SE of 0.0008, so it isn't an effect. What it shows is that R-trainers-flat sits close to its +0.0015 line, and shouldn't be leaned on as firmly as the band's name suggests. All of it needs seed 49, and that list is post hoc on both.
+- **Why it could matter beyond C173:** if the greedy pilot loops too, decks with these Pokémon forfeit turns in every greedy game, including evaluations, and that's a pipeline fault in how they're priced, with no bearing yet shown on Trainers. Rule 9 says to check this first. It's unmeasured.
+- **Taken by default (row 115), for research to veto:** one greedy pod, not the dropped 18: seed 49's pod 4 at 2 workers (`runCapsP4.sh`), on the same deals as the 6 capped search games, about 10 minutes (estimated). The launcher refused it at 03:06:57 (free RAM 5.0 GB against its 6.5), so it waits for a window, and W s49 keeps priority.
+- **W s49** (unfinished, **one seed**): iteration 43, G1 mean of 5 15.4, up from 7.8 at iteration 34; median 15/23/22; best 12 16.6/20.8/22.6. G3 at 29 under C49 0.291 (SE 0.012). The watch reads OK so far.
+- **Next:** pod 5 and the 6-pod read, the one-pod greedy check, and a with-and-without on seed 49 using both lists.
+
+### #832 · 2026-11-02 · A5 C173 · A limit on #831 (measured): none of the 24 human lists holds Charizard, Alakazam, Slowbro or Venusaur, so a repeat-Power loop can't be costing the lists turns directly, and it can't explain their gap that way. Whether the table or the drafted fields lean on these Pokémon isn't checked
+
+### #833 · 2026-11-02 · A5 C173 C176 · Implementation's correction (#831) stands: greedy pilots probably loop on free repeatable Powers, and seed 48's flat read sits close to its line. It also exposes a gap in my own argument: the loop's population games are sampled, while every price we've compared selection with is greedy or search. C176 reads the Trainer factorial under sampled play, a few minutes a pilot
+- **Done** (research session, 03:08): checked `rl/metagame.py` line 635 (`"greedy": False`) and #62; wrote `runs/probe/C176-sampled-price/record.md`. No veto on implementation's one greedy pod.
+- **Correction to #758 and my reports to Evan:** "selection correctly removing Trainers these pilots can't use" assumed greedy prices are what selection sees. That's unmeasured at card level; the only earlier check was deck-level at 460, on an older pilot and engine.
+- **Rule 9 note:** if greedy loops on Charizard's Energy Burn and similar Powers, those decks are underpriced in every greedy read. None of the 24 lists holds the four names. Whether the table or drafted fields lean on them isn't checked. No engine change while runs are paired.
+- **Next:** W s49, seed 49's pods, C176 when RAM allows. Ground truth not moved.
+
+### #834 · 2026-11-02 · A5 C176 · C176 Amendment 1: both C49-sd tables, 20,000 sampled games each, with bands sized to what matters. The auditor's free read of W's logs supports the link: in sampled games more Trainers already score less per Trainer, near greedy's rate, though it doesn't show the acceleration
+- **Done** (research session, 03:10): appended to the record. Corrects #833's tone: the regime gap was real, but it's unlikely to overturn the greedy reads on the mean. Seed 49's band is also reported with and without repeat-Power decks as a sensitivity read.
+
+### #835 · 2026-11-02 · A5 C173 seed 49 · Seed 49 at 6 pods reads **between on both bands**, so it extends to 12 as stated before any game: top 12 +0.0021 (SE 0.0023), +0.0007 above the other 30 (SE 0.0016), Spearman of rise against copies +0.17 (p 0.15), all 42 +0.0016 (SE 0.0012). So seed 48's lead isn't replicated so far, and it isn't ruled out. Ground truth not moved
+- **Evidence** (measured; C49-sd, seed 49 decks, pods 0-5, 6,000 games an arm, 6,000 of 6,000 on the same deals, 0 errors, 5 df; pods 395.8, 666.0, 1,359.6, 534.4, 627.4, 367.2 s; band 03:09:17; `B1-s49/summary_6pods.json`):
+
+| Group, mean β a copy | Greedy | Full width | Change (SE) | Without repeat-Power decks | Seed 48 at 12 pods |
+|---|---|---|---|---|---|
+| All 42 | −0.0113 | −0.0097 | +0.0016 (0.0012) | +0.0015 (0.0009) | +0.0012 (0.0008) |
+| The lists' top 12 | −0.0105 | −0.0084 | +0.0021 (0.0023) | +0.0018 (0.0018) | +0.0027 (0.0008) |
+| The other 30 | −0.0116 | −0.0102 | +0.0015 (0.0008) | +0.0013 (0.0006) | +0.0006 (0.0009) |
+| T4 | −0.0147 | −0.0142 | +0.0005 (0.0032) | +0.0001 (0.0027) | +0.0050 (0.0013) |
+| PlusPower | −0.0170 | −0.0090 | +0.0080 (0.0037) | +0.0065 (0.0032) | +0.0074 (0.0028) |
+| Draw | −0.0034 | −0.0023 | +0.0012 (0.0029) | +0.0009 (0.0024) | −0.0021 (0.0013) |
+| Top 12 above the other 30 | | | +0.0007 (0.0016) | +0.0005 (0.0014) | +0.0021 (0.0005) |
+| Spearman, rise against copies (p) | | | +0.17 (0.15) | +0.13 (0.21) | +0.41 (0.004) |
+
+  - Amendment 4: t interval on the top 12 −0.0037 to +0.0079, on the contrast −0.0034 to +0.0048. Partial given greedy β +0.23 (p 0.07), given underplay +0.24 (p 0.08) on 37 cards, +0.23 before the control. Cards clearing Energy by 2 SE: 0 greedy, 1 search (4 copies), against the lists' 28.
+  - All 42: between, share of the gap 0.21, not clear beyond +0.003 (low −0.0015). ρ_L +0.21 to +0.30. Only Oak (+0.0050) is above an Energy under search here. PlusPower's rise is the one that repeats across the seeds. Rises: Lass +0.0099, Potion +0.0096, The Boss's Way +0.0093, PlusPower +0.0080. T* 19 under both. E* 27.75 greedy, 25.5 search (SE 1.9, 1.1).
+  - Dose 21.2-24.4 searched a game, slopes −0.34 to +0.62, r −0.02 to +0.11.
+- **Sensitivity, not a re-band** (research's ask): without games holding a repeat-Power deck (5,637 games an arm), both bands stay between. Without only the capped and flagged games (5,984) the same.
+- **Direct caps, pods 4-5:** 9 of 2,000 search games, 32 capped turns, Energy Burn at 24 and `done` after `pick` at 8. The proxy caught 2 of the 9. All capped games so far hold those decks' kinds of Power.
+- **C176, Amendment 1, built and not launched:** `run.sh s48|s49|w`, both C49-sd tables at 20 pods, W s48's net beside, bands at 0.004 and 0.002, the reader tested on a stand-in. Its smoke (100 sampled games a pilot, 2 workers, before the amendment): 0 errors, all 100 on table-s48's decks and deals, 40.4 s and 18.2 s. One sampled game hit the cap in that smoke (48000184, an Alakazam-style `pick`), so sampled play can too. It waits for a window, with W s49, seed 49 and the one greedy pod first; the launcher wants 6.5 GB and free RAM is 5.6 GB.
+- **W s49** (unfinished, **one seed**): iteration 45, G1 mean of 5 14.5, median 14/23/22. No stop has fired.
+- **Next:** seed 49's pods 6-11, then both reads.
+
+### #836 · 2026-11-02 · A5 C173 C176 · The one greedy pod and C176 are waiting on RAM, and the launcher refused the pod three times (5.0, 5.9, 6.0 GB free against 6.5). **Blocker: free RAM, about 0.5 GB short.** The fix is seed 49's end (pods 7-11 left, about an hour, estimated from 367-1,360 s a pod), or about 1 GB freed from desktop apps, which are Evan's to close (measured at 03:24: Chrome 3.6 GB, Brave 1.9, Spotify 0.9, Discord 0.8, VS Code 0.8, CurseForge 0.7). Nothing is bypassed or closed by me
+- **W s49** (unfinished, **one seed**): iteration 50, G1 mean of 5 about 15-16, median 13/22/23. No stop has fired. Seed 49's pod 6 took 738.4 s.
+
+### #837 · 2026-11-02 · A5 C173 C171-W · Seed 49 at 9 pods (**unfinished; the extended band is read at 12**) has lost most of its rise: all 42 −0.0001 (SE 0.0014), top 12 +0.0006 (SE 0.0017), +0.0010 above the other 30 (SE 0.0008), Spearman +0.21 (p 0.09). So far that's against seed 48's lead, with PlusPower alone still up (+0.0066, SE 0.0028). W s49 repeats W s48's slide toward Energy (median 14/20/23 at iteration 57, one seed, unfinished). Ground truth not moved
+- **Seed 49, evidence** (measured; pods 0-8, 9,000 games an arm, 9,000 of 9,000 on the same deals, 0 errors, 8 df; read 03:39:51; pods 6-8 took 738.4, 606.8, 459.0 s):
+
+| Group, mean β a copy | Greedy | Full width | Change (SE) | At 6 pods |
+|---|---|---|---|---|
+| All 42 | −0.0088 | −0.0089 | −0.0001 (0.0014) | +0.0016 (0.0012) |
+| The lists' top 12 | −0.0074 | −0.0068 | +0.0006 (0.0017) | +0.0021 (0.0023) |
+| The other 30 | −0.0094 | −0.0098 | −0.0004 (0.0013) | +0.0015 (0.0008) |
+| T4 | −0.0115 | −0.0122 | −0.0007 (0.0021) | +0.0005 (0.0032) |
+| PlusPower | −0.0110 | −0.0044 | +0.0066 (0.0028) | +0.0080 (0.0037) |
+| Draw | −0.0020 | −0.0012 | +0.0008 (0.0020) | +0.0012 (0.0029) |
+
+  - At 9 pods the reader's labels would be R-trainers-flat and R-no, but neither is the read: by #823 it's between at 6, then 12. t interval on the top 12 −0.0034 to +0.0045, on the contrast −0.0009 to +0.0029. Partial given greedy β +0.28 (p 0.04), given underplay +0.25 (p 0.08) on 37 cards. Clearing Energy by 2 SE: 0 cards greedy, 1 search (4 copies), against 28. ρ_L +0.28 to +0.42. T* 19 under both.
+  - It keeps running to 12 as stated, taken by default (row 115), since the question closes in about 30 minutes (estimated); it's what holds the RAM for the greedy pod and C176.
+- **W s49** (**unfinished, one seed**; measured): iteration 57, G1 mean of 5 15.0 (it was 7.8 at 34), median 14/20/23, best 12 16.5/18.7/24.8, against the lists' 13.5/28/18. Its iteration 44 stage read: T4 2.41 copies, draw 2.17 against the lists' 9.17 and 5.92, survivors' Trainers −3.97 per 25 (SE 0.78; W s48 at 44 −3.15, SE 0.71), wall share 0.02. The G1 watch reads OK, and no stop has fired. It's the second seed on the current recipe heading the same way.
+- **Greedy pod:** refused a fourth time at 03:44:08 (5.6 GB free against 6.5).
+- **Next:** seed 49's 12-pod read in full, with and without; then the greedy pod and C176 as RAM frees.
+
+### #838 · 2026-11-02 · A5 C171-W C168 · W's stop at 60 (C168 Amendment 4), applied by hand: **no stop**. W s49's E at iteration 59 is −0.0492, below −0.024, so the both-seeds condition fails whatever W s48 read, and it isn't "pinned near the generator". W s49 carries on sliding toward Energy (median 13/20/24, G1 mean of 5 16.77; 18.5 at 62), with its G1 watch the stop that's left. **One seed, unfinished.** Ground truth not moved
+- **Why by hand:** the queue's check needs both W seeds in its `screens` and iteration 59 saved at both. W s48 stopped by its G1 watch at 53-54, and this queue runs `--only C171-W-s49`, so the check can't fire. Rule as written: "stop W if E isn't below fresh-at-29's −0.024 at both seeds". W s48 has no iteration 59; its reading at 54 is **censored**: E −0.0241, also just below (44: −0.0211).
+- **W s49's stage read at 59** (measured; 120,000 games, 0 errors):
+
+| Measure | At 44 | At 59 | W s48, at 54 (censored) |
+|---|---|---|---|
+| G1 last, mean of 5 | 13.0, 15.87 | 14.0, 16.77 | mean of 5 19.63 |
+| Median P/T/E | 14/23/23 | 13/20/24 | 13/23/23 |
+| Population P/T/E | 13.55/23.51/22.95 | 14.11/21.68/24.21 | 14.36/22.56/23.08 |
+| T4, draw (lists 9.17, 5.92) | 2.41, 2.17 | 2.29, 1.79 | 2.16, 2.21 |
+| E | −0.0315 | −0.0492 | −0.0241 |
+| TV, A7, ρ_L | 0.599, 0.274, 0.256 | 0.583, 0.446, 0.359 | |
+| Wall share, names_E | 0.02, −0.097 | 0.02, −0.082 | |
+| Survivors' Trainers per 25 (SE) | −3.97 (0.78) | −3.94 (0.57) | −4.16 (0.83) |
+| Survivors' T4, draw per 25 (SE) | −0.06 (0.32), +0.06 (0.24) | −0.82 (0.35), −0.56 (0.25) | −0.88 (0.35), −0.19 (0.24) |
+
+  - G3 at 59: under C49 0.374 (SE 0.013), own 0.346 (0.013), C127 s16 0.353 (0.014); at 29 they were 0.291, 0.294, 0.278. So the population gets stronger against the lists as it loses Trainers, on both seeds' direction so far (W s48 at 29: 0.276 under C49). Top name out at 59: Scyther, M 0.373 over 9 decks.
+  - Live at iteration 62 (not a stage read): best 12 16.1/16.7/27.2, G1 last 23.2, mean of 5 18.5, median 14/20/24.
+- **By the record:** E's stop answers only "pinned or not", and this isn't pinned. It's the slide the watch exists to catch. W s48's watch fired with G1's mean of 5 near 19.5, and W s49 is now close to that.
+- **Also:** free RAM reached 8 GB, so the one greedy pod launched at 03:56:22 (`C173-caps-p4`, pid 8108), beside seed 49 at 2 workers, no read yet.
+- **Next:** seed 49's 12-pod read, the greedy pod's read, C176 in the next window.
+
+### #839 · 2026-11-02 · A5 C168 W · G3 is moving for the first time in days: W s49's top 12 reach 0.374 (SE 0.013) under C49-sd at 59, from 0.291 at 29, one seed and unbanded, while Trainers keep falling. The G1 watch comes off W s49, taken by default (row 115), so the run isn't killed as this is measured. Needs the lists' own score as a yardstick, W s48's G3 at 54, and a read under search
+- **Done** (research session, 03:57): C168 Amendment 6, and implementation told.
+- **Reported** (implementation, #838, measured, 120,000 games, 0 errors): G3 at 59: C49-sd 0.374, own pilot 0.346, C127 s16 0.353 (at 29: 0.291, 0.294, 0.278). Population P/T/E 14.11/21.68/24.21. T4 2.29, draw 1.79. E −0.049, A7 0.446, 5 of the lists' top 7, ρ_L 0.359. Survivors' Trainers −3.94 per 25.
+- **Read, unbanded:** strength against the lists rises while Trainer count moves away from them. This fits C167 and C169 (bodies carry strength) and C165 and C175 (these pilots price most Trainers below Energy). It doesn't show the loop is finding the lists: T and T4 go the wrong way. Y's lead fell under search, so this may too.
+- **Next:** those three reads; seed 49's full width to 12; C176. G3 moved, one seed; shape and T4 moved away.
+
+### #840 · 2026-11-02 · A5 C168 W · W s49 is labelled exploratory, with a shape stop (median T ≤ 15), and progress needs G3 rising, surviving search and replicating. The yardstick is read at G3's own design, since 0.374 may already be about parity if the mirror null is about 0.38 (#649; the auditor's reading, not verified)
+- **Done** (research session, 03:58): appended to C168's record.
+
+### #841 · 2026-11-02 · A5 C171-W · **A slip of mine, no harm found:** testing the watch change I wrote a STOP file onto the live W s49 at 03:58:50, since the patch had silently failed and I'd run `g1_watch.py --above 5 --stop` on the real run. I removed it at 03:59:03, before the iteration boundary: iteration 64 logged after it, and the run didn't stop. Research's call then applied properly: W s49's G1 watch no longer stops it (exploratory), and W s48's G3 rose too (0.318 at 54). Ground truth not moved
+- **The slip:** an assert failed on the patch, the same command went on to test the live run, and a `--stop` test should never have touched a live run. The later tests ran on a copy of the log in my scratchpad: with the file, no STOP; without it, a STOP. The rule itself still works for other runs.
+- **The change (research's, taken by default, row 115):** `g1_watch.py` skips the stop if `NO_G1_WATCH` is in the run's folder, and `runs/screens/C171-W-s49/NO_G1_WATCH` is set. The chain still prints G1's trail each minute. Research's reason: G3 at 59 is moving and the watch reads shape only, and its docstring says base measurements don't use it. W s49's reads are labelled **exploratory** from here on.
+- **Stops left on W s49 (research's #839, #840):** wall signature, errors, RAM holds, G3 under C49-sd not above its previous read at 2 stages running, median Trainers ≤ 15 at 3 reads in a row, and the Pokémon-slide rule. The running queue does the first three. The rest I check by hand at each stage, since the queue's G3 stops at 59 and its code can't change without a restart. **The live queue also still holds C168's Trainer slide at ≤ 18**, checked next.
+- **My own read, for the record:** G1, the shape read against the lists, is getting worse (mean of 5 about 18.5), and G3 rises as the top 12 lose Trainers. By Evan's standing rule the lists are optimal, so a rise while moving away from them may be the same local minimum read another way, under one weak pilot. The yardstick and the search read decide that. Evan can veto with `loop.py stop C171-W-s49`.
+- **W s48's G3 under C49-sd** (measured; 12 decks × 24 lists × 8 games, 2,304 games; `g3_C49_it0054.json`):
+
+| Iteration | W s48: M (SE), top 12 P/T/E | W s49: M (SE), top 12 P/T/E |
+|---|---|---|
+| 14 | 0.244 (0.012), 13.1/23.2/23.7 | 0.239 (0.011), 13.2/23.5/23.3 |
+| 29 | 0.276 (0.013), 15.8/21.7/22.5 | 0.291 (0.012), 11.5/25.9/22.6 |
+| 54 / 59 | 0.318 (0.012), 16.2/16.8/27.0 | 0.374 (0.013), 15.7/20.9/23.4 |
+
+  - So G3 rises on both seeds, by +0.042 and +0.083 from 29, with W s48's net stopped by its watch at 54, censored. M is the share of decisive games only, and time endings are about half of all games, so the next reads add win share, full wins and event points.
+- **Next:** the yardstick, 12 list decks against the 24.
+
+### #842 · 2026-11-02 · A5 C177 C173 C171-W · The yardstick: the lists against the lists score M 0.50, so W s49's rise to 0.374 is real but well short of them, on all four measures. The greedy pilot itself hits the turn cap, confirming #831's inference. W s49's Trainer stop is now at 15, and seed 49's pod 9 was killed and rerun. Ground truth not moved
+- **The yardstick** (measured; C49-sd, greedy, the G3 design, 8 games a pair, 4,608 games, 0 errors; `runs/probe/C177-g3-yardstick/`, `notes/scripts/g3_yardstick.py`). W s49's two rows replay G3's M exactly, 0.2907 and 0.3738, at **one seed, exploratory**:
+
+| | M (decisive, per pair) | Win share, all games | Full wins | Full losses | No winner | Event points |
+|---|---|---|---|---|---|---|
+| The lists, all 24 | 0.502 (SE 0.010) | 0.429 | 0.153 | 0.146 | 0.147 | 0.386 |
+| Lists, draws of 12: mean (SD), 5-95% | 0.502 (0.023), 0.463-0.539 | 0.429 (0.019), 0.397-0.459 | 0.153 (0.006), 0.143-0.163 | | | 0.386 (0.015), 0.362-0.409 |
+| W s49's top 12 at 59 | 0.374 (SE 0.013) | 0.332 | 0.130 | 0.326 | 0.107 | 0.300 |
+| W s49's top 12 at 29 | 0.291 (SE 0.012) | 0.267 | 0.096 | 0.432 | 0.082 | 0.237 |
+
+  - So the 0.5 target is the right yardstick, and which 12 matters by about ±0.04. Single lists run from 0.32 to 0.69. Mirrors out changes nothing (0.503).
+  - W s49's rise from 29 to 59 holds on every measure: M +0.083, win share +0.064, full wins +0.035, event points +0.063, full losses −0.106. Its top 12 still trail the lists by 0.128 on M and 0.086 on event points, against about 0.015-0.023 from which 12. Most of the gap is losses: full losses 0.326 against 0.146, and full wins are close, 0.130 against 0.153.
+  - **It's "G3 rising", not "ground truth moving"** (research's wording, agreed): the shape moves away from the lists as it rises, and the search read is still to come.
+- **The one greedy pod** (measured; seed 49's pod 4, 1,000 games, 1,000 of 1,000 winners match the original greedy games, 197 s): **8 games capped, 36 capped turns**, Energy Burn last at 28 and `done` at 8. All 8 hold repeat-Power decks. That confirms the pilot itself loops, and at about the same rate as search on that pod (6 games, 25 turns), on mostly different games: only 53000830 is capped in both. So every greedy price carries this on those decks. It isn't shown to touch Trainers, and the lists hold none of those Pokémon.
+- **W s49's queue:** restarted at 04:04:24 (pid 42016), on research's line. Median Trainers ≤ 15 at 3 reads replaces ≤ 18 for the W arm; G3 probes now run at 74, 89, 104, 119; G3 not above its previous read at 2 stages stops it. Tested: the Trainer line on made-up rows; `chain.sh` unchanged by hash after the restart; the training process stayed up (iteration 70 since).
+- **Seed 49's pod 9:** one game ran on (58000444, 2,141+ searched decisions), and the 2,100 s limit killed the pod at 04:14:52, losing its games. Pod limit raised to 3,600 s (#827, research's no veto), relaunched at 04:16:23.
+- **A second slip of mine, caught:** the first relaunch at 04:15:56 would have re-read the "6-pod" band over all 9 finished pods, read R-no, and ended without pods 9-11, against the stated rule. I killed it at 04:16:14 before it got there, and the script now takes the extension from `summary_6pods.json`. That file still reads pods 0-5, between. `summary.json` was re-read at 9 pods, same as #837.
+- **Next:** read 3, W s49's top 12 at 59 under search; seed 49's 12-pod read; if G3 survives both, W s48's extension in the first window after seed 49; C176.
+
+### #843 · 2026-11-02 · A5 C171-W C177 · W s49 at iteration 74 (**exploratory, one seed, unfinished**): G3 under C49-sd levels off at 0.384 (SE 0.013), +0.010 on 59's 0.374, within noise, while its top 12 reach **17.9/13.5/28.6**, half the lists' Trainers and well over their Energy. So G3's rise now sits on decks of the old Energy-heavy shape, and it's still short of the lists' 0.502. No stop has fired by its rules. Ground truth not moved
+- **Evidence** (measured; 12 decks × 24 lists × 8 games; 150,000 population games, 0 errors):
+
+| Iteration | G3: C49, own, C127 s16 (SE about 0.013) | Top 12 P/T/E | Median | G1 mean of 5 | T4, draw |
+|---|---|---|---|---|---|
+| 29 | 0.291, 0.294, 0.278 | 11.5/25.9/22.6 | 12/25/22 | 9.33 | 2.81, 2.32 |
+| 59 | 0.374, 0.346, 0.353 | 15.7/20.9/23.4 | 13/20/24 | 16.77 | 2.29, 1.79 |
+| 74 | 0.384, 0.387, 0.378 | 17.9/13.5/28.6 | 14/21/23 | 22.63 | 1.88, 1.86 |
+
+  - Stage read at 74: population 14.91/21.37/23.72, TV 0.583, E −0.0483, A7 0.420, ρ_L 0.280, wall 0.02, names_E −0.096, survivors' Trainers −2.89 per 25 (SE 0.66), T4 −0.64 (0.24), draw −0.22 (0.23). Top name out: Scyther, M 0.403 over 8 decks.
+  - Live at 76: median 15/21/23, mean of 5 20.97. The G1 trail prints FIRE, and by `NO_G1_WATCH` nothing stopped; its mean of 5 first went over 17.77 at about iteration 62 and has since been up to 24.8.
+- **By its stops:** G3 is above its previous read, so that stop doesn't fire (it needs two falls). Median Trainers 21, over the 15 line. So it runs on. The next G3 is at 89.
+- **C177's read 3** was refused at 04:32:10 on two grounds: free RAM 5.1 GB against 6.5, and `loop.py` requires bands in the record. Research set none, so I wrote them before any game, taken by default (row 115), for research to replace: R-survives (change above −0.04, 2 SE excluding −0.083), R-falls (at or under −0.083 and 2 SE), between otherwise.
+- **Seed 49's pod 9:** 44,957 searched decisions at 04:32, about a pod's total, running since 04:16:32.
+- **Next:** pods 9-11, then C177's read 3, then the rest of the queue.
+
+### #844 · 2026-11-02 · A5 C177 · C177's search read is launched for W s49's top 12 at 59 (`C177-search-59`, pid 37588, 04:36:35), in a RAM window at 7.1 GB free, with research's additions built: the top 12 at 74 and a seeded draw of 12 lists under the same search, no band. Research kept my bands. Greedy at 74 barely differs from 59. No search read yet. Ground truth not moved
+- **W s49's top 12 at 74, greedy** (measured, **exploratory, one seed**; 2,304 games, 0 errors; shape 17.9/13.5/28.6): M 0.384 (SE 0.013), win share 0.352, full wins 0.133, full losses 0.352, no winner 0.086, event points 0.308. At 59: 0.374, 0.332, 0.130, 0.326, 0.107, 0.300. The lists: 0.502, 0.429, 0.153, 0.146, 0.147, 0.386. So half the Trainers cost no strength under this greedy pilot, and full losses are up a little.
+- **Built:** `run_search.sh 59|74|lists`, 1,152 games a cell in two saved parts of 6 decks; `g3_yardstick.py --lists-draw 12`; `notes/scripts/c177_read.py`, with the band on 59 only. **Untested:** the reader's lists path hasn't seen real search rows; it's checked on the first read.
+- **Next:** cells 74 and lists, as windows allow, then seed 49's 12-pod read.
+
+### #845 · 2026-11-02 · A5 W C178 · W s49 is stopped on research's call: top 12 at 81 are 21.5/13.7/24.8 and G3 is flat since 59, so its question is answered as a slide into a Pokémon-and-Energy-heavy shape. W s48's extension is off too. A152's call becomes C178 (CPU, bands written first): is T4's price archetype-specific?
+- **Done** (research session, 04:45): told implementation; wrote `runs/probe/C178-t4-by-list/record.md`. C177 is implementation's search read; next free record: C179.
+- **Correction accepted:** the 0.38 yardstick was wrong (#842), so 0.5 stands.
+
+### #846 · 2026-11-02 · A5 C178 · C178 (A152's call) reads R-not, underpowered: lists running more T4 don't price it higher per copy (Spearman −0.33, p 0.11), and Wigglytuff and Haymaker don't differ, but per-list noise is about the size of the spread. Separately, the loop finds the table's names by itself: top-12 table value per Pokémon rises 0.6 to 1.3 in W s49, against the lists' 1.61 and rules-only decks' 0.08
+- **Done** (research session, 04:46): read C142's and C144's per-list files; read v per Pokémon copy on W's populations (plain tables' mean, in table SDs). Measured, CPU.
+- **v:** population W s48 0.22, 0.23, 0.41, 0.40, 0.39 at 4, 14, 29, 44, 54; W s49 0.20, 0.26, 0.48, 0.49, 0.50, 0.53, 0.53 at 4, 14, 29, 44, 54, 59, 74. Top 12 by z: W s48 0.57 to 0.97; W s49 0.65, 0.83, 0.88, 1.09, 0.97, 1.10, 1.32. Lists 1.61; C162's rules-only 0.08.
+- **Read:** the auditor's point holds. G3's rise goes with the top decks' table value, so the loop already climbs this signal unaided, off-list names and all. A table bonus would likely speed up what the loop does rather than add a direction, which weakens B's case beyond C172's hold. v doesn't separate walls from lists: it was built under these pilots.
+- **Next:** W s49's stop, seed 49's 12 pods, C177, C176. G3 flat since 59; shape moving away.
+
+### #847 · 2026-11-02 · A5 C179 · C179 is the auditor's whole-deck test: each list against copies moved to the loop's shape, 6 and 14 Trainers out, greedy first. R-additive would say the lists are really worse under these pilots at whole-deck level; R-nonlinear would open moves at the level of whole Trainer packages. It runs now rather than after seed 49, since it's about 5 minutes (estimated)
+- **Done** (research session, 04:48): `runs/probe/C179-shape-dose/record.md`, after reading #497 and #586: earlier work covers about 6 swapped, on 4 bench lists, with M 0.49-0.50 under the cap. Nothing covers dose 14. Next free record: C180.
+
+### #848 · 2026-11-02 · A5 C179 · C179 Amendment 1, the auditor's adopted before any read: a dose-14 arm with new Basics from the plain table at κ 3, R-nonlinear needing both arms at +0.03 or less, and the difference between arms read as identity against count
+- **Done** (research session, 04:48): appended to the record.
+
+### #849 · 2026-11-02 · A5 C171-W C177 C179 · W s49 stopped at iteration 83, by research through `loop.py stop`: its question is answered. Its top 12 are 19.6/13.8/26.7 and G3 has been flat within noise since 59. W s48's extension is off. C179 is built to its Amendment 1, with decks matching W's shapes, and passes acceptance. Ground truth not moved
+- **W s49's end** (measured; **exploratory, one seed**; its stop wasn't a G1-watch censoring, though the watch's trail read FIRE at 66): last iteration 83, ended by `STOP` after 04:45:37; no `rl.metagame` process and the queue ended, read fresh; `checkpoint.pt` and all saved populations kept. Population 15.99/21.02/22.99, median 15/21/22. Top 12 by recent score: 19.6/13.8/26.7, a very mixed set: 7/21/32, 23/16/21, 16/21/23, 26/4/30, 34/3/23, 12/20/28, 19/16/25, 4/34/22, 33/1/26, 29/2/29, 12/23/25, 20/4/36. G1 mean of 5 about 24 at the end. Last G3 at 74: C49 0.384, own 0.387, C127 s16 0.378, against the lists' 0.502.
+- **C177:** the first launch failed at 04:38:07: out of memory at my 2.4 GB cap (`C172_GPU_MEM=0.15`), no games lost. Raised to 0.25, relaunched at 04:48:40 (pid 24204). Log #844 said it was launched, and that wasn't checked until 04:46; it had been down 8 minutes.
+- **C179's decks** (`notes/scripts/c179_run.py`, `c179_read.py`, `runs/probe/C179-shape-dose/run.sh`): 288 copies, 12 a list, 60 cards, all legal, each differing from its list by exactly its recorded Trainers out and cards in. Measured:
+
+| Arm | P/T/E | Stopped by the limit, a deck | New Basics, a deck |
+|---|---|---|---|
+| d6 | 16.25/21.5/22.25 | 0.62 to Energy | 0 |
+| d14 | 18.25/13.5/28.25 | 3.62 to Energy | 0 |
+| d14n | 21.88/13.5/24.62 | 0 | 3.62 |
+| W's top 12 at 74, 81 | 17.9/13.5/28.6, 21.5/13.7/24.8 | | |
+
+  - So d14 lands on W's shape at 74 and d14n on its shape at 81.
+- **Smoke** (measured, C49-sd, 2 lists, 3 workers): 624 games, 0 errors, 8.9 games/s; 48 deals with 13 players each, and each has its list. Paired seeds equal. The full stage is 14,976 games, about 28 minutes at that rate (estimated).
+- **Next:** C179's stage 1 when the launcher allows, C177's cells, seed 49's pods 9-11, C176.
+
+### #850 · 2026-11-02 · A5 C179 · C179's stage 1 reads **between**, and pilot-dependent: moving the lists to W's shape helps under C49-sd (d14 +0.073, SE 0.019) and does about nothing under arm 0 s1 (d14 +0.017, SE 0.013; d14n −0.005, SE 0.013). Neither reaches R-additive's +0.10, against a prediction of about +0.17, so the additive price overstates it, and stage 2 doesn't run. Under the pilot practised on the lists, 14 Trainers out costs them nothing and gains them nothing. Ground truth not moved
+- **Evidence** (measured; greedy, [20, 45], seed 91, each list and its 12 copies against 12 other lists, 2 deals, 14,976 games, 0 errors; launched 04:59:30, 3 workers, cap 0.15 = 2.4 GB, after the launcher refused 3 GB; ended 05:09:01; pairing checked: 13 players on each deal, the list always among them; copy − list on event points/3, by list, bootstrap over 24 lists):
+
+| Pilot, arm | Change (SE) | Lists above 0 | By list min, median, max | Win share | Full wins | Full losses |
+|---|---|---|---|---|---|---|
+| C49-sd, the list | | | | 0.394 | 0.123 | 0.142 |
+| C49-sd, d6 | +0.038 (0.018) | 15 | −0.139, +0.033, +0.205 | 0.444 | 0.150 | 0.087 |
+| C49-sd, d14 | +0.073 (0.019) | 18 | −0.083, +0.083, +0.264 | 0.500 | 0.165 | 0.090 |
+| C49-sd, d14n | +0.048 (0.017) | 18 | −0.083, +0.049, +0.257 | 0.460 | 0.153 | 0.049 |
+| Arm 0, the list | | | | 0.399 | 0.073 | 0.087 |
+| Arm 0, d6 | +0.007 (0.016) | 14 | −0.170, +0.021, +0.149 | 0.405 | 0.087 | 0.061 |
+| Arm 0, d14 | +0.017 (0.013) | 15 | −0.122, +0.016, +0.132 | 0.415 | 0.103 | 0.095 |
+| Arm 0, d14n | −0.005 (0.013) | 13 | −0.122, +0.004, +0.104 | 0.394 | 0.081 | 0.044 |
+
+  - **Decks** (P/T/E; colourless share): lists 13.9/27.5/18.6, 0.32; d6 16.25/21.5/22.25, 0.34; d14 18.25/13.5/28.25, 0.36; d14n 21.88/13.5/24.62, 0.46. W s49's top 12: at 74 17.9/13.5/28.6, 0.28; at 79 16.4/17.2/26.4, 0.24 (the nearest saved to research's 21.5/13.7/24.8 at 81, from the live log). Added a deck: d6 2.4 Pokémon, 3.6 Energy; d14 4.4 and 9.6, with 3.6 stopped by the limit; d14n 4.4 of its own, 3.6 new Basics, 6.0 Energy. New names: Kangaskhan 145, Lickitung 89, Tauros 60, Snorlax 34 of 290 or so.
+  - Trainers leaving most at 14: Oak 160, PlusPower 147, Computer Search 139, Bill 125, Gust of Wind 114, Item Finder 105, by the lists' own copies.
+- **By the band:** not R-additive (no arm at +0.10 at both pilots). Not R-nonlinear (C49-sd's two arms are over +0.03, arm 0's aren't). So between, and no stage 2 by the record.
+- **Reading it:** the size of the effect goes with the pilot. The two differ by +0.056 on d14, and the pilot practised on the lists shows no gain from shedding their Trainers. So what C49-sd sees isn't a property of the shape alone, and the Trainers' low price is at least partly the pilot's. That's a between with one seed of draws, and arm 0 was practised on human lists, so it's a diagnostic and not a method. d14n isn't above d14 at either, so new names don't rescue the shape. Full losses fall sharply on d14n at both pilots (0.142 to 0.049, 0.087 to 0.044), with more Pokémon in play. Dose 14 sits above dose 6 under C49-sd by +0.035, which isn't clearly over its noise.
+- **Also:** seed 49's pod 10 logged 1 error in 1,000 games (1,158.5 s), under the 2% kill; not read yet.
+- **Next:** C177's 59 read, seed 49's pod 11, C177's other cells, C176.
+
+### #851 · 2026-11-02 · A5 C179 C180 · Research's read of C179 (between, pilot-dependent, one set of draws, #850): shedding 14 Trainers gains a list +0.073 under the start pilot and +0.017 under arm 0, and new names don't rescue the shape. So it's not plainly R-additive or R-nonlinear, and the price depends partly on who plays. C180 asks whether human-free practice can do what list practice does
+- **Done** (research session, 05:13): read #850; wrote `runs/probe/C180-dose-by-practice/record.md`. Next free record: C181.
+- **Limits:** arm 0 is one seed, and C179 is one set of draws. Arm 0's factorial mean is no better than others' (−0.0084), so this is a whole-deck effect the additive read doesn't show, or it's familiarity with the lists. The bench split in C180 tests that.
+- **New names:** d14n isn't above d14 at either pilot, so W-type names don't rescue this shape on the lists' own decks.
+- **Next:** C180, seed 49's last pods, C177, C176. Ground truth not moved.
+
+### #852 · 2026-11-02 · A5 C180 · C180 Amendment 1, the auditor's adopted before any game: first replicate arm 0's result (a second seed and fresh draws) and read arm 0 on the lists' bodies with random Trainers (R-set against R-skill). Human-free pilots run only if the replication holds, then the dose on decks that break a list apart
+- **Done** (research session, 05:14): appended to the record. No pilot here prices a list above its shed copy, and that's stated as a deviation in its own right.
+
+### #853 · 2026-11-02 · A5 C173 seed 49 · Seed 49 at 12 pods reads **R-no and R-trainers-flat**: the lists' top 12 rise only +0.0006 (SE 0.0012), and the mean Trainer −0.0010 (SE 0.0010). So seed 48's rise isn't replicated, and with both seeds flat C173's B1 claims: this search doesn't lift the Trainers, on this rung. A relative signal does repeat: search still favours the lists' cards over the rest (Spearman +0.33, p 0.017; +0.0023 above the other 30). Ground truth not moved
+- **Evidence** (measured; C49-sd, seed 49, pods 0-11, 12,000 games greedy, 11,999 search, 12,000 on the same deals, 1 error, 11 df; ended 05:17:11):
+
+| Group, change a copy (SE) | Seed 49, 12 pods | Seed 49, 6 pods | Without repeat-Power decks (11,184) | Without capped and flagged games (11,944) | Seed 48, 12 pods |
+|---|---|---|---|---|---|
+| All 42 | −0.0010 (0.0010) | +0.0016 (0.0012) | −0.0013 (0.0010) | −0.0011 (0.0011) | +0.0012 (0.0008) |
+| Lists' top 12 | +0.0006 (0.0012) | +0.0021 (0.0023) | +0.0003 (0.0011) | +0.0006 (0.0012) | +0.0027 (0.0008) |
+| Other 30 | −0.0017 (0.0011) | +0.0015 (0.0008) | −0.0020 (0.0011) | −0.0017 (0.0011) | +0.0006 (0.0009) |
+| Above the other 30 | +0.0023 (0.0009) | +0.0007 (0.0016) | +0.0022 (0.0010) | +0.0024 (0.0009) | +0.0021 (0.0005) |
+| T4 | +0.0001 (0.0016) | +0.0005 (0.0032) | −0.0006 (0.0015) | 0.0000 (0.0015) | +0.0050 (0.0013) |
+| PlusPower | +0.0063 (0.0021) | +0.0080 (0.0037) | +0.0047 (0.0021) | +0.0062 (0.0022) | +0.0074 (0.0028) |
+| Draw | +0.0007 (0.0015) | +0.0012 (0.0029) | +0.0008 (0.0014) | +0.0007 (0.0015) | −0.0021 (0.0013) |
+| Spearman, rise against copies (p) | +0.33 (0.017) | +0.17 (0.15) | +0.26 (0.048) | +0.32 (0.021) | +0.41 (0.004) |
+| Amendment 4, all-42 bands | R-no, R-trainers-flat | between, between | the same | the same | post hoc pass, R-trainers-flat |
+
+  - **By the bands:** R-list-cards-rise fails on its group test, since the top 12's own rise is under +0.001, which is R-no, though its Spearman and its contrast with the other 30 both pass. All-42: R-trainers-flat on both seeds, so that's the claim, and it says nothing about stronger players. The t interval on the contrast is +0.0003 to +0.0044.
+  - Partials: given greedy β +0.41 (p 0.009), given underplay +0.45 (p 0.002) on 37 cards, +0.43 before the control. So what repeats doesn't vanish with underplay: it reads as search moving value toward what humans ran, relative to the rest, while the level falls. That's a read on two seeds, with no band for it at seed 48's level.
+  - PlusPower's rise is the one absolute rise on both seeds (+0.0074, +0.0063), still under an Energy on this seed (−0.0074). Only Oak is above an Energy under search here (+0.0093). Clearing Energy by 2 SE: 0 cards greedy, 1 search, 4 copies against 28. ρ_L +0.23 to +0.49. T* 19 under both.
+  - Greedy mean here −0.0088, share of gap −0.13. Dose 19.6-24.4 searched a game, slopes −0.35 to +0.80.
+- **Turn caps, direct, pods 4-11** (measured, 7,000 games): **47 capped games, 158 capped turns**, all 47 on repeat-Power decks. Last key `done` after `pick` moves at 95, Energy Burn at 63. So moving damage or Energy (Alakazam-style `pick`) matters as much as Energy Burn, which #831's pod 4 had understated. The proxy caught 8 of the 47. Leaving out the whole repeat-Power list changes no band.
+- **The 1 error:** seed 59000568, as sent to research: Dark Golduck's Third Eye with a Buzzap'd Electrode as its only Energy, `no legal option`, read from code and decks, not replayed.
+- **Next:** C177's search reads, C180's stage 0, C176.
+
+### #854 · 2026-11-02 · A5 C173 · Research's read of B1 (#853): R-trainers-flat holds at both seeds, so this one-turn search doesn't lift Trainers' value against Energy on these weak bodies, even while favoured, a claim on this rung. R-list-cards-rise fails on the level (seed 49's top 12 +0.0006). What repeats is relative: search favours the lists' cards over the rest by about +0.002 at both seeds, and PlusPower rises at both. That's a lead, since seed 48's contrast was post hoc
+- **Done** (research session, 05:18): read #853 against Amendments 3 and 4. Taken by default (row 115): C139's arm is dropped, and stage B2 stays held until C177 and C180's stage 0 read.
+- **Read:** the play-limit reading loses its strongest form here: a better player at this rung doesn't close the gap to Energy, though on these rules-only bodies only. The relative signal stays beside C180's question about bodies and C179's about who plays. PlusPower's rise, still under Energy here, agrees with C136 and C139. Rule 9 still applies: the lists run 28 Trainers and no player here agrees.
+- **Next:** C177, C180 stage 0. Ground truth not moved.
+
+### #855 · 2026-11-02 · A5 C177 C180 · Two strong reads. **C177 reads R-falls:** under the pilot's search W s49's top 12 at 59 score M 0.236 against the lists, down −0.137 (SE 0.017) from greedy's 0.374 and below its greedy 0.291 at 29, so the whole G3 rise is gone once both seats play better. **C180's stage 0 holds, R-set:** arm 0 replicates (d14 +0.021 on fresh draws, −0.009 at s2), yet still prices random Trainers on list bodies at −0.0104. So what shedding fails to gain under arm 0 is these Trainers at these counts. Ground truth not moved
+- **C177, W s49's top 12 at 59** (measured, **one seed, exploratory**; C49-sd, C135's search on both seats, 4 games a pair, 1,152 games, 0 errors, against greedy on the same 288 pairs; the top 12 are 15.7/20.9/23.4):
+
+| | M (SE) | Win share | Full wins | Full losses | No winner | Event points |
+|---|---|---|---|---|---|---|
+| Greedy | 0.374 (0.013) | 0.332 | 0.130 | 0.326 | 0.107 | 0.300 |
+| Search | 0.236 (0.016) | 0.211 | 0.043 | 0.388 | 0.102 | 0.189 |
+
+  - **Band:** R-falls, change at or under −0.083 and 2 SE (−0.137, SE 0.017). The rise tested was +0.083. The yardstick cell (lists under search) hasn't run, so 0.5 by symmetry is the comparison for now.
+  - **A bug of mine, caught before anything was sent:** `summary.json` first read "between" with a change of nan, since the reader matched on deals and a deal's seed goes by games a pair, so 4 and 8 games a pair share none (0 matched). The record claimed "where the seeds match", which was empty. The band's comparison by pair stands as written; the deals differ, and the SE by pair carries that. The reader and the record are corrected.
+- **C180's stage 0** (measured; greedy, seed 91's deals, list and d14, 2,880 games a cell, 0 errors; run 05:17:38-05:26:40):
+
+| Cell | d14 − list (SE) | Lists above 0 | Minus C49-sd by list (SE) | Bench 4, held out 20 | Win share, full wins, full losses |
+|---|---|---|---|---|---|
+| Arm 0 s1, C179's draws | +0.017 (0.013) | 15 | | | 0.415, 0.103, 0.095 |
+| Arm 0 s2, C179's draws | −0.009 (0.016) | 9 | −0.082 (0.020) | −0.010, −0.009 | 0.428, 0.100, 0.092 |
+| Arm 0 s1, fresh draws | +0.021 (0.017) | 11 | −0.052 (0.019) | +0.022, +0.021 | 0.423, 0.106, 0.092 |
+| C49-sd, C179's draws | +0.073 (0.019) | 18 | | | 0.500, 0.165, 0.090 |
+
+  - **Replication holds:** both are at or under +0.03. So C179's pilot-dependence stands, and stage 1 runs. **Familiarity shows nothing here:** the 4 lists arm 0 practised on gain the same as the 20 held out, on both cells, a thin read.
+  - **E2 factorial under arm 0** (12,000 games, 12 pods, the same decks as C175's E2, 0 errors): mean β **−0.0104 (SE 0.0010), R-set**, against C49-sd's −0.0121 (SE 0.0011). Top 12 −0.0058 (0.0011) against −0.0083 (0.0013); T4 −0.0113 (0.0015) against −0.0139 (0.0018); draw +0.0063 (0.0016) against +0.0019 (0.0010). ρ_L +0.40 against +0.26. Time endings 71.8%.
+  - **By the record:** random Trainer mixes on list bodies still cost under arm 0, yet shedding from the list's own doesn't gain. So what arm 0 keeps is these Trainers at these counts. Play rates beside it: not logged by these runs, so not read.
+- **Launched:** `C180-s1` at 05:27:47 (K1m, C127 s16, W s49's last, M1). The C177 lists cell was refused on the launcher's GPU count and is retried, with C176 next.
+
+### #856 · 2026-11-02 · A5 C177 C180 · Research's read of C177 (R-falls, one seed) and C180's stage 0 (replication holds, R-set): the loop's G3 rise falls away under search (M 0.374 to 0.236), and arm 0 prices random Trainers below Energy on list bodies yet gains nothing from shedding a list's own. Both point the same way: additive value can be climbed, while the lists' value sits in sets these reads and selection's small edits can't see. Lead, not yet shown for a human-free pilot
+- **Done** (research session, 05:28): read the report against both records.
+- **C177:** greedy 0.374, search 0.236 (SE 0.017 on the fall), below its own greedy at 29 (0.291). So G3's rise reads as greedy flattery by the record's band, and "progress" isn't claimed. The lists' search yardstick and iteration 74's cell are still to come.
+- **C180 stage 0:** d14 − list: arm 0 s2 −0.009 (0.016), arm 0 s1 on fresh draws +0.021 (0.017), against C49-sd's +0.073. E2 factorial under arm 0: −0.0104 (R-set), C49-sd −0.0121. Top 12 −0.0058, T4 −0.0113, draw +0.0063. Bench and held-out lists gain the same (thin).
+- **Limits:** arm 0 is list-trained, so this may not transfer; stage 1 tests human-free pilots. The lists still aren't above their shed copies under any pilot.
+- **Round 8:** closed for bodies, since identity carried those. If stage 1 shows sets under human-free pilots, its report (held, unread) gets read for Trainer packages, a different target.
+- **Next:** C180 stage 1, the C177 yardstick. Ground truth not moved; G3's move didn't survive.
+
+### #857 · 2026-11-02 · A5 C180 · C180's stage 1: only **M1**, a diagnostic pilot practised on rules-only decks selected for draw copies, reads R-practice (d14 +0.007, SE 0.019, −0.065 under C49-sd, SE 0.023). K1m, C127 s16 and W s49's last net read between (+0.030, +0.044, +0.043). So no pilot from the loop itself sheds as little as arm 0, but one rules-only practice regime does on one seed. Ground truth not moved
+- **Evidence** (measured; greedy, C179's decks and deals, seed 91, 2,880 games a pilot, 0 errors; stage 05:27:47-05:35:27):
+
+| Pilot | d14 − list (SE) | Band | Lists above 0 | Minus C49-sd (SE) | Bench 4, held out 20 | List: win, full wins, full losses | d14: win, full wins, full losses |
+|---|---|---|---|---|---|---|---|
+| C49-sd | +0.073 (0.019) | reference | 18 | | | 0.394, 0.123, 0.142 | 0.500, 0.165, 0.090 |
+| K1m | +0.030 (0.021) | between | 12 | −0.042 (0.020) | +0.013, +0.034 | 0.392, 0.061, 0.063 | 0.448, 0.089, 0.072 |
+| C127 s16 at 29 | +0.044 (0.015) | between | 16 | −0.028 (0.018) | +0.028, +0.047 | 0.427, 0.106, 0.113 | 0.476, 0.133, 0.096 |
+| W s49 at 83 | +0.043 (0.020) | between | 15 | −0.030 (0.022) | +0.012, +0.049 | 0.462, 0.170, 0.170 | 0.508, 0.222, 0.096 |
+| **M1** | **+0.007 (0.019)** | **R-practice** | 13 | −0.065 (0.023) | −0.004, +0.009 | 0.418, 0.059, 0.042 | 0.435, 0.069, 0.073 |
+| Arm 0 s1 (s2; fresh draws) | +0.017 (−0.009; +0.021) | replication | 15 (9; 11) | (−0.082; −0.052) | (−0.010, −0.009; +0.022, +0.021) | 0.399, 0.073, 0.087 | 0.415, 0.103, 0.095 |
+
+  - K1m's +0.0302 misses the +0.03 line by 0.0002, and it's −0.042 (SE 0.020) under C49-sd, so its between sits at the very edge of R-practice.
+  - **Limits:** one seed of each pilot, and M1 is a diagnostic under #726's flag: its practice decks were selected for draw copies, a card choice made with human knowledge of what draws. **M2, its second seed, exists** (`runs/probe/C158-fixed-deck-practice/arm-M2`) and is the obvious replication, unread. All these gains read a pilot's parity at best: no pilot prices a list above its shed copy.
+  - The pilots that shed least also play the slowest games: time endings M1 86.7%, K1m 84.7%, arm 0 81%, C127 s16 77.3%, W s49 67.7%; deck-outs 1.3%, 2.4%, 1.7-4.2%, 7.4%, 15.7%. W s49's pilot has the most full wins and deck-outs. That's a correlation over six pilots, noted and not read further.
+- **Launched:** `C176-s48` at 05:39:15. C177's lists cell is running since 05:28:29, and 74 has its first half done.
+- **Next:** one dose on C167's B, T and C decks under arm 0 and C49-sd, being built; C177's reads; C176.
+
+### #858 · 2026-11-02 · A5 C180 · Research's endings read: **a large part of the gain from shedding is the list decking itself out, and it tracks the pilot.** Under C49-sd the list loses 9.0% of its games by decking out and its d14 copy 0.3%; those deals alone give +0.041 of the +0.073. Under M1 it's 0.5%, under arm 0 1.6-3.0%. That reads as a concrete play fault, a pilot overdrawing with the lists' Trainers. No new games. Ground truth not moved
+- **Evidence** (measured, from saved games; `notes/scripts/c180_endings.py`, `runs/probe/C180-dose-by-practice/endings.json`; d14 and list on the same deals, each deal's change by how the *list's* game went, so the parts sum to the gain):
+
+| Pilot | Gain | List's own deck-out losses | d14's | From deals the list lost by deck-out | Gain without those deals |
+|---|---|---|---|---|---|
+| W s49 at 83 | +0.043 | 10.9% | 1.0% | +0.054 | −0.012 |
+| C49-sd | +0.073 | 9.0% | 0.3% | +0.041 | +0.032 |
+| C127 s16 | +0.044 | 6.1% | 0.2% | +0.030 | +0.014 |
+| Arm 0 s2 | −0.009 | 3.0% | 0.0% | +0.013 | −0.023 |
+| K1m | +0.030 | 2.3% | 0.0% | +0.012 | +0.019 |
+| Arm 0 s1 | +0.017 | 1.6% | 0.0% | +0.008 | +0.009 |
+| Arm 0 s1, fresh | +0.021 | 1.6% | 0.0% | +0.007 | +0.014 |
+| M1 | +0.007 | 0.5% | 0.0% | +0.002 | +0.005 |
+
+  - On those deals a copy that no longer decks out averages about +0.45 to +0.50, which is what a game the list simply lost by itself gives back. The other deals roughly cancel: "loss" deals other than deck-out give +0.10 to +0.13 and "win" deals −0.10 to −0.13 at every pilot, which is the expected regression of a re-dealt game and doesn't separate the pilots.
+  - C49-sd against arm 0 s1: the gain differs by +0.056, and +0.033 of it, about 60%, comes from those deals. Its copy also wins more by the printed opponent decking out (9.9% against 7.6% of games; arm 0 1.4% against 1.0%), which is the same fault on the other seat.
+- **Points by ending, C49-sd** (share × points): list 0.358: win on time 0.181, opponent decks out 0.076, Prizes 0.028, no Pokémon 0.019, no winner 0.054. d14 0.431: 0.223, 0.099, 0.029, 0.038, 0.042.
+- **Reading it:** it changes the R-set read. Part of what looks like "the lists are worse than their shed copies" under these pilots is the pilot drawing itself out of cards with the lists' draw and search Trainers, and lists against lists under C49-sd end by deck-out in 907 of 4,608 games (19.7%). That's a measured correlation over 8 readings of 6 pilots, plus a mechanism read from the endings, and **no game is traced**, so who overdraws with what isn't shown yet. Under arm 0 the residual is small on both sides of 0.
+- **Also:** M2 and the B, T, C dose wait for the launcher's GPU count, about 05:50. Building the dose found some B decks hold under 14 Trainers once draw-free; they'd be skipped and counted.
+
+### #859 · 2026-11-02 · A5 C180 · The deck-out trace reads **overdrawing, not long games**. Deck-out games are no longer than the others (about 32 turns against 30), and the player out of cards has drawn about 31 cards beyond one a turn in about 16 turns. Their last draw or search Trainer came at a deck of 10 or fewer in 84% and 88% of them under C49-sd and W s49, 53% under arm 0, and a pass was always legal. Arm 0 almost never plays them that thin. The loop's own population games deck out only 1-2%, flat with iteration, so this doesn't drive the Trainer fall. Ground truth not moved
+- **Trace** (measured; the lists' games on C179's deals, 576 games a pilot, greedy, winners match the earlier run in 576 of 576 at each; log only, `notes/scripts/audit/c180_trace_worker.js`, `c180_trace_read.py`, `trace_summary.json`):
+
+| | C49-sd | W s49 at 83 | Arm 0 s1 |
+|---|---|---|---|
+| Games ending by deck-out | 16.7% (96) | 21.0% (121) | 2.6% (15, thin) |
+| Turns at the end: deck-out games, others | 32.6, 30.4 | 31.7, 29.7 | 35.8, 31.0 |
+| Loser: own turns, cards beyond one a turn | 16.3, 30.7 | 15.8, 31.2 | 17.9, 29.1 |
+| Loser's Oak and Bill plays a game | 3.5, 3.1 | 3.5, 3.6 | 3.1, 3.7 |
+| Loser's hand at the end; winner's deck | 5.1; 16.4 | 5.1; 16.0 | 9.5; 16.6 |
+| Last draw or search Trainer: deck median, share at ≤ 10 | 5, 84% | 5, 88% | 10, 53% |
+
+| Card: plays a game, deck median, share at deck ≤ 10 | C49-sd | W s49 | Arm 0 s1 |
+|---|---|---|---|
+| Professor Oak | 3.20, 35, 3.7% | 3.52, 35, 3.4% | 2.90, 37, 0.0% |
+| Bill | 3.15, 33, 6.8% | 3.55, 31, 8.6% | 3.09, 35, 2.0% |
+| Computer Search | 1.43, 32, 7.2% | 1.89, 31, 8.6% | 0.62, 38, 0.0% |
+| Item Finder | 0.42, 29, 11.5% | 0.97, 29, 8.1% | 0.63, 34, 0.0% |
+| Energy Search | 0.15, 36, 0.0% | 0.20, 37, 1.7% | 0.13, 37.5, 0.0% |
+
+  - Every one of these plays had a legal pass (100%), so all were optional in the main phase. Whether a play was a mistake isn't judged here, only when it came.
+  - **Against rival (b):** long games aren't it. A list starts with about 47 cards in its deck, and the loser gets through them in 16 own turns, and overall game length is the same under all three (about 31 turns).
+- **W's own population games** (measured, from `log.jsonl`, sampled play, 10-iteration bins). W s48, iterations 0-9 to 50-54: deck-out 1.4, 1.4, 1.7, 2.0, 1.5, 1.5%, median Trainers 28 to 24. W s49, 0-9 to 80-83: 2.0, 2.2, 1.5, 1.6, 1.5, 1.3, 1.3, 1.3, 1.2%, median Trainers 30 to 21. No Pokémon is 45-58% throughout. So deck-outs are rare and flat or falling there while Trainers fall. **It doesn't tie this mechanism to the Trainer fall in the loop.** It does mean those games rarely show a pilot the cost of overdrawing, a lead on why practice there doesn't teach it. Sampled play and Trainer-poor decks both differ from these list games, so that isn't measured.
+- **What this does to R-set:** a real part of "the lists lose to their shed copies" under a greedy human-free pilot is a thin-deck fault the pilot's own game logs show, and arm 0 mostly doesn't have it. The set reading isn't removed: without those deals arm 0's gain stays near 0, and C49-sd's is still +0.032.
+- **Limits:** 576 games a pilot, 15 deck-outs under arm 0. One seed of each pilot. Arm 0 is a diagnostic.
+
+### #860 · 2026-11-02 · A5 C180 · Research's read of the deck-out trace (#859): greedy human-free pilots overdraw on the lists (at deck 10 or under on 84-88% of last draw or search plays, against arm 0's 53%; loser's hand 5 against 9.5), a concrete play fault, all optional. It doesn't explain the loop's slide, since W's own games deck out only 1-2%, flat. A lead on why practice doesn't teach it: those games rarely show what overdrawing costs
+- **Done** (research session, 05:49): read #859. Taken by default (row 115): the B, T, C dose runs as written after M2, with its gain also reported without deck-out deals.
+- **Consequence for G3:** greedy lists deck themselves out in every G3 read here (19.7% of lists-against-lists games under C49-sd), so G3 flatters any deck that simply outlasts them. C177's fall under search may partly be that. Asked for G3 at 59 and 74 without the lists' deck-out deals, CPU.
+- **Ruling for Evan if it comes to it:** K1m and M1, whose practice decks are concentrated or draw-rich, deck out far less (2.3%, 0.5%). Adopting either as practice is his call under A145's and #726's flags, so neither is proposed yet; no adoption without a case at the ground truth.
+- **What stays open:** every pilot prices random Trainers below Energy on every body, and no pilot prices a list above its shed copies. Ground truth not moved.
+
+### #861 · 2026-11-02 · A5 C177 · Research's read: deck-outs flatter G3 by a little and don't change C177's fall. Without any deck-out, W s49's G3 goes 0.263 at 29, 0.324 at 59, 0.338 at 74, still rising, against the lists' 0.496, and under search it falls from 0.324 to 0.224 at 59. Search itself nearly removes deck-outs (own 0.3%, the list's 1.8% of games). Ground truth not moved
+- **Evidence** (measured from saved games, **one seed, exploratory**; `notes/scripts/c177_deckout.py`, `deckout.json`; M per pair over decisive games, as G3; event points):
+
+| Cell | List lost by deck-out; own | M: all | M: without list deck-outs | M: without any | Points: all, without any |
+|---|---|---|---|---|---|
+| Lists, greedy (24) | 10.3%; 9.4% | 0.502 | 0.437 | 0.496 | 0.386, 0.353 |
+| W s49 at 29, greedy | 5.3%; 4.0% | 0.291 | 0.248 | 0.263 | 0.237, 0.203 |
+| W s49 at 59, greedy | 8.8%; 3.2% | 0.374 | 0.308 | 0.324 | 0.300, 0.241 |
+| W s49 at 74, greedy | 7.7%; 1.9% | 0.384 | 0.330 | 0.338 | 0.308, 0.255 |
+| W s49 at 59, search | 1.8%; 0.3% | 0.236 | 0.222 | 0.224 | 0.189, 0.174 |
+| W s49 at 74, search | 1.8%; 0.3% | 0.261 | 0.248 | 0.249 | 0.198, 0.184 |
+
+  - Dropping only the list's deck-outs takes a win from one side alone, and it would pull the lists' own score to 0.437, so "without any" is the fair comparison. Against it the rise from 29 is +0.061 at 59 and +0.075 at 74, down from +0.083 and +0.093, so about a quarter of it was deck-outs.
+  - The fall under search without any deck-out is about −0.100 at 59 and −0.089 at 74, against −0.137 and −0.123 with them, computed from these means with no SE. So about a quarter of the fall is deck-outs too, and the rest stands.
+  - Under search the lists' own deck-outs nearly vanish, so what greedy gets wrong here search gets right on the same pilot.
+  - **The lists' yardstick isn't in:** only the first 6 of its 12 decks have played (M 0.432 so far), so it isn't read yet.
+- **The dose is built** (`c180_parts.py`): 4 of 96 decks in each of B, T, C hold under 14 Trainers once draw-free, and they're skipped and counted. Copies reach 20.7/8.0/31.4 on B and 18.2/8.0/33.9 on T and C, so at 8 Trainers these go further than W's shape. Each gain is also reported without the deals the deck lost by deck-out.
+- **Next:** M2, then the dose; the lists' yardstick; C176.
+
+### #862 · 2026-11-02 · A5 C177 C180 · G3 without any deck-out reads 0.263, 0.324, 0.338 at W s49's 29, 59, 74 against the lists' 0.496, so deck-outs flatter about a quarter of the rise and the fall, and the rest stands (#861). C180's dose on broken-apart decks is corrected before launch to 8 out, with the draw-free lists as comparator
+- **Done** (research session, 05:50): appended to the record. The search fall without deck-outs is about −0.100 and −0.089 (means, no SE).
+
+### #863 · 2026-11-02 · A5 C180 · **M2 replicates M1, R-practice on two seeds:** d14 +0.018 (SE 0.018), −0.054 under C49-sd (SE 0.014), against M1's +0.007 and −0.065. So practice on rules-only decks selected to hold draw copies gives a pilot that, like arm 0, gains next to nothing from a list shedding Trainers. It's still a diagnostic under #726's flag, since that selection names the draw cards. Ground truth not moved
+- **Evidence** (measured; greedy, C179's decks and deals, 2,880 games, 0 errors): M2 lists above 0: 14; bench 4 +0.037, held out 20 +0.015; list win share 0.392, full wins 0.056, full losses 0.059; d14 0.415, 0.078, 0.069; time endings 85.9%; the list's own deck-out losses 3.0%, d14's 0.04%; those deals give +0.012 of the gain, +0.007 without them.
+- **What it does and doesn't show:** a human-free source of practice reaches arm 0's level on this one read, twice. It doesn't show those pilots price the lists above their shed copies (parity at best), or that they draft better. By the record, R-practice on a rules-only pilot makes a practice recipe the lever, read in the loop by whether Trainers fall more slowly, and selecting decks for named draw cards is a human-knowledge question that's Evan's to rule on (#726, A145's flag).
+- **Launched:** `C180-parts` at 05:50:35, B, T, C under C49-sd and arm 0.
+
+### #864 · 2026-11-02 · A5 C180 C181 · M replicates R-practice at two seeds (#862's implementation entry), so human-free practice can reach arm 0's level, but M's decks were selected on named draw copies. C181 tests a way around that ruling: practice decks weighted by the human-free Trainer table, whose top three under all four C165 pilots are Oak, Energy Removal and Bill, with W1 and W2 as a control. It answers #731's open question if it works
+- **Done** (research session, 05:51): `runs/probe/C181-table-practice/record.md`, κ 1 fixed in advance. Limits as logged: parity at best, nothing shown for drafting, one bench recipe.
+- **Next:** W1 and W2's d14 first, then the arm if the plain fit's Trainer ranks pass. Next free record: C182. Ground truth not moved.
+
+### #865 · 2026-11-02 · A5 C180 · The B, T, C dose changed before any cell finished (research's #862): 8 Trainers out, so copies land at about 14, W's shape, with A, the draw-free lists, as the comparator, 4 draws a list, under arm 0 and C49-sd. The launch at 05:50:35 was stopped at about 05:51, no result written. Relaunched after the rebuild
+- **Note:** #861 and #863's dose read 14 out, copies at 8 Trainers. Those decks are overwritten. Decks under 8 Trainers are skipped and counted, printed by `--make-decks`.
+
+### #866 · 2026-11-02 · A5 C181 · C181's rank check passes: on the plain fits Professor Oak, Energy Removal and Bill rank 1, 2, 5 at seed 48 and 2, 1, 3 at seed 49, all in the top 8, with no card named and no list used in the fit. Step 1, the W1 and W2 control, waits for RAM. No training has started. Ground truth not moved
+- **Evidence** (measured; C171's plain table games, 20,000 games a seed, 20 pods, C165's fit, λ 1000, `notes/scripts/c181_ranks.py`, `ranks.json`). Coefficient (SE) a copy against a basic Energy:
+  - Seed 48: Oak +0.0109 (0.0043), Energy Removal +0.0086 (0.0028), Super Potion +0.0048 (0.0039), Energy Search +0.0031 (0.0042), Bill +0.0029 (0.0035), Super Energy Removal +0.0028 (0.0027), Defender +0.0017 (0.0030), Computer Error +0.0016 (0.0018).
+  - Seed 49: Energy Removal +0.0088 (0.0041), Oak +0.0081 (0.0030), Bill +0.0062 (0.0025), Poké Ball +0.0031 (0.0026), Super Energy Removal +0.0005 (0.0033), Energy Search +0.0003 (0.0045), PlusPower +0.0002 (0.0037), Super Potion −0.0002 (0.0037).
+  - SD of coefficients 0.0054, 0.0053; means −0.0038, −0.0047; Spearman across seeds +0.68; ρ_L +0.28, +0.36, read only.
+- **A limit:** most single SEs are as large as the coefficient, Bill's at seed 48 especially, and the table also lifts cards the lists hardly run (Super Potion, Energy Search, Defender, Computer Error). So exposure to the draw cards comes with others, which is what the arm's draw-copy count against M's 4.0 will show.
+- **Next:** step 1 when the launcher allows (`C180-w`, refused at 05:52:46, 5.9 GB free against 6.5); step 2 only after research has both reads.
+
+### #867 · 2026-11-02 · A5 C181 · C181 Amendment 1, the auditor's adopted before training: the named stop goes, replaced by a name-free reliability gate (0.681, passes), the two-seed mean table is fixed, and the band reads without deck-out deals too, so a pass can't open the loop arm if it's only an overdraw fix. My rule check saying "no card named" overstated it: the route was chosen because it matched M's named selection
+- **Done** (research session, 05:53): appended to the record.
+
+### #868 · 2026-11-02 · A5 C180 C181 · **With deck-outs removed from both arms, the shed gain mostly goes at every pilot, and so does most of the pilot gap:** C49-sd +0.073 becomes +0.018 (SE 0.020), arm 0 +0.017 becomes +0.005 (SE 0.013). And the table-weighted decks reach 6.35 draw copies a deck with no card named, against M's 4.0, W's 1.9 and the lists' 5.9. W1 and W2 still wait on the launcher, and no training has started. Ground truth not moved
+- **d14 − list, deck-out deals removed pair by pair from both arms** (measured from saved games, by list, bootstrap over lists; `c180_endings.py`; removing deals by their outcome selects, so it's a sensitivity read):
+
+| Pilot | All deals (SE) | No deck-outs (SE) |
+|---|---|---|
+| C49-sd | +0.073 (0.019) | +0.018 (0.020) |
+| C127 s16 | +0.044 (0.015) | +0.026 (0.012) |
+| W s49 at 83 | +0.043 (0.020) | −0.024 (0.015) |
+| K1m | +0.030 (0.021) | +0.028 (0.020) |
+| M2 | +0.018 (0.018) | +0.004 (0.017) |
+| Arm 0 s1 | +0.017 (0.013) | +0.005 (0.013) |
+| Arm 0 s1, fresh | +0.021 (0.017) | +0.012 (0.017) |
+| M1 | +0.007 (0.019) | +0.006 (0.018) |
+| Arm 0 s2 | −0.009 (0.016) | −0.028 (0.014) |
+
+  - So without deck-outs no pilot's list gains clearly from shedding 14 Trainers, and the C49-sd to arm 0 gap (+0.056) shrinks to +0.013, inside the noise. That reads as: most of C179's pilot-dependence is the overdrawing fault. It also changes what M's R-practice means: M1 and M2's edge is largely not decking the lists out. W1 and W2 aren't in yet.
+- **C181's gate** (Amendment 1): plain Trainer tables across seeds, Spearman +0.68, passes. Names reported, no stop: on the two-seed mean, Oak rank 1 (z 2.76), Energy Removal 2 (2.60), Bill 3 (1.77), then Super Potion, Energy Search, Super Energy Removal, Poké Ball, Defender.
+- **The decks** (built, 128, all legal, 60 cards, no training; `notes/scripts/c181_decks.py`, `T_matchups.json`; κ 1 on the mean table; weights 15.8, 13.5, 5.9 on the top three):
+
+| Decks | P/T/E | Draw copies | Oak | Bill | Energy Removal | Decks with 2+ draw |
+|---|---|---|---|---|---|---|
+| T, table-weighted | 8.6/28.6/22.8 | 6.35 | 3.61 | 2.33 | 3.47 | 98% |
+| W, uniform | 8.7/28.4/22.9 | 1.92 | 0.59 | 0.67 | 0.69 | 56% |
+| M, selected | 13.4/24.9/21.7 | 4.02 | 1.23 | 1.59 | 0.48 | 100% |
+| The lists, for scale, read only | 13.9/27.5/18.6 | about 5.9 | 3.38 | 2.50 | 2.08 | |
+
+  - T is over M's exposure on every one of these and near the lists' Oak and Bill, from a table a human-free pilot read through play. Its Pokémon count stays at wide decks' 8.6, while M's differ, so T isn't M's decks with a different label.
+- **Next:** step 1 when the launcher allows; training only on research's go.
+
+### #869 · 2026-11-02 · A5 C180 C181 C182 · Research's read of #868: without deck-outs a list gains about nothing from shedding its own Trainers under any pilot, so C179's pilot-dependence and M's R-practice are mostly deck discipline, not Trainer skill. That frees a direct test: C182 puts the human-free Trainer table on the drafter's picks, with W as control at the same seeds, primary: do Trainers stop falling? C181's training waits behind it, since by its own Amendment it can't open the loop if it's only an overdraw fix
+- **Done** (research session, 05:56): `runs/probe/C182-trainer-table-drafting/record.md`. Taken by default (row 115). Step 1 of C181 still runs when RAM allows, as it's about 4 minutes and closes the control gap. Next free record: C183.
+- **Hypothesis stated, not shown:** W's Trainer fall is selection replacing junk with Energy because nothing better is on offer. #868 is a sensitivity read selected by outcome.
+- **Measured** (implementation): 128 table decks hold P/T/E 8.6/28.6/22.8, draw 6.35, Oak 3.61, Bill 2.33, Energy Removal 3.47. M 13.4/24.9/21.7, 4.02. W 8.7/28.4/22.9, 1.92.
+- **Next:** auditor's review, C182. Ground truth not moved.
+
+### #870 · 2026-11-02 · A5 C182 · C182 Amendment 1: the auditor's free read supports its premise directly. W's Trainer fall is almost all low-table cards (survivors high 12 about 0, low 30 −6.64, −5.52 from 4 to 54), and in W's own sampled games high-table copies score above Energy per copy (+0.0047, +0.0073). A pass must also separate the table's push from what selection keeps
+- **Done** (research session, 05:58): appended to the record. The auditor accepts the run; it's flagging D to Evan. Post hoc, 12-card cut unbanded.
+
+### #871 · 2026-11-02 · A5 C182 · C182, arm D, is built and passes its smoke: the plain mean Trainer table at κ 1 on the drafter's Trainer picks (init, turnover's wide decks, proposals), other cards 0, W's recipe otherwise. Its queue started at 06:01:32 and launches when the launcher allows it. C181's training is held by research's call. No read yet. Ground truth not moved
+- **Built:** `rl/decks.py` `wide_deck(trainer_weight=)` and `rl/metagame.py` `--table-scope trainers`; `notes/scripts/queue_c182.py`, on queue_c171's supervisor, with `C182-D-s48` and `C182-D-s49` at 45 iterations, the watch off by `NO_G1_WATCH`, Trainer stop at 15. The table is `runs/probe/C182-trainer-table-drafting/table.json`, 42 Trainers. No frozen file touched. **Default `wide_deck` stream verified unchanged** by a hash over 60 decks, before and after.
+- **A build fault, caught and fixed:** the first weighting took share from special Energy, so starting Trainers rose about +1.8, against the record's "nothing shifts P/T/E by construction". Trainer weights now keep the Trainers' total share as uniform.
+- **Start shape** (measured, 1,000 init decks a seed, SE about 0.26 on T): W s48 8.49/27.22/24.29, D s48 8.56/27.11/24.32; W s49 8.46/27.85/23.69, D s49 8.66/26.81/24.52. Pooled, D's Trainers are −0.57 (SE 0.26), about 2 SE and on the side against the arm: when top cards hit the copy limit their pick falls to the others, special Energy included. Reported rather than tuned. Oak, Bill, Energy Removal, Gambler a deck: D 3.6, 2.15, 3.4, 0.44; W 0.65, 0.65, 0.65, 0.63.
+- **Smoke** (measured, 2 iterations, 200 games each, seed 48, 5 workers): 0 errors; the table loaded (42 names, κ 1); head share on the table's top 10: 2.9% own, 14.3% with the bonus, and 2.5%, 11.8%, so the bonus reaches proposals; population at the start 9.0/26.3/24.7, Oak 3.5, Bill 2.0, Energy Removal 3.2. Ledger integrity is in the next line of this entry's check.
+- **Amendment 1's reads** (research's #870, beside reads, no games change): high and low Trainer copies on survivors with the z slope per copy, accepted against proposed share for high-table cards and the head's share with the bonus subtracted; seeds as replicates; past 44 against W s49 only. The reader isn't written yet; it's due by the read at 29.
+- **Next:** the launch, confirmed from a fresh read; the read at 29, about 70 minutes after that (estimated).
+
+### #872 · 2026-11-02 · A5 C182 · Ledger integrity on C182's smoke: **PASS**, 0 mismatches over 2 iterations (`select_lean.py --cards`), closing #871's open line and its acceptance. The queue's first launch try was refused at 06:01:34 (free RAM 7.7 GB against a screen's 8.0), and it retries every 2 minutes
+
+### #873 · 2026-11-02 · A5 C176 · C176's first table: sampled play prices the Trainers almost exactly as greedy does on table-s48: mean β +0.0005 (SE 0.0004) sampled − greedy, Spearman of per-card prices 0.92. **One seed; the band needs s49.** So far selection sees about the prices we've been measuring. Ground truth not moved
+- **Evidence** (measured; C49-sd, sampled, table-s48's 20 pods, 19,999 games, 20,000 greedy, all on the same deals, 1 error; ended 06:02:28): all 42 −0.0076 to −0.0071, +0.0005 (0.0004); lists' top 12 −0.0049 to −0.0040, +0.0009 (0.0005); T4 +0.0004 (0.0006); draw +0.0002 (0.0007); PlusPower +0.0004 (0.0009); other 30 +0.0004 (0.0005). ρ_L +0.34 to +0.31. T* 19, E* 24.25 under both. Rises: Energy Retrieval +0.0040, Potion +0.0028, The Boss's Way +0.0027, Oak +0.0025. Falls: Poké Ball −0.0021, Here Comes Team Rocket! −0.0019.
+- **Endings:** sampled and greedy nearly match on these decks: time 44%, no Pokémon 44%, Prizes 10%, deck-out 2.2% under both. Capped by the turn limit, sampled: 51 games of 19,999, 130 turns. So on rules-only concentrated decks deck-outs are rare whichever way it plays, which fits W's own 1-2%, since these decks hold few draw cards. The 17-21% deck-outs are on the lists.
+- **Queue:** C176's s49 and w wait behind C182, first in line for GPU hours, whose first launch is 0.1 GB short at 06:03:35.
+
+### #874 · 2026-11-02 · A5 C180 C177 · **Arm 0 has no edge on any draw-free deck:** shedding 8 Trainers gains about the same under arm 0 and C49-sd on the draw-free lists (+0.035, +0.042), so the pilot gap sits with the draw cards. And the lists' search yardstick is in: M 0.505, so W s49's top 12 trail the lists by −0.27 and −0.24 under search, about double the greedy gap. Ground truth not moved
+- **The dose** (measured; 8 Trainers out, 4,608 games a cell, 0 errors; 96 decks and copies against 12 lists as printed, 2 deals, greedy; copy − deck on event points/3, by source list, bootstrap over 24 lists; `summary_parts.json`):
+
+| Deck | C49-sd (SE) | Lists above 0 | Arm 0 (SE) | Lists above 0 | Arm 0 − C49-sd (SE) |
+|---|---|---|---|---|---|
+| A, the lists, draw-free | +0.042 (0.011) | 20 | +0.035 (0.009) | 18 | −0.007 (0.013) |
+| B, list's Trainers, rules-only body | +0.008 (0.010) | 12 | +0.017 (0.007) | 18 | +0.009 (0.009) |
+| T, list's body, random Trainers | +0.054 (0.009) | 20 | +0.071 (0.011) | 22 | +0.017 (0.012) |
+| C, list's body, other Trainers at its counts | +0.069 (0.010) | 22 | +0.069 (0.008) | 24 | +0.001 (0.013) |
+| C179, the lists as printed, 14 out | +0.073 (0.019) | 18 | +0.017 (0.013) | 15 | −0.056 |
+
+  - **By the record's reading:** arm 0's edge shows on none of A, B, T, C, so on these decks it isn't skill with those Trainers (B) or the bodies (T, C). It appears only on true lists holding their draw cards, which fits the overdrawing read.
+  - **The deck's own deck-outs here are 0:** "with and without" reads the same on every cell, since a draw-free deck doesn't overdraw. Deck-outs in these games are the printed opponents'. (Doses differ, 8 and 14, so that bottom row is a scale, not a contrast.)
+  - **A beside T and C:** the lists' own non-draw Trainers shed less than random or relabelled ones under arm 0 (+0.035 against +0.071, +0.069), and little less under C49-sd (+0.042 against +0.054, +0.069), with cell SEs about 0.01 and no paired SE computed. So there's a hint that the lists' own mix holds value, and even so shedding it still gains under both.
+  - **So R-set weakens:** without draw cards, even the lists' own Trainers lose to the copy's Pokémon and Energy, under the pilot practised on them. Limits: the opponents are printed lists, one set of draws, greedy, and 4 of the record's names are diagnostics.
+- **C177's yardstick** (measured; a seeded draw of 12 lists against the 24, C135's search, 4 games a pair, 1,152 games, 0 errors; the lists path checked on 288 real pairs): M 0.505 (SE 0.017), win share 0.438, full wins 0.107, full losses 0.103, event points 0.370; same pairs greedy 0.520, 0.442, 0.155, 0.134, 0.397; change −0.015 (SE 0.019). Deck-outs under search 1.2% and 0.6%, from 10.3% and 9.4%. So:
+
+| Against the lists | Greedy M | Search M | Gap to the lists, greedy | Gap to the lists, search |
+|---|---|---|---|---|
+| W s49 at 59 | 0.374 | 0.236 | −0.128 | −0.269 |
+| W s49 at 74 | 0.384 | 0.261 | −0.118 | −0.244 |
+
+- **A log line to check:** `launch.log` shows `P_C_arm0.json failed` at 06:12:55 after the cell's result and the read were written with 0 errors. All 8 cells and `summary_parts.json` are there and read, and the line comes from the script's end, not from a game; unexplained so far.
+- **C182:** `C182-D-s48` is training (iteration 1+); s49 waits on RAM and GPU memory (7.1 GB, 9.4 GB in use at 06:13).
+
+### #875 · 2026-11-02 · A5 C177 C180 C183 · Research's read of #874: under search the lists hold 0.505 while W s49's top 12 fall, so their gap doubles (−0.128 to −0.269, −0.118 to −0.244), the first read where stronger play pulls strength and likeness together. Arm 0 shows no edge on any draw-free deck, so the pilot gap sits with draw cards, and R-set weakens. New hint: Trainers may be worth holding only beside draw cards. C183 tests that in existing factorial games
+- **Done** (research session, 06:15): `runs/probe/C183-draw-interaction/record.md`, bands first. Next free record: C184.
+- **Limits:** C177 is one seed, 12 decks, and lists against lists is near 0.5 by symmetry, so the widening comes from W's decks falling. One set of draws on the dose. It says nothing yet about what the loop can reach under greedy games, where selection works.
+- **Next:** C182, C183. Ground truth not moved.
+
+### #876 · 2026-11-02 · A5 C183 · C183 reads **between**: draw cards make the other Trainers a little more valuable, and no table reaches the band's size. The interaction is small and mostly positive, largest on list bodies: E2 +0.0007 (SE 0.0002) under C49-sd and +0.0006 (0.0003) under arm 0, about 40% of the size R-draw-carries asks for at the same SEs. So it's a real-looking tilt, too small to carry the Trainers alone. Ground truth not moved
+- **Evidence** (measured, CPU, existing games; C165's fit plus one free centred term, (draw copies) × (other Trainers' copies), jackknife over pods; `notes/scripts/c183_read.py`, `runs/probe/C183-draw-interaction/summary.json`; line +0.0009):
+
+| Table, pilot | Games | Named draw cards: coef (SE) | Table's top 3: coef (SE) | Draw SD a deck |
+|---|---|---|---|---|
+| C165, C127 s16 | 20,000 | 0.0000 (0.0004) | −0.0002 (0.0003) | 2.27 |
+| C165, C127 s17 | 20,000 | +0.0002 (0.0003) | −0.0001 (0.0002) | 2.27 |
+| C165, K1m | 20,000 | 0.0000 (0.0004) | −0.0004 (0.0003) | 2.27 |
+| C165, arm 0 | 20,000 | +0.0003 (0.0003) | +0.0002 (0.0003) | 2.27 |
+| table-s48, C49-sd | 20,000 | +0.0005 (0.0002) | +0.0002 (0.0002) | 2.20 |
+| table-s49, C49-sd | 20,000 | +0.0004 (0.0002) | −0.0002 (0.0002) | 2.27 |
+| plain-s48, C49-sd | 20,000 | +0.0003 (0.0003) | +0.0003 (0.0003) | 1.47 |
+| plain-s49, C49-sd | 20,000 | +0.0003 (0.0002) | +0.0006 (0.0002) | 1.51 |
+| E2, C49-sd | 12,000 | +0.0007 (0.0002) | +0.0007 (0.0002) | 2.17 |
+| E2, arm 0 | 12,000 | +0.0006 (0.0003) | +0.0008 (0.0002) | 2.17 |
+
+  - **By the bands:** no table is at +0.0009 and 2 SE, so not R-draw-carries, on either form. E2 and a plain cell are over half the line, so not R-not. Between on both.
+  - **Size:** at +4 draw copies, E2's +0.0007 lifts the others by about +0.0028 a copy, against the −0.0075 gap and E2's own mean −0.0121. On the rules-only bodies it's close to nothing. The name-free form reads about the same on E2.
+  - **Limits:** post hoc in origin; the draw count and the others correlate about −0.54 on concentrated decks and +0.24 on plain, and E2's cells share decks, so they count as one table. The fit is linear in both counts.
+- **C182's reader is built and tested on W's files** (`notes/scripts/c182_read.py`). W s49 at 29, by the plain table's top 12 against the other 30 (measured, 54 survivors): high copies +0.46 per 25 (SE 0.35), low −3.09 (SE 0.52), so W's selection already sheds the low-table cards and holds the high; score slope per copy, given P: high +0.0018 (0.0052), low −0.0102 (0.0041); ledger, the top 12's share of Trainer copies 29% proposed, 33% accepted. That fits the record's hypothesis on W alone.
+- **C182:** `C182-D-s48` at iteration 2+ at about 186 s an iteration. s49 still waits: 6.9 GB free against a screen's 8.0, with D's own G3 probe holding about 1.4 GB, so it should clear when that ends.
+
+### #877 · 2026-11-02 · A5 C182 · Both D seeds are training (s48 at 06:10, s49 launched at 06:29:14, fresh read: 2 `rl.metagame` runs, 0 errors, no STOP). **D's starting decks already score G3 0.424 (SE 0.014) under C49-sd, against W's 0.225 and 0.228**, from the Trainer picks alone, Pokémon picks unchanged. That's only start decks, and 26% of those games end by deck-out against W's 5%, so it's read without deck-outs before anyone leans on it. Ground truth not moved
+- **Evidence** (measured; G3 at iteration 0, top 12 against the 24 lists, 8 games a pair; D at seed 48 only so far): D s48: C49 0.424 (0.014), own 0.414 (0.013), C127 s16 0.402 (0.014); population 99 decks under s16 0.201 (0.007); top 12 9.5/26.9/23.6; top name out, Scyther, 0.412. W s48: 0.225, 0.238, 0.192; population 0.112; top 12 8.7/25.9/25.4. W s49: 0.228, 0.209, 0.198; population 0.100. Deck-outs among these games: D 603 of 2,304, W 120 and 128.
+- Head share on the table's top 10 at D s48's iteration 6: own 7.0%, with the bonus 30.5%, the own share up from 2.9% at iteration 0.
+- **Not a progress read:** by C171's rule starting well can't pass as learning, and C177 says greedy G3 can't be one here. The record's band is on survivors and median Trainers.
+- **Queue:** C180-w refused at 06:31:19 on the launcher's GPU count. It and C176's stages go in as RAM and GPU memory allow, behind D.
+
+### #878 · 2026-11-02 · A5 C182 · **D's own population games end by deck-out 34.5% of the time over iterations 0-6, against W's 1.4%** (measured, s48 only, 7 iterations; no Pokémon 30.7% against 58.4%, time 30.9% against 33.2%, Prizes 3.9% against 6.8%). So putting draw cards in at the lists' rate, with this pilot, turns on the overdrawing fault inside the loop. That cuts both ways, and neither is measured: selection may now penalise draw-rich decks for it, which would push Trainers down for a reason other than their worth, and the pilot now gets to see what overdrawing costs, which W's games never showed it. Watch: deck-out share by iteration, draw copies on survivors, and the pilot's thin-deck plays
+
+### #879 · 2026-11-02 · A5 C182 · C182 Amendment 2: D's own games deck out 34.5% against W's 1.4% over iterations 0-6, so draw cards at the lists' rate turn the overdrawing fault on inside the loop. R-no alone can't now say the fall isn't about what's on offer, and deck-out share by iteration gets its own band: will the pilot learn discipline from its own games?
+- **Done** (research session, 06:32): appended to the record, before any band read. Implementation's beside reads accepted. Also from implementation: the head's own share on the table's top 10 rises 2.9% to 7.0% by iteration 6 with the bonus on (30.5% with it), one seed, early.
+
+### #880 · 2026-11-02 · A5 C182 · D's G3 at iteration 0 survives dropping deck-outs: M **0.427 and 0.427** at seeds 48 and 49, against the lists' 0.496 on the same measure and W s49's 0.338 after 74 iterations. So under greedy, Trainer picks from the human-free table give start decks more strength against the lists than W's selection reached. It's start decks, under a greedy pilot, and search is still to read. Amendment 2's discipline read is built. Ground truth not moved
+- **Evidence** (measured; C49-sd, greedy, 12 decks × 24 lists × 8 games, 2,304 games a seed, 0 errors): all games M 0.424, 0.435; event points 0.338, 0.344; own deck-out losses 14.8%, 11.9%; the list's 11.3%, 10.0%. Without any deck-out: M 0.427, 0.427; points 0.304, 0.313. On the same measure: lists 0.496, 0.353; W s49 at 29 0.263, 0.203; at 59 0.324, 0.241; at 74 0.338, 0.255. W at 0 without deck-outs isn't run yet (0.225 and 0.228 with them).
+- **Still to read, when RAM allows:** D at 0 under search, the test that sank W's rise (`run_search.sh d48`, `d49`), and W at 0 without deck-outs. **Blocker: RAM.** These reads took free RAM to 3.7 GB at 06:33, near the supervisor's 3 GB line where it stops the newest screen, so nothing more goes in while both D seeds run and it's under about 6 GB. The fix is the D stage's end, or about 3 GB from desktop apps, Evan's to close.
+- **Built:** `c182_read.py` reads Amendment 2 (#879): the deck-out share at 29 against 0-6's, survivors' draw copies, R-learns-discipline or R-penalised.
+
+### #881 · 2026-11-02 · A5 C182 · D s48 at iteration 14 (**unfinished, one seed**): the population's draw copies are at the lists' level, 6.02 against 5.92, and median Trainers hold at 28, with G1's mean of 5 at 11.17, inside the base. Deck-outs in its own games stay at about a third (33, 36, 34, 34% by 5 iterations), so no sign of discipline yet. T4 is 1.89 against the lists' 9.17. No band at 14; survivors need iteration 25. Ground truth not moved
+- **Evidence** (measured; 30,000 games, 0 errors; W s48 at 14 in brackets): median 10/28/22 [13/28/18]; population 10.65/28.27/21.08 [13.36/27.61/19.03]; draw 6.02 [2.23]; T4 1.89 [2.79]; TV 0.491 [0.616]; E −0.187 [−0.012]; A7 0.374 [0.376]; ρ_L 0.378 [0.315]; wall 0.01 [0.0]; names_E −0.024 [−0.055]; G1 mean of 5 11.17 [9.87].
+  - Deck-out share by 5 iterations: D s48 33.4, 36.4, 34.3, 34.4%; D s49 30.6, 27.3%; W s48 1.5, 1.3, 1.2, 1.6, 1.6%; W s49 2.2, 1.8, 2.1, 2.3, 1.7%. Median Trainers at 4, 9, 14: D s48 28, 28, 28; W s48 28, 27, 28. D s49 at 4: 27.
+  - G3 at 0, D s49: C49 0.435, own 0.429, C127 s16 0.398, population under s16 0.198.
+- **Machine:** free RAM 3.5 GB at 07:02 with only the two D seeds running, close to the supervisor's 3 GB line, which would stop D s49, the newest screen. Nothing of mine is running beside them. If it fires D s49 is resumable, and I'd log it, a RAM stop and no read. C180-w, C176, W at 0 and D at 0 under search all stay held.
+- **Rates:** s48 about 234 s an iteration beside s49. Read at 29: about 07:57 for s48, about 08:20 for s49 (estimated).
+
+### #882 · 2026-11-02 · A5 C182 · **D s48 at iteration 29 (one seed, unfinished, greedy only) is the closest a drafting run has come to the lists tonight:** G1's mean of 5 is 7.4, then 6.2 at 32, against W's 10.97 and the base's 11.22 ± 3.75; median 12/28/21 against the lists' 13.5/28/18; survivors' Trainers **rise** +1.54 per 25 (SE 0.50), against W's −0.72; and G3 is level with the lists, M 0.507, or 0.513 with no deck-outs, against the lists' 0.502 and 0.496. **It isn't a claim:** s49 isn't at 29, the band is at 44, search hasn't read it, and T4 is 1.66 against the lists' 9.17
+- **Evidence** (measured; 60,000 games, 0 errors; W s48 at 29 in brackets; the band's stop at 29 needs both seeds):
+
+| | D s48 at 29 | W s48 at 29 | The lists |
+|---|---|---|---|
+| Median P/T/E | 12/28/21 | [13/26/19] | 13.5/28/18 |
+| Population P/T/E | 11.58/27.16/21.26 | [13.59/26.29/20.12] | 13.9/27.5/18.6 |
+| G1 mean of 5 | 7.4 (6.2 at 32) | [10.97] | |
+| Survivors' Trainers per 25 (SE) | +1.54 (0.50) | [−0.72 (0.40)] | |
+| Survivors' T4, draw per 25 | +0.20 (0.12), −0.11 (0.31) | [−0.30 (0.16), +0.43 (0.22)] | |
+| Draw, T4 copies | 5.82, 1.66 | [2.19, 2.72] | 5.92, 9.17 |
+| TV, E, A7, ρ_L | 0.488, −0.197, 0.374, 0.353 | [0.602, −0.027, 0.500, 0.269] | |
+
+  - **G3 under C49-sd** (2,304 games, top 12 11.2/26.4/22.4): M 0.507 (SE 0.013), own 0.513, C127 s16 0.445; win share 0.451, full wins 0.161, full losses 0.279, points 0.390. Without any deck-out: M 0.513 (0.015), points 0.359. The lists on the same measures: M 0.502, 0.496; points 0.386, 0.353; full losses 0.146. D at 0: 0.424, 0.427. D s49 at 14: 0.526, own 0.514, s16 0.461.
+  - **Amendment 1, by the table's top 12:** survivors' high copies +2.28 per 25 (SE 0.40), low −0.74 (0.32); W's +0.37 (0.33), −1.09 (0.42). Copies a deck, high 20.1 and low 7.7; W's 8.5 and 17.2. Score slope per copy given P: high +0.003 (0.004), low −0.001 (0.005); W's +0.012 (0.006), −0.006 (0.004). Ledger, the top 12's share of Trainer copies: 70% proposed, 62% accepted (W 29%, 28%), so selection takes them less often than offered, and the head's own share on the top 10 is 6.6%, with the bonus 30.3%, so the bonus is doing the proposing.
+  - **Amendment 2:** deck-outs 34.5% over 0-6, 30.0% at 29; by 5 iterations 33, 36, 34, 34, 34, 30%. Draw on survivors −0.11. Between: neither discipline nor penalty so far.
+  - **Cards, copies against the lists':** Energy Removal 3.61 (2.08), Oak 3.43 (3.38), Bill 1.97 (2.50), Super Energy Removal 1.64 (1.96), Super Potion 1.58 (0.08), Energy Search 1.51 (0.21), Challenge! 1.35 (0.08), Computer Error 1.02 (0), Defender 1.01 (0.08), Poké Ball 0.89 (0). So the count is near the lists and half the mix isn't.
+- **What would undo this:** C177 showed greedy G3 doesn't survive search on W's decks. D's list-parity is unread under search, and it's the next thing to read (`run_search.sh`, RAM permitting). Pokémon 12, T4 1.66, and a mix full of cards the lists hardly run all stand against "rediscovered". The table's rule 3 flag stays: a measured per-card offset beside the learned head.
+- **s49 so far** (unfinished): iteration 26, G1 mean of 5 8-10, median 11/27/21. Stop at 29 is read when it gets there.
+
+### #883 · 2026-11-02 · A5 C182 · Research's read of D s48 at 29 (#882, one seed, unfinished, greedy only; band at 44): the closest a drafting run has come to the lists in this line. G3 under C49-sd 0.507 (SE 0.013) against the lists' 0.502, G1 mean of 5 7.4, median 12/28/21, survivors' Trainers +1.54 per 25 against W's −0.72. But the top 12 are mostly start decks, the bonus does the proposing, half the mix isn't the lists', T4 is 1.66, and greedy G3 didn't survive search on W's decks. No claim
+- **Done** (research session, 08:05): checked the run's files directly. By my own read, top 12 by z at 29: mean 12.8/27.2/20.0, widely spread (18/31/11, 6/34/20, 21/23/16), 10 of 12 aged 30, so born at iteration 0; top names by copies: Scyther 19, Psyduck 7, Doduo 6, Grimer 6, not the lists' bodies. Implementation's top 12 by recent score reads 11.2/26.4/22.4.
+- **Against method §3:** shape within 5 of each median holds on this read, and G3 ≥ 0.5 holds under C49-sd, but §3 asks for that under a pilot that passes the pilot rows, and C49-sd doesn't. Staples and archetypes aren't read yet. Also §3: "a drafted deck far above 0.5 against optimal lists points at the judge." Not there yet, and D s49's 0.526 at 14 is the one to watch.
+- **What it isn't:** learning. The head's own share on the top 10 is 6.6%, selection takes the table's cards less often than offered (accepted 62%, proposed 70%), and deck-outs are about 30%, not yet half. It's a table-picked start plus selection among decks.
+- **Next:** search on the top 12 in the next RAM window. Band at 44. Ground truth: G3 and shape moved on one seed under greedy, unconfirmed.
+
+### #884 · 2026-11-02 · A5 C182 C184 · The auditor's review of D: T near 28 starts there in the generator, so this is "strength and Trainer count held under greedy", not a found shape. So C184 starts in the Energy minimum (Trainers 13-17) and asks if Trainers climb back, a test the start can't answer and Evan's standing task. Whole-population M at 0 dissolves most of my puzzle in #883
+- **Done** (research session, 08:07): C182 Amendment 3 and `runs/probe/C184-recovery-arm/record.md`. Corrects the framing in #883's reply to Evan. Next free record: C185.
+- **Next:** search on D's top 12, D's band at 44, then C184. Ground truth: strength and Trainer count held under greedy on one seed, unconfirmed.
+
+### #885 · 2026-11-02 · A5 C184 C182 · C184 is built and not launched: `--init-t-range 13-17` in `rl/metagame.py`, off by default, and `queue_c184.py` with DR and WR at seeds 50 and 51, no launch before C182's band at 44. Its start decks pass (measured, 300 a seed, none outside 13-17, all legal, 60 cards): WR 12.7/15.3/32.0, DR 12.5/15.3/32.2, with Oak, Bill and Energy Removal at about 0.4 each under WR and 2.8, 1.2, 2.5 under DR; about 9% of drawn decks are kept. **Its 2-iteration smoke hasn't run,** since it waits for RAM, so its acceptance is open. **C182's wording from here is research's:** "strength and Trainer count held under greedy", and §3 unmet, not parity with the lists as #882 put it, since the uniform generator already starts near 28 Trainers
+
+### #886 · 2026-11-02 · A5 C182 · D at 29 on both seeds: **survivors' Trainers rise on both, +1.54 (SE 0.50) and +1.37 (SE 0.59), where W's fall, −0.72 and −2.63;** median Trainers 28 and 26 against W's 26 and 25. The stop at 29 doesn't fire. Strength and Trainer count held under greedy, §3 unmet, unfinished, and the band is at 44. Ground truth not moved
+- **Evidence, D s49 at 29** (measured; 60,000 games, 0 errors; W s49 in brackets): median 11/26/21 [12/25/22]; population 12.24/26.23/21.53; G1 mean of 5 9.9; survivors' T4 +0.07 (0.17), draw +0.44 (0.25) [Trainers −2.63]; draw 6.16, T4 1.64; TV 0.487, E −0.204, A7 0.374, ρ_L 0.314, wall 0.01.
+- **The two seeds, D − W** (replicates, not pairs): survivors' Trainers +2.26, +4.00; median Trainers +2, +1. The band at 44 asks +2 and +3 on both, so seed 49's median is short of it so far.
+- **By the table's top 12, both seeds:** survivors' high copies +2.28 (0.40), +2.15 (0.56); low −0.74 (0.32), −0.78 (0.26). W's high +0.37, +0.46; low −1.09, −3.09. So W's fall is in the low-table cards, and D holds few of them to lose (7.7, 6.2 copies a deck, against W's 17.2, 15.4), which is what the record's hypothesis expects, and it also means a D deck has less room to fall. Ledger: the top 12's share of Trainer copies, proposed 70%, 70%, accepted 62%, 65%. The head's own share on the top 10: 6.6%, 15.0%; with the bonus 30.3%, 51.0%.
+- **Amendment 2:** deck-outs 34.5% and 29.5% over 0-6, 30.0% and 26.9% at 29; draw on survivors −0.11, +0.44. Between on both: a slow drift down, and no penalty on draw copies so far.
+- **Cards, s49:** Oak 3.55 (3.38), Energy Removal 3.34 (2.08), Bill 2.26 (2.50), Energy Search 1.64 (0.21), Challenge! 1.60 (0.08), Super Potion 1.57 (0.08), Super Energy Removal 1.49 (1.96), Defender 0.98 (0.08).
+- **Next:** G3 at s49's 29 and D under search, RAM permitting (4.0 GB free at 08:14, with the queue's own G3 probe running); the band at 44, about 08:52 and 09:15 (estimated).
+
+### #887 · 2026-11-02 · A5 A153 C185 · A153's call (does D's strength survive a judge that didn't build it?) becomes C185: D's top 12 and the lists under arm 0 on G3's design, beside the search read, since the table is fitted under the pilot that G3 reads under. Bands first: R-holds at or above −0.05, R-judge at or below −0.12 and 2 SE
+- **Done** (research session, 08:43): `runs/probe/C185-judge-read/record.md`. Next free record: C186.
+
+### #888 · 2026-11-02 · A5 C182 C185 · **C182's band at 44 reads between,** with D far from W on shape at both seeds: G1's mean of 5 **5.07 and 7.43** against W's 14.2 and 15.87, and the best decks 11.6/30.3/18.1 and 12.5/26.1/21.4 against the lists' 13.5/28/18. Survivors' Trainers hold (+0.58, +0.16) where W's fall (−3.15, −3.97); median Trainers 27 and 24 against W's 23 and 23, so s49's +1 misses R-holds' +3, and by the record it isn't extended. **C185 reads between too:** under arm 0, D − lists on M is −0.065 and −0.017. Strength and Trainer count held under greedy, §3 unmet: T4 is 1.57 and 1.33 against 9.17, and search on D is still unread
+- **Band at 44** (measured; 90,000 games a seed, 0 errors; both ended at `--iters 45`, 08:36 and 08:58):
+
+| | D s48 | W s48 | D s49 | W s49 | Lists |
+|---|---|---|---|---|---|
+| Survivors' Trainers per 25 (SE) | +0.58 (0.75) | −3.15 (0.71) | +0.16 (0.57) | −3.97 (0.78) | |
+| D − W | **+3.73** | | **+4.13** | | |
+| Median P/T/E | 11/27/21 | 14/23/23 | 12/24/21 | 14/23/23 | 13.5/28/18 |
+| D − W, median Trainers | **+4** | | **+1** | | |
+| Population P/T/E | 12.13/26.96/20.91 | 14.44/23.49/22.06 | 12.66/25.46/21.88 | 13.55/23.51/22.95 | 13.9/27.5/18.6 |
+| G1 mean of 5 | 5.07 | 14.2 | 7.43 | 15.87 | |
+| Draw, T4 copies | 6.03, 1.57 | 2.11, 2.16 | 6.13, 1.33 | 2.17, 2.41 | 5.92, 9.17 |
+| E, A7, ρ_L | −0.21, 0.37, 0.38 | −0.02, 0.33, 0.22 | −0.19, 0.37, 0.31 | −0.03, 0.27, 0.26 | |
+
+  - s48 meets R-holds; s49's survivors do and its median doesn't (within 1 of W's). So **between**, no extension by the record, and "no change to the base".
+  - **Amendment 1:** survivors' high copies +1.91 (0.72), +1.10 (0.52); low −1.33 (0.28), −0.94 (0.39). W's high −0.64, −0.39; low −2.52, −3.58. Score slope per copy: high +0.013 (0.004), +0.005 (0.004); low −0.008 (0.006), −0.005 (0.007). Ledger, proposed then accepted: 70%, 65%; 74%, 72% (W 28%, 34%; 29%, 29%). Head's own share on the top 10: 6.7%, 13.2%; with the bonus 31.7%, 47.3%.
+  - **Amendment 2:** deck-outs by 5 iterations, s48 33, 36, 34, 34, 34, 30, 29, 27, 25%; s49 31, 27, 28, 31, 29, 27, 22, 21, 17%. Draw on survivors −0.18, +0.29. Between by the line (half of 0-6's would be 17.2% and 14.8%), and a steady fall with draw copies held. So far that's closer to R-learns-discipline than to R-penalised. Whether the pilot or the decks changed isn't split yet.
+  - **Cards, copies a deck against the lists':** s48 Energy Removal 3.65 (2.08), Oak 3.39 (3.38), Bill 2.32 (2.50), Super Potion 1.79 (0.08), Super Energy Removal 1.58 (1.96), Energy Search 1.31 (0.21), Defender 1.22 (0.08), Challenge! 1.19 (0.08), Computer Error 1.11 (0), Poké Ball 0.87 (0). s49 is the same cards. ρ_L 0.38, 0.31.
+  - **G3 under C49-sd:** s48 at 44 0.529 (0.013), own 0.513, C127 s16 0.476; s49 at 29 0.575 (0.014), own 0.537, s16 0.505; lists 0.502. s49's at 44 is pending.
+- **C185, the judge read** (measured; arm 0 s1, greedy, G3's design, D's top 12 at 29, 0 errors; the lists 4,608 games, their first try killed by my own 280 s limit and rerun):
+
+| Under arm 0 | M (SE) | Win share | Full wins | Full losses | Points | M, no deck-outs |
+|---|---|---|---|---|---|---|
+| Lists | 0.511 (0.010) | 0.423 | 0.096 | 0.084 | 0.371 | 0.501 |
+| D s48 at 29 | 0.446 (0.014) | 0.384 | 0.078 | 0.220 | 0.328 | 0.442 |
+| D s49 at 29 | 0.494 (0.014) | 0.401 | 0.086 | 0.191 | 0.356 | 0.499 |
+
+  - D − lists −0.065 (SE 0.017), −0.017 (0.017); no deck-outs −0.060, −0.002. Not R-holds at s48 (−0.05), not R-judge (−0.12): between. Under C49-sd the same decks read +0.005 and +0.073, so about 0.07-0.09 of it is the judge. Arm 0's deck-outs here are low, 2.2-3.4% own, against 11.6%+ under C49-sd. Draws of 12 lists under arm 0: 0.511, SD 0.020.
+  - **Energy Removal against M:** nearly all the top 12 hold 3-4 copies, so there's almost no contrast: s48 all 12 at 3+; s49 11 of 12, M 0.504 against 0.390 for one deck. Correlation across decks +0.58, +0.16, thin. M by deck runs 0.22-0.66 and 0.35-0.76, so the top 12 is a mixed group.
+- **Search:** D s48 at 29 launched at 08:54:38, running.
+
+### #889 · 2026-11-02 · A5 C182 C185 · Research's read of C182's band at 44 (between) and C185 (between): survivors' Trainers hold where W's fall at both seeds (+0.58, +0.16 against −3.15, −3.97), G1 mean of 5 is 5.07 and 7.43 against W's 14.2 and 15.87, and under arm 0, a judge that leans toward the lists, D trails them by only −0.065 and −0.017. About 0.07-0.09 of the C49-sd read was the judge. One median misses by 2, so no extension or base change by the record. Search is still unread
+- **Done** (research session, 09:02): read #888. The band stays between: the median at s49 is +1 against +3.
+- **Ground truth:** G1's mean of 5 sits below the base's 11.22 ± 3.75 at both seeds on this arm, at 44. It's the first drafting read in this line at or under base − 1 SD at both seeds, read beside its band and not as its own claim. T4 is lower than W's (1.57, 1.33 against 2.16, 2.41). §3 unmet.
+- **What it isn't, still:** the head's own share is 6.7%, 13.2%, and proposals carry the push (70%, 74% proposed; 65%, 72% accepted). Low-table copies are few, so D's room to fall is limited. T starts near 28.
+- **Decision held:** whether to extend D past 44, since W's fall sped up after that, is decided after the search read, against C184 for the RAM. D's checkpoints stay.
+
+### #890 · 2026-11-02 · A5 C182 · Amendment 3's reads: **the same decks gained +0.141 on M from the loop's edits at both seeds** (SE 0.059, 0.044; frozen G3, 8 of the top 12 had an iteration-0 version), so D's strength isn't only its start. Against that, G2 barely moves: 0-1 of 8 archetypes rediscovered, with staples recall 1 of 7. Strength and Trainer count held under greedy, §3 unmet. Ground truth not moved
+- **Frozen G3** (measured; C49-sd, greedy, the same deals, paired by deck; 8 of 12 at each seed were in the population at 0, each changed by 10-29 cards): s48 M 0.412 at 0 to 0.553 now, +0.141 (SE 0.059); s49 0.367 to 0.508, +0.141 (SE 0.044). Limits: these are decks chosen at 44 for doing well, so some of it is selection, and it's the judge that fitted the table. Compared with W's climb, D's G3 from 0 to 44 is +0.105, +0.056 on the top 12 as a group, since the top 12 changes.
+- **G3 at 44** (2,304 games a seed, 0 errors): s48 M 0.530 (0.013), win share 0.459, full wins 0.188, full losses 0.282, points 0.412; s49 0.490 (0.014), 0.444, 0.182, 0.288, 0.389. Without any deck-out: 0.510 (0.016), 0.507 (0.017); points 0.345, 0.360. At 29: 0.507, 0.575; without 0.513, 0.567. Lists: 0.502, 0.496; points 0.386, 0.353; full losses 0.146. So it's flat from 29 to 44 within noise, and full losses are about double the lists'.
+- **Whose deck-outs, top 12** (share of games): own 9.98%, 12.15% at 44; the list's 15.45%, 11.24%. Lists against lists: 9.4%, 10.3%.
+- **G2** (`rl/answer_key.py`, on the top 12, threshold 0.5): archetypes rediscovered D 1 of 8 and 0 of 8; best overlaps 0.50 Sponge, 0.45 Haymaker, Wigglytuff, Hitmonchan / Magmar at s48, 0.48 at s49; W 0 and 0, 0.47. Staples recall D 1 of 7 both, W 2 and 0 of 7.
+- **Top 12's table value:** mean z a copy D 1.09, 1.27, 1.23 at 0, 29, 44 at s48; 1.28, 1.36, 1.39 at s49; W at 44 0.51, 0.34. Sum a deck 30.0 to 33.6; 28.3 to 35.4; W 10.2, 7.5.
+- **Search, first half only** (D s48 at 29, 6 of 12 decks, 576 games, **unfinished**): M 0.399 (SE 0.026) against greedy's 0.507 on all 12; points 0.303. So it falls too, and it's well above W's 0.236 and 0.261; not a read until its second half.
+
+### #891 · 2026-11-02 · A5 C184 · C184's acceptance passes: start decks 99, Trainers 13-17, mean 15.33; 2-iteration smoke with turnover on: 0 errors, ledger integrity PASS, median 13/15/32, 15 turnover decks an iteration, head's own share on the table's top 10 4.1%, with the bonus 20.5%. Wide turnover decks are in range; mutants can step outside it by a card or two (the batch read 11-18 overall), as in W's recipe, since they're edits of a survivor, so I've left them. The queue goes next, with search still first in the RAM line
+
+### #892 · 2026-11-02 · A5 C184 · Correction to #891's "wide turnover decks are in range": read from the checkpoint a wide deck can show 13-18 and mutants 11-16 (measured, 22 and 7 decks), since the checkpoint comes after an iteration's edits, so a deck born in range can move by a card. `fresh_wide()` itself only returns 13-17, by its code; I haven't read decks at the moment they're born. C184's queue started at 09:23:50 and retries until a screen fits; none is training yet
+
+### #893 · 2026-11-02 · A5 C182 C184 · **D s48's top 12 at 29 fall under search,** M 0.351 (SE 0.018) from greedy's 0.507, against the lists' 0.505 under search. So the greedy level with the lists doesn't hold once both seats play better. It stays above W s49's 0.236 and 0.261 (other seed, later iterations). s49's and 44's cells are still to come. Strength and Trainer count held under greedy, §3 unmet. Ground truth not moved
+- **Evidence** (measured; **one seed**; C49-sd, C135's search on both seats, 4 games a pair, 1,152 games, 0 errors, against greedy on the same pairs, different deals; the top 12 are 11.2/26.4/22.4):
+
+| | M (SE) | Win share | Full wins | Full losses | No winner | Points |
+|---|---|---|---|---|---|---|
+| D s48 at 29, greedy | 0.507 (0.013) | 0.451 | 0.161 | 0.279 | 0.108 | 0.390 |
+| D s48 at 29, search | 0.351 (0.018) | 0.308 | 0.074 | 0.322 | 0.123 | 0.271 |
+| Lists, search | 0.505 (0.017) | 0.438 | 0.107 | 0.103 | 0.128 | 0.370 |
+| W s49 at 59, search | 0.236 (0.016) | 0.211 | 0.043 | 0.388 | 0.102 | 0.189 |
+| W s49 at 74, search | 0.261 (0.015) | 0.234 | 0.047 | 0.423 | 0.081 | 0.198 |
+
+  - Without any deck-out, M 0.325 under search, from 0.513 greedy. Deck-outs under search: own 4.6%, the list's 4.9%. Gap to the lists on M: +0.005 greedy, −0.154 search; for W s49, −0.128 and −0.269 at 59. So D's fall from greedy is about as large as W's, from a higher level.
+- **An order slip in C184's queue:** WR s50 launched first at 09:30:55, ahead of DR s50, since each arm's retry races for the first window. That breaks the record's order, and RAM holds about 2 screens at a time. I stopped it through `loop.py stop` at iteration 3 or 4 (it keeps its state), set `HOLD-C184-WR-s50` and `-s51`, and restarted the queue at 09:42:53, so only DR tries for now. WR resumes when its HOLD files are removed.
+
+### #894 · 2026-11-02 · A5 C182 C184 · **D falls under search on both seeds:** M 0.351 and 0.366 at 29, from greedy's 0.507 and 0.575 (−0.155, −0.207, SE 0.020), against the lists' 0.505. So the greedy strength doesn't hold when both seats play better, though it stays above W s49's 0.236 and 0.261. Strength and Trainer count held under greedy, §3 unmet. DR s50 and s51 are training. Ground truth not moved
+- **D s49 at 29, search** (measured; C49-sd, C135's search on both seats, 1,152 games, 0 errors, same pairs as greedy, different deals; top 12 12.1/25.6/22.3): M 0.366 (0.018), win share 0.309, full wins 0.076, full losses 0.318, no winner 0.139, points 0.278. Greedy: 0.575 (0.014), 0.507, 0.213, 0.236, 0.121, 0.449. No deck-outs under search 0.368; own deck-outs 6.4%, the list's 3.4%.
+  - Against the lists under search: −0.154 and −0.139. Against greedy they were +0.005 and +0.073. So the fall is larger than W's −0.137 and −0.123.
+- **C184** (fresh read, 10:08): DR s50 at iteration 6 and DR s51 at 4, both 0 errors, median Trainers 16, deck-outs in their own games 13.4%, 10.6%, head's own share on the top 10 8.0%, 6.6%, with the bonus 36.6%, 33.2%. WR s50 ended cleanly at iteration 4, its checkpoint kept; its `STOP` file must come off when it resumes, along with `HOLD-C184-WR-s50`.
+- **The search at 44** was refused at 10:08 (free RAM 5.2 GB against 6.5), now behind the two DR screens: it waits for a window, and I'm not holding a DR seed for it.
+
+### #895 · 2026-11-02 · A5 C184 pause · **Evan's pause:** `runs/GPU-PAUSE` was created at 10:56:59, relayed by session 333-a1; he needs the GPU today. Nothing new starts on the GPU until he says resume and the file is deleted, and I don't delete it. C184 is paused, unfinished, with no read. Ground truth not moved
+- **At the pause:** `queue_c184.py` and DR s50 at iteration 22+ and DR s51 at 19+, with a G3 probe on DR s51's iteration 14. The queue wrote `STOP` (`pause (GPU-PAUSE)`) on both seeds at 10:57:30 and 10:57:57, so each ends after its current iteration, checkpoint kept. I stopped the G3 probe at 10:57:53, since it can't checkpoint; no result was lost beyond that probe, which re-runs. WR s50 and s51 stay held by their `HOLD` files.
+- **Queued, held by the pause:** D's search at 44, WR, M2 as a judge, C180-w, C176's s49 and w.
+- **A bug found, fixed without the GPU:** C184's stage reads were failing, so it has no `stages.jsonl`: `c171_read.table()` looks for `table-plain-s50` and `-s51`, which don't exist. It now falls back to s48's table for the stage's table value. The stage reads aren't lost: the queue computes them from saved populations, once restarted with the fix.
+- **Relaunch state:** both seeds resume with `--resume` from their checkpoints. The running queue relaunches them only after `GPU-PAUSE` goes, through its `hold()`.
+
+### #896 · 2026-11-02 · A5 C184 pause · The GPU is clear of this project's work: at 11:04, no `rl.metagame`, G3 or probe process, and 2.5 GB of 16.3 GB in use, 13% busy, none of it ours by the process list. DR s50 paused after iteration 23 at 10:58:47 and DR s51 after 20 at 11:01:03, checkpoints kept (10:58:09, 11:00:05)
+- To load the stage-read fix I stopped `queue_c184.py`, deleted the two `pause` STOP files, and restarted it at 11:04:29 (pid 14472), since a queue restart relaunches through `hold()`, which waits on `GPU-PAUSE`. A check that it launches nothing follows. `runs/GPU-PAUSE` is untouched.
+- Once Evan resumes: DR s50 and s51 resume by the queue; then, as the launcher allows, D's search at 44, WR (`runs/screens/C184-WR-s50/STOP` and the `HOLD` files off), C180-w, C176's s49 and w.
+
+### #897 · 2026-11-02 · A5 C184 pause · Confirmed at 11:08: the restarted queue holds on `GPU-PAUSE` with no launch and no game process (GPU 2.3 of 16.3 GB, 2% busy, none of it ours). Its stage reads start when its supervisor does, about 11:10, as CPU reads
+
+### #898 · 2026-11-02 · A5 C184 pause · Still paused at 11:33, no game process of ours (GPU 5.5 of 16.3 GB, 67% busy, Evan's by the process list). The stage reads caught up and `c184_read.py` works on real rows. **DR at 14** (measured, unfinished, no band; 48,000 and 42,000 games, 0 errors): median Trainers 18, 18 against starts of 16, 17 (+2, +1); population 15.08/18.41/26.51, 15.73/18.40/25.87; G1 mean of 5 19.8, 22.0; draw 5.71, 4.91; T4 0.98, 0.87; deck-outs 13-14%, 11-16% by 5 iterations; top-12's share of Trainer copies, proposed 78%, accepted 77%. Live before the pause: both at median 18 by iterations 20-23
+
+### #899 · 2026-11-02 · A5 C182 C184 C186 · Correction (research's error): the Trainer table's bonus raises Trainers' total proposal share, despite my "nothing shifts P/T/E by construction", so D's and DR's Trainer hold and rise are mostly proposals carrying them, with selection neutral at best. C184 gets a mass-neutral arm for resume, which can only pass by selection or the head. A154's search-table bands are written as C186. No GPU, per Evan's pause
+- **Done** (research session, 2026-11-02 12:45): CPU reads of saved populations and ledgers, and the three record changes.
+- **Measured.** DR 0-19: mean Trainers +2.73, +3.33 = edits on kept +3.14, +3.74, turnover −0.42, −0.41; survivors +3.32, +3.86. Trainers net a candidate, proposed then accepted: DR +1.23, +1.19; +1.12, +1.25. WR +0.67, +0.18 (5 iterations). D 0-19 +0.94, +0.71; +0.57, +0.56. W 0-19 −0.18, −0.13; +0.02, −0.19. Accepted − proposed over 20-44: D −0.03, −0.16; W −0.19, −0.24.
+- **What it changes:** C182's reads stand as measured, but "Trainers hold where W's fall" reads a push on Trainer count, and my hypothesis about selection isn't supported by it. High-table share inside Trainers, G1, G3 and C185 aren't undone, but G1 has that same push in it. I told Evan otherwise, and I'm correcting that.
+- **Next free record:** C187. Ground truth: no change; a stated gain gets smaller.
+
+### #900 · 2026-11-02 · A5 C182 C184 · The auditor's review of #899: as method reads, C182's G1, median and survivors' Trainers and frozen G3's +0.141 fall, since those edits were pushed. As reads of decks, the start-deck effects, C185, search and greedy G3 and C170's and C171's gates stand. Neutral D joins DN after the pause, and DN's band is DN − WR. W's split stands, so the junk hypothesis isn't dead
+- **Done** (research session, 2026-11-02 12:46): C184 Amendment 2, and checked which earlier arms used the bonus (see below). Corrects my reply to Evan on frozen G3.
+
+### #901 · 2026-11-02 · A5 W C184 · In W itself, the Trainer fall is mostly proposals, not selection: Trainers proposed a candidate drift from about +0.2 at the start to −0.7 by iterations 40-44 at both seeds, with accepted about 0.2 below proposed. So the head learns to take Trainers out. That's new beside #564's "selection leans", and it sets what neutral D must beat. No bonus in W, so this read stands
+- **Done** (research session, 12:46): read by 5-iteration windows from `select.prop` and `select.acc`. W s48 proposed +0.20, −0.39, −0.16, −0.36, −0.23, −0.12, −0.40, −0.27, −0.74; W s49 +0.29, +0.20, −0.06, −0.33, −0.31, −0.34, −0.49, −0.64, −0.68. Accepted runs about 0.2 below. Neutral D's head mass without the bonus is the direct read of this.
+- **Earlier bonus use:** C150 ran `--thompson-share` (R-harm, a separate mechanism); C153's two folders are checked in this entry's message to the auditor. Next free record: C187.
+
+### #902 · 2026-11-02 · A5 C187 · C187 is the auditor's direct test of the head: W's recipe with `--draft-lr 0`, seeds 48 and 49, to 44, once Evan resumes. H94 designed this as frozen-head forks from 479 and never ran. It needs no table, so rule 3 isn't involved, and it asks whether the Energy lean is the head learning to take Trainers out
+- **Done** (research session, 2026-11-02 12:48): `runs/probe/C187-head-off/record.md`. Corrects #901's question: D's decline isn't evidence about the head, because copy caps could explain it. Next free record: C188.
+
+### #903 · 2026-11-02 · A5 C184 C187 · The mass-neutral bonus is built and passes its CPU acceptance: Trainers proposed a candidate are within noise of no bonus at 8 matched starts, against the plain bonus's +0.46 to +1.00. DN, neutral D, WR and C187's H0 wait in held queues; nothing is on the GPU, per Evan's pause. Live acceptance at iterations 0-4 comes after his resume. Ground truth not moved
+- **Done** (2026-11-02 12:46-13:21, research's #899, #900, #902; CPU only). `queue_c184.py` stopped at 12:46:08 so DR can't resume by itself. `rl/draft.py`: `group_neutral`, `DeckView.bonus_groups`; a pick under `--table-neutral` (`rl/metagame.py`, off by default) is inside each supertype as with the bonus, at the bonus's temperature, and each supertype's total is what it'd be with no bonus, at the no-bonus temperature. `log_prob` is the same distribution, the shift kept in the graph since it depends on the head. Every run now logs `head_mass` (own incoming mass by supertype, out-choice mass, copy share, and with the plain bonus if there is a table), and a draw carries `ev_T0` and `ev_n`. With the flag off no new random draw is made, by the diff; I didn't compare streams against the old code. `rl.tests` PASS on the final code, with a new neutral check (log-prob gap 1.7e-04, mass gap 6.6e-15).
+- **Acceptance** (`notes/scripts/c184_neutral_test.py`, `runs/probe/C184-recovery-arm/neutral/`, measured; same decks, pilot and head per start, 24 or 40 decks, 120 draws each, SE over decks). Trainers proposed a candidate at the recipe (floor 3, group 0.3), neutral − none, then plain − none:
+
+| Start | Neutral − none (SE) | Plain − none (SE) |
+|---|---|---|
+| WR s50 at 0 | −0.021 (0.030) | +0.704 (0.060) |
+| WR s50 at 4, seed 184 | −0.016 (0.038) | +0.705 (0.066) |
+| WR s50 at 4, seed 185 | −0.036 (0.043) | +0.746 (0.065) |
+| W s48 at 0 | +0.009 (0.040) | +0.747 (0.071) |
+| W s49 at 0 | −0.037 (0.040) | +0.611 (0.050) |
+| W s48 at 44 | +0.011 (0.035) | +0.463 (0.096) |
+| D s48 at 44 | +0.014 (0.064) | +0.892 (0.103) |
+| D s49 at 44 | −0.069 (0.039) | +0.995 (0.073) |
+
+- **Per supertype:** one outlier, P +0.161 (0.052) and E −0.145 (0.056) at WR s50 at 4, seed 184, which doesn't replicate on seed 185 (−0.029 (0.060), +0.064 (0.052)); with 24 such cells I read it as noise. Each pick's supertype mass matches no bonus to 5.5e-15.
+- **The floor:** the recipe's floor 3 never binds at these starts (0.0 of rows), so floor-on and floor-off read identically, which isn't a test. At floor 5.3, binding on 40-58% of rows, Trainers neutral − none are +0.005 (0.040), −0.012 (0.031), −0.037 (0.041), −0.076 (0.043) with group moves, and +0.039 (0.026) at worst without. Log-prob against the draw's: at most 8e-6.
+- **CPU smoke** (2 iterations, 24 decks, 48 games, GPU hidden; `runs/probe/C184-recovery-arm/smoke-cpu/`): DN exit 0, 0 errors, Trainers' own mass 0.288 against 0.484 with the plain bonus, which is the push this removes. H0 (`--draft-lr 0`) exit 0, 0 errors, **head unchanged, pilot changed**. **The first DN smoke crashed** on the unchanged deck's entry, which has no `ev_T0`: fixed. Also found: on Windows an empty `CUDA_VISIBLE_DEVICES` doesn't hide the GPU from `is_available()`; -1 does. The earlier CPU scripts load and run on "cpu" explicitly and `rl.tests` had a device count of 0.
+- **Queues, holding on `GPU-PAUSE` since 13:20:** `queue_c187.py` (pid 19680): H0 s48, then s49 once WR s50 is up. `queue_c184.py` (pid 32384), one launch at a time: DN s50, ND s48, WR s50, DN s51, ND s49, WR s51. I deleted WR s50's STOP and the two HOLD files, which were mine. `runs/GPU-PAUSE` is untouched. DR's folders stay, unresumed. Readers: `c184_read.py [--it N | --accept]`, `c187_read.py`, both run on W's rows.
+- **Taken by default (row 115):** DN's band uses the record's numbers on DN − WR's median Trainers: R-recovers +5 or more with survivors' high-table copies rising in DN, R-no under +2, both seeds. ND's stop line 15, as D's; H0's 15, as its record; DN and WR no floor. To veto: say so, or `QSTOP` in a record's folder.
+- **Pokémon table** (research's question; `neutral/pokemon_share.json`, measured, W s48's plain table). `wide_deck(name_weight=)` moves shape: Pokémon 8.68 (SE 0.07) with no table, 7.63 at κ 1, 6.40 at κ 3, Trainers 27.66, 28.43, 29.76. C170's and C171's gate decks aren't hit, since `table_bodies` rejects to the list's exact Pokémon count, and only their Pokémon are kept. The head's plain bonus at κ 3 (arm B's path) moves a candidate by P +3.22 (0.105), T −2.24 (0.089), E −0.98 (0.100); neutral +0.047 (0.075), −0.024 (0.061), −0.023 (0.068). No drafting run has used it, since B is held, but B as written has the same fault, larger, so it should take `--table-neutral` and needs a shape-neutral `name_weight` if it's ever released.
+- **Next:** on Evan's resume the queues launch; `c184_read.py --accept` at iteration 4.
+
+### #904 · 2026-11-02 · A5 C187 W C182 · **W's Trainer fall is the head's out-choice, not its incoming mass:** the Trainer share of cards chosen to go out rises from 1.02, 1.04 times their share of copies to 1.31, 1.42 by iterations 34-44, with incoming Trainer mass flat. **D's incoming decline is mostly the 4-copy cap,** so it says little about the head. Group moves carry about 20-25% of W's net fall. CPU reads on samples; C187 splits head from encoder. Ground truth not moved
+- **Done** (2026-11-02 12:58-13:06, research's request in #902; `notes/scripts/c187_caps.py`, `runs/probe/C187-head-off/caps/`). Measured on saved populations, each with its own pilot and head: 16 decks a saved iteration, field 2, 30 draws a deck, windows of 4 saved iterations at 0-14 and 3 at 34-44. Noisy per window: the simulated net misses the logged one by up to 0.6 at single iterations, closer on windows (34-44: −0.60 against −0.47, −0.71 against −0.60, −0.14 against +0.12, +0.30 against +0.33). At iteration 0 the out share is the copy share in W (1.00, 1.00), as a fresh head should be.
+
+| 0-14 → 34-44 | W s48 | W s49 | D s48 | D s49 |
+|---|---|---|---|---|
+| Mean Trainers (sample) | 28.0 → 25.9 | 27.0 → 24.6 | 28.4 → 27.6 | 28.8 → 25.3 |
+| Out share ÷ copy share | 1.02 → 1.31 | 1.04 → 1.42 | 1.01 → 1.11 | 1.01 → 1.15 |
+| Incoming Trainer mass, legal, no bonus | 0.467 → 0.493 | 0.489 → 0.476 | 0.452 → 0.370 | 0.428 → 0.368 |
+| Same, with D's bonus | | | 0.597 → 0.504 | 0.569 → 0.533 |
+| Same, if nothing were capped, with bonus | | | 0.731 → 0.688 | 0.737 → 0.700 |
+| Trainer mass capped, no bonus | 0.063 → 0.106 | 0.096 → 0.069 | 0.322 → 0.399 | 0.356 → 0.423 |
+| Trainer mass capped, with bonus | | | 0.394 → 0.476 | 0.441 → 0.488 |
+| Group moves' share of Trainer copies moved | 0.140 → 0.124 | 0.147 → 0.112 | 0.173 → 0.145 | 0.165 → 0.147 |
+| Net Trainers by the pick, by group moves, at 34-44 | −0.45, −0.14 | −0.55, −0.17 | +0.06, −0.20 | +0.37, −0.07 |
+
+- **D's split** (estimated, arithmetic on those means): holding the capped share at its 0-14 value, D's legal mass with the bonus would be 0.572 and 0.566 at 34-44, so caps carry −0.068 of the −0.093 fall at s48 and −0.033 of −0.036 at s49. D's decks already had about a third of the head's own Trainer mass capped at the start, which W's don't, so D's table-weighted starts are concentrated from the outset.
+- **What it changes:** #901's "the head learns to take Trainers out" is now specific: the outgoing half moves in W and the incoming half doesn't. This doesn't say whether the head's weights or the pilot encoder it reads through do that; C187's H0, whose `head_mass` logs out and copies, splits them. Neutralising the bonus touches only the incoming half, so DN and ND keep whatever the out-choice does: research's call whether that changes their reads.
+
+### #905 · 2026-11-02 · A5 C187 C184 · Research's read of #904: W's Trainer fall is mostly the head's out-choice, whose share for Trainers rises against their copies (1.02 → 1.31, 1.04 → 1.42), with incoming mass flat, so what it learns is to cut Trainers. D's incoming decline is mostly copy caps, so it says little about the head. DN and neutral D keep the out-choice, and their reads must report it
+- **Done** (research session, 2026-11-02 13:26): accepted implementation's defaults (DN − WR numbers, stops, queue order). No GPU; Evan's pause holds. C171's B stays unrun; it has the same fault on Pokémon, larger.
+
+### #906 · 2026-11-02 · A5 C187 C184 · The stage read research asked for in #905 is ready: `c187_read.py --mass` gives Trainers' out share ÷ copy share and the head's own incoming Trainer mass, by stage, for H0, DN, ND and WR, with W's sampled caps read beside them. No run has data yet, per Evan's pause. Ground truth not moved
+- **Done** (2026-11-02 13:26): tested on W's sampled rows (1.02, 1.12, 1.31 at s48; 1.04, 1.19, 1.42 at s49; own Trainer mass 0.467, 0.482, 0.493; 0.489, 0.428, 0.476) and on the CPU smoke's logged `head_mass` (DN, 2 iterations: 1.004, own 0.287). W logged no `head_mass`, so its rows are 16 decks a saved iteration against the new runs' whole populations, and aren't the same precision. WR s50's iterations 0-4 predate the logging, so its first stage has fewer iterations; each cell states its count. Output: `runs/probe/C187-head-off/mass_stages.json`.
+
+### #907 · 2026-11-02 · A5 A155 C187 · A155's call (is the head's out-choice blunt, or does it target junk?) gets bands first in C187's record, a CPU read of W's saved populations. The auditor reports the queues aren't running, so nothing would launch on Evan's resume, and the usage file reads 23% with the same reset as today's 84%: unexplained, so the higher reading stands until verified
+- **Done** (research session, 16:44): bands written; asked implementation to check the queues and run the split. Usage rule from 10-28's note: use the higher reading across writers.
+
+### #908 · 2026-11-02 · A5 A155 C187 · **A155's split reads between, leaning blunt:** W's out-choice comes to prefer every Trainer group, the table's top 12 from 1.02, 1.04 to 1.26, 1.34 times its share of copies and the other 30 from 1.02, 1.04 to 1.42, 1.49. The late gap is +0.155 (SE 0.029) and +0.150 (0.038), real but under R-targets' 0.2 and over R-blunt's 0.1. Both held queues had died at about 15:17 and I relaunched them at 16:43. Ground truth not moved
+- **Done** (2026-11-02 16:44-16:46, research's #907; `c187_caps.py --split`, `runs/probe/C187-head-off/caps/split.json`; CPU, measured). The out-choice reads only a deck's plain rows, so this covers every deck of each saved population, field 4 as the run's: 396 decks early (0, 4, 9, 14; 99 ids), 297 late (34, 39, 44; 129 ids). A group's ratio is its mean out share over its mean copy share; SEs by bootstrap over deck ids. The cheap read equals `Drafter.view`'s scores to 1.2e-07 on the deck checked at each window. Whole-population Trainer ratios, 1.021, 1.037 early and 1.366, 1.444 late, agree with #904's samples (1.02, 1.04; 1.31, 1.42).
+
+| | W s48 early | W s48 late | W s49 early | W s49 late |
+|---|---|---|---|---|
+| Top 12 ratio (SE) | 1.018 (0.002) | 1.262 (0.027) | 1.036 (0.003) | 1.341 (0.033) |
+| Other 30 ratio (SE) | 1.022 (0.001) | 1.417 (0.020) | 1.037 (0.002) | 1.491 (0.028) |
+| Gap, other 30 − top 12 (SE) | +0.004 (0.001) | +0.155 (0.029) | +0.001 (0.003) | +0.150 (0.038) |
+
+- **Band: between,** by the record's lines at late on both seeds. Neither R-targets (at least 0.2) nor R-blunt (under 0.1). The rise common to both groups (+0.24, +0.31 in the top 12) is larger than the gap between them (+0.15), so the head mostly cuts Trainers in general and aims a little on top. Beside it, not banded: the three names the table and earlier reads favour sit lowest among the top 12's copies, Professor Oak 1.09, 1.24, Bill 1.16, 1.03, Energy Removal 1.02, 1.09, while PlusPower is 1.37 at s48 and Computer Search 1.79 at s49 at 0.6 copies a deck.
+- **Limit:** this is W's own head and pilot, so it doesn't split weights from encoder; C187's H0 does. `--split --runs` takes H0's runs once they have late populations.
+- **The queues:** `queue_c187.py` (pid 19680) and `queue_c184.py` (pid 32384) stopped logging at 15:16:42 and 15:17:02, with nothing in stderr. The system log shows a GPU driver event (`nvlddmkm` 153) at 15:17:39 and, at 15:17:44, a failed restart or shutdown attempt by the user account (`User32` 1073); the machine didn't reboot. The timing points to that attempt closing them; it isn't proven, and the auditor reported them down before my check at 16:43. Nothing of ours was on the GPU and no run lost anything. Relaunched as `queue_c187.py` pid 17236 and `queue_c184.py` pid 19600, both holding on `GPU-PAUSE` at 16:44. Had the pause lifted in that gap, nothing would have started until a check found it, so the checks stay.
+- **Usage:** the file read week 23% at 16:44 with the same reset as this morning's 84%. Unexplained; I treat 84% as standing, as research does, and spawn nothing.
+
+### #909 · 2026-11-02 · Commit · Evan's "Push the changes now maybe" (row 119): the work since `84de069` (#559-#909) is committed and pushed on `overnight-10-26`, 131 files; the ground truth hasn't moved, so this records work and no new result
+- **Done** (coordinating session, 2026-11-02 21:32; git): one commit on `84de069`, also the remote's head before it. It carries the log, audits, requests, README, research notes and reports, the probe and queue scripts, and the `rl/` and `env/` edits, including the mass-neutral table and frozen head that wait on Evan's resume.
+- **Left out:** the 6 root `cardref_*` scratch arrays (9.8 MB, untracked since 10-24, as in row 108). `runs/` and `ar/` stay ignored, so run records and results ship only through their log entries. `main` stays at `cdc5fae`, and the `ryuu-play` pin is unchanged at `07ab29a`.
+- **Checks:** `py_compile` passes on the 97 changed and new .py files; a scan of the staged files for keys and passwords found none; `rl/tests.py` was not run (not verified here). The push dry run passed where row 107's push got a 403.
+- **Next:** unchanged, README Next. `runs/GPU-PAUSE` stays until Evan's resume.

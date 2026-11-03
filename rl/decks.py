@@ -115,13 +115,20 @@ def deck_shape(pool: Pool, v: np.ndarray) -> dict:
             "special_energy": int(v[[c["id"] for c in pool.cards if c["superType"] == 3 and c["energyType"] != 0]].sum())}
 
 
-def wide_deck(pool: Pool, rng) -> np.ndarray:
+def wide_deck(pool: Pool, rng, concentrated: bool = False, focus=(), focus_copies: int = 0, name_weight: dict = None, trainer_weight: dict = None) -> np.ndarray:
     """A random deck with a playable structure and no strategy, for the pilot's practice (log #127; log #42's generator,
     on which pilot-v2 learned, over the whole pool): 1-4 Pokémon lines (a Basic, 1-4 copies; a Stage 1 of it 60% of
     the time, 1-3 copies, and then a Stage 2 of that half the time, 1-2 copies), an Energy count drawn uniformly from
     8-34, each basic Energy of one of the lines' types 75% of the time and any basic type otherwise, and the rest
     Trainers and special Energy drawn uniformly. It reads only what the rules give (stages, what evolves from what, a
-    Pokémon's type, the Energy a card provides); no human list or deck shape enters it."""
+    Pokémon's type, the Energy a card provides); no human list or deck shape enters it.
+    concentrated (C156, off by default): each line at the top of its copy range (a Basic 4, a Stage 1 3, a Stage 2 2), the Trainer
+    slots 6-8 distinct Trainers drawn uniformly at 3-4 copies each, and the basic Energy (typed as above) whatever fills the deck to 60,
+    a draw whose Energy count falls outside 8-34 drawn again; no special Energy. Still rules-only.
+    focus (C159, with concentrated): these Trainer ids are always among the Trainer picks, the rest drawn uniformly as above;
+    focus_copies (C160): the focus Trainers' copies, instead of 3-4 drawn.
+    name_weight (C170, off by default): a Pokemon's pick at each stage is weighted by its name's weight (1 if absent).
+    trainer_weight (C182, off by default, the standard branch): a limited pick is weighted by its name's weight (1 if absent, as special Energy)."""
     ok = [c for c in pool.cards if pool.allowed[c["id"]]]
     basics = [c for c in ok if c["superType"] == 1 and c["stage"] == 2]
     evolves = {}
@@ -130,6 +137,17 @@ def wide_deck(pool: Pool, rng) -> np.ndarray:
             evolves.setdefault(c["evolvesFrom"], []).append(c)
     limited = [c["id"] for c in ok if c["superType"] == 2 or (c["superType"] == 3 and c["energyType"] != 0)]
     energy = [c for c in ok if c["superType"] == 3 and c["energyType"] == 0]
+    trainers = [c for c in ok if c["superType"] == 2]
+    lim_p = None
+    if trainer_weight:
+        lim_p = np.array([trainer_weight.get(pool.name[cid], 1.0) for cid in limited], dtype=float)
+        is_t = np.isin(limited, [c["id"] for c in trainers])
+        lim_p[is_t] *= is_t.sum() / lim_p[is_t].sum()     # the Trainers' total share as uniform, so P/T/E don't shift by construction
+        lim_p /= lim_p.sum()
+
+    def weights(cs):
+        w = np.array([name_weight.get(c["name"], 1.0) for c in cs], dtype=float)
+        return w / w.sum()
 
     def room(v, cid):
         return MAX_COPIES - int(pool.name_counts(np.where(pool.basic_energy, 0, v))[pool.name_of[cid]])
@@ -140,25 +158,45 @@ def wide_deck(pool: Pool, rng) -> np.ndarray:
     while True:
         v = np.zeros(pool.n, dtype=np.int32)
         types = set()
-        for i in rng.choice(len(basics), size=int(rng.integers(1, 5)), replace=False):
+        lines = int(rng.integers(1, 5))
+        for i in (rng.choice(len(basics), size=lines, replace=False, p=weights(basics)) if name_weight else rng.choice(len(basics), size=lines, replace=False)):
             b = basics[i]
-            add(v, b, int(rng.integers(1, 5)))
+            add(v, b, 4 if concentrated else int(rng.integers(1, 5)))
             types |= {t for t, x in enumerate(b["types"]) if x}
             s1 = evolves.get(b["name"], [])
             if s1 and rng.random() < 0.6:
-                e1 = s1[rng.integers(len(s1))]
-                add(v, e1, int(rng.integers(1, 4)))
+                e1 = s1[rng.choice(len(s1), p=weights(s1))] if name_weight else s1[rng.integers(len(s1))]
+                add(v, e1, 3 if concentrated else int(rng.integers(1, 4)))
                 s2 = evolves.get(e1["name"], [])
                 if s2 and rng.random() < 0.5:
-                    add(v, s2[rng.integers(len(s2))], int(rng.integers(1, 3)))
+                    e2 = s2[rng.choice(len(s2), p=weights(s2))] if name_weight else s2[rng.integers(len(s2))]
+                    add(v, e2, 2 if concentrated else int(rng.integers(1, 3)))
         typed = [e for e in energy if any(e["provides"][t] for t in types)] or energy
+        if concentrated:                                 # C156: a few Trainers at 3-4 copies, then Energy to 60
+            n_t = int(rng.integers(6, 9))
+            if focus:                                    # C159: the rotation's focus Trainers, then the usual draw for the rest
+                rest = [c for c in trainers if c["id"] not in focus]
+                picks = [c for c in trainers if c["id"] in focus] + [rest[i] for i in rng.choice(len(rest), size=max(0, n_t - len(focus)), replace=False)]
+            else:
+                picks = [trainers[i] for i in rng.choice(len(trainers), size=n_t, replace=False)]
+            for c in picks:
+                add(v, c, focus_copies if focus_copies and c["id"] in focus else int(rng.integers(3, 5)))
+            n_e = DECK_SIZE - int(v.sum())
+            if not 8 <= n_e <= 34:
+                continue
+            for _ in range(n_e):
+                pick = typed if rng.random() < 0.75 else energy
+                v[pick[rng.integers(len(pick))]["id"]] += 1
+            if pool.legal(v):
+                return v
+            continue
         for _ in range(int(rng.integers(8, 35))):
             pick = typed if rng.random() < 0.75 else energy
             v[pick[rng.integers(len(pick))]["id"]] += 1
         for _ in range(2000):
             if v.sum() >= DECK_SIZE:
                 break
-            cid = limited[rng.integers(len(limited))]
+            cid = limited[rng.choice(len(limited), p=lim_p)] if lim_p is not None else limited[rng.integers(len(limited))]
             if room(v, cid) > 0:
                 v[cid] += 1
         if pool.legal(v):
@@ -175,6 +213,10 @@ def random_deck(pool: Pool, rng) -> np.ndarray:
     pokemon = [c["id"] for c in ok if c["superType"] == 1]
     limited = [c["id"] for c in ok if c["superType"] == 2 or (c["superType"] == 3 and c["energyType"] != 0)]
     energy = [c["id"] for c in ok if c["superType"] == 3 and c["energyType"] == 0]
+
+    def weights(cs):
+        w = np.array([name_weight.get(c["name"], 1.0) for c in cs], dtype=float)
+        return w / w.sum()
 
     def room(v, cid):
         if pool.basic_energy[cid]:

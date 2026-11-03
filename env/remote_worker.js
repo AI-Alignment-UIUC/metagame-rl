@@ -116,6 +116,29 @@ class RemoteAgent {
 // A model slot as env/agents.js PolicySearchAgent's pilot (log #148): evaluate(batch, k) -> [{ order, best, value }], best
 // the slot's top option (greedy), order best and then the rest of its k most likely options (k = 0: best alone, for the
 // search lines, which need only the move and the value). Items need env (RemoteAgent keys rows by game).
+// C138 (runs/screens/C138-search-in-loop/record.md): the drafting loop's searched games. At a main-phase decision with two or more
+// options and a legal Trainer play, the move is the searcher's (PolicySearchAgent over the learner: the top k plus every legal Trainer
+// play, dets, CRN, horizon 1, scored by V), recorded with sampled 0 so PPO's policy loss skips it, and with the policy's own V(s) as its
+// value; every other decision is the policy's own sampled action, as in an unsearched game.
+class LoopSearchAgent {
+  constructor(base, searcher) { this.base = base; this.searcher = searcher; this.slot = base.slot; this.stats = { decisions: 0, searched: 0 }; }
+  forget(game) { this.base.forget(game); }
+  async act(batch) {
+    const out = await this.base.act(batch);
+    const idx = [];
+    batch.forEach((b, i) => {
+      if (!b.env.game.decision().prompt && b.legal.length >= 2 && b.legal.some(a => b.env.current.options[a].key.startsWith('trainer|'))) idx.push(i);
+    });
+    this.stats.decisions += batch.length;
+    if (idx.length) {
+      const res = await this.searcher.act(idx.map(i => batch[i]));
+      idx.forEach((i, q) => { out[i] = { action: res[q].action, logp: 0, value: out[i].value, sampled: 0 }; });
+      this.stats.searched += idx.length;
+    }
+    return out;
+  }
+}
+
 class RemotePilot {
   constructor(slot, k) { this.slot = slot; this.k = k; this.agents = new Map(); }
 
@@ -139,7 +162,10 @@ function probeCatch(cmd, enc) {
   const onDecision = (s, answer, k) => {
     if (k < 0 || s.t.legal.length < 2) return;
     const g = s.env.game;
-    if (g.decision().prompt || prng.float() >= probe.p) return;
+    if (g.decision().prompt) return;
+    // trainerOnly (C137): only decisions where a Trainer play is legal (checked before the draw, so other decisions take no number)
+    if (probe.trainerOnly && !s.t.legal.some(a => s.env.current.options[a].key.startsWith('trainer|'))) return;
+    if (prng.float() >= probe.p) return;
     caught.push({ k, game: g.clone(), decklists: s.env.decklists, show: s.env.showOpponentDecklist });
   };
   const search = async () => {
@@ -157,6 +183,21 @@ function probeCatch(cmd, enc) {
       followups: (probe.followups && probe.followups.n) || 1 });
     const res = [];
     for (let i = 0; i < items.length; i += 32) res.push(...await S.act(items.slice(i, i + 32)));
+    if (probe.log) {                                 // C137 (log only): per probe, the top-1 and best-scored moves by key and the margin
+      const mean = s => { const v = (s || []).filter(x => x !== null); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+      fs.appendFileSync(probe.log, res.map((r, i) => {
+        if (!r.cands) return '';
+        const q = r.scores.map(mean), opts = items[i].env.current.options, keys = r.cands.map(a => opts[a].key);
+        let b = 0;
+        q.forEach((x, j) => { if (x !== null && (q[b] === null || x > q[b])) b = j; });
+        return JSON.stringify({ seed: probe.seed, top1: keys[0], best: keys[b], margin: q[b] !== null && q[0] !== null ? q[b] - q[0] : null,
+          pp: keys.some(k => k.startsWith('trainer|PlusPower')) }) + '\n';
+      }).join(''));
+    }
+    if (process.env.C137_PROBE_LOG) {                // C137's acceptance (log only): each probe's moves by key, scores and Prizes
+      fs.appendFileSync(process.env.C137_PROBE_LOG, res.map((r, i) => r.cands ? JSON.stringify({ seed: cmd.seed,
+        keys: r.cands.map(a => items[i].env.current.options[a].key), scores: r.scores, prizes: r.prizes }) + '\n' : '').join(''));
+    }
     return caught.map((c, i) => ({ k: c.k, cands: res[i].cands || null, scores: res[i].scores || null })).filter(p => p.cands);
   };
   return { onDecision, search };
@@ -387,6 +428,16 @@ async function games(cmd) {
     if (!agents[name]) agents[name] = new RemoteAgent(slot, encoding, !!cmd.greedy);
     return name;
   };
+  // C138: cmd.loopSearch = { k, dets, maxSteps, seed }; a job with lsearch: true has both seats played by LoopSearchAgent, as
+  // 'lsr<slot>' when recorded and 'lso<slot>' when not. Off (no loopSearch): nothing changes.
+  const ls = cmd.loopSearch || null;
+  const lsName = (slot, rec) => {
+    const name = 'ls' + (rec ? 'r' : 'o') + slot;
+    if (!agents[name]) agents[name] = new LoopSearchAgent(new RemoteAgent(slot, encoding, false),
+      new PolicySearchAgent(new RemotePilot(slot, ls.k || 3), tokens, { k: ls.k || 3, dets: ls.dets || 2, maxSteps: ls.maxSteps || 40,
+        seed: (ls.seed || 0) + slot, crn: true, horizon: 1, trainerOnly: true, allTrainers: true }));
+    return name;
+  };
   let k = 0;
   // judgeSearch (log #148): the jobs with "search" go to their own Runner below, the rest to the plain one as before.
   const js = cmd.judgeSearch || null;
@@ -401,6 +452,7 @@ async function games(cmd) {
     const [a, b] = [cmd.decks[ia], cmd.decks[ib]];
     const rec = !!cmd.out && job.rec !== false;
     const seat = i => {
+      if (job.lsearch && ls) return lsName(cmd.slots ? cmd.slots[i] : 0, rec);   // C138: a searched game, both seats
       if (!job.bot || i !== job.j) return pilot(i, rec);
       if (!agents['bot:' + job.bot]) agents['bot:' + job.bot] = bots[job.bot]();
       return 'bot:' + job.bot;
@@ -411,6 +463,7 @@ async function games(cmd) {
   };
   const recorded = new Set();
   for (const s of new Set(cmd.slots || [0])) recorded.add(pilot(cmd.slots ? cmd.slots.indexOf(s) : 0, true));
+  if (ls) for (const s of new Set(cmd.slots || [0])) recorded.add('lsr' + s);   // C138: recorded searched games (C138-S)
   const runner = new Runner(enc, { concurrency: cmd.concurrency || 64, deckoutWin: cmd.deckoutWin ?? 1,
                                    maxTurns: cmd.maxTurns || 0, roundTurns: cmd.roundTurns || 0 });
   // Searched games (log #148): both seats of deck i's model slot played by PolicySearchAgent (k candidates from the slot's
@@ -418,6 +471,7 @@ async function games(cmd) {
   // run alongside the plain one (a Runner waits for every agent's answer each step, so a search's many line requests
   // would hold up the plain games), under the same turn limit, never recorded.
   const searchJobs = js ? cmd.jobs.filter(j => j.search) : [];
+  const jsAll = js;
   let sOut = null, sSeconds = 0;
   const searchers = {};
   const searchRun = async () => {
@@ -432,9 +486,13 @@ async function games(cmd) {
       const seat = i => {
         const slot = cmd.slots ? cmd.slots[i] : 0;
         if (!searchers['s' + slot]) {
+          const js = { ...jsAll, ...((jsAll.bySlot || {})[slot] || {}) };          // C143: a slot's own search settings
           searchers['s' + slot] = new PolicySearchAgent(new RemotePilot(slot, js.k || 4), tokens,
             { k: js.k || 4, dets: js.dets || 4, maxSteps: js.maxSteps || 40, seed: (js.seed || 0) + slot, crn: !!js.crn,
-              trainerOnly: !!js.trainerOnly, includeTrainer: !!js.includeTrainer });   // C122's options, off by default
+              trainerOnly: !!js.trainerOnly, includeTrainer: !!js.includeTrainer,     // C122's options, off by default
+              score: js.score || 'value',                                             // C132's "prizes" score, off by default
+              horizon: js.horizon || 1, lineOpponent: js.lineOpponent || null,        // C132b's horizon and line opponent
+              searchKey: js.searchKey || null, allTrainers: !!js.allTrainers });     // C136's trigger; C138's candidate rule
         }
         return 's' + slot;
       };
@@ -448,7 +506,30 @@ async function games(cmd) {
   };
   let out;
   const pc = probeCatch(cmd, enc);                     // soft search targets on the recorded decisions (log #169)
-  const onDec = pc.onDecision;
+  // trainerPlay (C160; opt-in, off: nothing runs): per game and seat-turn, the Trainers with a play legal at a main-phase decision
+  // and those played, by bare name; each game's result row then carries tplay { name: [turns legal, turns played] }.
+  const tp = cmd.trainerPlay ? new Map() : null;
+  const bare = o => o.key.split('|')[1].replace(/ [A-Z0-9]+$/, '');
+  const onDec = !tp ? pc.onDecision : (s, answer, k) => {
+    if (!s.env.game.decision().prompt) {
+      const opts = s.env.current.options, t = s.env.game.state.turn + '|' + s.t.playerId;
+      const g = tp.get(s.job.seed) || tp.set(s.job.seed, new Map()).get(s.job.seed);
+      const T = g.get(t) || g.set(t, { held: new Set(), played: new Set() }).get(t);
+      for (const a of s.t.legal) if (opts[a].key.startsWith('trainer|')) T.held.add(bare(opts[a]));
+      const o = opts[answer.action];
+      if (o && o.key.startsWith('trainer|')) T.played.add(bare(o));
+      if (cmd.trainerPlayTrace) fs.appendFileSync(cmd.trainerPlayTrace, JSON.stringify({ seed: s.job.seed, t,   // C160's acceptance
+        legal: s.t.legal.map(a => opts[a].key), chosen: o ? o.key : null }) + '\n');
+    }
+    if (pc.onDecision) pc.onDecision(s, answer, k);
+  };
+  const tplay = seed => {
+    const c = {};
+    for (const T of (tp.get(seed) || new Map()).values()) {
+      for (const n of T.held) { c[n] = c[n] || [0, 0]; c[n][0]++; c[n][1] += T.played.has(n) ? 1 : 0; }
+    }
+    return c;
+  };
   if (searchJobs.length) [out, sOut] = await Promise.all([runner.run(nextJob, agents, { record: cmd.out ? recorded : new Set(), onDecision: onDec }), searchRun()]);
   else out = await runner.run(nextJob, agents, { record: cmd.out ? recorded : new Set(), onDecision: onDec });
   const probes = cmd.out ? await pc.search() : undefined;
@@ -457,16 +538,24 @@ async function games(cmd) {
   const row = (r, extra) => {
     const job = bySeed.get(r.seed);
     return { i: job.i, j: job.j, iSeat: job.iSeat, seed: job.seed, winner: r.winner, ending: r.ending, turns: r.turns,
-             prizesLeft: r.prizesLeft, steps: r.steps, error: r.error, ...(r.roundT !== undefined ? { roundT: r.roundT } : {}), ...extra };
+             prizesLeft: r.prizesLeft, steps: r.steps, error: r.error, ...(r.roundT !== undefined ? { roundT: r.roundT } : {}),
+             ...(tp && !extra.search ? { tplay: tplay(r.seed) } : {}), ...extra };
   };
   const results = out.results.map(r => row(r, {}));
   if (sOut) results.push(...sOut.results.map(r => row(r, { search: true })));
   const searchStats = js ? Object.values(searchers).reduce((a, s) => {
-    for (const q of Object.keys(a)) if (q !== 'seconds') a[q] += s.stats[q];
+    for (const q of Object.keys(a)) if (q !== 'seconds') a[q] += s.stats[q] || 0;
     return a;
-  }, { searches: 0, changed: 0, lines: 0, lineErrors: 0, capped: 0, seconds: sSeconds }) : null;
+  }, { searches: 0, changed: 0, lines: 0, lineErrors: 0, capped: 0, seconds: sSeconds,
+       ...(js.score === 'prizes' ? { pCmp: 0, pChosen: 0, pValue: 0, pWorse: 0 } : {}),            // C132's check
+       ...(js.lineOpponent ? { oppActs: 0, oppBad: 0 } : {}) }) : null;                            // C132b's check
   return { ok: true, games: results.length, seconds: (Date.now() - t0) / 1000, results,
            ...(cmd.out ? { out: cmd.out, transitions: out.rec.action.length } : {}), ...(js ? { searchStats } : {}),
+           ...(ls ? { loopSearch: Object.entries(agents).filter(([n]) => n.startsWith('ls')).reduce((a, [, x]) => ({
+             decisions: a.decisions + x.stats.decisions, searched: a.searched + x.stats.searched,
+             changed: a.changed + x.searcher.stats.changed, lines: a.lines + x.searcher.stats.lines,
+             lineErrors: a.lineErrors + x.searcher.stats.lineErrors, capped: a.capped + x.searcher.stats.capped }),
+             { decisions: 0, searched: 0, changed: 0, lines: 0, lineErrors: 0, capped: 0 }) } : {}),
            ...(probes ? { probes } : {}) };
 }
 
@@ -584,7 +673,8 @@ F.readFrames(process.stdin, (type, payload) => {
     const K = header.k || 0;                     // a top-k reply (log #148): K options a row, -1 past its legal ones
     resolve(Array.from({ length: header.n }, (_, i) => ({ action: arrays.action[i], logp: arrays.logp[i], value: arrays.value[i],
                                                           sampled: arrays.sampled ? arrays.sampled[i] : 1,
-                                                          ...(K && arrays.top ? { top: Array.from(arrays.top.subarray(i * K, (i + 1) * K)).filter(a => a >= 0) } : {}) })));
+                                                          ...(K && arrays.top ? { top: Array.from(arrays.top.subarray(i * K, (i + 1) * K)).filter(a => a >= 0) } : {}),
+                                                          ...(K && arrays.top_lp ? { topLp: Array.from(arrays.top_lp.subarray(i * K, (i + 1) * K)).filter(x => x > -1e8) } : {}) })));   // C133
     return;
   }
   if (type !== F.JSON_FRAME) return;

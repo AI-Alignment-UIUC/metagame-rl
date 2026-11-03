@@ -25,7 +25,7 @@ CARDS = ["Oak", "Bill"]
 
 def play(model, args, device):
     pts.WORKER = ROOT / "env" / "tools" / "probe_draw_worker.js"
-    mus = json.loads((ROOT / args.matchups).read_text())
+    mus = json.loads((ROOT / args.matchups).read_text(encoding="utf-8"))   # C147: utf-8, or "Pokémon" cards decode as cp1252 on Windows (INVALID_DECK)
     seen, mir = set(), []
     for a, b in mus:
         if a["name"] == b["name"] and a["name"] not in seen:
@@ -156,7 +156,7 @@ def main():
         raw = play(model, args, device)
         with gzip.open(str(out) + ".probes.json.gz", "wt") as f:
             json.dump(raw, f)
-    decks = [d for m in json.loads((ROOT / args.matchups).read_text()) for d in m]
+    decks = [d for m in json.loads((ROOT / args.matchups).read_text(encoding="utf-8")) for d in m]
     res, rows = analyze(raw["probes"], decks)
     summ = {"pilot": args.pilot, "args": vars(args), "games": raw["games"], "game_errors": raw["game_errors"], "log": raw["log"],
             "seconds": raw["seconds"], "stats": raw["stats"], "readouts": res, "rows": rows}

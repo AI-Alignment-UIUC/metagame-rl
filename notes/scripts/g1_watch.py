@@ -39,6 +39,6 @@ if __name__ == "__main__":
     a = ap.parse_args()
     run = Path(a.run)
     fire, trail = check(run, a.above, a.after, a.run_of)
-    if fire is not None and a.stop:
+    if fire is not None and a.stop and not (run / "NO_G1_WATCH").exists():   # a NO_G1_WATCH file: the trail is still printed, nothing is stopped (W s49, research's call, #841)
         (run / "STOP").write_text("g1watch\n")
     print(("FIRE at iteration %d" % fire) if fire is not None else "OK", trail)

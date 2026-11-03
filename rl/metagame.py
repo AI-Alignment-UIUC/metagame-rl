@@ -68,7 +68,7 @@ from rl.decks import Pool, deck_shape, pokemon_overlap, random_deck, wide_deck
 from rl.draft import Drafter, random_changes, rloo
 from rl.remote import RemotePool
 from rl.rollouts import concat, read_rollout, subset
-from rl.train import (advantages, load_grown, model_inputs, ppo_update, remap_adam, round_score, round_turns,
+from rl.train import (advantages, load_grown, model_inputs, ppo_update, probe_targets, remap_adam, round_score, round_turns,
                       shape_rewards, token_net)
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -87,6 +87,44 @@ def recent_score(a: dict, default: float = 0.0) -> float:
     return a["sum"] / a["n"] if a.get("n") else a.get("last", default)
 
 
+def table_head_share(views: list, bonus: np.ndarray, top: np.ndarray, allowed: np.ndarray) -> dict:
+    """C171: the head's mean incoming probability on the table's top 10 names, over the decks, without the table's offset (own) and with it."""
+    own, both = [], []
+    mask = np.isin(np.flatnonzero(allowed), top)
+    for vw in views:
+        if vw.logits is None:
+            continue
+        x = vw.logits[:, allowed]
+        for out, y in ((own, x), (both, x + bonus[allowed])):
+            q = np.exp(y - y.max(1, keepdims=True))
+            q /= q.sum(1, keepdims=True)
+            out.append(float(q[:, mask].sum(1).mean()))
+    return {"own": round(float(np.mean(own)), 4), "with_bonus": round(float(np.mean(both)), 4)} if own else {}
+
+
+def head_mass(views: list, kinds: np.ndarray, bonus: np.ndarray = None) -> dict:
+    """C184: the incoming mass by supertype (1 Pokemon, 2 Trainer, 3 Energy), over the decks, each row weighted by its out-choice, on the base measure, before
+    the floor and any bonus (own): the learning signal. with_bonus adds the plain offset, which --table-neutral doesn't sample. out is the out-choice's mass by supertype, copies the deck's share:
+    out over copies is what the head prefers to take out (C187's caps read: W's Trainers fall by this, not by the incoming mass)."""
+    own, both, outs, copies = [], [], [], []
+    for vw in views:
+        po = np.log(vw.counts) + vw.s
+        po = np.exp(po - po.max())
+        po /= po.sum()
+        outs.append([po[kinds[vw.ids] == k].sum() for k in (1, 2, 3)])
+        copies.append([vw.counts[kinds[vw.ids] == k].sum() / vw.counts.sum() for k in (1, 2, 3)])
+        base = vw.base.cpu().numpy()
+        x = vw.logits if vw.b0np is None else vw.b0np + vw.logits
+        for out, y in ((own, x),) + (((both, x + bonus),) if bonus is not None else ()):
+            y = np.where(base, y, -np.inf)
+            q = np.exp(y - y.max(1, keepdims=True))
+            q /= q.sum(1, keepdims=True)
+            inc = (po[:, None] * q).sum(0)
+            out.append([inc[kinds == k].sum() for k in (1, 2, 3)])
+    r = {"own": np.round(np.mean(own, 0), 4).tolist(), "out": np.round(np.mean(outs, 0), 4).tolist(), "copies": np.round(np.mean(copies, 0), 4).tolist()}
+    return {**r, "with_bonus": np.round(np.mean(both, 0), 4).tolist()} if both else r
+
+
 def deck_kinds(pool: Pool, decks: list, score: np.ndarray, link: float = 0.5):
     """Each deck's type and every type's size (--type-cap, log #129), as rl/lab.py deck_types counts them: best first, a
     deck joins the first type whose founding deck shares at least `link` of its Pokémon with it (rl/decks.py
@@ -103,6 +141,22 @@ def deck_kinds(pool: Pool, decks: list, score: np.ndarray, link: float = 0.5):
     return kind_of, sizes
 
 
+def win_speed(reward: np.ndarray, turn: np.ndarray, cost: float, floor: float) -> np.ndarray:
+    """--win-turn-cost (C130): a full win (reward exactly +1) pays max(1 - cost * game turn, floor); time wins (+1/3),
+    draws and losses are unchanged. cost 0 returns the rewards untouched."""
+    if not cost:
+        return reward
+    paid = np.maximum(1.0 - cost * turn.astype(np.float32), floor).astype(reward.dtype)
+    return np.where(reward == 1.0, paid, reward)
+
+
+def clock_payout(reward: np.ndarray, tw: float, d: float) -> np.ndarray:
+    """--clock-payout TW,D (C131): the round rule's clock outcomes in the pilot's reward, a time win (+1/3 scaled) paid
+    2 TW - 1 and a draw (-1/3) 2 D - 1; wins and losses unchanged."""
+    out = np.where(np.isclose(reward, 1 / 3), 2 * tw - 1, reward)
+    return np.where(np.isclose(reward, -1 / 3), 2 * d - 1, out).astype(reward.dtype)
+
+
 def paired_move(vs: list):
     """--select-paired: (entry, complete slots): the entry q >= 1 with the largest mean of z(q) - z(0) over the slots, if
     that mean exceeds its SE (sd with ddof 1 / sqrt(n), n >= 2), else 0."""
@@ -113,6 +167,116 @@ def paired_move(vs: list):
     m, se = d.mean(0), d.std(0, ddof=1) / np.sqrt(len(v))
     q = int(np.argmax(m))
     return (q + 1 if m[q] > se[q] else 0), len(v)
+
+
+TD_NAMES = ("PlusPower", "Gust of Wind", "Item Finder", "Scoop Up", "Professor Oak", "Bill", "Gambler")   # C150's readout only
+
+
+def thompson_fit(slots: list, n: int, tau: float):
+    """--thompson-share (C150): the posterior of a first-order per-card model of a paired slot's difference, y ~ sum_c beta_c
+    dcount_c + noise, with prior beta_c ~ N(0, tau^2) and the noise sd from the data (the residual of the previous fit, twice).
+    slots: [(card ids, count changes, y)]. Returns (posterior mean, posterior precision, noise sd)."""
+    A, b = np.zeros((n, n)), np.zeros(n)
+    for ids, vals, y in slots:
+        i, v = np.asarray(ids, dtype=np.int64), np.asarray(vals, dtype=np.float64)
+        A[np.ix_(i, i)] += np.outer(v, v)
+        b[i] += v * y
+    ys = np.array([y for _, _, y in slots], dtype=np.float64)
+    sig2 = float(ys.var()) if len(ys) > 1 else 1.0
+    for _ in range(3):
+        P = A / sig2 + np.eye(n) / tau ** 2
+        mu = np.linalg.solve(P, b / sig2)
+        if len(ys) < 2:
+            break
+        res = ys - np.array([float(np.dot(np.asarray(v, dtype=np.float64), mu[np.asarray(i, dtype=np.int64)])) for i, v, _ in slots])
+        sig2 = max(float(np.mean(res ** 2)), 1e-6)
+    return mu, P, sig2 ** 0.5
+
+
+def thompson_draw(mu: np.ndarray, L: np.ndarray, rng) -> np.ndarray:
+    """One posterior sample: mu + L^-T z, with L the Cholesky factor of the posterior precision (P = L L^T), so its covariance is
+    P^-1."""
+    return mu + np.linalg.solve(L.T, rng.standard_normal(len(mu)))
+
+
+def thompson_swap(pool: Pool, v0: np.ndarray, beta: np.ndarray, swaps: int) -> np.ndarray:
+    """--thompson-share (C150): the deck changed by `swaps` copies, greedily the swap with the highest beta(in) - beta(out) each
+    time: a copy of the original deck out (the last Basic Pokemon stays), any addable card in except the one taken out."""
+    v, left = v0.copy(), v0.copy()
+    for _ in range(swaps):
+        best = None
+        for r in np.nonzero(left > 0)[0]:
+            if pool.basic_pokemon[r] and v[pool.basic_pokemon].sum() <= 1:
+                continue
+            v[r] -= 1
+            m = pool.addable(v)
+            m[r] = False
+            if m.any():
+                a = int(np.argmax(np.where(m, beta, -np.inf)))
+                if best is None or beta[a] - beta[r] > best[0]:
+                    best = (beta[a] - beta[r], int(r), a)
+            v[r] += 1
+        if best is None:
+            break
+        _, r, a = best
+        v[r] -= 1
+        left[r] -= 1
+        v[a] += 1
+    assert pool.legal(v), "a Thompson deck is not legal"
+    return v
+
+
+def thompson_stats(pool: Pool, cands: dict, fit, n_slots: int) -> dict:
+    """--thompson-share: the Thompson and head proposals' incoming copies that are tempo or draw cards (C150's R-proposes), and the
+    posterior mean and SD of each such card (readouts only; no proposal reads a card's name)."""
+    td = np.isin(pool.name, TD_NAMES)
+    tot, seen, pte = {"thompson": [0, 0, 0], "head": [0, 0, 0]}, {"thompson": set(), "head": set()}, {"thompson": [], "head": []}
+    for held in cands.values():
+        for x in held[1:]:
+            inc = np.maximum(x["deck"] - held[0]["deck"], 0)
+            k = "thompson" if x.get("thompson") else "head"
+            s = tot[k]
+            s[0] += 1
+            s[1] += int(inc.sum())
+            s[2] += int(inc[td].sum())
+            seen[k].update(np.nonzero(inc)[0].tolist())
+            s1, s0 = deck_shape(pool, x["deck"]), deck_shape(pool, held[0]["deck"])     # Amendment 1: the P / T / E change
+            pte[k].append([s1["pokemon"] - s0["pokemon"], s1["trainer"] - s0["trainer"],
+                           s1["basic_energy"] + s1["special_energy"] - s0["basic_energy"] - s0["special_energy"]])
+    mu, P, sigma = fit
+    cov = np.linalg.inv(P)
+    return {"slots": n_slots, "sigma": round(sigma, 4),
+            **{k: {"proposals": a, "copies_in": b, "td_in": c, "td_share": round(c / b, 4) if b else None, "distinct_in": len(seen[k]),
+                   "pte": np.round(np.mean(pte[k], 0), 3).tolist() if pte[k] else None} for k, (a, b, c) in tot.items()},
+            "beta": {pool.full_name[i]: [round(float(mu[i]), 4), round(float(cov[i, i]) ** 0.5, 4)] for i in np.nonzero(td)[0]}}
+
+
+def budget_move(vs: list, evaluated: bool, rng):
+    """--select-budget (C155): (entry, log) for one deck. A deck not evaluated this iteration stays: (0, None). An evaluated deck's
+    complete slots split at random into halves A and B; the entry q >= 1 with the largest half-A mean of z(q) - z(0) is kept if that
+    mean exceeds 2 SE (else 0), and half B's mean and SE for that entry are logged, so B never decides."""
+    if not evaluated:
+        return 0, None
+    v = np.array([x for x in vs if not np.isnan(x).any()])
+    if len(v) < 4:
+        return 0, {"n": len(v), "kept": False, "entry": None}
+    perm = rng.permutation(len(v))
+    a, b = v[perm[:len(v) // 2]], v[perm[len(v) // 2:]]
+    da, db = a[:, 1:] - a[:, :1], b[:, 1:] - b[:, :1]
+    ma, sa = da.mean(0), da.std(0, ddof=1) / np.sqrt(len(a))
+    q = int(np.argmax(ma))
+    kept = bool(ma[q] > 2 * sa[q])
+    return (q + 1 if kept else 0), {"n": len(v), "nA": len(a), "nB": len(b), "mA": round(float(ma[q]), 4), "seA": round(float(sa[q]), 4),
+                                     "mB": round(float(db[:, q].mean()), 4), "seB": round(float(db[:, q].std(ddof=1) / np.sqrt(len(b))), 4),
+                                     "kept": kept, "entry": q + 1}
+
+
+def retest_summary(rt_log: list, n_rt: int, pending: int) -> dict:
+    """--select-retest (C151): this iteration's re-tests (mean differences, None where no slot completed), and the next's."""
+    played = [x for x in rt_log if x is not None]
+    pos = sum(x > 0 for x in played)
+    return {"read": len(rt_log), "played": len(played), "kept": pos, "positive_share": round(pos / len(played), 3) if played else None,
+            "mean_diff": round(float(np.mean(played)), 4) if played else None, "games": 2 * n_rt, "pending": pending}
 
 
 def main(argv=None):
@@ -155,6 +319,33 @@ def main(argv=None):
                          "--games becomes games // (1 + --candidates) slots")
     ap.add_argument("--select-z", type=float, default=0.0,
                     help="--select: move only on a gain above this many standard errors (0: any gain; log #138, restored C91)")
+    ap.add_argument("--select-margin", type=float, default=0.0,
+                    help="--select-paired: the move rule's entry score is the round result plus this times the Prize margin "
+                         "(opponent's Prizes left minus own, / 6); 0 is the result alone. Only the move changes (C128)")
+    ap.add_argument("--search-distill", type=float, default=0.0,
+                    help="PPO: weight of the search-target term (C49's soft KL, or with --distill-margin C137's hard CE); "
+                         "0: off, nothing searched")
+    ap.add_argument("--probe-p", type=float, default=0.05, help="--search-distill: share of recorded main-phase decisions searched")
+    ap.add_argument("--probe-k", type=int, default=4, help="--search-distill: the pilot's most likely moves searched (64: all)")
+    ap.add_argument("--probe-dets", type=int, default=4, help="--search-distill: re-dealt copies shared by the moves (CRN)")
+    ap.add_argument("--probe-trainer-only", action="store_true",
+                    help="--search-distill: only decisions where a Trainer play is legal (C137)")
+    ap.add_argument("--distill-tau", type=float, default=0.1, help="--search-distill, soft: target pi * exp(clip((q - mean q) / tau))")
+    ap.add_argument("--distill-clip", type=float, default=1.0, help="--search-distill, soft: the clip of (q - mean q) / tau")
+    ap.add_argument("--distill-margin", type=float, default=None,
+                    help="--search-distill: C137's hard target, the best-scored searched move where it beats the pilot's top-1 by "
+                         "this or more (rl/train.py ppo_update); unset: C49's soft target")
+    ap.add_argument("--loop-search", choices=["S", "V"], default=None,
+                    help="C138: every population game played with the pilot's own search at Trainer-playable decisions (env/remote_worker.js "
+                         "LoopSearchAgent: the top --loop-search-k plus every legal Trainer play, V-scored). S: the recorded share enters PPO with "
+                         "the searched decisions as sampled 0 (value only); V: no population game is recorded, and PPO trains on the practice "
+                         "games plus --unsearched-record separate unsearched games, outside selection and the head")
+    ap.add_argument("--loop-search-k", type=int, default=3, help="--loop-search: the policy's top k, plus every legal Trainer play")
+    ap.add_argument("--loop-search-dets", type=int, default=2, help="--loop-search: re-dealt copies a candidate (CRN)")
+    ap.add_argument("--unsearched-record", type=int, default=500, help="--loop-search V: the separate unsearched recorded games")
+    ap.add_argument("--card-ledger", action="store_true",
+                    help="--select: also log select.card, per-card sums of each candidate's change from its deck (prop_net, "
+                         "prop_in) and of the moves taken (acc_net), with n_prop and n_acc; logging only (C127)")
     ap.add_argument("--round-turns", type=round_turns, default=0,
                     help='the 2000 round rule in every game (log #160): "T" or "A-B" (T drawn per deal); an unfinished game '
                          'goes to the side with more Prizes taken; PPO rewards and deck scores are the event points')
@@ -163,6 +354,15 @@ def main(argv=None):
     ap.add_argument("--init-wide", action="store_true", help="a new population starts from wide decks (log #127)")
     ap.add_argument("--protect", type=int, default=0,
                     help="a deck younger than this many iterations is not replaced at a turnover (log #127)")
+    ap.add_argument("--table", default="",
+                    help="C171: a {name: coefficient} JSON of Pokemon values from the run's own factorial games; off by default")
+    ap.add_argument("--table-kappa", type=float, default=3.0, help="C171: exp(kappa z) on wide-deck picks, kappa z on the head's logits; z is c/SD(c), centred")
+    ap.add_argument("--init-t-range", default="", help="C184: LO-HI, wide decks at init and turnover rejection-sampled to this many Trainers; off by default")
+    ap.add_argument("--table-neutral", action="store_true", help="C184: the table's bonus moves picks only inside a supertype; each supertype's total proposal mass is what it'd be with no bonus, at each pick")
+    ap.add_argument("--table-scope", choices=["all", "proposals", "trainers"], default="all", help="C171: all is initial and turnover wide decks plus proposals; proposals is the head alone. C182: trainers is all of those for a Trainer table")
+    ap.add_argument("--save-first", action="store_true", help="C171: also save the population after iteration 0, for a read of the start decks")
+    ap.add_argument("--turnover-mutant", action="store_true",
+                    help="C168: a turnover always replaces with a mutant of the best quarter, never a fresh deck")
     ap.add_argument("--turnover-wide", action="store_true",
                     help="turnover's fresh decks are wide decks (Pokemon lines with their Energy, rl/decks.py), not "
                          "rules-only random ones, which are Pokemon piles that never win a place (log #127)")
@@ -183,8 +383,40 @@ def main(argv=None):
                     help="GAE lambda between decisions of the same game turn (log #96; default: --lam everywhere)")
     ap.add_argument("--gamma-turn", type=float, default=None,
                     help="GAE discount per game turn between a seat's decisions (C121: 0.98; default: none)")
+    ap.add_argument("--win-turn-cost", type=float, default=0.0,
+                    help="PPO only: a full win (+1) pays max(1 - this x the game turn, --win-floor); time wins, draws and "
+                         "losses unchanged; selection and the head keep the real scoring (C130; 0: off)")
+    ap.add_argument("--win-floor", type=float, default=0.5, help="--win-turn-cost: the least a full win pays (C130)")
+    ap.add_argument("--clock-payout", type=lambda s: tuple(float(x) for x in s.split(",")), default=None,
+                    help='PPO only, "TW,D": a time win pays 2 TW - 1 and a draw 2 D - 1 in the pilot\'s reward (the round '
+                         'rule: 2/3 and 1/3, so +1/3 and -1/3); selection and the head keep the real scoring (C131)')
+    ap.add_argument("--select-retest", action="store_true",
+                    help="--select-paired: an entry that passes the paired rule is re-tested next iteration on as many fresh "
+                         "paired slots (fresh opponents and deals, unrecorded, outside the head), and the deck moves to it only "
+                         "if that mean difference is above 0, else it stays (C151)")
+    ap.add_argument("--thompson-share", type=float, default=0.0,
+                    help="--select-paired: this share of decks draws its candidates from a Thompson sample of a pooled per-card model "
+                         "of the paired slots' differences (the last --thompson-window iterations) instead of the head; 0 off (C150)")
+    ap.add_argument("--thompson-bonus", type=float, default=0.0,
+                    help="--select-paired: add K x a per-deck posterior sample of C150's per-card model, standardised by each card's "
+                         "posterior SD, to the head's incoming logits (before its base measure and floor); the head samples and "
+                         "learns as before, its log-probs including the bonus; 0 off (C153)")
+    ap.add_argument("--thompson-window", type=int, default=5, help="--thompson-share: iterations of paired slots the model fits")
+    ap.add_argument("--thompson-tau", type=float, default=0.02, help="--thompson-share: the prior SD of a card's effect")
+    ap.add_argument("--select-budget", type=int, default=0,
+                    help="--select-paired: each iteration only M decks (in rotation) are evaluated, every paired slot goes to them, "
+                         "and each moves on half A of its slots at 2 SE, half B held out and logged; the rest stay; 0 off (C155)")
     ap.add_argument("--practice-games", type=int, default=0,
                     help="games an iteration between fresh wide random decks, for PPO only (log #127)")
+    ap.add_argument("--practice-from-pop", type=float, default=0.0,
+                    help="this share of the practice games pairs two decks of the population's top quarter by recent_score "
+                         "instead of two wide decks, still for PPO only, outside selection and the head; 0 off (C148)")
+    ap.add_argument("--practice-rotation", type=int, default=0,
+                    help="every practice deck is concentrated with R focus Trainers forced in at 3-4 copies, the pool's Trainers "
+                         "taken R an iteration round-robin in a fixed shuffled order; card-neutral; 0 off (C159)")
+    ap.add_argument("--practice-curriculum", type=int, default=0,
+                    help="every practice deck is concentrated with the K Trainers of lowest play rate (turns played over turns a play "
+                         "was legal, in the last iteration's population games; ties to fewer turns) forced in at 3 copies; 0 off (C160)")
     ap.add_argument("--stop-file", default="", help="end cleanly after the iteration in which this file appears")
     args = ap.parse_args(argv)
     D = args.decks
@@ -199,10 +431,17 @@ def main(argv=None):
     H = 1 + args.candidates if paired else 1                # games a slot plays: the deck's entries, one opponent entry
     assert not paired or (args.select and args.workers >= H), "--select-paired needs --select and --workers >= 1 + --candidates"
     assert not (paired and args.select_z > 0), "--select-paired and --select-z are separate selection rules"
+    assert not args.select_retest or paired, "--select-retest re-tests --select-paired moves"
+    assert not args.select_budget or (paired and not args.select_retest), "--select-budget needs --select-paired, not --select-retest"
+    assert not (args.thompson_share or args.thompson_bonus) or paired, "--thompson-share and --thompson-bonus fit --select-paired slots"
     limits.apply(device, args.workers)
     torch.manual_seed(args.seed)
     rng = np.random.default_rng(args.seed)
     pool = Pool()
+    rot = [int(x) for x in np.random.default_rng(159).permutation(       # C159: the fixed order, the same at every seed
+        [c["id"] for c in pool.cards if pool.allowed[c["id"]] and c["superType"] == 2])]
+    tr_id = {str(pool.name[c]): c for c in rot}                         # C160: a Trainer's bare name -> its pool id
+    assert not (args.practice_rotation and args.practice_curriculum), "--practice-rotation or --practice-curriculum, not both"
 
     rp = RemotePool(args.workers)
     rp.pace = 0.25
@@ -227,10 +466,16 @@ def main(argv=None):
     opt = torch.optim.Adam(net.parameters(), lr=args.lr, eps=1e-5)
     drafter = Drafter(pool, c0["d"], c0["heads"], args.swaps, args.draft_lr, device, h_in_floor=args.draft_h_in_floor,
                       group_p=args.draft_group_p, base=args.draft_base, base_ent=args.draft_base_ent)
-    targs = SimpleNamespace(**{**PPO, "epochs": args.epochs, "micro_batch": args.micro_batch})
+    targs = SimpleNamespace(**{**PPO, "epochs": args.epochs, "micro_batch": args.micro_batch,
+                               **({"search_distill": args.search_distill, "distill_tau": args.distill_tau,     # C137; off: absent
+                                   "distill_clip": args.distill_clip, "distill_margin": args.distill_margin}
+                                  if args.search_distill else {})})
 
     start, deal_seed, cands = 0, args.seed, {}          # cands: deck id -> its candidates this season
     pairs = {}                                           # --select-paired: deck id -> its focus slots' vectors of results
+    retest = {}                                          # --select-retest: deck id -> {deck, n}, an entry to re-test this iteration
+    thompson_hist = []                                   # --thompson-share: [iteration, slots] of the last --thompson-window iterations
+    tplay = {}                                           # --practice-curriculum: Trainer -> [turns legal, turns played], last iteration
     if st or fork:
         src = st or fork
         if st:
@@ -257,14 +502,46 @@ def main(argv=None):
         cands = {i: h for i, h in season.get("cands", {}).items()      # --select-paired plays entry q < H: a fork's
                  if not paired or len(h) == H}                           # other --candidates draws that deck's anew
         pairs = {i: v for i, v in season.get("pairs", {}).items() if paired and i in cands}   # older: none
+        retest = {i: {"deck": pool.vector(v["deck"]), "n": v["n"]} for i, v in season.get("retest", {}).items()}
+        thompson_hist = season.get("thompson", [])
+        tplay = season.get("tplay", {})
         if fork and args.reseed is not None:
             rng, deal_seed = np.random.default_rng(args.reseed), args.reseed
             torch.manual_seed(args.reseed)
     if not st:
         (run / "config.json").write_text(json.dumps({**vars(args), "pilot": net.config(), "ppo": vars(targs),
                                                     "device": device}, indent=1))
+    card_kind = np.zeros(pool.n, dtype=np.int64)
+    for c in pool.cards:
+        card_kind[c["id"]] = c["superType"]
+    table_weight, trainer_weight, table_bonus, table_top, table_groups = None, None, None, None, None
+    if args.table:                                       # C171: Pokemon names only; every other card gets 0, so P/T/E don't shift by construction
+        coef = json.loads(Path(args.table).read_text(encoding="utf-8"))
+        vals = np.array(list(coef.values()), dtype=float)
+        z = {n: float((c - vals.mean()) / vals.std()) for n, c in coef.items()}
+        table_bonus = np.zeros(pool.n)
+        kind = 2 if args.table_scope == "trainers" else 1      # C182: a Trainer table, every other card 0
+        for c in pool.cards:
+            if c["superType"] == kind and c["name"] in z:
+                table_bonus[c["id"]] = args.table_kappa * z[c["name"]]
+        table_groups = card_kind if args.table_neutral else None
+        names_top = sorted(z, key=lambda n: -z[n])[:10]
+        table_top = np.array([c["id"] for c in pool.cards if c["superType"] == kind and c["name"] in names_top])
+        if args.table_scope == "all":
+            table_weight = {n: float(np.exp(args.table_kappa * v)) for n, v in z.items()}
+        if args.table_scope == "trainers":
+            trainer_weight = {n: float(np.exp(args.table_kappa * v)) for n, v in z.items()}
+        print(f"table: {len(z)} names, kappa {args.table_kappa}, scope {args.table_scope}", flush=True)
+    t_range = tuple(int(x) for x in args.init_t_range.split("-")) if args.init_t_range else None
+
+    def fresh_wide():
+        while True:                                      # C184: the generator otherwise, kept only inside the range
+            v = wide_deck(pool, rng, name_weight=table_weight, trainer_weight=trainer_weight)
+            if t_range is None or t_range[0] <= deck_shape(pool, v)["trainer"] <= t_range[1]:
+                return v
+
     if not (st or fork):
-        pop = [{"id": i, "deck": (wide_deck if args.init_wide else random_deck)(pool, rng), "born": 0, "parent": None,
+        pop = [{"id": i, "deck": (fresh_wide() if args.init_wide else random_deck(pool, rng)), "born": 0, "parent": None,
                 "kind": "initial", "sum": 0.0, "n": 0}
                for i in range(D)]
         next_id = D
@@ -285,22 +562,46 @@ def main(argv=None):
                 field = [pop[e]["deck"] for e in rng.choice(others, min(args.field_sample, len(others)), replace=False)]
                 views.append(drafter.view(net, pop[d]["deck"], field))
             t1 = time.time()
+            fit_t = L_t = None                               # --thompson-share (C150): this iteration's posterior and its factor
+            n_fit = 0
+            if args.thompson_share or args.thompson_bonus:
+                fit_slots = [s for _, sl in thompson_hist for s in sl]
+                n_fit = len(fit_slots)
+                fit_t = thompson_fit(fit_slots, pool.n, args.thompson_tau)
+                L_t = np.linalg.cholesky(fit_t[1])
+            if args.thompson_bonus:                          # C153: each deck's own sample, standardised, on the head's logits
+                sd_t = np.sqrt(np.diag(np.linalg.inv(fit_t[1])))
+                for d in range(D):
+                    views[d].bonus = args.thompson_bonus * thompson_draw(fit_t[0], L_t, rng) / sd_t
+            if table_bonus is not None:                      # C171: the same offset for every deck, through the C153 path
+                for d in range(D):
+                    views[d].bonus, views[d].bonus_groups = table_bonus, table_groups
             # 2. games: random pairs, each side playing one of its candidates this season
             for d in range(D):
                 if pop[d]["id"] not in cands:
                     held = ([{"deck": pop[d]["deck"].copy(), "ev_j": [], "ev_c": [], "ev_mask": [], "ev_left": [],
                               "ev_T": [], "logp": 0.0}] if args.select else [])     # the deck itself, unchanged
-                    held += [drafter.sample(views[d], rng) for _ in range(args.candidates)]
+                    if L_t is not None and rng.random() < args.thompson_share:   # C150: Thompson's swap, not the head's, from a
+                        held += [{"deck": thompson_swap(pool, pop[d]["deck"], thompson_draw(fit_t[0], L_t, rng), args.swaps),
+                                  "ev_j": [], "ev_c": [], "ev_mask": [], "ev_left": [], "ev_T": [], "logp": 0.0, "thompson": True}
+                                 for _ in range(args.candidates)]               # posterior sample of its own (Amendment 1)
+                    else:
+                        held += [drafter.sample(views[d], rng) for _ in range(args.candidates)]
                     for x in held:
                         x["sum"], x["n"] = 0.0, 0
                     cands[pop[d]["id"]] = held
             shards = [{"decks": [], "jobs": []} for _ in range(args.workers)]
             games_meta, draws, pair = {}, {}, {}                 # keyed by seed, or with --select-paired by (shard, job i)
             rec_share = min(1.0, args.record / max(args.games, 1))
+            focus = [(it * args.select_budget + m) % D for m in range(args.select_budget)] if args.select_budget else []   # C155
             for g in range(args.games // H * H):
                 q = g % H                                                # with --select-paired: slot g // H, entry q
-                if q == 0:
+                if q == 0 and focus:                                     # C155: the slot's focus is one of this iteration's M decks
+                    k = focus[(g // H) % len(focus)]
+                    l = int(rng.choice([x for x in range(D) if x != k]))
+                elif q == 0:
                     k, l = (int(x) for x in rng.choice(D, 2, replace=False))
+                if q == 0:
                     k_seat, seed = 1 + int(rng.integers(2)), (deal_seed * 100_000 + it) * 1_000_003 + g // H
                     eo = int(rng.integers(len(cands[pop[l]["id"]]))) if paired else 0     # l's one entry in the slot
                 w = (g // H + q) % args.workers      # the paired jobs share a seed: one shard each (remote_worker.js bySeed)
@@ -311,14 +612,62 @@ def main(argv=None):
                     draws[(w, i) if paired else g, a] = held[(q if a == k else eo) if paired else int(rng.integers(len(held)))]
                     sh["decks"].append({"name": f"g{g}d{a}", "cards": pool.names(draws[(w, i) if paired else g, a]["deck"])})
                 rec = bool(rng.random() < rec_share)
-                sh["jobs"].append({"i": i, "j": i + 1, "iSeat": k_seat, "seed": seed, "rec": rec})
+                if args.loop_search == "V":                  # C138-V: searched population games aren't recorded
+                    rec = False
+                sh["jobs"].append({"i": i, "j": i + 1, "iSeat": k_seat, "seed": seed, "rec": rec,
+                                   **({"lsearch": True} if args.loop_search else {})})
                 games_meta[(w, i) if paired else seed] = ((w, i) if paired else g, k, l, k_seat)
                 pair[w, i] = (g // H, q)
+            rt_meta, n_rt = {}, 0                            # --select-retest (C151): (shard, job i) -> (deck id, slot, entry, seat)
+            at = {a["id"]: d for d, a in enumerate(pop)} if args.select_retest else {}
+            for did, rt in retest.items():
+                if did not in at:
+                    continue                                 # turnover replaced the deck
+                d = at[did]
+                for s in range(rt["n"]):                     # the deck (q 0) and its entry (q 1) on a fresh opponent, seat and deal
+                    l = int(rng.choice([x for x in range(D) if x != d]))
+                    k_seat, seed = 1 + int(rng.integers(2)), (deal_seed * 100_000 + it) * 1_000_003 + 500_000 + n_rt
+                    n_rt += 1
+                    for q, deck in enumerate((pop[d]["deck"], rt["deck"])):
+                        w = (n_rt + q) % args.workers        # the pair shares a seed: one shard each
+                        sh = shards[w]
+                        i = len(sh["decks"])
+                        sh["decks"] += [{"name": f"rt{n_rt}q{q}", "cards": pool.names(deck)},
+                                        {"name": f"rt{n_rt}o", "cards": pool.names(pop[l]["deck"])}]
+                        sh["jobs"].append({"i": i, "j": i + 1, "iSeat": k_seat, "seed": seed, "rec": False})
+                        games_meta[(w, i)] = None
+                        rt_meta[(w, i)] = (did, s, q, k_seat)
+            if args.loop_search == "V":                      # C138-V: PPO's unsearched games, drawn as the loop draws, outside selection
+                for g in range(args.unsearched_record):
+                    k, l = (int(x) for x in rng.choice(D, 2, replace=False))
+                    seed = (deal_seed * 100_000 + it) * 1_000_003 + 2_000_000 + g
+                    sh = shards[g % args.workers]
+                    for a in (k, l):
+                        held = cands[pop[a]["id"]]
+                        sh["decks"].append({"name": f"u{g}d{a}", "cards": pool.names(held[int(rng.integers(len(held)))]["deck"])})
+                    i = len(sh["decks"]) - 2
+                    sh["jobs"].append({"i": i, "j": i + 1, "iSeat": 1 + int(rng.integers(2)), "seed": seed, "rec": True})
+                    games_meta[(g % args.workers, i) if paired else seed] = None
+            top_q = (sorted(range(D), key=lambda d: -recent_score(pop[d]))[:max(2, D // 4)]   # C148: the top quarter
+                     if args.practice_from_pop else [])
+            n_pop = 0
+            p_focus = {rot[(it * args.practice_rotation + j) % len(rot)] for j in range(args.practice_rotation)}   # C159
+            cur = sorted(tplay, key=lambda n: (tplay[n][1] / tplay[n][0], tplay[n][0]))[:args.practice_curriculum]   # C160
+            p_focus |= {tr_id[n] for n in cur}
             for g in range(args.games, args.games + args.practice_games):
                 seed = (deal_seed * 100_000 + it) * 1_000_003 + g    # practice: two wide decks, recorded, nobody's draw
                 sh = shards[g % args.workers]
-                sh["decks"] += [{"name": f"p{g}a", "cards": pool.names(wide_deck(pool, rng))},
-                                {"name": f"p{g}b", "cards": pool.names(wide_deck(pool, rng))}]
+                if top_q and rng.random() < args.practice_from_pop:  # C148: two of the population's best decks instead
+                    a, b = (int(x) for x in rng.choice(top_q, 2, replace=False))
+                    sh["decks"] += [{"name": f"p{g}a", "cards": pool.names(pop[a]["deck"])},
+                                    {"name": f"p{g}b", "cards": pool.names(pop[b]["deck"])}]
+                    n_pop += 1
+                elif p_focus:                                        # C159: both decks concentrated around this iteration's focus
+                    sh["decks"] += [{"name": f"p{g}{x}", "cards": pool.names(wide_deck(pool, rng, concentrated=True, focus=p_focus,
+                                                                                    focus_copies=3 if cur else 0))} for x in "ab"]
+                else:
+                    sh["decks"] += [{"name": f"p{g}a", "cards": pool.names(wide_deck(pool, rng))},
+                                    {"name": f"p{g}b", "cards": pool.names(wide_deck(pool, rng))}]
                 i = len(sh["decks"]) - 2
                 sh["jobs"].append({"i": i, "j": i + 1, "iSeat": 1 + int(rng.integers(2)), "seed": seed, "rec": True})
                 games_meta[(g % args.workers, i) if paired else seed] = None
@@ -329,7 +678,14 @@ def main(argv=None):
                      "decks": sh["decks"], "jobs": sh["jobs"],
                      "history": int(net.config().get("history", 0) or 0),     # a pilot's action-history tokens (#76)
                      "chain": int(net.config().get("chain", 0) or 0),         # and its chain rows (the chain head)
-                     "canon": int(net.config().get("state_canon", 0) or 0)}   # and its one-token-per-card-per-zone encoding
+                     **({"trainerPlay": True} if args.practice_curriculum else {}),   # C160: per-game Trainer play counts
+                     "canon": int(net.config().get("state_canon", 0) or 0),   # and its one-token-per-card-per-zone encoding
+                     **({"probe": {"p": args.probe_p, "k": args.probe_k, "dets": args.probe_dets, "maxSteps": 40,   # C137
+                                   "seed": args.seed * 7919 + it, "trainerOnly": args.probe_trainer_only,
+                                   "log": str(run / "probe_summary.jsonl")}}   # log only: each probe's top-1, best and margin
+                        if args.search_distill else {}),
+                     **({"loopSearch": {"k": args.loop_search_k, "dets": args.loop_search_dets, "maxSteps": 40,   # C138
+                                        "seed": args.seed * 7919 + it}} if args.loop_search else {})}
                     for w, sh in enumerate(shards) if sh["jobs"]]
             replies = rp.collect(msgs, {0: net}, device)
             for w, rep_ in zip([w for w, sh in enumerate(shards) if sh["jobs"]], replies):    # replies align with msgs
@@ -341,6 +697,14 @@ def main(argv=None):
             rolls = [read_rollout(r["out"]) for r in replies]
             batch = concat(rolls)
             recorded = len(batch["action"])
+            distill = None
+            if args.search_distill:                      # C137: the workers' search targets, per transition (rl/train.py)
+                batch["probe_c"], batch["probe_q"], distill = probe_targets(replies, rolls, args.probe_k)
+            if args.win_turn_cost:                       # --win-turn-cost (C130): sooner full wins pay more; off skips it
+                batch["reward"] = win_speed(batch["reward"], batch["obs.glob"].reshape(recorded, -1)[:, 0],
+                                            args.win_turn_cost, args.win_floor)
+            if args.clock_payout:                        # --clock-payout (C131): the clock outcomes' training payout
+                batch["reward"] = clock_payout(batch["reward"], *args.clock_payout)
             batch["reward"] = shape_rewards(batch, lam, prize_glob)
             batch["adv"], batch["ret"] = advantages(batch, 1.0, args.lam, args.lam_turn, args.gamma_turn)
             n_b = len(batch["action"])
@@ -353,18 +717,33 @@ def main(argv=None):
             t4 = time.time()
 
             # 4. REINFORCE for the draft head on every draw
-            practice = [r for rep in replies for r in rep["results"] if games_meta[r["key"]] is None]
+            practice = [r for rep in replies for r in rep["results"] if games_meta[r["key"]] is None and r["key"] not in rt_meta]
             games = [r for rep in replies for r in rep["results"] if games_meta[r["key"]] is not None]
+            if args.practice_curriculum:                     # C160: next iteration's curriculum from these population games
+                tp_used = [{"name": n, "rate": round(tplay[n][1] / tplay[n][0], 4), "turns": tplay[n][0]} for n in cur]
+                tplay = {}
+                for r in games:
+                    for n, (a, b) in (r.get("tplay") or {}).items():
+                        x = tplay.setdefault(n, [0, 0])
+                        x[0] += a
+                        x[1] += b
+            rt_vec = {}                                      # --select-retest: deck id -> slot -> [the deck's score, its entry's]
+            for r in (r for rep in replies for r in rep["results"] if r["key"] in rt_meta):
+                did, s, q, k_seat = rt_meta[r["key"]]
+                left = r.get("prizesLeft") or {}
+                margin = (left.get(str(3 - k_seat), 0) - left.get(str(k_seat), 0)) / 6.0
+                rt_vec.setdefault(did, {}).setdefault(s, [np.nan, np.nan])[q] = (round_score(r, k_seat, args.round_turns)
+                                                                                 + args.select_margin * margin)
             per = {d: {"samples": [], "z": [], "margin": []} for d in range(D)}
             vec = {}
             for r in games:
                 g, k, l, k_seat = games_meta[r["key"]]
                 zk, zl = round_score(r, k_seat, args.round_turns), round_score(r, 3 - k_seat, args.round_turns)
-                if paired:                                   # the focus deck's results by entry, per slot
-                    s_, q_ = pair[r["key"]]
-                    vec.setdefault((k, s_), np.full(H, np.nan))[q_] = zk
                 left = r.get("prizesLeft") or {}
                 mk = (left.get(str(3 - k_seat), 0) - left.get(str(k_seat), 0)) / 6.0
+                if paired:                                   # the focus deck's results by entry, per slot
+                    s_, q_ = pair[r["key"]]                  # --select-margin W: the move rule scores zk + W * mk (C128)
+                    vec.setdefault((k, s_), np.full(H, np.nan))[q_] = zk + args.select_margin * mk if args.select_margin else zk
                 for a, z, m in ((k, zk, mk), (l, zl, -mk)):
                     per[a]["samples"].append(draws[g, a])
                     per[a]["z"].append(z)
@@ -383,6 +762,18 @@ def main(argv=None):
                 pop[d]["n"] += len(z)
             for (d, _), v in vec.items():
                 pairs.setdefault(pop[d]["id"], []).append(v)
+            if args.thompson_share or args.thompson_bonus:   # C150: each paired slot's card-count change and result difference
+                sl = []
+                for (d, _), v in vec.items():
+                    held = cands[pop[d]["id"]]
+                    for q in range(1, H):
+                        if not (np.isnan(v[0]) or np.isnan(v[q])):
+                            dv = held[q]["deck"] - held[0]["deck"]
+                            nz = np.nonzero(dv)[0]
+                            sl.append((nz.tolist(), dv[nz].tolist(), float(v[q] - v[0])))
+                thompson_hist = (thompson_hist + [[it, sl]])[-args.thompson_window:]
+                with open(run / "thompson_slots.jsonl", "a") as f:
+                    f.write(json.dumps({"iter": it, "slots": sl}) + "\n")
             draft = drafter.update(batch_d, args.draft_ent) if counted else {}
             t5 = time.time()
 
@@ -391,14 +782,40 @@ def main(argv=None):
             select = {}
             if counted:
                 moved, gain, acc, prop, slots, held_back = 0, [], [], [], [], 0
+                retest_next, rt_log = {}, []                 # --select-retest: next iteration's re-tests; this one's mean differences
+                bud_log = []                                 # --select-budget: the evaluated decks' halves (C155)
+                draw_m, t4_m = np.isin(pool.name, TD_NAMES[4:]), np.isin(pool.name, TD_NAMES[:4])
+                led = {"prop_net": 0, "prop_in": 0, "acc_net": 0}   # --card-ledger: per-card sums (C127); no decision reads it
                 for d in range(D):
                     held = cands[pop[d]["id"]]
+                    kept = None                                  # --select-retest: the re-tested entry the deck moves to
                     if args.select:
                         mean = [mean_score(x, -1.0) for x in held]
                         k = max(range(len(held)), key=lambda q: (mean[q], -q))
                         if paired:
                             k, n_ = paired_move(pairs.get(pop[d]["id"], []))
                             slots.append(n_)
+                            if args.select_budget:               # C155: only this iteration's M decks move, on half A at 2 SE
+                                k, bud = budget_move(pairs.get(pop[d]["id"], []), d in focus, rng)
+                                if bud is not None:
+                                    if bud["entry"] is not None:
+                                        dv = held[bud["entry"]]["deck"] - held[0]["deck"]
+                                        s1, s0 = deck_shape(pool, held[bud["entry"]]["deck"]), deck_shape(pool, held[0]["deck"])
+                                        bud.update({"d_draw": int(dv[draw_m].sum()), "d_T4": int(dv[t4_m].sum()),
+                                                    "d_pte": [s1["pokemon"] - s0["pokemon"], s1["trainer"] - s0["trainer"],
+                                                              s1["basic_energy"] + s1["special_energy"] - s0["basic_energy"] - s0["special_energy"]]})
+                                    bud_log.append({"id": pop[d]["id"], **bud})
+                            if args.select_retest:               # C151: last iteration's winner moves only on a positive re-test,
+                                did = pop[d]["id"]               # and this iteration's waits for its own
+                                if did in retest:
+                                    v = [x for x in rt_vec.get(did, {}).values() if not np.isnan(x).any()]
+                                    dm = float(np.mean([b - a for a, b in v])) if v else None
+                                    rt_log.append(dm)
+                                    if dm is not None and dm > 0:
+                                        kept = retest[did]["deck"]
+                                if kept is None and k > 0:
+                                    retest_next[did] = {"deck": held[k]["deck"].copy(), "n": n_}
+                                k = 0
                         if k > 0 and args.select_z > 0:          # --select-z: only a clear gain moves the deck (log #138)
                             (s0, n0), (sk, nk) = (held[0]["sum"], held[0]["n"]), (held[k]["sum"], held[k]["n"])
                             pb = min(0.85, max(0.15, (s0 + sk) / max(n0 + nk, 1)))
@@ -409,12 +826,28 @@ def main(argv=None):
                         prop += [s - sh[0] for s in sh[1:]]
                         if k > 0:
                             acc.append(sh[k] - sh[0])
+                        if args.card_ledger:
+                            dv = [x["deck"] - held[0]["deck"] for x in held]
+                            for q in range(1, len(held)):
+                                led["prop_net"] = led["prop_net"] + dv[q]
+                                led["prop_in"] = led["prop_in"] + np.maximum(dv[q], 0)
+                            if k > 0:
+                                led["acc_net"] = led["acc_net"] + dv[k]
                         moved += k > 0
                         if k > 0 and held[0]["n"]:
                             gain.append(mean[k] - mean[0])
                     else:
                         k = int(rng.integers(len(held)))
-                    pop[d]["deck"] = held[k]["deck"].copy()
+                    if kept is not None:                         # C151: the re-tested move, logged as a move
+                        s_k, s_0 = deck_shape(pool, kept), deck_shape(pool, held[0]["deck"])
+                        acc.append(np.array([s_k["pokemon"] - s_0["pokemon"], s_k["trainer"] - s_0["trainer"],
+                                             s_k["basic_energy"] + s_k["special_energy"] - s_0["basic_energy"] - s_0["special_energy"]]))
+                        if args.card_ledger:
+                            led["acc_net"] = led["acc_net"] + (kept - held[0]["deck"])
+                        moved += 1
+                        pop[d]["deck"] = kept.copy()
+                    else:
+                        pop[d]["deck"] = held[k]["deck"].copy()
                 if args.select:                                  # P / T / E change, taken and drawn
                     select = {"moved": moved, "gain": round(float(np.mean(gain)), 4) if gain else None,
                               "games_per_candidate": round(float(np.mean([x["n"] for h in cands.values() for x in h])), 2),
@@ -422,8 +855,18 @@ def main(argv=None):
                               "prop": np.round(np.mean(prop, 0), 3).tolist() if prop else None,
                               **({"paired": {"slots": round(float(np.mean(slots)), 2),
                                              "stay_low_n": sum(1 for n_ in slots if n_ < 2)}} if paired else {}),
-                              **({"held_back": held_back} if args.select_z > 0 else {})}
+                              **({"held_back": held_back} if args.select_z > 0 else {}),
+                              **({"retest": retest_summary(rt_log, n_rt, len(retest_next))} if args.select_retest else {}),
+                              **({"budget": {"focus": [pop[d]["id"] for d in focus], "evaluated": bud_log}} if args.select_budget else {}),
+                              **({"thompson": thompson_stats(pool, cands, fit_t, n_fit)}
+                                 if args.thompson_share or args.thompson_bonus else {}),
+                              **({"margin_w": args.select_margin} if args.select_margin else {}),
+                              **({"card": {**{key: {str(i): int(v) for i, v in enumerate(np.atleast_1d(s)) if v}
+                                              for key, s in led.items()}, "n_prop": len(prop), "n_acc": len(acc)}}
+                                 if args.card_ledger else {})}
                 cands, pairs = {}, {}                            # the checkpoint saves them together
+                if args.select_retest:
+                    retest = retest_next
 
             # 6. turnover
             turnover, type_sizes = [], None
@@ -443,12 +886,12 @@ def main(argv=None):
                         if rest:                                 # mutants of the other types' best quarter
                             top = np.array(rest[-max(1, len(rest) // 4):])
                 for d in old[:int(round(args.turnover * D))]:
-                    if rng.random() < MUTANT_SHARE:
+                    if args.turnover_mutant or rng.random() < MUTANT_SHARE:
                         p = int(rng.choice(top))
                         new = {"deck": random_changes(pool, pop[p]["deck"], MUTANT_CHANGES, rng), "parent": pop[p]["id"],
                                "kind": "mutant"}
                     else:
-                        new = {"deck": (wide_deck if args.turnover_wide else random_deck)(pool, rng), "parent": None,
+                        new = {"deck": (fresh_wide() if args.turnover_wide else random_deck(pool, rng)), "parent": None,
                                "kind": "wide" if args.turnover_wide else "random"}
                     turnover.append({"out": pop[d]["id"], "score": round(float(score[d]), 4), "in": next_id,
                                      "kind": new["kind"]})
@@ -467,10 +910,17 @@ def main(argv=None):
                    "cut_off": cut, "steps_per_game": round(float(np.mean([r["steps"] for r in games])), 1),
                    "endings": {e: sum(1 for r in games if (r.get("ending") or "none") == e) for e in {r.get("ending") or "none" for r in games}},
                    "recorded": recorded, "ppo": ppo, "draft": draft, "counted": counted,
+                   **({"distill": distill} if distill is not None else {}),
+                   **({"loop_search": {q: sum((rep.get("loopSearch") or {}).get(q, 0) for rep in replies)        # C138
+                                       for q in ("decisions", "searched", "changed", "lines", "lineErrors", "capped")}}
+                      if args.loop_search else {}),
                    **({"select": select} if select else {}),
                    **({"types": type_sizes} if type_sizes else {}),
                    **({"practice": {"games": len(practice), "errors": sum(1 for r in practice if r.get("error")),
-                                    "steps_per_game": round(float(np.mean([r["steps"] for r in practice])), 1)}}
+                                    "steps_per_game": round(float(np.mean([r["steps"] for r in practice])), 1),
+                                    **({"from_pop": n_pop} if args.practice_from_pop else {}),
+                                    **({"focus": sorted(str(pool.name[c]) for c in p_focus)} if p_focus else {}),
+                                    **({"curriculum": tp_used, "tplay": tplay} if args.practice_curriculum else {})}}
                       if practice else {}),
                    "margin_abs": round(float(np.mean([abs(m) for d in range(D) for m in per[d]["margin"]])), 4),
                    "shape_quartiles": {k: np.percentile(shapes[:, i], [25, 50, 75]).tolist()
@@ -480,6 +930,8 @@ def main(argv=None):
                    "best": [{"id": pop[d]["id"], "z": round(float(z_iter[d]), 3), "kind": pop[d]["kind"], "born": pop[d]["born"],
                              **deck_shape(pool, pop[d]["deck"]), **drafter.summary(views[d])} for d in best],
                    "turnover": turnover,
+                   **({"table_head": table_head_share(views, table_bonus, table_top, np.asarray(pool.allowed, dtype=bool))} if table_bonus is not None else {}),
+                   "head_mass": head_mass(views, card_kind, table_bonus),
                    "seconds": {"read": round(t1 - t0, 1), "draw": round(t2 - t1, 1), "play": round(t3 - t2, 1),
                                "ppo": round(t4 - t3, 1), "draft": round(t5 - t4, 1), "total": round(time.time() - t0, 1)}}
             log.write(json.dumps(row) + "\n")
@@ -494,12 +946,16 @@ def main(argv=None):
             state = {"net": net.state_dict(), "opt": opt.state_dict(), "drafter": drafter.state(), "config": net.config(),
                      "population": [{**a, "deck": pool.names(a["deck"])} for a in pop], "next_id": next_id,
                      "iter": it, "round": it, "rng": rng.bit_generator.state, "deal_seed": deal_seed,
-                     "season": {"cands": cands, "pairs": pairs},
+                     "season": {"cands": cands, "pairs": pairs,
+                                **({"retest": {i: {"deck": pool.names(v["deck"]), "n": v["n"]} for i, v in retest.items()}}
+                                   if args.select_retest else {}),
+                                **({"thompson": thompson_hist} if args.thompson_share or args.thompson_bonus else {}),
+                                **({"tplay": tplay} if args.practice_curriculum else {})},
                      "agents": [{"id": a["id"], "deck": pool.names(a["deck"])} for a in pop]}
             tmp = ckpt.with_suffix(".tmp")
             torch.save(state, tmp)
             os.replace(tmp, ckpt)
-            if args.save_every and (it + 1) % args.save_every == 0:
+            if args.save_every and ((it + 1) % args.save_every == 0 or (args.save_first and it == 0)):
                 torch.save({k: state[k] for k in ("net", "drafter", "config", "population", "agents", "iter", "round")},
                            run / f"population_it{it:04d}.pt")
             for f in run.glob("rollout_w*.bin"):

@@ -42,7 +42,7 @@ import torch
 import torch.nn.functional as F
 
 from rl.decks import Pool, archived_decks, changed, pokemon_overlap, random_deck
-from rl.draft import LEAD, MY_UNSEEN, OPPONENT_LIST, SLOT, Drafter, deck_tokens, floor_temperature, random_changes, rloo
+from rl.draft import LEAD, MY_UNSEEN, OPPONENT_LIST, SLOT, Drafter, deck_tokens, floor_temperature, group_neutral, random_changes, rloo
 from rl.model import IdentityMLP
 from rl.rollouts import concat, read_rollout, subset
 from rl.token_model import TokenPointerNet, export_token_onnx
@@ -468,6 +468,29 @@ def check_draft(failures, table, text, archived, rng):
                         f"budget by {max(kls):.3f}, targets {np.mean(zs[:20]):.2f} -> {np.mean(zs[-20:]):.2f}")
     print(f"draft base (features): q0 mean entropy {hq0:.3f} (target 2.5), log-prob gap {gap:.1e}, KL within the floor's "
           f"budget ({max(kls):+.1e}), kl_in {sn['kl_in']:.2f}, targets {np.mean(zs[:20]):.2f} -> {np.mean(zs[-20:]):.2f}")
+
+    # C184's --table-neutral: a bonus moves picks inside a supertype only, each pick's supertype mass as without it, and a draw's log-prob is the update's
+    groups = np.zeros(pool.n, dtype=np.int64)
+    for c in pool.cards:
+        groups[c["id"]] = c["superType"]
+    bonus = np.where(groups == 2, rng.normal(size=pool.n), 0.0)
+    vn.bonus, vn.bonus_groups = bonus, groups
+    samples = [nf.sample(vn, rng) for _ in range(64)]
+    with torch.no_grad():
+        gap = float(np.abs(nf.log_prob(vn, samples)[0].numpy() - [s["logp"] for s in samples]).max())
+    mass = 0.0
+    for j in range(len(vn.ids)):
+        m, b = vn.base[j].numpy(), vn.b0np[j]
+        x0, x1 = np.where(m, vn.logits[j], -np.inf), np.where(m, vn.logits[j] + bonus, -np.inf)
+        y0 = b + x0 / floor_temperature(x0, 2.0, b)
+        y1 = group_neutral(b + x1 / floor_temperature(x1, 2.0, b), y0, groups)
+        q0, q1 = np.exp(y0 - y0.max()), np.exp(y1 - y1.max())
+        q0, q1 = q0 / q0.sum(), q1 / q1.sum()
+        mass = max(mass, max(abs(q0[groups == k].sum() - q1[groups == k].sum()) for k in (1, 2, 3)))
+    vn.bonus, vn.bonus_groups = None, None
+    if not (gap < 1e-3 and mass < 1e-9):
+        failures.append(f"neutral bonus: log-prob gap {gap:.1e}, supertype mass gap {mass:.1e}")
+    print(f"neutral bonus: log-prob gap {gap:.1e}, supertype mass gap {mass:.1e}")
 
 
 def check_train(failures, rng):
