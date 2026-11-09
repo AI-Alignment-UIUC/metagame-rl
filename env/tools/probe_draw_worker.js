@@ -179,7 +179,7 @@ let stats = null;
 let trackList = [];           // [{ rec, g, me }]: probes whose live game's later values and result are still to be filled in
 const newStats = () => ({ asked: 0, acts: 0, eligible: {}, probes: 0, probesByStratum: {}, unsearchable: 0, lines: 0, capped: 0,
                           lineErrors: 0, lineAsked: 0, rounds: 0, probeMs: 0, tier_full: 0, tier_oppHandSeen: 0, tier_ownDeckSeen: 0,
-                          tier_bothSeen: 0, tier_none: 0, tier_main: 0, droppedCopies: 0 });
+                          tier_bothSeen: 0, tier_none: 0, tier_main: 0, droppedCopies: 0, playRate: {} });
 
 // Lines played in lockstep to the game's end, the pilot sampled from its probabilities by each line's own Rng. A line
 // longer than maxLine asked decisions is cut and scored by the pilot's value there (from the seat's side).
@@ -238,12 +238,18 @@ class SwitchAgent {
 
   // The batch's stratum for an asked decision, or null: a main-phase decision with Oak (Bill) on offer that the live (greedy)
   // action does not take.
+  // C195: P.cards ([[stratum, option prefix], ...]; default Oak, Bill as C116) and P.played (also the decisions where the live
+  // action plays the card, stratum '<card>+played'); a card whose stratum needs nothing more is passed over, so later cards
+  // in the list still get their states.
   stratum(b, action) {
     const g = b.env.game, opts = b.env.current.options;
     if (g.decision().prompt) return null;
-    for (const [s, pre] of [['Oak', 'trainer|Professor Oak'], ['Bill', 'trainer|Bill']]) {
+    const cards = (P && P.cards) || [['Oak', 'trainer|Professor Oak'], ['Bill', 'trainer|Bill']];
+    for (const [s, pre] of cards) {
       const play = b.legal.find(a => opts[a].key.startsWith(pre + ' '));
-      if (play !== undefined && play !== action) return { prompt: false, trainer: s, s, play };
+      if (play === undefined) continue;
+      if (play !== action) { if (!P || !P.cards || P.need[s] > 0) return { prompt: false, trainer: s, s, play, kind: 'skip' }; }
+      else if (P && P.played && P.need[s + '+played'] > 0) return { prompt: false, trainer: s, s: s + '+played', play, kind: 'played' };
     }
     return null;
   }
@@ -252,7 +258,9 @@ class SwitchAgent {
     const g = b.env.game, need = P.need;
     const r = new Rng((g.rng.clone().u32() ^ Math.imul(g.steps + 1, 0x9e3779b1) ^ 0x1b873593) >>> 0).float();
     g.probesDraw = g.probesDraw || {};
-    if (!(need[st.s] > 0) || (g.probesDraw[st.s] || 0) >= P.maxPerGame || r >= P.mainP) return false;
+    const left = g.state.players.find(q => q.id === b.env.current.playerId).deck.cards.length;   // C205: low-deck states oversampled
+    const pp = P.lowDeck && left <= P.lowDeck ? (P.lowP ?? 1) : P.mainP;
+    if (!(need[st.s] > 0) || (g.probesDraw[st.s] || 0) >= P.maxPerGame || r >= pp) return false;
     need[st.s]--; g.probesDraw[st.s] = (g.probesDraw[st.s] || 0) + 1;
     return true;
   }
@@ -266,6 +274,16 @@ class SwitchAgent {
       if (g.tracks) for (const t of g.tracks) if (t.me === me) t.vals.push(out[i].value);   // the live seat's later values
       stats.asked++;
       if (!P) return;
+      if (P.cards && !g.decision().prompt) {                     // C205: the live play rate of the cards, by deck-left bin
+        const opts = b.env.current.options, pres = P.cards.map(c => c[1] + ' ');
+        if (b.legal.some(a => pres.some(q => opts[a].key.startsWith(q)))) {
+          const left = g.state.players.find(q => q.id === me).deck.cards.length;
+          const bin = left <= 10 ? 'le10' : left <= 20 ? '11-20' : left <= 30 ? '21-30' : 'gt30';
+          stats.playRate[bin + '|elig'] = (stats.playRate[bin + '|elig'] || 0) + 1;
+          const k = (opts[out[i].action] || {}).key || '';
+          if (pres.some(q => k.startsWith(q))) stats.playRate[bin + '|play'] = (stats.playRate[bin + '|play'] || 0) + 1;
+        }
+      }
       const st = this.stratum(b, out[i].action);
       if (!st) return;
       stats.eligible[st.s] = (stats.eligible[st.s] || 0) + 1;
@@ -282,7 +300,14 @@ class SwitchAgent {
     const V0 = ev.value, greedy = ev.action, taken = o.action;
     const ok = b.legal.filter(a => !prompt || opts[a].key !== 'cancel');
     const prng = new Rng((g.rng.clone().u32() ^ Math.imul(g.steps + 1, 0x9e3779b1) ^ 0x2545f491) >>> 0);
-    const answers = [st.play, greedy];                            // answer 0 plays the card, answer 1 is the greedy hold
+    let answers = [st.play, greedy];                              // answer 0 plays the card, answer 1 is the greedy hold
+    if (st.kind === 'played') {                                 // C195: against the policy's most likely other option
+      const [sv] = await this.sampler.act([b]);
+      let alt = -1, best = -1;
+      b.legal.forEach((a, k) => { if (a !== st.play && sv.probs[k] > best) { best = sv.probs[k]; alt = a; } });
+      if (alt === -1) { stats.unsearchable++; return; }
+      answers = [st.play, alt];
+    }
     const srng = new Rng((g.rng.clone().u32() ^ Math.imul(g.steps + 1, 0x9e3779b1) ^ 0x0b1e5eed) >>> 0);
     const seeds = Array.from({ length: P.m }, () => srng.u32());
     const tiers = seeds.map(s => prompt ? TIERS.find(t => copyAtPrompt(g, me, s, t, opts)) || null : (copyAtMain(g, me, s, opts) ? 'main' : null));
@@ -314,7 +339,7 @@ class SwitchAgent {
     for (const l of lines) { rew[l.ai][l.j] = l.reward; v1[l.ai][l.j] = l.v1; vt[l.ai][l.j] = l.vt; vals[l.ai][l.j] = l.vals.map(v => Math.round(v * 1e4) / 1e4); capped += l.capped; }
     const ob = b.obs;
     const rec = {
-      game: process.pid + ':' + g.uid, turn: g.state.turn, seat: me, stratum: st.s, trainer: st.trainer, prompt,
+      game: process.pid + ':' + g.uid, turn: g.state.turn, seat: me, stratum: st.s, trainer: st.trainer, kind: st.kind || 'skip', prompt,
       type: prompt ? g.openPrompt().type : 'main', message: prompt ? String(g.openPrompt().message || '') : '',
       step: prompt ? g.pickedKeys.length : 0, legal: b.legal.slice(), keys: b.legal.map(a => opts[a].key),
       answers, taken, greedy, V0, m: P.m, valid, tiers: tierCount, capped, rew, v1, vt, deckLeft: g.state.players.find(q => q.id === me).deck.cards.length,

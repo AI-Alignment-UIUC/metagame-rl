@@ -464,8 +464,30 @@ async function games(cmd) {
   const recorded = new Set();
   for (const s of new Set(cmd.slots || [0])) recorded.add(pilot(cmd.slots ? cmd.slots.indexOf(s) : 0, true));
   if (ls) for (const s of new Set(cmd.slots || [0])) recorded.add('lsr' + s);   // C138: recorded searched games (C138-S)
+  // drawMask (C206, runs/probe/C206-draw-mask-price/record.md; evaluation only, off: nothing changes): { n, names, dry }. At a
+  // main-phase decision (no prompt) whose acting player's deck holds n cards or fewer, the plays of the named Trainers (bare
+  // names) are not offered to either seat; dry counts the decisions it would mask without masking (the M0 control). A mask
+  // that would leave no option masks nothing and is counted (empty, the record's kill).
+  const dm = cmd.drawMask || null;
+  const dmS = dm ? { asked: 0, main: 0, low: 0, masked: 0, removed: 0, empty: 0 } : null;
+  const dmNames = dm ? new Set(dm.names) : null;
+  const dmMask = !dm ? null : s => {
+    dmS.asked++;
+    const g = s.env.game;
+    if (g.decision().prompt) return null;
+    dmS.main++;
+    const me = g.state.players.find(p => p.id === s.t.playerId);
+    if (!me || me.deck.cards.length > dm.n) return null;
+    dmS.low++;
+    const opts = s.env.current.options;               // options[k] is legal[k]'s option (env/env.js), either encoding
+    const keep = s.t.legal.filter((a, k) => !(opts[k].key.startsWith('trainer|') && dmNames.has(opts[k].key.split('|')[1].replace(/ [A-Z0-9]+$/, ''))));
+    if (keep.length === s.t.legal.length) return null;
+    if (!keep.length) { dmS.empty++; return null; }
+    dmS.masked++; dmS.removed += s.t.legal.length - keep.length;
+    return dm.dry ? null : keep;
+  };
   const runner = new Runner(enc, { concurrency: cmd.concurrency || 64, deckoutWin: cmd.deckoutWin ?? 1,
-                                   maxTurns: cmd.maxTurns || 0, roundTurns: cmd.roundTurns || 0 });
+                                   maxTurns: cmd.maxTurns || 0, roundTurns: cmd.roundTurns || 0, mask: dmMask });
   // Searched games (log #148): both seats of deck i's model slot played by PolicySearchAgent (k candidates from the slot's
   // top k, dets re-dealt copies each, lines greedy to the end of the turn, scored by the slot's value), in a second Runner
   // run alongside the plain one (a Runner waits for every agent's answer each step, so a search's many line requests
@@ -492,7 +514,8 @@ async function games(cmd) {
               trainerOnly: !!js.trainerOnly, includeTrainer: !!js.includeTrainer,     // C122's options, off by default
               score: js.score || 'value',                                             // C132's "prizes" score, off by default
               horizon: js.horizon || 1, lineOpponent: js.lineOpponent || null,        // C132b's horizon and line opponent
-              searchKey: js.searchKey || null, allTrainers: !!js.allTrainers });     // C136's trigger; C138's candidate rule
+              searchKey: js.searchKey || null, allTrainers: !!js.allTrainers,       // C136's trigger; C138's candidate rule
+              trace: !!js.trace });                                                   // C202 Amendment 3's rule-9 check
         }
         return 's' + slot;
       };
@@ -509,15 +532,27 @@ async function games(cmd) {
   // trainerPlay (C160; opt-in, off: nothing runs): per game and seat-turn, the Trainers with a play legal at a main-phase decision
   // and those played, by bare name; each game's result row then carries tplay { name: [turns legal, turns played] }.
   const tp = cmd.trainerPlay ? new Map() : null;
+  const EC = tp ? require('./engine.js').C.EnergyCard : null;
   const bare = o => o.key.split('|')[1].replace(/ [A-Z0-9]+$/, '');
   const onDec = !tp ? pc.onDecision : (s, answer, k) => {
     if (!s.env.game.decision().prompt) {
       const opts = s.env.current.options, t = s.env.game.state.turn + '|' + s.t.playerId;
       const g = tp.get(s.job.seed) || tp.set(s.job.seed, new Map()).get(s.job.seed);
+      const fresh = !g.has(t);
       const T = g.get(t) || g.set(t, { held: new Set(), played: new Set() }).get(t);
+      // C199 rule 9 (research, #1018): starvation against misplay. noE: no Energy in hand at the turn's first main-phase
+      // decision; atk / atkUnused: attacked, or passed with an attack legal; trE: own discard's Energy count change from
+      // a Trainer's play to the next main-phase decision (its costs and effects, e.g. Oak's discard).
+      const st = s.env.game.state, me = st.players[st.activePlayer];
+      const discE = me.discard.cards.filter(c => c instanceof EC).length;
+      if (fresh) T.noE = !me.hand.cards.some(c => c instanceof EC);
+      T.deck = me.deck.cards.length;                   // C204: the seat's deck size at its latest main-phase decision this turn
+      if (T.pend) { (T.trE = T.trE || []).push([T.pend[0], discE - T.pend[1]]); T.pend = null; }
       for (const a of s.t.legal) if (opts[a].key.startsWith('trainer|')) T.held.add(bare(opts[a]));
       const o = opts[answer.action];
-      if (o && o.key.startsWith('trainer|')) T.played.add(bare(o));
+      if (o && o.key.startsWith('trainer|')) { T.played.add(bare(o)); T.pend = [bare(o), discE]; }
+      if (o && o.key.startsWith('attack|')) T.atk = true;
+      if (o && o.key === 'pass' && s.t.legal.some(a => opts[a].key.startsWith('attack|'))) T.atkUnused = true;
       if (cmd.trainerPlayTrace) fs.appendFileSync(cmd.trainerPlayTrace, JSON.stringify({ seed: s.job.seed, t,   // C160's acceptance
         legal: s.t.legal.map(a => opts[a].key), chosen: o ? o.key : null }) + '\n');
     }
@@ -530,6 +565,25 @@ async function games(cmd) {
     }
     return c;
   };
+  const tplaySeat = seed => {                         // C199's rule-9 check: the same counts, by seat (the key is turn|playerId)
+    const c = {};
+    for (const [t, T] of (tp.get(seed) || new Map()).entries()) {
+      const p = t.split('|')[1], s = c[p] = c[p] || {};
+      for (const n of T.held) { s[n] = s[n] || [0, 0]; s[n][0]++; s[n][1] += T.played.has(n) ? 1 : 0; }
+    }
+    return c;
+  };
+  const turnSeat = seed => {                          // C199 rule 9: per seat, own turns, noE, atk, atkUnused, trE {name: [plays, +E, net E]}
+    const c = {};
+    for (const [t, T] of (tp.get(seed) || new Map()).entries()) {
+      const p = t.split('|')[1], s = c[p] = c[p] || { turns: 0, noE: 0, atk: 0, atkUnused: 0, trE: {}, lastTurn: -1, deckEnd: null };
+      s.turns++; s.noE += T.noE ? 1 : 0; s.atk += T.atk ? 1 : 0; s.atkUnused += T.atkUnused ? 1 : 0;
+      const tn = Number(t.split('|')[0]);              // C204: deck left at the seat's last own turn
+      if (tn > s.lastTurn) { s.lastTurn = tn; s.deckEnd = T.deck; }
+      for (const [n, d] of T.trE || []) { const e = s.trE[n] = s.trE[n] || [0, 0, 0]; e[0]++; e[1] += Math.max(d, 0); e[2] += d; }
+    }
+    return c;
+  };
   if (searchJobs.length) [out, sOut] = await Promise.all([runner.run(nextJob, agents, { record: cmd.out ? recorded : new Set(), onDecision: onDec }), searchRun()]);
   else out = await runner.run(nextJob, agents, { record: cmd.out ? recorded : new Set(), onDecision: onDec });
   const probes = cmd.out ? await pc.search() : undefined;
@@ -539,18 +593,23 @@ async function games(cmd) {
     const job = bySeed.get(r.seed);
     return { i: job.i, j: job.j, iSeat: job.iSeat, seed: job.seed, winner: r.winner, ending: r.ending, turns: r.turns,
              prizesLeft: r.prizesLeft, steps: r.steps, error: r.error, ...(r.roundT !== undefined ? { roundT: r.roundT } : {}),
-             ...(tp && !extra.search ? { tplay: tplay(r.seed) } : {}), ...extra };
+             ...(tp && !extra.search ? { tplay: tplay(r.seed), tplaySeat: tplaySeat(r.seed), turnSeat: turnSeat(r.seed) } : {}), ...extra };
   };
   const results = out.results.map(r => row(r, {}));
   if (sOut) results.push(...sOut.results.map(r => row(r, { search: true })));
   const searchStats = js ? Object.values(searchers).reduce((a, s) => {
-    for (const q of Object.keys(a)) if (q !== 'seconds') a[q] += s.stats[q] || 0;
+    for (const q of Object.keys(a)) if (q !== 'seconds' && typeof a[q] === 'number') a[q] += s.stats[q] || 0;
+    for (const q of ['lineSteps', 'cappedKeys']) if (s.stats[q]) {                  // C202's trace: counts merged by key
+      a[q] = a[q] || {};
+      for (const [k, v] of Object.entries(s.stats[q])) a[q][k] = (a[q][k] || 0) + v;
+    }
     return a;
   }, { searches: 0, changed: 0, lines: 0, lineErrors: 0, capped: 0, seconds: sSeconds,
        ...(js.score === 'prizes' ? { pCmp: 0, pChosen: 0, pValue: 0, pWorse: 0 } : {}),            // C132's check
        ...(js.lineOpponent ? { oppActs: 0, oppBad: 0 } : {}) }) : null;                            // C132b's check
   return { ok: true, games: results.length, seconds: (Date.now() - t0) / 1000, results,
            ...(cmd.out ? { out: cmd.out, transitions: out.rec.action.length } : {}), ...(js ? { searchStats } : {}),
+           ...(dmS ? { drawMask: dmS } : {}),                                                   // C206's counters
            ...(ls ? { loopSearch: Object.entries(agents).filter(([n]) => n.startsWith('ls')).reduce((a, [, x]) => ({
              decisions: a.decisions + x.stats.decisions, searched: a.searched + x.stats.searched,
              changed: a.changed + x.searcher.stats.changed, lines: a.lines + x.searcher.stats.lines,

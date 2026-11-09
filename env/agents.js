@@ -301,8 +301,9 @@ class PolicySearchAgent {
   // own choice on the same lines (pWorse). "value": as before.
   constructor(pilot, enc, { k = 4, dets = 4, maxSteps = 40, seed = 0, horizon = 1, crn = false, keepLines = false, followups = 1,
                             trainerOnly = false, includeTrainer = false, score = 'value', lineOpponent = null, searchKey = null,
-                            allTrainers = false, afterstate = false } = {}) {
+                            allTrainers = false, afterstate = false, trace = false } = {}) {
     this.pilot = pilot;
+    this.trace = trace;                              // C202 Amendment 3's rule-9 check (off: nothing recorded): lineSteps, cappedKeys
     this.afterstate = afterstate;                    // C149: a line ends at the first decision with no prompt open (the option resolved)
     this.trainerOnly = trainerOnly; this.includeTrainer = includeTrainer;
     this.searchKey = searchKey;                      // C136: search only where a legal option's key starts with it (null: off)
@@ -319,7 +320,8 @@ class PolicySearchAgent {
     this.enc = enc;
     this.k = k; this.dets = dets; this.maxSteps = maxSteps;
     this.rng = new Rng(seed);
-    this.stats = { searches: 0, changed: 0, lines: 0, lineErrors: 0, capped: 0, followupLines: 0, followupPrompts: 0 };
+    this.stats = { searches: 0, changed: 0, lines: 0, lineErrors: 0, capped: 0, followupLines: 0, followupPrompts: 0,
+                   ...(trace ? { lineSteps: {}, cappedKeys: {} } : {}) };
   }
 
   async act(batch) {
@@ -375,7 +377,7 @@ class PolicySearchAgent {
             const t0 = env.observe();
             const j = env.current.options.findIndex(o => o.key === keyOf(a));
             if (j === -1 || !t0.legal.includes(j)) break;
-            const l = { pi, a, r, env, t: env.step(j), score: null, n: 0, rep, of: base,
+            const l = { pi, a, r, env, t: env.step(j), score: null, n: 0, rep, of: base, keys: this.trace ? {} : null,
               rng: rep ? new Rng((seed ^ Math.imul(rep, 0x9e3779b1)) >>> 0) : null };
             if (!rep) base = l; else this.stats.followupLines++;
             lines.push(l);
@@ -391,17 +393,32 @@ class PolicySearchAgent {
     const prizes = this.score === 'prizes';
     const taken = l => 6 - l.env.game.state.players.find(p => p.id === probs[l.pi].me).prizes.reduce((s, z) => s + z.cards.length, 0);
     const byPrizes = l => { if (prizes) { l.v = l.score; l.p = taken(l); l.score = 10 * l.p + l.v; } };   // score "prizes" (C132)
+    // trace: each option stepped in a line, by its first two key fields (e.g. trainer|Computer Search BS); a finished line's steps
+    // by the searching player's Trainer count (all its zones, in fives) and steps (in tens): "T|S" -> lines.
+    const note = (l, a) => { if (l.keys) { const k = l.env.current.options[a].key.split('|').slice(0, 2).join('|'); l.keys[k] = (l.keys[k] || 0) + 1; } };
+    const fin = l => {
+      if (!this.trace) return;
+      const P = l.env.game.state.players.find(p => p.id === probs[l.pi].me);
+      const lists = [P.deck, P.hand, P.discard, ...P.prizes, ...[P.active, ...P.bench].flatMap(s => [s.pokemons, s.energies, s.trainers])];
+      const tc = lists.reduce((n, x) => n + x.cards.filter(c => c.superType === C.SuperType.TRAINER).length, 0);
+      const key = `${Math.floor(tc / 5) * 5}|${Math.min(4, Math.floor(l.n / 10)) * 10}`;
+      this.stats.lineSteps[key] = (this.stats.lineSteps[key] || 0) + 1;
+    };
     for (;;) {
       const ask = [], oppAsk = [];
       for (const l of lines) {
         if (l.score !== null) continue;
-        while (l.n < this.maxSteps && !l.t.done && l.t.legal.length === 1 && !turned(l)) { l.t = l.env.step(l.t.legal[0]); l.n++; }
-        if (l.n >= this.maxSteps) { l.score = 0; l.capped = true; this.stats.capped++; byPrizes(l); continue; }   // still in the turn after maxSteps
+        while (l.n < this.maxSteps && !l.t.done && l.t.legal.length === 1 && !turned(l)) { note(l, l.t.legal[0]); l.t = l.env.step(l.t.legal[0]); l.n++; }
+        if (l.n >= this.maxSteps) {                    // still in the turn after maxSteps
+          l.score = 0; l.capped = true; this.stats.capped++; byPrizes(l); fin(l);
+          if (l.keys) for (const [k, v] of Object.entries(l.keys)) this.stats.cappedKeys[k] = (this.stats.cappedKeys[k] || 0) + v;
+          continue;
+        }
         if (l.t.done) {
           const me = probs[l.pi].me;
           if (l.t.error) this.stats.lineErrors++;
           l.score = l.env.game.reward(me);        // +1 / -1 / 0, or the round rule's points (env/game.js, log #160)
-          byPrizes(l);
+          byPrizes(l); fin(l);
           continue;
         }
         if (this.opponent && !turned(l) && l.t.playerId !== probs[l.pi].me) oppAsk.push(l);   // lineOpponent (C132b)
@@ -413,6 +430,7 @@ class PolicySearchAgent {
           const key = l.env.current.options[acts[i].action].key;
           this.stats.oppActs = (this.stats.oppActs || 0) + 1;
           if (/^(attach|attack|trainer)\|/.test(key)) this.stats.oppBad = (this.stats.oppBad || 0) + 1;
+          note(l, acts[i].action);
           l.t = l.env.step(acts[i].action);
           l.n++;
         });
@@ -422,7 +440,7 @@ class PolicySearchAgent {
       ask.forEach((l, i) => {
         if (turned(l)) {
           l.score = l.t.playerId === probs[l.pi].me ? ev[i].value : -ev[i].value;
-          byPrizes(l);
+          byPrizes(l); fin(l);
         } else {
           let a = ev[i].best;
           const g = l.env.game;
@@ -430,6 +448,7 @@ class PolicySearchAgent {
             const ok = l.t.legal.filter(x => l.env.current.options[x].key !== 'cancel');
             if (ok.length) { a = ok[l.rng.int(ok.length)]; this.stats.followupPrompts++; }
           }
+          note(l, a);
           l.t = l.env.step(a);
           l.n++;
         }

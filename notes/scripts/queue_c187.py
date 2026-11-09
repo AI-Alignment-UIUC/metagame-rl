@@ -36,10 +36,10 @@ def make_screens():
 
 
 def in_order(screens, kill):
-    """Seed 48 now; seed 49 only once C184's first round is up (WR s50 alive, or finished), so it doesn't take DN s50's or ND s48's slot."""
-    first = ROOT / "runs/screens/C184-WR-s50/population_it0044.pt"
+    """C188's Amendment 1: seed 48 once W0S s49 is up, seed 49 once WK s49 is up (alive, or finished), so H0 doesn't take their slots."""
+    after = {48: "C188-W0S-s49", 49: "C188-WK-s49"}
     for n, _, seed in ARMS:
-        while seed != 48 and not (Q.alive("C184-WR-s50") or first.exists()):
+        while not (Q.alive(after[seed]) or (ROOT / f"runs/screens/{after[seed]}/population_it0044.pt").exists()):
             time.sleep(60)
         s = screens[n]
         if not Q.alive(n):
@@ -53,7 +53,7 @@ def main():
         print("chains written:", list(screens))
         return
     Q.log("C187 queue start")
-    kill = lambda rows: Q168.own_kill(rows, trainer_line=15)
+    kill = lambda rows: Q168.own_kill(rows, trainer_line=15, pokemon_over=18.5)   # C188 Amendment 7 covers H0 too
     threading.Thread(target=in_order, args=(screens, kill), daemon=True).start()
     QC.supervise(screens)
     Q.log("C187 queue end")

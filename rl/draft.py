@@ -183,13 +183,14 @@ class Drafter:
     """The draft head and its optimizer."""
 
     def __init__(self, pool: Pool, d: int, heads: int, swaps: int, lr: float, device: str, h_in_floor: float = 0.0,
-                 group_p: float = 0.0, base: str = "uniform", base_ent: float = 3.0):
+                 group_p: float = 0.0, base: str = "uniform", base_ent: float = 3.0, out_bonus: str = "entropy"):
         assert base in ("uniform", "features"), base
         self.pool, self.device, self.swaps, self.group_p = pool, device, swaps, group_p
         self.head = DraftHead(pool.n, d, heads).to(device)
         self.opt = torch.optim.Adam(self.head.parameters(), lr=lr)
         self.h_in_floor = h_in_floor          # nats; an incoming choice below it is sampled warmer (log #109)
         self.base, self.base_ent = base, base_ent       # the incoming draw's base measure (log #193)
+        self.out_bonus = out_bonus                      # the out choice's bonus in update(): entropy, none or kl (C188)
 
     @torch.no_grad()
     def view(self, pilot, deck: np.ndarray, field: list) -> DeckView:
@@ -343,8 +344,13 @@ class Drafter:
                 row = row + shift
             in_lp = row.gather(1, c[:, None]).squeeze(1) - torch.logsumexp(row, 1)
             lp = lp.index_add(0, torch.tensor(ev_s, device=dev), out_lp + in_lp)
-        po = torch.log_softmax(s + torch.log(torch.tensor(vw.counts, dtype=torch.float32, device=dev)), 0)
+        c = torch.tensor(vw.counts, dtype=torch.float32, device=dev)
+        po = torch.log_softmax(s + torch.log(c), 0)
         h_out = -(po.exp() * po).sum()
+        if self.out_bonus == "kl":                               # C188: -KL(out || copy share), maximum at s = 0
+            vw.out_term = -(po.exp() * (po - torch.log(c / c.sum()))).sum()
+        else:                                                    # entropy over names, maximum at s = -log(copies); none: no term
+            vw.out_term = h_out if self.out_bonus == "entropy" else 0.0 * h_out
         q = torch.log_softmax((logits if b0 is None else b0 + logits).masked_fill(~vw.base, -1e9), 1)
         h_in = (po.exp().detach() * -(q.exp() * q).masked_fill(~vw.base, 0).sum(1)).sum()
         if b0 is None:
@@ -360,20 +366,22 @@ class Drafter:
         sd = a_all.std() if len(a_all) and a_all.std() > 0 else 1.0
         n = max(len(a_all), 1)
         self.opt.zero_grad()
-        h_out = h_in = kl_in = 0.0
+        h_out = h_in = kl_in = h_s0 = 0.0                        # h_s0: the out entropy these decks have at s = 0 (C188's stop)
         for vw, samples, a in batch:
             lp, ho, hi, bonus = self.log_prob(vw, samples)
             at = torch.tensor(np.asarray(a) / sd, dtype=torch.float32, device=self.device)
-            loss = -(at * lp).sum() / n - beta * (ho + bonus) / len(batch)
+            loss = -(at * lp).sum() / n - beta * (vw.out_term + bonus) / len(batch)
             loss.backward()
             h_out += float(ho.detach()) / len(batch)
             h_in += float(hi.detach()) / len(batch)
             kl_in -= float(bonus.detach()) / len(batch)
+            share = vw.counts / vw.counts.sum()
+            h_s0 -= float((share * np.log(share)).sum()) / len(batch)
         grad = float(torch.nn.utils.clip_grad_norm_(self.head.parameters(), 1.0))
         self.opt.step()
         for vw, _, _ in batch:
             self.refresh(vw)
-        out = {"h_out": round(h_out, 4), "h_in": round(h_in, 4), "grad_norm": round(grad, 4)}
+        out = {"h_out": round(h_out, 4), "h_s0": round(h_s0, 4), "h_in": round(h_in, 4), "grad_norm": round(grad, 4)}
         if self.base != "uniform":
             out["kl_in"] = round(kl_in, 4)
         return out

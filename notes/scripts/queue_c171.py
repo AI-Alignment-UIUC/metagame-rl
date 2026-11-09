@@ -58,6 +58,12 @@ def supervise(screens):
     import c171_read as C
     seed_of = {a[0]: a[2] for a in ARMS}
     read, g3_done, cache, walled, done = {n: -1 for n in screens}, set(), {}, set(), set()
+    f0 = D / "stages.jsonl"                              # a restart doesn't repeat stage reads already written
+    for x in (f0.read_text(encoding="utf-8").splitlines() if f0.exists() else []):
+        if x.strip():
+            r = json.loads(x)
+            if r.get("run") in read:
+                read[r["run"]] = max(read[r["run"]], r["iter"])
     g3m = {}
     run_of = lambda n: ROOT / "runs" / "screens" / n
     ready = lambda n, it: (run_of(n) / f"population_it{it:04d}.pt").exists()

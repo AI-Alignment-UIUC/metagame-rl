@@ -3,6 +3,7 @@
 """
 import sys
 import threading
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -39,7 +40,9 @@ def make_screens():
 
 
 def in_order(screens, kills):
-    """One launch at a time, in ARMS's order: Screen.launch retries while the slots are full, so no later arm takes a slot first. A watch beside each."""
+    """One launch at a time, in ARMS's order: Screen.launch retries while the slots are full, so no later arm takes a slot first. A watch beside each. C188's Amendment 1: nothing starts before W0's first read, its population at 14 on both seeds."""
+    while not all((ROOT / f"runs/screens/C188-W0-s{s}/population_it0014.pt").exists() for s in (48, 49)):
+        time.sleep(60)
     for n, a, _ in ARMS:
         s = screens[n]
         if not Q.alive(n):

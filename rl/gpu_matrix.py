@@ -143,7 +143,7 @@ class GpuMatrix:
 
     def play(self, decks: list, games: int, seed: int, new: int = 0, pairs: list = None, value_at_turn: int = 0,
              slots: list = None, models: dict = None, pair_keys: list = None, round_turns=0, search: dict = None,
-             max_turns: int = 0):
+             max_turns: int = 0, trainer_play: bool = False, draw_mask: dict = None):
         """decks: [{name, cards}] -> (wins, games, steps) as [n, n] arrays; mirrors filled with 0.5.
         `pairs` [(i, j)] plays only those pairs instead of all (or all involving the last `new`).
         slots / models (rl/league.py): deck i is piloted by model slot slots[i] of `models` instead of
@@ -167,7 +167,9 @@ class GpuMatrix:
                      **({"slots": [int(x) for x in slots]} if slots is not None else {}),
                      **({"slotEnc": slot_enc_of(models)} if models and len({id(m) for m in models.values()}) > 1 else {}),  # C143: one pilot in two slots needs none
                      **({"roundTurns": round_turns} if round_turns else {}),
-                     **({"maxTurns": int(max_turns)} if max_turns else {})} for w, s in enumerate(shards)]   # C140; 0: as before
+                     **({"maxTurns": int(max_turns)} if max_turns else {}),   # C140; 0: as before
+                     **({"trainerPlay": True} if trainer_play else {}),       # C199: per-game Trainer play counts, plain games only
+                     **({"drawMask": draw_mask} if draw_mask else {})} for w, s in enumerate(shards)]   # C206: evaluation-only mask, plain games only
             replies += self.pool.collect(msgs, models or {0: self.model}, self.device)   # fp32, as the ONNX pilot
         self.results = [x for rep in replies for x in rep["results"]]   # per game (with its job's seed), for analyses
         W, G, S = np.zeros((n, n)), np.zeros((n, n)), np.zeros((n, n))
@@ -189,9 +191,19 @@ class GpuMatrix:
         total = len(jobs)
         self.last = {"games": total, "seconds": round(secs, 1), "games_per_s": round(total / max(secs, 1e-9), 1),
                      "errors": errors, "cut": int(cut), "endings": endings, "decisions_per_game": round(float(np.triu(S, 1).sum()) / max(total, 1), 1)}
+        if draw_mask:                                    # C206: the mask's counters summed over the workers
+            self.last["drawMask"] = {q: sum((rep.get("drawMask") or {}).get(q, 0) for rep in replies)
+                                     for q in ("asked", "main", "low", "masked", "removed", "empty")}
         if search:
             st = [rep["searchStats"] for rep in replies if rep.get("searchStats")]
-            self.last["search"] = {q: round(sum(x[q] for x in st), 1) for q in (st[0] if st else {})}
+            self.last["search"] = {q: round(sum(x[q] for x in st), 1) for q in (st[0] if st else {}) if not isinstance(st[0][q], dict)}
+            for q in ("lineSteps", "cappedKeys"):       # C202 Amendment 3's trace: counts merged by key over the workers
+                if any(q in x for x in st):
+                    m = {}
+                    for x in st:
+                        for k, v in (x.get(q) or {}).items():
+                            m[k] = m.get(k, 0) + v
+                    self.last["search"][q] = m
         return W, G, S
 
     def close(self):

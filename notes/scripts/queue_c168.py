@@ -64,14 +64,18 @@ def make_screens():
     return out
 
 
-def own_kill(rows, trainer_line=18):
-    """One arm's rules: a reason or None."""
+def own_kill(rows, trainer_line=18, pokemon_over=None):
+    """One arm's rules: a reason or None. pokemon_over (C188 Amendment 7): the slide is median Pokemon above this
+    absolute line at 3 reads, in place of iteration 5's median plus 6; None keeps the old rule."""
     if any(r.get("errors", 0) > 0.02 * max(r.get("games", 1), 1) for r in rows):
         return "errors over 2% of an iteration's games"
     reads = [r for r in rows if (r["iter"] + 1) % 5 == 0]
     start = next((r for r in rows if r["iter"] == 5), None)
     last3 = reads[-3:]
-    if start and len(last3) == 3:
+    if pokemon_over is not None:
+        if len(last3) == 3 and all(r["shape_quartiles"]["pokemon"][1] > pokemon_over for r in last3):
+            return f"Pokemon slide: median Pokemon above {pokemon_over} at 3 reads in a row (C188 Amendment 7)"
+    elif start and len(last3) == 3:
         p0 = start["shape_quartiles"]["pokemon"][1]
         if all(r["shape_quartiles"]["pokemon"][1] >= p0 + 6 for r in last3):
             return f"Pokemon slide: median Pokemon at or above {p0 + 6} at 3 reads in a row"

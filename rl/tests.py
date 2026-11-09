@@ -492,6 +492,42 @@ def check_draft(failures, table, text, archived, rng):
         failures.append(f"neutral bonus: log-prob gap {gap:.1e}, supertype mass gap {mass:.1e}")
     print(f"neutral bonus: log-prob gap {gap:.1e}, supertype mass gap {mass:.1e}")
 
+    # C188's --draft-out-bonus: entropy is h_out itself, none has no gradient, kl's maximum is at s = 0 where entropy's isn't
+    out = list(nf.head.out.parameters())
+    def term(mode):
+        nf.out_bonus = mode
+        ho = nf.log_prob(vn, [])[1]
+        g = torch.autograd.grad(vn.out_term, out, allow_unused=True)
+        return ho, vn.out_term, float(torch.cat([x.flatten() for x in g if x is not None]).norm())
+    ho, t_e, g_e = term("entropy")
+    same = t_e is ho
+    g_n = term("none")[2]
+    kept = [x.detach().clone() for x in nf.head.out[-1].parameters()]
+    t_k1 = float(term("kl")[1])
+    for x in nf.head.out[-1].parameters():
+        torch.nn.init.zeros_(x)
+    _, t_k0, g_k0 = term("kl")
+    g_e0 = term("entropy")[2]
+    for x, y in zip(nf.head.out[-1].parameters(), kept):
+        x.data.copy_(y)
+    nf.out_bonus = "entropy"
+    if not (same and g_n == 0.0 and t_k1 < 0 and abs(float(t_k0)) < 1e-5 and g_k0 < 1e-5 and g_e0 > 1e-3):
+        failures.append(f"out bonus: entropy is h_out {same}, none's gradient {g_n:.1e}, kl {t_k1:.2e} trained, {float(t_k0):.1e} at s = 0 with gradient {g_k0:.1e}, entropy's gradient at s = 0 {g_e0:.1e}")
+    from rl.metagame import size_neutral
+    batch = []
+    for _ in range(400):                                     # C188's --draft-size-neutral: only drawn candidates are fitted and shifted, at a known slope of -0.01 a copy
+        m = int(rng.integers(1, 13))
+        x, same_deck = {"ev_j": [0] * min(m, 6), "ev_n": [max(m - 6, 0)]}, {"ev_j": [], "ev_n": []}
+        batch.append((None, [x] * 20 + [same_deck] * 20, np.r_[rng.normal(-0.01 * m, 0.1, 20), rng.normal(0.0, 0.1, 20)]))
+    kept = [a[20:].copy() for _, _, a in batch]
+    hist = [-0.01] * 4
+    sz = size_neutral(batch, hist)
+    after = np.polyfit([len(s[0]["ev_j"]) + sum(s[0]["ev_n"]) for _, s, _ in batch], [a[:20].mean() for _, _, a in batch], 1)[0]
+    if not (all(np.array_equal(k, a[20:]) for k, (_, _, a) in zip(kept, batch)) and abs(sz["size_lambda"] + 0.01) < 0.002 and abs(after - (sz["size_lambda"] - sz["size_lambda_bar"])) < 1e-4):
+        failures.append(f"size neutral: {sz}, slope after {after:.5f}, or an unchanged entry moved")
+    print(f"size neutral: unchanged entries untouched, {sz}, slope after {after:.5f}")
+    print(f"out bonus: entropy is h_out {same}, none's gradient {g_n:.1e}, kl {t_k1:.2e} trained, {float(t_k0):.1e} at s = 0 with gradient {g_k0:.1e}, entropy's gradient at s = 0 {g_e0:.1e}")
+
 
 def check_train(failures, rng):
     # Explained variance: trajectory 0 at t = 0, 2, 3 (rewards 0.25, 0, 1), trajectory 1 at t = 1, 4 (0, -1).

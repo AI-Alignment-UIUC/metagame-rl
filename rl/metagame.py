@@ -157,6 +157,26 @@ def clock_payout(reward: np.ndarray, tw: float, d: float) -> np.ndarray:
     return np.where(np.isclose(reward, -1 / 3), 2 * d - 1, out).astype(reward.dtype)
 
 
+def size_neutral(batch: list, hist: list) -> dict:
+    """C188 (--draft-size-neutral): the batch's candidates' mean advantage fitted on the copies each moved, a = alpha + lam m. lam's mean over the last 5
+    iterations, times (m - mean m), comes off each candidate's games, in place, so the head's credit doesn't see edit size. Moves and selection don't change."""
+    rows = []
+    for _, samples, adv in batch:
+        e = np.array([bool(x["ev_j"]) for x in samples])
+        if e.any():
+            x = samples[int(np.argmax(e))]
+            rows.append((len(x["ev_j"]) + sum(x["ev_n"]), float(adv[e].mean()), adv, e))
+    if not rows:
+        return {}
+    m, a = np.array([r[0] for r in rows], dtype=np.float64), np.array([r[1] for r in rows])
+    lam = float(np.polyfit(m, a, 1)[0]) if m.std() > 0 else 0.0
+    hist.append(lam)
+    bar = float(np.mean(hist[-5:]))
+    for r in rows:
+        r[2][r[3]] -= bar * (r[0] - m.mean())
+    return {"size_lambda": round(lam, 5), "size_lambda_bar": round(bar, 5), "size_m": round(float(m.mean()), 3)}
+
+
 def paired_move(vs: list):
     """--select-paired: (entry, complete slots): the entry q >= 1 with the largest mean of z(q) - z(0) over the slots, if
     that mean exceeds its SE (sd with ddof 1 / sqrt(n), n >= 2), else 0."""
@@ -293,6 +313,12 @@ def main(argv=None):
     ap.add_argument("--field-sample", type=int, default=4, help="decks of the field each deck is read against")
     ap.add_argument("--draft-lr", type=float, default=1e-3)
     ap.add_argument("--draft-ent", type=float, default=0.01)
+    ap.add_argument("--draft-out-bonus", choices=["entropy", "none", "kl"], default="entropy",
+                    help="the out choice's term under --draft-ent: entropy over names, none, or -KL from copy shares (C188)")
+    ap.add_argument("--edit-slots", action="store_true",
+                    help="write edit_slots.jsonl: each candidate's picks and its paired results (C188; no decision reads it; required by the two flags beside it)")
+    ap.add_argument("--draft-size-neutral", action="store_true",
+                    help="the head's credit doesn't see edit size: fit each candidate's advantage on the copies it moved, and take the last 5 iterations' mean slope off (C188)")
     ap.add_argument("--draft-h-in-floor", type=float, default=0.0,
                     help="a floor in nats on the entropy the incoming card is drawn with: a choice below it is drawn at "
                          "the temperature that reaches it (log #109)")
@@ -358,8 +384,13 @@ def main(argv=None):
                     help="C171: a {name: coefficient} JSON of Pokemon values from the run's own factorial games; off by default")
     ap.add_argument("--table-kappa", type=float, default=3.0, help="C171: exp(kappa z) on wide-deck picks, kappa z on the head's logits; z is c/SD(c), centred")
     ap.add_argument("--init-t-range", default="", help="C184: LO-HI, wide decks at init and turnover rejection-sampled to this many Trainers; off by default")
+    ap.add_argument("--init-e-range", default="", help="C191: LO-HI, wide decks at init and turnover rejection-sampled to this many basic plus special Energy; off by default")
     ap.add_argument("--table-neutral", action="store_true", help="C184: the table's bonus moves picks only inside a supertype; each supertype's total proposal mass is what it'd be with no bonus, at each pick")
     ap.add_argument("--table-scope", choices=["all", "proposals", "trainers"], default="all", help="C171: all is initial and turnover wide decks plus proposals; proposals is the head alone. C182: trainers is all of those for a Trainer table")
+    ap.add_argument("--pop-lists", action="store_true", help="C203 (b): with --fork-from, the population is the 24 archived lists "
+                    "(a bench diagnostic, pilot and head frozen by --lr 0 --draft-lr 0, checked by hash; nothing seeds from it); off by default")
+    ap.add_argument("--lists-age", type=int, default=0, help="C203 Amendment 2: with --pop-lists, the lists start this many iterations old "
+                    "(born = start - N), so --protect doesn't shield them while entrants keep it; 0 by default")
     ap.add_argument("--save-first", action="store_true", help="C171: also save the population after iteration 0, for a read of the start decks")
     ap.add_argument("--turnover-mutant", action="store_true",
                     help="C168: a turnover always replaces with a mutant of the best quarter, never a fresh deck")
@@ -432,6 +463,9 @@ def main(argv=None):
     assert not paired or (args.select and args.workers >= H), "--select-paired needs --select and --workers >= 1 + --candidates"
     assert not (paired and args.select_z > 0), "--select-paired and --select-z are separate selection rules"
     assert not args.select_retest or paired, "--select-retest re-tests --select-paired moves"
+    assert args.edit_slots or (args.draft_out_bonus == "entropy" and not args.draft_size_neutral), "C188's record requires --edit-slots of --draft-out-bonus none or kl and of --draft-size-neutral"
+    assert not args.edit_slots or paired, "--edit-slots reads --select-paired's slots"
+    assert not args.draft_size_neutral or args.candidates == 1, "--draft-size-neutral fits one candidate a deck"
     assert not args.select_budget or (paired and not args.select_retest), "--select-budget needs --select-paired, not --select-retest"
     assert not (args.thompson_share or args.thompson_bonus) or paired, "--thompson-share and --thompson-bonus fit --select-paired slots"
     limits.apply(device, args.workers)
@@ -465,7 +499,7 @@ def main(argv=None):
     net.eval()
     opt = torch.optim.Adam(net.parameters(), lr=args.lr, eps=1e-5)
     drafter = Drafter(pool, c0["d"], c0["heads"], args.swaps, args.draft_lr, device, h_in_floor=args.draft_h_in_floor,
-                      group_p=args.draft_group_p, base=args.draft_base, base_ent=args.draft_base_ent)
+                      group_p=args.draft_group_p, base=args.draft_base, base_ent=args.draft_base_ent, out_bonus=args.draft_out_bonus)
     targs = SimpleNamespace(**{**PPO, "epochs": args.epochs, "micro_batch": args.micro_batch,
                                **({"search_distill": args.search_distill, "distill_tau": args.distill_tau,     # C137; off: absent
                                    "distill_clip": args.distill_clip, "distill_margin": args.distill_margin}
@@ -508,6 +542,13 @@ def main(argv=None):
         if fork and args.reseed is not None:
             rng, deal_seed = np.random.default_rng(args.reseed), args.reseed
             torch.manual_seed(args.reseed)
+        if fork and args.pop_lists:                      # C203 (b): the forked nets on a population of the 24 lists, fresh scores
+            from rl.decks import archived_decks
+            pop = [{"id": i, "deck": v, "born": start - args.lists_age, "parent": None, "kind": "list", "sum": 0.0, "n": 0}
+                   for i, (_, v) in enumerate(archived_decks(pool))]
+            next_id, cands, pairs, retest, thompson_hist = len(pop), {}, {}, {}, []
+            for g in drafter.opt.param_groups:           # drafter.load restored the saved lr (W's 3e-4); --draft-lr wins here, as --lr does
+                g["lr"] = args.draft_lr
     if not st:
         (run / "config.json").write_text(json.dumps({**vars(args), "pilot": net.config(), "ppo": vars(targs),
                                                     "device": device}, indent=1))
@@ -533,11 +574,14 @@ def main(argv=None):
             trainer_weight = {n: float(np.exp(args.table_kappa * v)) for n, v in z.items()}
         print(f"table: {len(z)} names, kappa {args.table_kappa}, scope {args.table_scope}", flush=True)
     t_range = tuple(int(x) for x in args.init_t_range.split("-")) if args.init_t_range else None
+    e_range = tuple(int(x) for x in args.init_e_range.split("-")) if args.init_e_range else None
 
     def fresh_wide():
-        while True:                                      # C184: the generator otherwise, kept only inside the range
+        while True:                                      # C184, C191: the generator otherwise, kept only inside the ranges
             v = wide_deck(pool, rng, name_weight=table_weight, trainer_weight=trainer_weight)
-            if t_range is None or t_range[0] <= deck_shape(pool, v)["trainer"] <= t_range[1]:
+            s = deck_shape(pool, v)
+            if (t_range is None or t_range[0] <= s["trainer"] <= t_range[1]) and \
+               (e_range is None or e_range[0] <= s["basic_energy"] + s["special_energy"] <= e_range[1]):
                 return v
 
     if not (st or fork):
@@ -546,6 +590,9 @@ def main(argv=None):
                for i in range(D)]
         next_id = D
     D = len(pop)                                         # a fork or resume keeps its own population size
+    lam_hist = []                                        # --draft-size-neutral: lambda by iteration, carried over a resume
+    if args.draft_size_neutral and (run / "log.jsonl").exists():
+        lam_hist = [r["draft"]["size_lambda"] for r in map(json.loads, open(run / "log.jsonl", encoding="utf-8")) if "size_lambda" in (r.get("draft") or {})]
     log = open(run / "log.jsonl", "a")
 
     try:
@@ -760,6 +807,20 @@ def main(argv=None):
                 z_iter[d] = z.mean()
                 pop[d]["sum"] += float(z.sum())
                 pop[d]["n"] += len(z)
+            if args.edit_slots:                              # C188: each candidate's picks and its paired results, for reads; no decision reads it
+                by_deck = {}
+                for (d, s_), v in vec.items():
+                    by_deck.setdefault(d, []).append((s_, v))
+                with open(run / "edit_slots.jsonl", "a", encoding="utf-8") as f:
+                    for d, slots in by_deck.items():
+                        for q in range(1, H):
+                            x = cands[pop[d]["id"]][q]
+                            f.write(json.dumps({"iter": it, "deck": pop[d]["id"], "parent": pop[d].get("parent"), "entry": q,
+                                                "picks": [[pool.full_name[int(views[d].ids[j])], int(lf[j]), int(n), pool.full_name[int(c)]]   # out name, its copies at the pick, copies a group change moved beside it, in name
+                                                          for j, c, n, lf in zip(x["ev_j"], x["ev_c"], x["ev_n"], x["ev_left"])],
+                                                "slots": [[int(s_), round(float(v[0]), 4), round(float(v[q]), 4)] for s_, v in slots   # slot, the deck's result, the candidate's
+                                                          if not (np.isnan(v[0]) or np.isnan(v[q]))]}) + "\n")
+            size_read = size_neutral(batch_d, lam_hist) if args.draft_size_neutral and counted else {}
             for (d, _), v in vec.items():
                 pairs.setdefault(pop[d]["id"], []).append(v)
             if args.thompson_share or args.thompson_bonus:   # C150: each paired slot's card-count change and result difference
@@ -774,7 +835,7 @@ def main(argv=None):
                 thompson_hist = (thompson_hist + [[it, sl]])[-args.thompson_window:]
                 with open(run / "thompson_slots.jsonl", "a") as f:
                     f.write(json.dumps({"iter": it, "slots": sl}) + "\n")
-            draft = drafter.update(batch_d, args.draft_ent) if counted else {}
+            draft = {**drafter.update(batch_d, args.draft_ent), **size_read} if counted else {}
             t5 = time.time()
 
             # 5. at a season's end every population deck moves to one of its practised candidates: with --select to the

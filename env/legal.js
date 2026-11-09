@@ -28,6 +28,7 @@
 // targets), which the server leaves to the client. oracle.js verifies all of this.
 'use strict';
 const { C, accepts: engineAccepts, tryAction, stateAfter } = require('./engine.js');
+const { sameState } = require('./fingerprint.js');
 const {
   PlayerType, SlotType, Stage, SuperType, TrainerType, SpecialCondition, StateUtils, FilterUtils,
   EnergyCard, PokemonCard, TrainerCard, GameError, GameMessage, PassTurnAction, PlayCardAction, RetreatAction,
@@ -89,6 +90,12 @@ function turnOptions(state, store) {
   const accepts = (st, action) => engineAccepts(st, action, store);
   // Legal and not a dead end (see deadEnd): for actions that can open a prompt.
   const usable = action => { const r = tryAction(state, action, store); return r.ok && !deadEnd(r.after, action.clientId || action.id); };
+  // A Power usable "as often as you like" whose use changes nothing (Charizard's Energy Burn after its first use) is not offered:
+  // a greedy policy otherwise repeats it to the turn's step cap (C202 Amendment 3's rule-9 trace; test_c198_costs.js A6).
+  const powerUsable = action => {
+    const r = tryAction(state, action, store);
+    return r.ok && !deadEnd(r.after, action.clientId || action.id) && !(r.after && sameState(r.after, state));
+  };
   const me = state.players[state.activePlayer];
   const turn = state.turn;
   const id = me.id;
@@ -180,7 +187,7 @@ function turnOptions(state, store) {
     for (const power of pokemon.powers) {
       if (!power.useWhenInPlay) continue;
       const action = new UseAbilityAction(id, power.name, s.target);
-      if (usable(action)) out.push({ key: `power|${power.name}|${s.code}`, action });
+      if (powerUsable(action)) out.push({ key: `power|${power.name}|${s.code}`, action });
     }
   }
   for (const [zone, cards, slotType, prefix] of [['hand', me.hand.cards, SlotType.HAND, 'H'], ['discard', me.discard.cards, SlotType.DISCARD, 'D']]) {
@@ -190,7 +197,7 @@ function turnOptions(state, store) {
       for (const power of card.powers) {
         if (!(zone === 'hand' ? power.useFromHand : power.useFromDiscard)) continue;
         const action = new UseAbilityAction(id, power.name, { player: PlayerType.BOTTOM_PLAYER, slot: slotType, index: i });
-        if (usable(action)) out.push({ key: `power|${power.name}|${prefix}${name}`, action });
+        if (powerUsable(action)) out.push({ key: `power|${power.name}|${prefix}${name}`, action });
       }
     }
   }

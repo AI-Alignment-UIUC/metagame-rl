@@ -2,6 +2,10 @@
   CUDA_VISIBLE_DEVICES=-1 PYTHONPATH=.:notes/scripts .venv/Scripts/python notes/scripts/c187_caps.py --run C182-D-s48 [--decks 16] [--draws 30]
 --split (A155, C187's record): is the out-choice blunt, or does it target junk? Out share / copy share by the plain two-seed table's top 12 against the other 30, every deck of each saved population, early (0-14) and late (30-44). A group's ratio is its mean out share over its mean copy share; SEs by bootstrap over deck ids, since a deck can be in several saved populations. Bands at late, both seeds: R-targets, the low 30's ratio at least 0.2 and 2 SE above the top 12's; R-blunt, the gap under 0.1 with SE excluding 0.2.
   CUDA_VISIBLE_DEVICES=-1 PYTHONPATH=.:notes/scripts .venv/Scripts/python notes/scripts/c187_caps.py --split [--runs C171-W-s48,C171-W-s49]
+--cross (C187's record, 2026-11-04): is W's out-choice rise in the head's weights or in what they read? Saved heads crossed with saved encoders on the same decks and fields: A own head and encoder at 34, 39, 44; B that head on iteration 0's encoder; C iteration 0's head on that encoder; D the head and encoder of 44 on the populations at 0, 4, 9, 14. Band on keep = (B - 1) / (A - 1), both seeds: R-weights at least 0.75, R-reader at most 0.25.
+  CUDA_VISIBLE_DEVICES=-1 PYTHONPATH=.:notes/scripts .venv/Scripts/python notes/scripts/c187_caps.py --cross [--runs C171-W-s48,C171-W-s49] [--threads 4]
+--counter (C187's record, 2026-11-04): on W's late decks, which half of the head carries the fall in proposed Trainers? Same views under own, O (out score 0), I (in-logits 0), Z (both, H0's rule). Bands on O - own and I - own against Z - own, 0.75, both seeds. On Windows PYTHONPATH takes ";".
+  CUDA_VISIBLE_DEVICES=-1 PYTHONPATH=".;notes/scripts" .venv/Scripts/python notes/scripts/c187_caps.py --counter [--runs C171-W-s48,C171-W-s49] [--threads 4]
 """
 import argparse
 import json
@@ -19,6 +23,7 @@ from rl.remote import RemotePool
 from rl.train import token_net
 
 OUT = ROOT / "runs/probe/C187-head-off/caps"
+KINDS = (1, 2, 3)                                        # superType: Pokemon, Trainer, Energy
 
 
 def softmax_rows(y):
@@ -163,8 +168,178 @@ def split_main(runs):
     print(json.dumps(res))
 
 
+def load_weights(run, it, pool, info, cfg):
+    st = torch.load(run / f"population_it{it:04d}.pt", map_location="cpu", weights_only=False)
+    net = token_net(st["config"], info)
+    net.load_state_dict(st["net"])
+    net.eval()
+    c0 = st["config"]
+    dr = Drafter(pool, c0["d"], c0["heads"], cfg["swaps"], 0.0, "cpu", base=cfg["draft_base"], base_ent=cfg["draft_base_ent"])
+    dr.head.load_state_dict(st["drafter"]["head"])
+    return st, net, dr.head
+
+
+def out_row(ids, counts, sc, kinds):
+    """Out share then copy share, by P, T, E."""
+    c = counts[ids].astype(float)
+    po = np.log(c) + sc
+    po = np.exp(po - po.max())
+    po /= po.sum()
+    return [po[kinds[ids] == k].sum() for k in KINDS] + [c[kinds[ids] == k].sum() / c.sum() for k in KINDS]
+
+
+def ratios(m):
+    """Mean out share over mean copy share, by P, T, E; m has a deck id, then out_row."""
+    return m[:, 1:4].mean(0) / m[:, 4:7].mean(0)
+
+
+def cross_run(run_name, pool, info, kinds, boots=2000):
+    run = ROOT / "runs/screens" / run_name
+    cfg = json.loads((run / "config.json").read_text(encoding="utf-8"))
+    _, net0, head0 = load_weights(run, 0, pool, info, cfg)
+    cells, sd_a, sd_b, corr = {"A": [], "B": [], "C": []}, [], [], []
+    by_it = {}
+    for it in (34, 39, 44):
+        st, net, head = load_weights(run, it, pool, info, cfg)
+        rng = np.random.default_rng(1873 + it)
+        decks = [np.array(pool.vector(x["deck"])) for x in st["population"]]
+        here = {"A": [], "B": []}
+        for d, a in enumerate(st["population"]):
+            others = [e for e in range(len(decks)) if e != d]
+            field = [decks[e] for e in rng.choice(others, cfg["field_sample"], replace=False)]
+            ids, s_a = out_scores(head, net, decks[d], field)
+            s_b, s_c = out_scores(head, net0, decks[d], field)[1], out_scores(head0, net, decks[d], field)[1]
+            for k, s in (("A", s_a), ("B", s_b), ("C", s_c)):
+                row = [a["id"], *out_row(ids, decks[d], s, kinds)]
+                cells[k].append(row)
+                if k in here:
+                    here[k].append(row)
+            sd_a.append(s_a.std())
+            sd_b.append(s_b.std())
+            if s_a.std() > 0 and s_b.std() > 0 and len(ids) > 2:
+                corr.append(np.corrcoef(s_a, s_b)[0, 1])
+        by_it[it] = {k: round(float(ratios(np.array(v, dtype=float))[1]), 3) for k, v in here.items()}
+    head_late, net_late = head, net                      # 44's, from the loop's last pass
+    early = []
+    for it in (0, 4, 9, 14):
+        st = torch.load(run / f"population_it{it:04d}.pt", map_location="cpu", weights_only=False)
+        rng = np.random.default_rng(1873 + it)
+        decks = [np.array(pool.vector(x["deck"])) for x in st["population"]]
+        for d, a in enumerate(st["population"]):
+            others = [e for e in range(len(decks)) if e != d]
+            field = [decks[e] for e in rng.choice(others, cfg["field_sample"], replace=False)]
+            ids, s = out_scores(head_late, net_late, decks[d], field)
+            early.append([a["id"], *out_row(ids, decks[d], s, kinds)])
+    A, B, C, D = (np.array(x, dtype=float) for x in (cells["A"], cells["B"], cells["C"], early))
+    keep = lambda a, b: (ratios(b)[1] - 1) / (ratios(a)[1] - 1)
+    idx = {i: np.nonzero(A[:, 0] == i)[0] for i in np.unique(A[:, 0])}
+    keys = list(idx)
+    rng = np.random.default_rng(1874)
+    bs = {"A": [], "B": [], "C": [], "keep": []}
+    for _ in range(boots):
+        pick = np.concatenate([idx[keys[i]] for i in rng.integers(len(keys), size=len(keys))])
+        a, b, c = A[pick], B[pick], C[pick]
+        bs["A"].append(ratios(a)[1])
+        bs["B"].append(ratios(b)[1])
+        bs["C"].append(ratios(c)[1])
+        bs["keep"].append(keep(a, b))
+    cell = lambda m, k: {"T": round(float(ratios(m)[1]), 3), "se": round(float(np.std(bs[k])), 3), "P": round(float(ratios(m)[0]), 3), "E": round(float(ratios(m)[2]), 3)}
+    return {"run": run_name, "decks": len(A), "deck_ids": len(keys), "A": cell(A, "A"), "B": cell(B, "B"), "C": cell(C, "C"),
+            "D_early_decks": {"decks": len(D), "T": round(float(ratios(D)[1]), 3), "P": round(float(ratios(D)[0]), 3), "E": round(float(ratios(D)[2]), 3)},
+            "keep": round(float(keep(A, B)), 3), "keep_se": round(float(np.std(bs["keep"])), 3),
+            "score_sd": {"A": round(float(np.mean(sd_a)), 4), "B": round(float(np.mean(sd_b)), 4)},
+            "within_deck_corr_A_B": round(float(np.mean(corr)), 3), "by_iter": by_it}
+
+
+def cross_main(runs):
+    pool = Pool()
+    rp = RemotePool(1)
+    info = rp.ask_all([{"cmd": "info"}])[0]
+    rp.close()
+    kinds = card_kinds(pool)
+    res = {"runs": []}
+    OUT.mkdir(parents=True, exist_ok=True)
+    for r in runs:
+        res["runs"].append(cross_run(r, pool, info, kinds))
+        print(json.dumps(res["runs"][-1]), flush=True)
+        (OUT / "cross.json").write_text(json.dumps(res, indent=1), encoding="utf-8")
+    if len(res["runs"]) == 2:
+        k = [x["keep"] for x in res["runs"]]
+        res["band"] = "R-weights" if min(k) >= 0.75 else "R-reader" if max(k) <= 0.25 else "between"
+        print(res["band"], flush=True)
+        (OUT / "cross.json").write_text(json.dumps(res, indent=1), encoding="utf-8")
+
+
+def counter_run(run_name, pool, info, kinds, n_decks=33, field_n=2, draws=40):
+    """Same views, four proposal rules: own, O (out score 0), I (in-logits 0), Z (both). Net P, T, E a candidate, and copies moved by out type -> in type."""
+    run = ROOT / "runs/screens" / run_name
+    cfg = json.loads((run / "config.json").read_text(encoding="utf-8"))
+    nets, trans = {k: [] for k in "OIZ"}, {k: np.zeros((3, 3)) for k in "OIZ"}
+    nets["own"], trans["own"] = [], np.zeros((3, 3))
+    idx = {k: i for i, k in enumerate(KINDS)}
+    logged = []
+    for line in open(run / "log.jsonl", encoding="utf-8"):
+        d = json.loads(line)
+        if 34 <= d.get("iter", -1) <= 44 and (d.get("select") or {}).get("prop"):
+            logged.append(d["select"]["prop"])
+    for it in (34, 39, 44):
+        st = torch.load(run / f"population_it{it:04d}.pt", map_location="cpu", weights_only=False)
+        net = token_net(st["config"], info)
+        net.load_state_dict(st["net"])
+        net.eval()
+        c0 = st["config"]
+        dr = Drafter(pool, c0["d"], c0["heads"], cfg["swaps"], 0.0, "cpu", h_in_floor=cfg["draft_h_in_floor"], group_p=cfg["draft_group_p"], base=cfg["draft_base"], base_ent=cfg["draft_base_ent"])
+        dr.head.load_state_dict(st["drafter"]["head"])
+        rng = np.random.default_rng(1876 + it)
+        decks = [np.array(pool.vector(x["deck"])) for x in st["population"]]
+        for d in rng.choice(len(decks), n_decks, replace=False):
+            others = [e for e in range(len(decks)) if e != d]
+            vw = dr.view(net, decks[d], [decks[e] for e in rng.choice(others, field_n, replace=False)])
+            s0, l0, base = vw.s.copy(), vw.logits.copy(), np.array(shape(pool, vw.deck), dtype=float)
+            for k, s, l in (("own", s0, l0), ("O", 0 * s0, l0), ("I", s0, 0 * l0), ("Z", 0 * s0, 0 * l0)):
+                vw.s, vw.logits = s, l
+                tot = np.zeros(3)
+                for _ in range(draws):
+                    x = dr.sample(vw, rng)
+                    tot += np.array(shape(pool, x["deck"]), dtype=float) - base
+                    for j, c, n in zip(x["ev_j"], x["ev_c"], x["ev_n"]):
+                        trans[k][idx[kinds[vw.ids[j]]], idx[kinds[c]]] += (1 + n) / draws
+                nets[k].append(tot / draws)
+    m = {k: np.array(v) for k, v in nets.items()}
+    n = len(m["own"])
+    gap = lambda a: {"mean": round(float((m[a][:, 1] - m["own"][:, 1]).mean()), 3), "se": round(float((m[a][:, 1] - m["own"][:, 1]).std() / n ** .5), 3)}
+    return {"run": run_name, "decks": n, "logged_prop_PTE": np.round(np.mean(logged, 0), 3).tolist(),
+            "net_PTE": {k: np.round(v.mean(0), 3).tolist() for k, v in m.items()}, "net_se": {k: np.round(v.std(0) / n ** .5, 3).tolist() for k, v in m.items()},
+            "O_minus_own_T": gap("O"), "I_minus_own_T": gap("I"), "Z_minus_own_T": gap("Z"),
+            "transitions_out_by_in_PTE": {k: np.round(v / n, 3).tolist() for k, v in trans.items()}}
+
+
+def counter_main(runs):
+    pool = Pool()
+    rp = RemotePool(1)
+    info = rp.ask_all([{"cmd": "info"}])[0]
+    rp.close()
+    kinds = card_kinds(pool)
+    res = {"runs": []}
+    OUT.mkdir(parents=True, exist_ok=True)
+    for r in runs:
+        res["runs"].append(counter_run(r, pool, info, kinds))
+        print(json.dumps(res["runs"][-1]), flush=True)
+        (OUT / "counter.json").write_text(json.dumps(res, indent=1), encoding="utf-8")
+    if len(res["runs"]) == 2:
+        share = lambda x, k: x[k]["mean"] / x["Z_minus_own_T"]["mean"] if x["Z_minus_own_T"]["mean"] > 0 else float("nan")
+        o, i = [share(x, "O_minus_own_T") for x in res["runs"]], [share(x, "I_minus_own_T") for x in res["runs"]]
+        res["band"] = "R-out-carries" if min(o) >= 0.75 else "R-in-carries" if min(i) >= 0.75 else "between"
+        res["checks"] = {"own_minus_logged_T": [round(x["net_PTE"]["own"][1] - x["logged_prop_PTE"][1], 3) for x in res["runs"]], "O_share": [round(v, 3) for v in o], "I_share": [round(v, 3) for v in i],
+                         "Z_at_or_above_minus_0.2": [x["net_PTE"]["Z"][1] >= -0.2 for x in res["runs"]]}
+        print(res["band"], json.dumps(res["checks"]), flush=True)
+        (OUT / "counter.json").write_text(json.dumps(res, indent=1), encoding="utf-8")
+
+
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--counter", action="store_true")
+    ap.add_argument("--cross", action="store_true")
     ap.add_argument("--split", action="store_true")
     ap.add_argument("--runs", default="C171-W-s48,C171-W-s49")
     ap.add_argument("--run", default="")
@@ -175,6 +350,10 @@ def main():
     ap.add_argument("--last", type=int, default=44)
     a = ap.parse_args()
     torch.set_num_threads(a.threads)
+    if a.counter:
+        return counter_main(a.runs.split(","))
+    if a.cross:
+        return cross_main(a.runs.split(","))
     if a.split:
         return split_main(a.runs.split(","))
     pool = Pool()

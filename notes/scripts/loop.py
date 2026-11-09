@@ -439,6 +439,25 @@ def launch_problems(a, cmd: list, reg: dict, free_gb: float, slots_used: int, gp
     """Why a launch is refused (empty if it isn't). gpu is (GB in use, counting runs still loading; GB total), or None
     when nvidia-smi can't be read."""
     p = []
+    hs = ROOT / "runs" / "loop" / "HOLD-SCREENS"           # C193 Amendment 4: new screens hold while an evaluation's cells wait
+    if os.environ.get("LOOP_SELFTEST"):
+        hs = ROOT / "runs" / "loop" / "HOLD-SCREENS-selftest-none"
+    if a.kind in ("screen", "pilot") and hs.exists():  # a reservation binds resumes too (#1000: C184 WR s50's resume took a reserved cell's GPU); a blanket hold doesn't
+        txt = hs.read_text(encoding="utf-8", errors="ignore")
+        m = re.search(r"reserve_gb=([0-9.]+)", txt)          # C194 Amendment 1: a reservation, not a blanket hold
+        exc = re.search(r"except_candidate=(\S+)", txt)     # C189 Amendment 6: the slot is kept for one candidate's stages
+        only = re.search(r"reserve_only=(\S+)", txt)        # #1034: only these runs may take the reservation; the rest hold
+        if exc and a.candidate == exc.group(1):
+            pass
+        elif only and a.name not in only.group(1).split(","):
+            p.append(f"new screens hold: only {only.group(1)} may launch under the reservation (runs/loop/HOLD-SCREENS)")
+        elif not m and getattr(a, "resume", False) and "hold_resumes=1" not in txt:
+            pass
+        elif not m:
+            p.append(f"new screens hold: {txt.strip()[:120]} (runs/loop/HOLD-SCREENS)")
+        elif free_gb < FOOTPRINT_GB[a.kind] + RAM_CRIT_GB + float(m.group(1)):
+            p.append(f"free RAM {free_gb:.1f} GB is under the {FOOTPRINT_GB[a.kind] + RAM_CRIT_GB:.1f} GB a {a.kind} needs plus the "
+                     f"{float(m.group(1)):.1f} GB reserved for an evaluation's next cell (runs/loop/HOLD-SCREENS)")
     if not re.fullmatch(r"C\d+[a-z]?", a.candidate or ""):
         p.append("--candidate must be a candidate id like C50 (§10)")
     rec = ROOT / a.record if a.record else None
@@ -468,6 +487,15 @@ def launch_problems(a, cmd: list, reg: dict, free_gb: float, slots_used: int, gp
     elif gpu[0] + g > GPU_SHARE * gpu[1]:
         p.append(f"GPU memory {gpu[0]:.1f} GB in use (runs still loading included) plus the {g:.1f} GB a {a.kind} adds "
                  f"is over {GPU_SHARE:.0%} of {gpu[1]:.1f} GB (CLAUDE.md; #190); a CPU-only probe passes --gpu-gb 0")
+    hs = ROOT / "runs" / "loop" / "HOLD-SCREENS"           # C196 Amendment 2: the reservation also keeps GPU memory for the next cell
+    if os.environ.get("LOOP_SELFTEST"):
+        hs = ROOT / "runs" / "loop" / "HOLD-SCREENS-selftest-none"
+    m = re.search(r"reserve_gpu_gb=([0-9.]+)", hs.read_text(encoding="utf-8", errors="ignore")) if hs.exists() else None
+    if m and hs.exists() and re.search(r"except_candidate=" + re.escape(a.candidate or "-") + r"(\s|$)", hs.read_text(encoding="utf-8", errors="ignore")):
+        m = None
+    if m and gpu is not None and a.kind in ("screen", "pilot") and gpu[0] + g + float(m.group(1)) > GPU_SHARE * gpu[1]:
+        p.append(f"GPU memory {gpu[0]:.1f} GB in use plus the {g:.1f} GB a {a.kind} adds plus the {float(m.group(1)):.1f} GB reserved for "
+                 f"an evaluation's next cell is over {GPU_SHARE:.0%} of {gpu[1]:.1f} GB (runs/loop/HOLD-SCREENS)")
     if len(a.components) > 2:
         p.append(f"{len(a.components)} unadopted components; a launch stacks at most 2 on a recipe (§10)")
     for toks in invocations(cmd):
@@ -862,6 +890,7 @@ def seed() -> None:
 
 
 def selftest() -> None:
+    os.environ["LOOP_SELFTEST"] = "1"                   # #1000: the checks don't read the live runs/loop/HOLD-SCREENS
     import tempfile
     tmp = Path(tempfile.mkdtemp())
     rec = tmp / "record.md"

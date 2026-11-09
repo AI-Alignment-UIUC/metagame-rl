@@ -21,8 +21,11 @@ class Runner {
   // roundTurns: every new deal is played under the 2000 round rule (env/game.js, log #160), cut at T, a number, or at T
   // drawn per deal from a..b by its seed for [a, b]; rewards are then the event's points (Game.reward) and each result
   // carries its roundT.
-  constructor(encoder, { concurrency = 32, deckoutWin = 1, maxTurns = 0, roundTurns = 0 } = {}) {
+  // mask (C206, evaluation only; null: off, nothing changes): mask(slot) returns the legal ids the agent may choose from at
+  // an asked decision, or null for all of them; it never trains (recorded rows keep the full legal list).
+  constructor(encoder, { concurrency = 32, deckoutWin = 1, maxTurns = 0, roundTurns = 0, mask = null } = {}) {
     this.encoder = encoder;
+    this.mask = mask;
     this.maxTurns = maxTurns;
     this.roundTurns = roundTurns;
     this.deckoutWin = deckoutWin;
@@ -127,7 +130,7 @@ class Runner {
       // which is why collection slowed from 7 s to 55 s an iteration as snapshots were added.
       const groups = [...byAgent];
       const outs = await Promise.all(groups.map(([name, group]) =>
-        agents[name].act(group.map(s => ({ obs: s.t.obs, legal: s.t.legal, env: s.env })))));
+        agents[name].act(group.map(s => ({ obs: s.t.obs, legal: (this.mask && this.mask(s)) || s.t.legal, env: s.env })))));
       for (let gi = 0; gi < groups.length; gi++) {
         const [name, group] = groups[gi];
         const out = outs[gi];

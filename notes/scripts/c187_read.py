@@ -45,7 +45,7 @@ def mass_stages(run):
 def mass_table():
     """H0, DN, ND and WR at each stage, research's #905. W logged no head_mass: its row is the sampled caps read, 16 decks a saved iteration."""
     out = {}
-    for n in ("C187-H0-s48", "C187-H0-s49", "C184-DN-s50", "C184-DN-s51", "C184-ND-s48", "C184-ND-s49", "C184-WR-s50", "C184-WR-s51"):
+    for n in ("C188-W0-s48", "C188-W0-s49", "C188-W0S-s48", "C188-W0S-s49", "C188-WK-s48", "C188-WK-s49", "C187-H0-s48", "C187-H0-s49", "C184-DN-s50", "C184-DN-s51", "C184-ND-s48", "C184-ND-s49", "C184-WR-s50", "C184-WR-s51"):
         out[n] = mass_stages(ROOT / "runs/screens" / n)
     for s in (48, 49):
         f = D / f"caps/C171-W-s{s}.json"

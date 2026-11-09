@@ -28,7 +28,9 @@ sys.path.insert(0, str(ROOT / "notes" / "scripts"))
 import loop                                              # noqa: E402
 import gpu_hold                                          # noqa: E402  row 73's hold (shared with overnight_c84)
 from gpu_hold import GPU_PAUSE                           # noqa: E402  Evan's pause (333-10 creates and removes it; 22:25)
-from aa_window import dist                               # noqa: E402  the top-12 distance from the human medians (G1)
+def dist(v):                                             # the top-12 distance from the human medians (G1), from aa_window
+    from aa_window import dist as d                      # #1132: imported when a read needs it; at the top it loaded torch and
+    return d(v)                                          # scipy into every waiting driver (about 2 GB of commit each)
 
 D = ROOT / "runs" / "probe" / "C90-pairedselect"
 C84 = ROOT / "runs" / "probe" / "C84-overnight"
@@ -108,7 +110,8 @@ class Screen:
     def ended(self) -> bool:
         """Ended for good: not running and not paused."""
         stop = (self.run / "STOP").read_text(encoding="utf-8") if (self.run / "STOP").exists() else ""
-        return (self.run / "launch.log").exists() and not alive(self.name) and not stop.startswith("pause")
+        return ((self.run / "launch.log").exists() and not alive(self.name) and not stop.startswith("pause")
+                and not (self.run / "STOP.resuming").exists())   # #1051: a paused arm whose resume is still being retried
 
     def rows(self) -> list:
         f = self.run / "log.jsonl"
@@ -138,8 +141,9 @@ class Screen:
                 log(f"{self.name} ended"); return
             log(f"{self.name} paused; waiting for the pause to lift")
             hold()
-            (self.run / "STOP").unlink()
+            (self.run / "STOP").replace(self.run / "STOP.resuming")   # #1051: gone for the chain, still paused for ended()
             self.launch(resume=True)
+            (self.run / "STOP.resuming").unlink(missing_ok=True)
 
 
 def c90_kill(rows):

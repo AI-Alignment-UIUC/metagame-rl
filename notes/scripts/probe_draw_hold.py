@@ -21,25 +21,37 @@ import probe_target_signal as pts
 
 ROOT = pts.ROOT
 CARDS = ["Oak", "Bill"]
+PREFIX = {"Oak": "trainer|Professor Oak", "Bill": "trainer|Bill"}   # C116's strata; C195's --cards are full names, prefix trainer|<name>
+STRATA = list(CARDS)
 
 
 def play(model, args, device):
     pts.WORKER = ROOT / "env" / "tools" / "probe_draw_worker.js"
-    mus = json.loads((ROOT / args.matchups).read_text(encoding="utf-8"))   # C147: utf-8, or "Pokémon" cards decode as cp1252 on Windows (INVALID_DECK)
-    seen, mir = set(), []
-    for a, b in mus:
-        if a["name"] == b["name"] and a["name"] not in seen:
-            seen.add(a["name"]); mir.append((a, b))
+    if args.lists_field:                                 # C195: the 24 lists, each game a random list against another (their field)
+        sys.path.insert(0, str(ROOT / "ar")); import fixed
+        ev = json.loads((fixed.DATA / "eval_decks.json").read_text(encoding="utf-8"))
+        L = [ev["decks"][i] for i in sorted({q[0] for q in ev["pairs"]})]
+        mir = [(L[i], L[j]) for i in range(len(L)) for j in range(len(L)) if i != j]
+    else:
+        mus = json.loads((ROOT / args.matchups).read_text(encoding="utf-8"))   # C147: utf-8, or "Pokémon" cards decode as cp1252 on Windows (INVALID_DECK)
+        seen, mir = set(), []
+        for a, b in mus:
+            if a["name"] == b["name"] and a["name"] not in seen:
+                seen.add(a["name"]); mir.append((a, b))
     rng = np.random.default_rng(args.seed)
     rounds = round_turns(args.round_turns)
     rp = pts.ProbePool(args.workers); rp.pace = 0.25
-    gm = GpuMatrix.attach(model, rp, args.workers, device=device, greedy=True)
+    gm = GpuMatrix.attach(model, rp, args.workers, device=device, greedy=not args.sampled)   # C205: --sampled, as the loop's games
     probes, stats, errors, games, batch, key = [], [], 0, 0, 0, 0
+    from rl.decks import Pool
+    bare = {c["fullName"]: c["name"] for c in Pool().cards}
+    dcards = set(CARDS)
+    deckouts = {}                                        # C205: the deck's draw-card copies -> [seat-games, losses by deck-out]
     t0 = time.time(); log = []
     try:
         while games < args.max_games and time.time() - t0 < args.budget_s:
             c = collections.Counter(p["stratum"] for p in probes)
-            need = {k: max(0, args.n - c.get(k, 0)) for k in CARDS}
+            need = {k: max(0, args.n - c.get(k, 0)) for k in STRATA}
             if not any(need.values()):
                 break
             n = args.workers * args.batch_games
@@ -48,13 +60,20 @@ def play(model, args, device):
                 a, b = mir[int(rng.integers(len(mir)))]
                 pairs.append((len(decks), len(decks) + 1)); decks += [a, b]; keys.append(key); key += 1
             rp.cfg = {"m": args.m, "cap": 2, "maxLine": 600, "mainP": args.main_p, "maxPerGame": args.max_per_game,
-                      "minValid": args.min_valid, "need": need, "rot": batch}
+                      "minValid": args.min_valid, "need": need, "rot": batch,
+                      **({"lowDeck": args.low_deck, "lowP": args.low_p} if args.low_deck else {}),
+                      **({"cards": [[c, PREFIX[c]] for c in CARDS], "played": bool(args.played)} if args.cards else {})}
             rp.probes, rp.stats = [], []
             tb = time.time()
             gm.play(decks, 1, args.seed, pairs=pairs, pair_keys=keys, round_turns=rounds)
             games += n; batch += 1
             probes += rp.probes; stats += rp.stats
             errors += sum(bool(r.get("error")) for r in gm.results)
+            for r in gm.results:
+                for idx, seat in ((r["i"], r["iSeat"]), (r["j"], 3 - r["iSeat"])):
+                    n_d = sum(bare.get(c, c) in dcards for c in decks[idx]["cards"])
+                    e = deckouts.setdefault(n_d, [0, 0]); e[0] += 1
+                    e[1] += r.get("winner") in (1, 2) and r["winner"] != seat and r.get("ending") == "deck-out"
             st = pts.sum_stats(stats)
             print(f"batch {batch}: {n} games {time.time() - tb:.0f}s total {time.time() - t0:.0f}s probes {len(probes)} "
                   f"{dict(collections.Counter(p['stratum'] for p in probes))} lines {st.get('lines', 0)} lineErrors {st.get('lineErrors', 0)} "
@@ -63,7 +82,7 @@ def play(model, args, device):
                 log.append("KILL: engine errors over 1%"); print(log[-1]); break
     finally:
         rp.close()
-    return {"probes": probes, "stats": pts.sum_stats(stats), "games": games, "game_errors": errors, "log": log,
+    return {"probes": probes, "stats": pts.sum_stats(stats), "games": games, "game_errors": errors, "log": log, "deckouts": deckouts,
             "seconds": round(time.time() - t0, 1)}
 
 
@@ -115,7 +134,7 @@ def analyze(probes, decks):
         rows.append({"card": p["stratum"], "game": p["game"], "turn": p["turn"], "left": p["deckLeft"], "list": names.get(p["cards"], "?"),
                      "dV": d("v1"), "dB": d("rew"), "dT": d("vt"), "K": len(ok), "capped": p["capped"]})
     out = {}
-    for c in CARDS:
+    for c in STRATA:
         R = [r for r in rows if r["card"] == c]
         o = {"pooled": group(R), "by_left": {}, "by_list": {}}
         o["pooled"]["band"] = band(o["pooled"])
@@ -144,7 +163,18 @@ def main():
     ap.add_argument("--round-turns", default="20-45")
     ap.add_argument("--seed", type=int, default=91)
     ap.add_argument("--from-raw", default=None)
+    ap.add_argument("--cards", default="", help="C195: comma-separated full Trainer names (default C116's Oak, Bill)")
+    ap.add_argument("--played", action="store_true", help="C195: also the states where the policy plays the card, against its most likely other option")
+    ap.add_argument("--sampled", action="store_true", help="C205: live games sampled, as the loop's population games (default greedy)")
+    ap.add_argument("--low-deck", type=int, default=0, help="C205: states with this many cards or fewer left in the deck are probed with --low-p")
+    ap.add_argument("--low-p", type=float, default=1.0)
+    ap.add_argument("--lists-field", action="store_true", help="C195: the 24 lists against each other, in place of --matchups' mirrors")
     args = ap.parse_args()
+    global CARDS, STRATA
+    if args.cards:
+        CARDS = [c.strip() for c in args.cards.split(",") if c.strip()]
+        PREFIX.update({c: "trainer|" + c for c in CARDS})
+    STRATA = CARDS + ([c + "+played" for c in CARDS] if args.played else [])
     device = "cuda" if torch.cuda.is_available() else "cpu"
     args.workers = limits.cap_workers(args.workers); limits.apply(device, args.workers)
     model, enc = load_policy(args.pilot, device)
@@ -160,6 +190,8 @@ def main():
     res, rows = analyze(raw["probes"], decks)
     summ = {"pilot": args.pilot, "args": vars(args), "games": raw["games"], "game_errors": raw["game_errors"], "log": raw["log"],
             "seconds": raw["seconds"], "stats": raw["stats"], "readouts": res, "rows": rows}
+    if args.played:                                      # C195: per card, delta_skip and delta_play (play - other, game-end) with SE
+        summ["c195"] = {c: {"skip": res[c]["pooled"]["dB"], "play": res[c + "+played"]["pooled"]["dB"]} for c in CARDS}
     (out.parent / ("summary.json" if args.out.endswith("C116") else Path(args.out).name + "-summary.json")).write_text(json.dumps(summ, indent=1))
     for c, o in res.items():
         print(c, json.dumps(o["pooled"]))

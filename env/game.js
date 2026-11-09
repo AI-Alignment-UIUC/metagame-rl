@@ -22,7 +22,7 @@
 const { C, newStore, newState } = require('./engine.js');
 const { Rng } = require('./rng.js');
 const { turnOptions, promptSpace, AUTO_PROMPTS, allSlots } = require('./legal.js');
-const { sameState } = require('./fingerprint.js');
+const { sameState, fingerprint } = require('./fingerprint.js');
 
 const MAX_STEPS = 5000;
 // A player-turn with this many decisions offers only 'pass' at its main-phase decisions from then on: a
@@ -111,6 +111,7 @@ class Game {
     this.deadEnds = [];      // [{ base, key }]: main-phase options found to lead only to a no-op cancel
     this.turnMark = { turn: -1, start: 0 };   // the step the current turn started at (MAX_TURN_STEPS)
     this.turnCapped = 0;     // main-phase decisions cut to 'pass' by MAX_TURN_STEPS
+    this.powerSeen = { turn: -1, fps: new Set() };   // states a Power was used from, this turn (the cycle rule, #1086)
     this.history = [];       // historyEntry per step
     this.dispatch(new C.AddPlayerAction(1, 'A', deckA));
     this.dispatch(new C.AddPlayerAction(2, 'B', deckB));
@@ -224,6 +225,13 @@ class Game {
         options = options.filter(o => !dead.has(o.key));
       }
       if (this.state.turn !== this.turnMark.turn) this.turnMark = { turn: this.state.turn, start: this.steps };
+      // The cycle rule (#1086): back at a main-phase state a Power was already used from this turn, no Power is offered, so a
+      // Power that moves an Energy or damage and back (Energy Trans, Damage Swap, Strange Behavior) can't cycle to the step cap.
+      // It prunes only revisits: whatever a Power could reach from here was on offer the first time.
+      if (this.powerSeen.turn === this.state.turn && this.powerSeen.fps.size > 0 && options.some(o => o.key.startsWith('power|'))
+          && this.powerSeen.fps.has(fingerprint(this.state))) {
+        options = options.filter(o => !o.key.startsWith('power|'));
+      }
       if (this.steps - this.turnMark.start >= MAX_TURN_STEPS && options.some(o => o.key === 'pass')) {
         options = options.filter(o => o.key === 'pass');
         this.turnCapped++;
@@ -260,6 +268,10 @@ class Game {
     } else {
       // Snapshot before actions that can open a prompt of their own (pass, attach, basic and
       // evolve can't), for replay checks of what follows.
+      if (opt.key.startsWith('power|')) {                // the cycle rule (#1086): remember the state this Power is used from
+        if (this.powerSeen.turn !== this.state.turn) this.powerSeen = { turn: this.state.turn, fps: new Set() };
+        this.powerSeen.fps.add(fingerprint(this.state));
+      }
       this.chain = /^(trainer|power|retreat|attack|stadium|tip)|/.test(opt.key) || opt.key === 'stadium'
         ? { base: C.deepClone(this.state, [C.Card]), log: [{ action: opt.action }], noop: new Map(), key: opt.key } : null;
       this.dispatch(opt.action);
@@ -329,6 +341,7 @@ Game.prototype.clone = function (rng, viewer) {
   g.steps = this.steps;
   g.picks = []; g.pickedKeys = []; g.space = null; g.spaceFor = -1; g.cached = null; g.error = null; g.chain = null; g.deadEnds = [];
   g.turnMark = { ...this.turnMark }; g.turnCapped = this.turnCapped; g.maxTurns = this.maxTurns; g.roundTurns = this.roundTurns;
+  g.powerSeen = { turn: this.powerSeen.turn, fps: new Set(this.powerSeen.fps) };
   g.history = this.history.slice();
   if (viewer !== undefined) {
     for (const p of g.state.players) {

@@ -530,6 +530,7 @@ def main():
     ap.add_argument("--keep-ckpt", action="store_true", help="keep <out>/ckpt.pt after the run, for a chained stage")
     ap.add_argument("--p5-komath", type=int, default=0, help="BENCH-P5b: every N-th iteration, log the branched difference by C110's "
                     "knockout label (koMath)")
+    ap.add_argument("--busy-ok", action="store_true", help="C189 Amendment 6: start with another job on the GPU (skips only ar/'s 4,000 MiB bar); budget the arm with --iters, not --minutes")
     ap.add_argument("--adam-warm", type=int, default=0, help="the first N iterations at learning rate 0 (weights untouched; a cold "
                     "start's Adam moments fill), then LR (P5 Amendment 3)")
     ap.add_argument("--adam-reset-m", action="store_true", help="with --adam-warm N: zero Adam's first moment at iteration N (P5c)")
@@ -552,6 +553,9 @@ def main():
     if (a.out_dir / "result.json").exists():
         ap.error(f"{a.out_dir / 'result.json'} exists: pass another --name or --out-dir")
     why = blocked()
+    if why and a.busy_ok and why.startswith("the GPU is busy"):   # C189 Amendment 6: only ar/'s 4,000 MiB bar is skipped;
+        log(f"--busy-ok: {why}; going on (limits.apply's 80% cap and row 73's holds still bind)")   # ar/PAUSE and a running ar/ experiment still refuse
+        why = ""
     if why:
         log(f"refusing: {why}.")
         sys.exit(4)
