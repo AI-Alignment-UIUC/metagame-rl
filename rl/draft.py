@@ -112,6 +112,8 @@ class DeckView:
         self.deck, self.ids, self.counts, self.H, self.h0, self.E, self.base = deck, ids, counts, H, h0, E, base
         self.s = self.logits = None
         self.b0 = self.b0np = None                               # base measure offsets [J, n] (base="features")
+        self.bonus = None                                        # C153 (--thompson-bonus): a per-card offset [n] on the incoming logits
+        self.bonus_groups = None                                 # C184 (--table-neutral): each card's supertype [n]; the bonus then moves picks only inside a group
 
 
 def floor_temperature(x: np.ndarray, floor: float, b: np.ndarray = None) -> float:
@@ -167,17 +169,28 @@ def base_tau(cos: torch.Tensor, mask: torch.Tensor, target: float) -> float:
     return math.exp(hi)
 
 
+def group_neutral(y: np.ndarray, y0: np.ndarray, groups: np.ndarray) -> np.ndarray:
+    """C184: y shifted inside each group so the group's total softmax mass is y0's. Entries at -inf stay out."""
+    out = y.copy()
+    for g in np.unique(groups):
+        k = (groups == g) & np.isfinite(y)
+        if k.any():
+            out[k] += np.logaddexp.reduce(y0[k]) - np.logaddexp.reduce(y[k])
+    return out
+
+
 class Drafter:
     """The draft head and its optimizer."""
 
     def __init__(self, pool: Pool, d: int, heads: int, swaps: int, lr: float, device: str, h_in_floor: float = 0.0,
-                 group_p: float = 0.0, base: str = "uniform", base_ent: float = 3.0):
+                 group_p: float = 0.0, base: str = "uniform", base_ent: float = 3.0, out_bonus: str = "entropy"):
         assert base in ("uniform", "features"), base
         self.pool, self.device, self.swaps, self.group_p = pool, device, swaps, group_p
         self.head = DraftHead(pool.n, d, heads).to(device)
         self.opt = torch.optim.Adam(self.head.parameters(), lr=lr)
         self.h_in_floor = h_in_floor          # nats; an incoming choice below it is sampled warmer (log #109)
         self.base, self.base_ent = base, base_ent       # the incoming draw's base measure (log #193)
+        self.out_bonus = out_bonus                      # the out choice's bonus in update(): entropy, none or kl (C188)
 
     @torch.no_grad()
     def view(self, pilot, deck: np.ndarray, field: list) -> DeckView:
@@ -247,7 +260,7 @@ class Drafter:
         """One draw: `swaps` copies of the deck replaced one after another, legal throughout."""
         pool, v = self.pool, vw.deck.copy()
         left = vw.counts.astype(np.int64).copy()                 # copies of the original deck not yet replaced
-        ev_j, ev_c, ev_mask, ev_left, ev_T = [], [], [], [], []
+        ev_j, ev_c, ev_mask, ev_left, ev_T, ev_T0, ev_n = [], [], [], [], [], [], []
         lp = 0.0                                                 # log pi of the draw, for the tests
         for _ in range(self.swaps):
             ok = left > 0
@@ -265,14 +278,20 @@ class Drafter:
             left[j] -= 1
             m = pool.addable(v)
             m[[0, c]] = False
-            x = np.where(m, vw.logits[j], -np.inf)
+            x = np.where(m, vw.logits[j] if vw.bonus is None else vw.logits[j] + vw.bonus, -np.inf)   # C153: before Nf and the floor
             b = None if vw.b0np is None else vw.b0np[j]
             T = floor_temperature(x, self.h_in_floor, b)
             y = (x - x.max()) / T if b is None else b + x / T
+            T0 = T
+            if vw.bonus_groups is not None:                      # C184: inside a supertype as with the bonus, its total as without
+                x0 = np.where(m, vw.logits[j], -np.inf)
+                T0 = floor_temperature(x0, self.h_in_floor, b)
+                y = group_neutral(y, (x0 - x0.max()) / T0 if b is None else b + x0 / T0, vw.bonus_groups)
             q = np.exp(y - y.max())
             new = int(rng.choice(pool.n, p=q / q.sum()))
             lp += math.log(q[new] / q.sum())
             v[new] += 1
+            n = 0
             if self.group_p > 0 and rng.random() < self.group_p:     # a group change: the rest of j's copies too
                 n = int(left[j])
                 if not pool.basic_energy[new]:
@@ -289,8 +308,10 @@ class Drafter:
             ev_c.append(new)
             ev_mask.append(m)
             ev_T.append(T)
+            ev_T0.append(T0)
+            ev_n.append(n)                                       # copies a group change moved beside the pick
         assert pool.legal(v), "drawn deck is not legal"
-        return {"deck": v, "ev_j": ev_j, "ev_c": ev_c, "ev_mask": ev_mask, "ev_left": ev_left, "ev_T": ev_T, "logp": lp}
+        return {"deck": v, "ev_j": ev_j, "ev_c": ev_c, "ev_mask": ev_mask, "ev_left": ev_left, "ev_T": ev_T, "ev_T0": ev_T0, "ev_n": ev_n, "logp": lp}
 
     def log_prob(self, vw: DeckView, samples: list):
         """log pi of each draw of this deck under the current head, the head's entropies on the deck, and the incoming
@@ -308,12 +329,28 @@ class Drafter:
             lw = torch.where(left > 0, torch.log(left.clamp(min=1)) + s[None], torch.full_like(left, -1e9))
             out_lp = lw.gather(1, j[:, None]).squeeze(1) - torch.logsumexp(lw, 1)
             T = torch.tensor([y for x in samples for y in x["ev_T"]], device=dev)
-            row = logits[j] / T[:, None] if b0 is None else b0[j] + logits[j] / T[:, None]
+            lg = logits[j] if vw.bonus is None else logits[j] + torch.as_tensor(vw.bonus, dtype=logits.dtype, device=dev)   # C153
+            row = lg / T[:, None] if b0 is None else b0[j] + lg / T[:, None]
             row = row.masked_fill(~m, -1e9)
+            if vw.bonus_groups is not None:                      # C184: as sample(); the shift depends on the head, so it stays in the graph
+                T0 = torch.tensor([y for x in samples for y in x.get("ev_T0", [])], device=dev)   # the deck itself, unchanged, has none
+                row0 = (logits[j] / T0[:, None] if b0 is None else b0[j] + logits[j] / T0[:, None]).masked_fill(~m, -1e9)
+                groups = torch.as_tensor(vw.bonus_groups, device=dev)
+                shift = torch.zeros_like(row)
+                for g in groups.unique():
+                    k = m & (groups == g)[None]
+                    d = torch.logsumexp(row0.masked_fill(~k, -1e9), 1) - torch.logsumexp(row.masked_fill(~k, -1e9), 1)
+                    shift = shift + k.float() * d[:, None]
+                row = row + shift
             in_lp = row.gather(1, c[:, None]).squeeze(1) - torch.logsumexp(row, 1)
             lp = lp.index_add(0, torch.tensor(ev_s, device=dev), out_lp + in_lp)
-        po = torch.log_softmax(s + torch.log(torch.tensor(vw.counts, dtype=torch.float32, device=dev)), 0)
+        c = torch.tensor(vw.counts, dtype=torch.float32, device=dev)
+        po = torch.log_softmax(s + torch.log(c), 0)
         h_out = -(po.exp() * po).sum()
+        if self.out_bonus == "kl":                               # C188: -KL(out || copy share), maximum at s = 0
+            vw.out_term = -(po.exp() * (po - torch.log(c / c.sum()))).sum()
+        else:                                                    # entropy over names, maximum at s = -log(copies); none: no term
+            vw.out_term = h_out if self.out_bonus == "entropy" else 0.0 * h_out
         q = torch.log_softmax((logits if b0 is None else b0 + logits).masked_fill(~vw.base, -1e9), 1)
         h_in = (po.exp().detach() * -(q.exp() * q).masked_fill(~vw.base, 0).sum(1)).sum()
         if b0 is None:
@@ -329,20 +366,22 @@ class Drafter:
         sd = a_all.std() if len(a_all) and a_all.std() > 0 else 1.0
         n = max(len(a_all), 1)
         self.opt.zero_grad()
-        h_out = h_in = kl_in = 0.0
+        h_out = h_in = kl_in = h_s0 = 0.0                        # h_s0: the out entropy these decks have at s = 0 (C188's stop)
         for vw, samples, a in batch:
             lp, ho, hi, bonus = self.log_prob(vw, samples)
             at = torch.tensor(np.asarray(a) / sd, dtype=torch.float32, device=self.device)
-            loss = -(at * lp).sum() / n - beta * (ho + bonus) / len(batch)
+            loss = -(at * lp).sum() / n - beta * (vw.out_term + bonus) / len(batch)
             loss.backward()
             h_out += float(ho.detach()) / len(batch)
             h_in += float(hi.detach()) / len(batch)
             kl_in -= float(bonus.detach()) / len(batch)
+            share = vw.counts / vw.counts.sum()
+            h_s0 -= float((share * np.log(share)).sum()) / len(batch)
         grad = float(torch.nn.utils.clip_grad_norm_(self.head.parameters(), 1.0))
         self.opt.step()
         for vw, _, _ in batch:
             self.refresh(vw)
-        out = {"h_out": round(h_out, 4), "h_in": round(h_in, 4), "grad_norm": round(grad, 4)}
+        out = {"h_out": round(h_out, 4), "h_s0": round(h_s0, 4), "h_in": round(h_in, 4), "grad_norm": round(grad, 4)}
         if self.base != "uniform":
             out["kl_in"] = round(kl_in, 4)
         return out

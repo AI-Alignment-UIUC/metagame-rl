@@ -42,7 +42,10 @@ def load_policy(path: str, device: str, overrides: dict = None):
                               value_query=cfg.get("value_query", 0), aux_heads=cfg.get("aux_heads", 0),
                               chain=cfg.get("chain", 0), cand_latent=cfg.get("cand_latent", 0),
                               cand_latent_zone=cfg.get("cand_latent_zone", 0), cand_latent_gate=cfg.get("cand_latent_gate", 0),
-                              state_canon=cfg.get("state_canon", 0), state_key=cfg.get("state_key", 0))
+                              cand_latent_pick=cfg.get("cand_latent_pick", 0), cand_latent_center=cfg.get("cand_latent_center", 0),
+                              state_canon=cfg.get("state_canon", 0), state_key=cfg.get("state_key", 0),
+                              card_content=cfg.get("card_content", 0), emb_scale=cfg.get("emb_scale", 0.0),
+                              cand_origin=cfg.get("cand_origin", 0))
         enc = "tokens"
     else:
         from rl.model import build
@@ -50,8 +53,13 @@ def load_policy(path: str, device: str, overrides: dict = None):
         enc = "identity"
     missing, unexpected = m.load_state_dict(state["model"] if "model" in state else state["net"],   # rl.train or rl.metagame
                                             strict=not overrides)
-    assert not unexpected and all(k.startswith(("vquery", "vcross.", "vblocks.", "ln_v.", "aux_head.", "chain_", "g_lat", "g_ptr", "lat_", "ptr_", "flag_emb", "g_flag", "key_bias"))
+    assert not unexpected and all(k.startswith(("vquery", "vcross.", "vblocks.", "ln_v.", "aux_head.", "chain_", "g_lat", "g_ptr", "lat_", "ptr_", "flag_emb", "g_flag", "key_bias",
+                                                                 "hist_", "count_proj."))   # history grown from a history-0 pilot (log #259)
                                   for k in missing), (missing, unexpected)
+    if "count_proj.weight" in missing:               # C152: count features grown on a pilot without them start at zero, so the
+        with torch.no_grad():                        # grown pilot plays exactly as its checkpoint until training moves them
+            m.count_proj.weight.zero_()
+            m.count_proj.bias.zero_()
     return m.to(device).eval(), enc
 
 
@@ -134,7 +142,8 @@ class GpuMatrix:
         return self
 
     def play(self, decks: list, games: int, seed: int, new: int = 0, pairs: list = None, value_at_turn: int = 0,
-             slots: list = None, models: dict = None, pair_keys: list = None, round_turns=0, search: dict = None):
+             slots: list = None, models: dict = None, pair_keys: list = None, round_turns=0, search: dict = None,
+             max_turns: int = 0, trainer_play: bool = False, draw_mask: dict = None):
         """decks: [{name, cards}] -> (wins, games, steps) as [n, n] arrays; mirrors filled with 0.5.
         `pairs` [(i, j)] plays only those pairs instead of all (or all involving the last `new`).
         slots / models (rl/league.py): deck i is piloted by model slot slots[i] of `models` instead of
@@ -156,8 +165,11 @@ class GpuMatrix:
                      "concurrency": self.concurrency, "valueAtTurn": value_at_turn, "history": history_of(models or {0: self.model}),
                      "chain": chain_of(models or {0: self.model}), "canon": canon_of(models or {0: self.model}),
                      **({"slots": [int(x) for x in slots]} if slots is not None else {}),
-                     **({"slotEnc": slot_enc_of(models)} if models and len(models) > 1 else {}),
-                     **({"roundTurns": round_turns} if round_turns else {})} for w, s in enumerate(shards)]
+                     **({"slotEnc": slot_enc_of(models)} if models and len({id(m) for m in models.values()}) > 1 else {}),  # C143: one pilot in two slots needs none
+                     **({"roundTurns": round_turns} if round_turns else {}),
+                     **({"maxTurns": int(max_turns)} if max_turns else {}),   # C140; 0: as before
+                     **({"trainerPlay": True} if trainer_play else {}),       # C199: per-game Trainer play counts, plain games only
+                     **({"drawMask": draw_mask} if draw_mask else {})} for w, s in enumerate(shards)]   # C206: evaluation-only mask, plain games only
             replies += self.pool.collect(msgs, models or {0: self.model}, self.device)   # fp32, as the ONNX pilot
         self.results = [x for rep in replies for x in rep["results"]]   # per game (with its job's seed), for analyses
         W, G, S = np.zeros((n, n)), np.zeros((n, n)), np.zeros((n, n))
@@ -179,9 +191,19 @@ class GpuMatrix:
         total = len(jobs)
         self.last = {"games": total, "seconds": round(secs, 1), "games_per_s": round(total / max(secs, 1e-9), 1),
                      "errors": errors, "cut": int(cut), "endings": endings, "decisions_per_game": round(float(np.triu(S, 1).sum()) / max(total, 1), 1)}
+        if draw_mask:                                    # C206: the mask's counters summed over the workers
+            self.last["drawMask"] = {q: sum((rep.get("drawMask") or {}).get(q, 0) for rep in replies)
+                                     for q in ("asked", "main", "low", "masked", "removed", "empty")}
         if search:
             st = [rep["searchStats"] for rep in replies if rep.get("searchStats")]
-            self.last["search"] = {q: round(sum(x[q] for x in st), 1) for q in (st[0] if st else {})}
+            self.last["search"] = {q: round(sum(x[q] for x in st), 1) for q in (st[0] if st else {}) if not isinstance(st[0][q], dict)}
+            for q in ("lineSteps", "cappedKeys"):       # C202 Amendment 3's trace: counts merged by key over the workers
+                if any(q in x for x in st):
+                    m = {}
+                    for x in st:
+                        for k, v in (x.get(q) or {}).items():
+                            m[k] = m.get(k, 0) + v
+                    self.last["search"][q] = m
         return W, G, S
 
     def close(self):

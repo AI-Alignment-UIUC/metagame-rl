@@ -213,10 +213,12 @@ class RemotePool:
                 ti = torch.where(tv > -1e8, ti, torch.full_like(ti, -1))
                 top = np.full((B, K), -1, dtype=np.int32)
                 top[:, :ti.shape[1]] = ti.int().cpu().numpy()
+                top_lp = np.full((B, K), -1e9, dtype=np.float32)   # their log-probabilities (C133; extra, nothing reads it but C133)
+                top_lp[:, :tv.shape[1]] = tv.float().cpu().numpy()
             start = 0
             for (i, h, _), n in zip(group, ns):
                 sl = slice(start, start + n)
-                extra = [("top", top[sl].reshape(-1))] if h.get("topk") else []
+                extra = [("top", top[sl].reshape(-1)), ("top_lp", top_lp[sl].reshape(-1))] if h.get("topk") else []
                 self._send(i, RESPONSE, pack_arrays({"id": h["id"], "n": n, **({"k": K} if extra else {})},
                                                     [("action", action[sl]), ("logp", logp[sl]), ("value", value[sl]),
                                                      ("sampled", sampled[sl])] + extra))

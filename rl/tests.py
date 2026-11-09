@@ -42,7 +42,7 @@ import torch
 import torch.nn.functional as F
 
 from rl.decks import Pool, archived_decks, changed, pokemon_overlap, random_deck
-from rl.draft import LEAD, MY_UNSEEN, OPPONENT_LIST, SLOT, Drafter, deck_tokens, floor_temperature, random_changes, rloo
+from rl.draft import LEAD, MY_UNSEEN, OPPONENT_LIST, SLOT, Drafter, deck_tokens, floor_temperature, group_neutral, random_changes, rloo
 from rl.model import IdentityMLP
 from rl.rollouts import concat, read_rollout, subset
 from rl.token_model import TokenPointerNet, export_token_onnx
@@ -468,6 +468,65 @@ def check_draft(failures, table, text, archived, rng):
                         f"budget by {max(kls):.3f}, targets {np.mean(zs[:20]):.2f} -> {np.mean(zs[-20:]):.2f}")
     print(f"draft base (features): q0 mean entropy {hq0:.3f} (target 2.5), log-prob gap {gap:.1e}, KL within the floor's "
           f"budget ({max(kls):+.1e}), kl_in {sn['kl_in']:.2f}, targets {np.mean(zs[:20]):.2f} -> {np.mean(zs[-20:]):.2f}")
+
+    # C184's --table-neutral: a bonus moves picks inside a supertype only, each pick's supertype mass as without it, and a draw's log-prob is the update's
+    groups = np.zeros(pool.n, dtype=np.int64)
+    for c in pool.cards:
+        groups[c["id"]] = c["superType"]
+    bonus = np.where(groups == 2, rng.normal(size=pool.n), 0.0)
+    vn.bonus, vn.bonus_groups = bonus, groups
+    samples = [nf.sample(vn, rng) for _ in range(64)]
+    with torch.no_grad():
+        gap = float(np.abs(nf.log_prob(vn, samples)[0].numpy() - [s["logp"] for s in samples]).max())
+    mass = 0.0
+    for j in range(len(vn.ids)):
+        m, b = vn.base[j].numpy(), vn.b0np[j]
+        x0, x1 = np.where(m, vn.logits[j], -np.inf), np.where(m, vn.logits[j] + bonus, -np.inf)
+        y0 = b + x0 / floor_temperature(x0, 2.0, b)
+        y1 = group_neutral(b + x1 / floor_temperature(x1, 2.0, b), y0, groups)
+        q0, q1 = np.exp(y0 - y0.max()), np.exp(y1 - y1.max())
+        q0, q1 = q0 / q0.sum(), q1 / q1.sum()
+        mass = max(mass, max(abs(q0[groups == k].sum() - q1[groups == k].sum()) for k in (1, 2, 3)))
+    vn.bonus, vn.bonus_groups = None, None
+    if not (gap < 1e-3 and mass < 1e-9):
+        failures.append(f"neutral bonus: log-prob gap {gap:.1e}, supertype mass gap {mass:.1e}")
+    print(f"neutral bonus: log-prob gap {gap:.1e}, supertype mass gap {mass:.1e}")
+
+    # C188's --draft-out-bonus: entropy is h_out itself, none has no gradient, kl's maximum is at s = 0 where entropy's isn't
+    out = list(nf.head.out.parameters())
+    def term(mode):
+        nf.out_bonus = mode
+        ho = nf.log_prob(vn, [])[1]
+        g = torch.autograd.grad(vn.out_term, out, allow_unused=True)
+        return ho, vn.out_term, float(torch.cat([x.flatten() for x in g if x is not None]).norm())
+    ho, t_e, g_e = term("entropy")
+    same = t_e is ho
+    g_n = term("none")[2]
+    kept = [x.detach().clone() for x in nf.head.out[-1].parameters()]
+    t_k1 = float(term("kl")[1])
+    for x in nf.head.out[-1].parameters():
+        torch.nn.init.zeros_(x)
+    _, t_k0, g_k0 = term("kl")
+    g_e0 = term("entropy")[2]
+    for x, y in zip(nf.head.out[-1].parameters(), kept):
+        x.data.copy_(y)
+    nf.out_bonus = "entropy"
+    if not (same and g_n == 0.0 and t_k1 < 0 and abs(float(t_k0)) < 1e-5 and g_k0 < 1e-5 and g_e0 > 1e-3):
+        failures.append(f"out bonus: entropy is h_out {same}, none's gradient {g_n:.1e}, kl {t_k1:.2e} trained, {float(t_k0):.1e} at s = 0 with gradient {g_k0:.1e}, entropy's gradient at s = 0 {g_e0:.1e}")
+    from rl.metagame import size_neutral
+    batch = []
+    for _ in range(400):                                     # C188's --draft-size-neutral: only drawn candidates are fitted and shifted, at a known slope of -0.01 a copy
+        m = int(rng.integers(1, 13))
+        x, same_deck = {"ev_j": [0] * min(m, 6), "ev_n": [max(m - 6, 0)]}, {"ev_j": [], "ev_n": []}
+        batch.append((None, [x] * 20 + [same_deck] * 20, np.r_[rng.normal(-0.01 * m, 0.1, 20), rng.normal(0.0, 0.1, 20)]))
+    kept = [a[20:].copy() for _, _, a in batch]
+    hist = [-0.01] * 4
+    sz = size_neutral(batch, hist)
+    after = np.polyfit([len(s[0]["ev_j"]) + sum(s[0]["ev_n"]) for _, s, _ in batch], [a[:20].mean() for _, _, a in batch], 1)[0]
+    if not (all(np.array_equal(k, a[20:]) for k, (_, _, a) in zip(kept, batch)) and abs(sz["size_lambda"] + 0.01) < 0.002 and abs(after - (sz["size_lambda"] - sz["size_lambda_bar"])) < 1e-4):
+        failures.append(f"size neutral: {sz}, slope after {after:.5f}, or an unchanged entry moved")
+    print(f"size neutral: unchanged entries untouched, {sz}, slope after {after:.5f}")
+    print(f"out bonus: entropy is h_out {same}, none's gradient {g_n:.1e}, kl {t_k1:.2e} trained, {float(t_k0):.1e} at s = 0 with gradient {g_k0:.1e}, entropy's gradient at s = 0 {g_e0:.1e}")
 
 
 def check_train(failures, rng):
@@ -1108,6 +1167,75 @@ def check_lab_loop(failures):
           f"is rebased with its decision rule ({runs2[-1]}); a scratch card counts its own iterations, unforked and not rebased; a held pass is not adopted; a warm card forks from its warm start")
 
 
+def check_p1(failures):
+    """BENCH-P1 (cand_latent 3, card_content, emb_scale, cand_origin; runs/probe/BENCH/P1/record.md): (a) with every option off, a
+    model built from ar/data/start.pt has the config, state_dict keys, logits and value saved before the options existed
+    (runs/probe/BENCH/P1/start_baseline.pt: the first 1536 rows of runs/probe/C95-qhead-candidates/smoke_S.pt, torch.equal);
+    (b) the folded P1 model: fold error < 1e-4, the content read keeps >= 0.95 on the option's own card, a swap of two listed
+    PROMPT tokens' outputs swaps their options' logits; (c) its options go through token_net and load_policy."""
+    import importlib.util
+    from rl.gpu_matrix import load_policy
+    from rl.remote import trim_inputs
+    from rl.train import model_inputs, token_net
+    base, rows = Path("runs/probe/BENCH/P1/start_baseline.pt"), Path("runs/probe/C95-qhead-candidates/smoke_S.pt")
+    if not (base.exists() and rows.exists() and Path("ar/data/start.pt").exists()):
+        print("P1: start.pt, the baseline or the rollout rows are missing here; the check is skipped")
+        return
+    ref = torch.load(base, weights_only=False)
+    ins = [torch.from_numpy(x[:ref["n"]]) for x in model_inputs(torch.load(rows, map_location="cpu", weights_only=False)["batch"], "tokens")]
+    start, _ = load_policy("ar/data/start.pt", "cpu")
+    if start.config() != ref["cfg"] or list(start.state_dict()) != ref["keys"]:
+        failures.append("P1: with every option off the config or the state_dict keys changed")
+    with torch.no_grad():
+        outs = [start(*trim_inputs([x[s:s + 256] for x in ins], start)) for s in range(0, ref["n"], 256)]
+    lg = torch.cat([F.pad(o[0], (0, 1000 - o[0].shape[1]), value=-1e9) for o in outs])
+    if not (torch.equal(lg, ref["logits"]) and torch.equal(torch.cat([o[1] for o in outs]), ref["value"])):
+        failures.append("P1: with every option off the outputs are not bit-identical to the baseline")
+    spec = importlib.util.spec_from_file_location("p1_gates", "notes/scripts/p1_gates.py")
+    g = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(g)
+    m, err = g.build_p1("ar/data/start.pt")
+    if not err < 1e-4 or m.card_resid is not None or any("card_resid" in k for k in m.state_dict()):
+        failures.append(f"P1: fold error {err}, or card_resid kept")
+    new = {"cand_latent": 3, "cand_latent_zone": 1, "card_content": 1, "emb_scale": 0.1, "cand_origin": 1, "count_features": True}
+    if any(m.cfg.get(k) != v for k, v in new.items()):
+        failures.append(f"P1: config {m.cfg}")
+    x = [t[:64] for t in ins]
+    x = trim_inputs(x, m)
+    tc, tk, ta = (t.long() for t in x[:3])
+    verb, card, s1, s2, name, extra = x[5].long().view(64, -1, 6).unbind(-1)
+    with torch.no_grad():
+        h, mask = m.encode(*x[:5])[:2]
+        _, found, att = m.content_read(h, mask, tc, tk, ta, verb, card, s1, s2)
+        own = (att * (tc[:, None, :] == card[..., None])).sum(-1)[found]
+        if not (found.any() and float(own.min()) >= 0.95):
+            failures.append(f"P1: own-card attention min {float(own.min()) if found.any() else None}")
+        # the stored rows hold no search, so swap two HAND tokens read by two Trainer plays of one state (verb 5, slot 14 = hand)
+        lg0 = m.heads(h, mask, x[5], x[6], None, None, tc, tk, ta)[0]
+        hits = 0
+        for b in range(64):
+            ops = [j for j in range(verb.shape[1]) if int(verb[b, j]) == 5 and int(card[b, j]) and int(s1[b, j]) == 0 and found[b, j]]
+            if len(ops) < 2 or int(card[b, ops[0]]) == int(card[b, ops[1]]):
+                continue
+            pos = [int(torch.nonzero(mask[b] & (tk[b] == 6) & (tc[b] == card[b, j])).flatten()[0]) for j in ops[:2]]
+            h2 = h.clone()
+            h2[b, pos[0]], h2[b, pos[1]] = h[b, pos[1]].clone(), h[b, pos[0]].clone()
+            lg2 = m.heads(h2, mask, x[5], x[6], None, None, tc, tk, ta)[0]
+            hits += abs(float(lg2[b, ops[0]] - lg0[b, ops[1]])) < 1e-3 and abs(float(lg2[b, ops[1]] - lg0[b, ops[0]])) < 1e-3
+        if not hits:
+            failures.append("P1: no state offered two Trainers to check a token swap on")
+    cfg = m.config()
+    info = {"tokens": {"names": cfg["n_names"], "globF": cfg["glob_f"], "slotF": cfg["slot_f"], "maxTok": cfg["max_tok"], "maxCand": cfg["max_cand"]}}
+    if token_net(cfg, info).config() != cfg:
+        failures.append("P1: token_net drops an option")
+    with tempfile.TemporaryDirectory() as td:
+        torch.save({"config": cfg, "model": m.state_dict()}, Path(td) / "p1.pt")
+        if load_policy(str(Path(td) / "p1.pt"), "cpu")[0].config() != cfg:
+            failures.append("P1: load_policy drops an option")
+    print(f"P1: options off = bit-identical to the saved start.pt outputs ({ref['n']} rows); folded P1: fold error {err:.1e}, own-card "
+          f"attention min {float(own.min()):.4f}, {hits} swapped Trainer pairs follow their tokens; token_net and load_policy keep the options")
+
+
 def main():
     failures = []
     table = json.load(open("notes/data/cards/pool.json", encoding="utf-8"))["cards"]
@@ -1128,6 +1256,7 @@ def main():
     check_recent_score(failures)
     check_topk(failures, tiny_pilot(table, text), np.random.default_rng(3))
     check_chain(failures, table, text, np.random.default_rng(4))
+    check_p1(failures)
     for f in failures[:20]:
         print("FAIL", f)
     print("FAIL" if failures else "PASS")

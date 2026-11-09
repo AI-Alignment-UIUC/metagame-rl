@@ -53,139 +53,38 @@ gives a biased or blind builder, so pilot strength is the bottleneck.
 ## Status
 
 <!-- status:start -->
-*Updated 2026-10-24.*
+*Updated 2026-11-07.*
 
-**Where things stand.** A0, A1 and A3 are done, A2 has its ladder and the SimpleBot matchup matrix, and Phase B's engine plays two 2005 lists and passes a fuzz over 340 cards. Every learned drafting loop forked from a wall state has ended in Chansey / Snorlax walls with more Energy and fewer Trainers than the human lists, and with the 2000 round rule in the game (Evan's decision) the loop came closest to the human shape of any run (6.3-6.8 cards off) while walls still held 44-69 of 99 decks. Pilots grown with the walls rate them 0.68-0.75 against the human lists untimed, and the human-free pilot made 22-57 Elo stronger on the human lists by soft search targets (two seeds, short of their replication bar) rated the walls higher still, so tactical strength is not the fix. Fresh wide decks slide into Pokémon piles under the draft head's uniform prior (five starts, 2.4-4.0 Pokémon per 100 moves), and drawing the proposals from the pilot's own card similarity (Nf, provisional R1 after #231's audit graded it B and found it mostly proposes extra copies of cards already in the deck) slows that to about a third and kept the population median within 5 of the lists' 13.5 / 28 / 18 at two seeds, but both seeds gave up 3-5 Trainers after iteration 15 while selection paid Energy in every window. That lean sits upstream of selection, since a frozen, stronger judge leans the same, a basic Energy beats an average Trainer in every field, and both pilots price the human lists' own search, disrupt and tempo Trainers below an Energy whether they play greedy or search, so the open causes are the pilot's value, its inputs, the engine's Trainers and the clock, which an audit of all 42 Trainers in the engine and a loop of 5-minute experiments (Evan's rows 51-53) now take on.
+**Where things stand.** A0, A1 and A3 are done, A2 has its ladder and the SimpleBot matrix, and Phase B's engine plays two 2005 lists, while every learned drafting loop has ended with more Energy and fewer Trainers than the 24 human lists, and the ground truth hasn't moved. The pilots' play falls short of a search, which plays PlusPower where their policy gives it about zero, yet under search nearly every Trainer but Professor Oak, Energy Removal and Bill still prices below a basic Energy, and the lists' larger strength gap sits in which Pokémon they run, where a table learned by the loop's own pilots builds strong decks under greedy play but loses its edge under search. In W, the recipe with no table, the draft head learns to cut Trainers, but no head-side change moves the decks' median Trainers off 23, because selection on the loop's own games prices Trainers under Energy and turnover's wide-deck entrants bring the Energy surplus in. That price is the pilot's own and not a matter of search depth, since a two-turn judge keeps the decks greedy keeps, yet the loop's own judge ranks the 24 lists far above its decks and, started from them, holds their counts and improves them, so the strength gap is the loop's search never reaching list-like cards. What drives the Energy-heavy shape is deck-level selection culling Trainer-rich decks, partly because this pilot overdraws them into deck-outs, together with the generator's protected wide entrants and the head's learned Trainer cut, and C205 now tests whether the overdraw is a misplay its own playouts already see.
 
-**Earlier work:**
+- **Log #1–504 (A0–A5, B1–B2; rolled up from eight rolled-up summaries).** The engine and environment cover the 2000 field, verified against an oracle and audited against outside card texts and the 2000 rules (faithful apart from minor faults), Phase B's Worlds 2005 branch plays two lists, and the meta level became one learned loop (`rl/metagame.py`: 99 decks sharing one pilot and a draft head, with selection on real results) whose first best decks broke even with the human lists, yet every learned loop, through tournaments, leagues, walls, the round rule and fresh wide decks, ended with more Energy and fewer Trainers than the lists, and the closest shape (round479 with the restored gate, C91) lives in its population rather than its pilot. That lean traced through selection to the pilots, which price the lists' search, disrupt and tempo Trainers below a basic Energy, and no pilot change (memory, cross attention, chain heads, card-token keys, value heads, prompt-answer Qs, training-time branching) fixed it, while a quarantined bench of four human lists showed Computer Search capped by what it fetches and PlusPower a timing failure the pilot can see but doesn't act on. What differs from real play is the games' length: 81-85% of bench games end on the turn cap, and played longer the Trainer-rich lists deck out first and lose to their Energy-heavy copies, so the drafts' Energy lean answers the game these pilots play.
+- **Log #505–1016 (A5, from the bench's close to the loop's rainbow Energy; rolled up from eight rolled-up summaries).** The engine reaches human pace when a scripted line plays its speed Trainers, but every drafting lever on the gated base read null or between (per-turn discounts, draft-head entropy, Prize margins, reward changes, practice curricula, powered selection, the pilot's own search in the loop), and a per-card ledger found selection trimming the tempo cards while the draft head proposed them at a quarter of their list share, so nothing in the loop adds them. The price traced to play: the pilot's own search plays PlusPower where its policy doesn't, yet even then the tempo cards only reach parity with a basic Energy and nearly every Trainer but Professor Oak, Energy Removal and Bill prices below one (C135-C143, C165), while the lists' larger strength gap sits in their Pokémon (C167, C169), where a table learned by the loop's own pilots passed C171's gate in evaluation decks but lost its edge under search, and a Trainer table held its decks' Trainers mostly through proposal mass and fell under search (0.351, 0.366 against the lists' 0.505). In W, the recipe with no table, the head learns to cut Trainers but no head-side change moves the median off 23, selection on the loop's own games carries the fall with the Energy surplus entering through wide-deck entrants, and inside the human lists the same pilot prices Trainers under Energy at greedy and one-turn depth and only about level at two turns (C193, C194), with a two-turn judge keeping the decks greedy keeps (C197), which led to C199's off-type Energy test; free RAM was the recurring limit on what ran throughout.
 
-- **Log #1–56 (A0–A5, B1–B2; rolled up from eight block summaries).** The engine and environment cover
-  the 2000 field and were verified against an oracle (0 mismatches over 1.65M checked decisions), with
-  engine faults and free action cycles fixed on the way, and Phase B moved to Worlds 2005, whose engine
-  branch plays Birds and ZapTurnDos and passes a 1,500-game fuzz over 340 cards. Trained pilots beat
-  SimpleBot (the token model 93% when trained on the archived decks, human-free pilot-v2 near 83%), but
-  deck search driven by the pilot's value keeps flooding decks with Energy and no change to the search
-  fixed it, neither extra attention nor play-time search transferred to an outside opponent, and the
-  first built metagame to beat the archived field (60.7%, [2000s result #1](results/2000s-result-1/)
-  and log #40) came from piloting every PSRO iteration. Under the general self-discovery scope set at
-  #51, co-evolving the decks and one pilot over the full pool rediscovered Computer Search, Scyther,
-  Oak, Energy Removal and Double Colorless Energy but collapsed to one deck type, so the metagame moved
-  to a league of deck-owning agents with separate networks and a two-stage real-game adoption check.
-- **Log #57–120 (A4, A5, plan; rolled up from eight block summaries).** Tournaments of deck-owning agents
-  ([2000s result #2](results/2000s-result-2/)) kept their deck types distinct but drifted into Pokémon piles (0/8
-  archetypes), so the meta level became one learned loop, `rl/metagame.py` (99 decks sharing one pilot and one draft head
-  trained on game results, with turnover; the older code at the `pre-simplify` tag), whose first best decks broke even
-  with the human lists under pilot-v2. Pilot architecture screens stayed within their noise, and taking the human lists as
-  ground truth (Evan) traced the decks' distance from them to the pilot, which does not set up before attacking and so
-  values every Trainer but Oak and Bill below an Energy; the lab (`rl/lab.py`) then trained the loop as a main line whose
-  forks are decided against it on bars set by A/A cards, Evan's ideas first and then the approved three-stage plan. It
-  adopted 2 PPO epochs, 6 swaps a draw, the result-only draft reward, Evan's deck-free board encoder, learning rate 2e-4
-  and a slower draft head, but no pilot change (memory in three forms, expert iteration toward a turn search, in-turn
-  credit, entropy, depth, slot binding) moved Trainer competence from 0.43–0.48, practice before a draw counts failed on
-  deck shape, and the population held one deck type from 160 on while its shape swung (closest to the human lists at 360,
-  10.5 Energy above them at 400 in a deck-out meta), so when the plan's stall rule fired Evan chose a league of three
-  draft heads sharing one pilot; lab bookkeeping faults that silently changed or risked decisions recurred throughout and
-  were each fixed as found.
-- **Log #121–184 (A5; rolled up from eight block summaries).** The one wall type was traced from a drafting ratchet and
-  a specialised shared pilot (answered with selection on real results, group changes, practice games and wide turnover)
-  to the judge: every pilot grown with the walls rates them 0.68-0.75 against the human lists, no drafting, selection,
-  diversity or pilot-training change (type caps, KL anchors, challengers, exploiters, value targets, a significance gate)
-  unseated them, and they fall under half the points only when both seats search and the round is cut early. With the
-  2000 round rule in the game (Evan's decision) the loop came closest to the human shape of any run (6.3-6.8 cards off
-  against 9.6-11.7) while walls still held 44-69 of 99 decks, and human-free pilots paid the round's points or given
-  soft search targets gained 54-57 Elo on the human lists yet rated the walls as high or higher (0.504-0.641 of the
-  event points), so stronger tactical play did not unseat them; the research loop's own collapse onto two wall states
-  became a written method with rivals, pre-written bands and an exploration floor, which now runs unattended as code.
-  Its first prevention start, fresh wide decks with the warm pilot under the rule, moved its population median from
-  10 / 27 / 24 to 14 / 27 / 19 in 14 iterations without the slide into Pokémon piles of every earlier from-scratch run,
-  though the decks it rates best still carried about 6 too few Trainers and 6 too much Energy.
-- **Log #185–192 (A5).** The night's prevention start, fresh wide decks with the warm human-free pilot under the rule,
-  had held under the significance gate only because the gate moved decks 5-7 times slower, and ungated (C51) it slid
-  like every from-scratch run: the population median went from 12 to 27-29 Pokémon in 19 iterations (2.3 per 100 moves,
-  against 2.8-3.7 untimed with pilot-v2) while the 12 decks the pilot rates best rose only 5-7 and kept their Trainers.
-  Selection is not the cause (accepted moves carry about 0.2 fewer Pokémon than proposed) and the learning head does not
-  unlearn its uniform prior over an 81%-Pokémon pool (its pull fell from +5.6 to +1.2 Pokémon a proposal, then climbed
-  back to +2.2-2.7), so at one seed the slide is the proposals; the replicate runs as seed 3 after seed 2 was stopped
-  because three jobs put GPU memory over 80%, a limit the launcher does not check. The soft search targets' dose arm
-  resumed and sat 41 and 13 Elo above the clocked pilot on the human lists under the rule at 139 and 159, rating the
-  walls higher as it grew stronger (0.57 to 0.68 against the lists untimed).
-- **Log #193–200 (A5).** At two seeds the slide of fresh wide decks into Pokémon piles came from the draft head's
-  near-uniform proposals over an 81%-Pokémon pool, which selection passed through (C51), so H110's label-free base
-  measure was built to draw each incoming card by the pilot's own similarity to the card going out: offline it cut a
-  fresh head's Pokémon pull from +5.6 to +1.6 a draw and left an Energy drain that a base entropy of 2 nats removes, and
-  on C51 seed 1's exact start (C52) it held the population median to +2 Pokémon over 349 moves through iteration 8 (0.6
-  per 100 against 2.4-4.5; LR 12.8 at one seed, no concurrent control), reaching 12 / 27 / 19. The decks the pilot rates
-  best still carry 3-6 more Energy than the lists' 18, so the lists' Energy deviation now sits in the judge's ranking
-  rather than in the proposals. Tripling the soft search targets' weight (C49b) ended no better than C49 under the rule
-  (+40 Elo over the clocked pilot, 17 below C49) and 78 Elo worse untimed, and C49's replication seed is training.
-- **Log #201–208 (A5).** With the proposals drawn from the pilot's own card similarity (C52, one seed), a fresh wide
-  population never slid into Pokémon piles through 33 iterations and its median reached the lists' 14 / 28 / 18 at
-  iterations 12-14 in 92-99 deck types, but over 20-29 it traded Trainers for Energy (median 24 Trainers; the best 12 at
-  17.6 / 19.0 / 23.4), and selection paid Energy and cut Trainers against the proposals in every window from iterations
-  0-2 on, before the pilot could co-adapt, so a screen with a frozen, stronger, human-free judge (C53) was built,
-  smoke-tested and launched to tell the judge from a fixed preference. The soft search targets' replication seed
-  (C49-s3) ended 22 Elo above the clocked pilot on the human lists under the round rule (C49 +57), so at two seeds the
-  targets do not hurt transfer but miss their +50 replication bar (mean +40; not adopted), and its untimed gain faded
-  from +83 at 159 to −1 at 199, as C49b's did. At both seeds the stronger pilot rates the walls higher (0.60 and 0.64 of
-  the event points under the rule against the clocked pilot's 0.53).
-- **Log #209–216 (A5).** At two seeds a frozen, stronger, human-free judge in the loop (C53) leaned to Energy against
-  the proposals exactly as the learning judge had on paired starts (+0.005 a move over iterations 0-9), and the same
-  lean runs through 13 of 16 windows of the untimed escape screens, so selection's preference for Energy is neither
-  co-adaptation, weak play nor the round rule (at one seed the frozen judge's best decks also slid further toward
-  Pokémon piles, 27 against 16 cards from the lists). Offline, a basic Energy beat an average random Trainer of a fresh
-  wide deck by about 0.025 a 3-card swap under both pilots, against fresh, drafted and human fields and with or without
-  the clock (C56), so the lean is what these pilots' own games pay for the Trainers the draft head proposes. Whether
-  they also price the human lists' chosen Trainers below an Energy, the scorecard's first Pilot row and never read on
-  these pilots, decides between a pilot fault and a fault in which Trainers get proposed and kept; that probe (C59)
-  passed its greedy and searched smokes, and its greedy stage runs.
-- **Log #217–224 (A5).** Under both human-free pilots, 57 Elo apart, and the round rule the human lists lose to their own
-  copies with the search, disrupt and tempo Trainers turned into basic Energy (0.40-0.48), and untimed, where 57% of
-  those games end in deck-outs, even their whole Trainer suites lose (0.456), as for every player read before (C59), so
-  selection's Energy lean is these pilots' payoff for Trainers in general and sits upstream of selection, in the pilot,
-  its inputs, the engine's Trainers or this readout; search on both seats, the pilot's oracle swap, is playing on those
-  groups. The frozen, stronger judge closed as a fixed preference, both of its seeds ending as Pokémon piles further
-  from the lists than the learning judge's run (C53). Drawing proposals from the pilot's own card similarity (C52) held
-  fresh wide decks off the Pokémon slide at a second seed and start (1.35 Pokémon per 100 moves against 4.0 for the same
-  start without it; median 14 / 28 / 17 at iteration 9), though at both seeds the decks rated best still carry 3-5 more
-  Energy than the lists; its code passed an integrity check for human data, and its concurrent control, the cheapest
-  test before adopting it into the recipe, runs beside it.
+- **Log #1017–1080 (A5, what holds the loop's decks off the lists; rolled up from eight block summaries).** In the loop's own decks the Energy surplus over the lists is all basic Energy, about 1.6 cards of it a rainbow tax and much of the rest Double Colorless replaced by basics, yet under the loop's greedy judge neither on-typing nor denser Energy frees Trainer slots, because this pilot prices a Trainer below a usable Energy in every deck tested, a self-consistent price rather than misplay or an engine fault, and not a Trainer-specific skill gap (specialists help Trainer-poor decks more, C189). A two-turn player values Trainers and Energy efficiency more (C199, C201 under search), but a two-turn judge keeps the same decks as greedy even on the most lists-like population (C202 set 1), and from Energy-light starts both WL seeds' best decks pass the lists' shape at 44 at about 0.15-0.26 of their strength before settling Energy-heavy, so the attractor is the pilot's valuation and the shape match a count coincidence. A long-parked env fault, greedy repeating Charizard's Energy Burn to the turn cap, was found and fixed along the way, touching the loop's rare Charizard decks but not the lists.
 
-- **Log #225–232 (A5).** The uniform-base control on C52 seed 3's start slid like every uniform start (3.9 Pokémon per 100
-  moves against Nf's 1.35), so the night's last round adopted Nf as R1, but an audit of the night (#231) graded that B,
-  not A (one concurrent control, seed 3 just outside its own band, a control-only LR), found that Nf slows the slide to
-  about a third mostly by proposing extra copies of cards already in the deck, and confirmed that under R1 the median
-  again gives up 3-4 Trainers after iteration 15 while selection's Energy lean rises to +0.53 a move. Search on both
-  seats moved half the pilot's decisions yet left the human lists' search, disrupt and tempo Trainers below an Energy
-  (−0.025, paired SE 0.021), so the pilots' low price for Trainers is shared by greedy and searched play and sits in the
-  pilot's value, its inputs, the engine's Trainers or the clock. The night kept its hard limits (no git writes, frozen
-  files intact, every run through the launcher) while three errors kills went unapplied and GPU limits were briefly
-  exceeded, so the loop now checks GPU memory at launch, keeps its switches from rounds, shows game errors and allows 20
-  rounds a day; R1 from a random pilot (C63) and Evan's seasons with selection (C66) ran on R1.
+- **Log #1081–1088 (A5, WL's search strength, the second loop fault, and C202's fixed reruns).** Under search both WL seeds' lists-shaped best 12 at 44 score about 0.15 against the lists (0.143, 0.154, against the lists' 0.505), so §3's strength criterion fails where its shape criterion holds. A turn-cap check after the Energy Burn fix found 4 of 2,000 greedy games still capped by Powers that cycle state (Energy Trans, Damage Swap), none of them in the lists, and a second rule, no Power whose trial repeats a state already seen this main phase, was built, tested and made live after C202's reruns, with C189 stage 3 held until then so its specialists share one env. C202's sets rerun under the fixed env, and the sets finish with medians that miss both bands and means that show no judge effect.
 
-**Recent (log #233–241).** An audit of all 42 pool Trainers found the human lists' staples resolving as printed, and
-the faults it did find (Potion dead, Digger reversed, Challenge! and Maintenance too strong, PlusPower lost into
-Defender, Clefairy Doll and Mysterious Fossil never offered, multi-card picks in an order the pilot cannot see, 1-card
-mulligans) were fixed and verified; on the fixed build the strongest human-free pilot still prices the lists' search,
-disrupt and tempo Trainers below a basic Energy (0.434 against 0.429), so the fault is the pilot. Fast probes then
-located it: the pilot's answers inside its own Trainer prompts are no better than random (+0.002, SE 0.009), while it
-never passes with an attack on offer, reads card identity, and plays the lists' search Trainers as worth no more than a
-blank card, with the same deficit off the mirror as in it. A Karpathy-style loop trains one edited `train.py` for 5
-minutes from that pilot and keeps an edit only if it raises the lists' share against copies 6 Trainers lighter (0.474
-at the start, kept only on two seeds), now pointed at the prompt decisions, beside a day's schedule of probe windows.
+- **Log #1089–1096 (A5, C202's close, A177's C203 and the frozen-head check).** C202 closes with no judge effect on the means at either set, so a deeper judge doesn't change which decks are kept on any population tested, and under both env fixes no greedy game hits the turn cap; no deep round is run, its topics being covered. On the auditor's A177, C203 (a) drops the 24 lists into W's own populations and 19-22 of them rank in the top quarter under W's own pilot at both seeds (R-explore-a), so the loop's judge would keep the lists and the strength gap is its search over card content. A look-back on a frozen-head fault found in C203 (b)'s smoke (a saved Adam lr restored) found no past read affected, H0's head hash being unchanged from 0 to 44.
+
+- **Log #1097–1104 (A5, C189's close and C203's lists-start).** C189's third stage finds no Trainer dividend on W s48's decks either (R-no-bias sampled), so at neither W seed does a Trainer-specialized pilot lift Trainer-rich decks. C203 (b), started from the 24 lists with W s48's pilot and head frozen, holds their Energy (−0.08 over 7 iterations) and improves them by its own head to head (evolved top 12 against the originals 0.566), so the loop's judge keeps and refines list-like decks. On the auditor's review that read is "no shift in 7 iterations, turnover off", and (b3) was designed to run the lists-start with turnover on, W's 20-iteration protection kept and the lists started at age 20, for 30 iterations, to tell whether the entrant generator holds the minimum or the search's start and reach do.
+
+- **Log #1105–1112 (A5, C203's replicate and turnover-on read, and C204's design).** C203 (b) replicates at W s49: from the lists, frozen selection holds their Energy (+0.33) and improves them (G3 0.594 against the originals), though W s49's learned out-cut moves about 2 Trainers into Pokémon. With turnover on, (b3)'s interim read shows the pump: the lists' Energy rises +2.4 in 14 iterations, 62% of it from turnover's kill of Trainer-rich, Energy-light lists and 23% from the generator's dilution, so the loop's deck-level ranking under this pilot penalizes Trainer-rich decks, lists included. C204 was then set to find how those culled lists lose, with the auditor's time-win worry answered from the sourced STS rule (a time-win 2 of 3 points) and kept as a sensitivity read, and its replay confirmed z is the round rule exactly.
+
+- **Log #1113–1120 (A5, overdraw among the lists, and C205's design).** C204 finds the Trainer-rich lists turnover culls deck out far more than the kept ones under this pilot (2.7× under W s48's, 1.66× under W s49's: R-overdraw at one pilot, the direction replicated), drawing more a turn and ending with less deck, while W's own culls lose the same ways as its kept decks; rule 9 is clean, and counting time-wins as full wins barely moves the cull. The pilot sees both players' exact deck counts, so the overdraw isn't forced by missing input, and C205 was set to ask whether it's a misplay at low deck, with both pilots and a dose-response over four deck-size buckets; its timed pilot hints so (playing draw at 10 or fewer cards left loses 0.13 by the pilot's own follow-up, at a flat 0.17 play rate).
+
+- **Log #1121–1128 (A5, (b3)'s close, the overdraw test and the clock question).** C203 (b3), the lists started with turnover on for 30 iterations, reads between: Energy rises +2.6 from turnover's kill (+2.1) and protected wide entrants (+1.6), with the lists' lineages losing 6 Trainers to the head's cut, so the Energy-heavy attractor comes from deck-level selection, the generator's protected entrants and the learned Trainer cut. C205 then finds this pilot plays draw cards as often at 10 cards left as at 40 while its own playouts say stop, at both pilots, and the auditor's question whether the turn clock prices Trainers down was answered from C113's earlier read: played longer, the lists lose more to their Energy copies because they deck out first, so the clock props their Trainers up.
+
+**Recent (log #1129–1130).** C205 reads R-misplay under both pilots: at deck ≤ 10, playing a draw card loses −0.05 to −0.07 by the pilot's own follow-up, rising with cards left at about +0.0026 a card, while its play rate doesn't adapt, although it sees the exact deck count. C206, an evaluation-only test with draw plays withheld at low deck, now asks whether a pilot that didn't overdraw would price the lists' Trainers at Energy, before any learned fix is built; it waits for the GPU, which Evan's apps fill, and the ground truth hasn't moved. The pilot almost never feels a deck-out in training (1.6-1.9% of its games end that way), so if C206 shows the overdraw moves the price, the fix is exposure to games that reach low decks, not a new value head.
 
 The full record is in [`notes/progress-log.md`](notes/progress-log.md).
 
 **Next:**
 
-1. The 5-minute loop (`ar/`, #239-#241) on the prompt-decision ideas in `ar/ideas.md`; its results are in
-   `ar/results.tsv` and `git -C ar log`.
-2. Probe window 2 at 23:30 (`runs/dayplan/plan.json`): X1b, a lookahead oracle for the pilot's prompt answers inside
-   Trainers: would well-chosen answers lift the lists' Trainers above the Energy?
-3. The loop's milestone at 07:00 on 2026-10-25 (C72): the kept `train.py` for 30 minutes, M on fresh deals and the
-   reverse direction; then, if it holds, a metagame screen at 12:00 for deck shape against 13.5 / 28 / 18.
-4. Decisions for Evan: (a) the keep threshold 0.01 (not 0.03); (b) a scheduled task for `ar/drive.py` so the loop
-   outlives this session (Claude Code's auto mode refused to create one).
-5. Evan's row 5 variant on the fixed engine and a second concurrent Nf pair (#237, #238), after the loop's milestone.
+1. C199: the two-turn cells (setA-h2 running, then setB-h2), then the rule-9 replay with per-seat counts (starvation against misplay, research's split in #1018), then arm (c) under greedy and two-turn search on (a)'s deals, read as (c) − (a).
+2. C189, the specialist pilot on Trainer-rich loop decks (SH, SL, cells), after the rule-9 read; its hold keeps a slot for its stages.
+3. C200's lever, research's call: the in-choice for an on-type fix (R-not-proposed), any change rules-derived and under its own record; `wide_deck` is not to be fixed by hand.
+4. Waiting behind C189's hold and RAM: C197's C49-sd column, WL s52's resume to 74 and WL s53's, WR s50 (paused), H0 s49, C184's ND s49.
+5. Evan's rulings, only if still needed: practice decks selected on named draw copies (#726) and research's standing-rule question (#723, #732); the `ar/` re-setup after the `rl/` and `env/` changes.
 <!-- status:end -->
 
 ---

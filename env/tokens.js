@@ -25,6 +25,8 @@
 // Candidates (at most MAX_CAND), one per option, as [verb, card, slot1, slot2, name, extra]:
 //   slots 1..12 as above, 13 = an empty Bench slot, 14 = from hand, 15 = from discard; names are
 //   attack and Power names of the pool.
+//   With origin = 1 (rl/token_model.py cand_origin) a pick_card row carries the source zone of the card it names in extra:
+//   1 hand, 2 deck (or prizes), 3 discard (either), found by identity among the open prompt's listed cards; 0 if unlisted.
 //   With chain = K > 0 (the chain head, rl/token_model.py chain): at most MAX_CAND - K options, and the last K rows
 //   hold the deciding player's own decisions of this game turn (chainRows), oldest first and right-aligned.
 'use strict';
@@ -82,6 +84,7 @@ class TokenEncoder {
     this.MAX_TOK = MAX_TOK; this.MAX_CAND = MAX_CAND; this.SLOT_F = SLOT_F; this.GLOB_F = GLOB_F;
     this.history = 0;        // turns of action history encoded (0 = none, as before log #76)
     this.chain = 0;          // the chain head's rows (0 = none): the last `chain` candidate rows
+    this.origin = 0;         // 1 = a pick_card row's extra is its source zone (cand_origin)
     this.canon = 0;          // 1 = one token per card per zone, the prompt's references as aux flags (state_canon)
     this.sizes = { tokCard: MAX_TOK, tokKind: MAX_TOK, tokAux: MAX_TOK, glob: GLOB_F, slots: 12 * SLOT_F, cand: MAX_CAND * 6 };
   }
@@ -244,9 +247,19 @@ class TokenEncoder {
     // Candidates.
     const opts = options || (d ? d.options : []);
     const activeCard = me.active.getPokemonCard();
+    let origin = null;       // origin: full name -> source zone code of the open prompt's listed cards
+    if (this.origin > 0 && prompt) {
+      const listed = prompt.cards ? (prompt.cards.cards || prompt.cards) : prompt.cardList ? prompt.cardList.cards : null;
+      if (Array.isArray(listed) && !(prompt.options && prompt.options.isSecret)) {
+        const home = [[me.hand.cards, 1], [me.deck.cards, 2], ...me.prizes.map(z => [z.cards, 2]), [me.discard.cards, 3], [opp.discard.cards, 3]];
+        origin = new Map();
+        for (const c of listed) { const h = home.find(x => x[0].includes(c)); if (h && !origin.has(c.fullName)) origin.set(c.fullName, h[1]); }
+      }
+    }
     opts.forEach((o, i) => {
       if (i >= MAX_CAND) { out.overflow = true; return; }
       const c = this.candidate(o.key, prompt, activeCard, state, me);
+      if (origin && c[0] === VERB.pick_card && c[1]) c[5] = origin.get(o.key.slice(5)) || 0;
       out.cand.set(c, i * 6);
     });
     out.nCand = Math.min(opts.length, MAX_CAND);

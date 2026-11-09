@@ -27,24 +27,26 @@ ROOT = Path(__file__).resolve().parent.parent
 TOKEN_FIELDS = ("obs.tokCard", "obs.tokKind", "obs.tokAux", "obs.glob", "obs.slots", "obs.cand", "obs.nCand")
 
 
-def advantages(r: dict, gamma: float, lam: float, lam_turn: float = None):
+def advantages(r: dict, gamma: float, lam: float, lam_turn: float = None, gamma_turn: float = None):
     """GAE per trajectory (one player's decisions in one game, in order); reward only at the end. lam_turn (log #96):
     the lambda between two decisions of the same game turn (glob byte 0, env/tokens.js), lam across turns, so a turn's
-    outcome credits every decision of that turn in full with lam_turn = 1."""
+    outcome credits every decision of that turn in full with lam_turn = 1. gamma_turn (C121): the discount between two
+    decisions is gamma * gamma_turn ** (game turns between them), so 1 within a turn; None leaves gamma alone."""
     T = len(r["action"])
     adv = np.zeros(T, dtype=np.float32)
     nxt_v, nxt_a, nxt_turn = {}, {}, {}
     value, reward, done, traj = r["value"], r["reward"], r["done"], r["traj"]
-    turn = r["obs.glob"].reshape(T, -1)[:, 0] if lam_turn is not None else None
+    turn = r["obs.glob"].reshape(T, -1)[:, 0] if lam_turn is not None or gamma_turn is not None else None
     for t in range(T - 1, -1, -1):
         k = traj[t]
         if done[t]:
             v1, a1 = 0.0, 0.0
         else:
             v1, a1 = nxt_v.get(k, 0.0), nxt_a.get(k, 0.0)
-        delta = reward[t] + gamma * v1 - value[t]
-        l = lam_turn if turn is not None and nxt_turn.get(k) == turn[t] else lam
-        adv[t] = delta + gamma * l * a1
+        g = gamma if gamma_turn is None else gamma * gamma_turn ** max(int(nxt_turn.get(k, turn[t])) - int(turn[t]), 0)
+        delta = reward[t] + g * v1 - value[t]
+        l = lam_turn if lam_turn is not None and nxt_turn.get(k) == turn[t] else lam
+        adv[t] = delta + g * l * a1
         nxt_v[k], nxt_a[k] = value[t], adv[t]
         if turn is not None:
             nxt_turn[k] = turn[t]
@@ -203,11 +205,17 @@ def ppo_update(model, opt, batch, args, device):
     # target = pi * exp(clip((q - mean q) / tau)) renormalised (pi detached, restricted to those moves), and the loss
     # KL(target || pi restricted) at weight args.search_distill, averaged over all the minibatch's rows.
     sd_w = getattr(args, "search_distill", 0.0) if "probe_c" in batch else 0.0
+    # --distill-margin D (C137): a hard target in place of the soft one, the searched move with the best mean score, kept only
+    # where it beats the move searched first (the pilot's own top-1 when probed) by D or more; the loss is search_distill x
+    # cross-entropy toward it, summed over kept rows and divided by the minibatch's rows (as the soft KL). None: the soft target.
+    sd_m = getattr(args, "distill_margin", None) if sd_w else None
     if sd_w:
         p_c = torch.from_numpy(batch["probe_c"]).to(device)
         p_q = torch.from_numpy(batch["probe_q"]).to(device)
         stats["sd_kl"] = 0.0
         stats["sd_agree"] = 0.0
+        if sd_m is not None:
+            stats.update({"sd_ce": 0.0, "sd_kept": 0.0, "sd_probed": 0.0, "sd_entropy": 0.0})   # raw sums; ratios at the end
     n = 0
     grad_norm, kl_last, n_last = 0.0, 0.0, 0      # pre-clip norm per step; kl over the last epoch only
     tok_len = None
@@ -275,7 +283,29 @@ def ppo_update(model, opt, batch, args, device):
             v_loss = torch.max((v - ret[j]) ** 2, (v_clipped - ret[j]) ** 2).mean()
             # the policy term is the mean over the minibatch's policy decisions (all of them unless some are unsampled)
             loss = (pi_rows.sum() / M if M > 0 else 0.0 * pi_rows.sum()) + w * (args.vf * v_loss - args.ent * entropy)
-            if sd_w and P > 0:
+            if sd_w and P > 0 and sd_m is not None:   # C137's hard target
+                prow = p_c[j][:, 0] >= 0
+                if prow.any():
+                    c, q = p_c[j][prow], p_q[j][prow]
+                    ok = c >= 0
+                    qx = q.masked_fill(~ok, -1e9)
+                    best = qx.argmax(1)
+                    keep = (qx.gather(1, best[:, None]).squeeze(1) - q[:, 0]) >= sd_m
+                    # a target must be legal at its own transition (#621: one C137 s28 row at iteration 0 wasn't; its masked
+                    # log-probability, -1e9, made a CE of about 1e9 whose gradient flattens the policy)
+                    keep = keep & mask[prow].gather(1, c.gather(1, best[:, None]).clamp(min=0)).squeeze(1)
+                    mb_stats["sd_probed"] += float(prow.sum())
+                    if keep.any():
+                        tgt = c.gather(1, best[:, None]).squeeze(1)[keep]
+                        lpk = logp_all[prow][keep]
+                        ce = -lpk.gather(1, tgt[:, None]).squeeze(1)
+                        loss = loss + sd_w * ce.sum() / rows
+                        with torch.no_grad():
+                            mb_stats["sd_ce"] += ce.sum().item()
+                            mb_stats["sd_kept"] += float(keep.sum())
+                            mb_stats["sd_agree"] += (lpk.argmax(1) == tgt).float().sum().item()
+                            mb_stats["sd_entropy"] += -(lpk.exp() * lpk).masked_fill(lpk < -1e8, 0.0).sum(1).sum().item()
+            elif sd_w and P > 0:
                 prow = p_c[j][:, 0] >= 0
                 if prow.any():
                     c, q = p_c[j][prow], p_q[j][prow]
@@ -340,6 +370,12 @@ def ppo_update(model, opt, batch, args, device):
             if e == args.epochs - 1:
                 kl_last += mb_stats["kl"]
                 n_last += 1
+    out = {k: v / max(n, 1) for k, v in stats.items()}
+    if sd_m is not None:                              # C137: per kept row (CE, agreement, entropy), kept per probed row; sd_kept
+        kept = stats["sd_kept"]                       # and sd_probed stay as means a minibatch (the dose)
+        out.update({"sd_ce": stats["sd_ce"] / max(kept, 1), "sd_agree": stats["sd_agree"] / max(kept, 1),
+                    "sd_entropy": stats["sd_entropy"] / max(kept, 1), "sd_kept_share": kept / max(stats["sd_probed"], 1)})
+        return {**out, "grad_norm": grad_norm / max(n, 1), "kl_last": kl_last / max(n_last, 1)}
     return {**{k: v / max(n, 1) for k, v in stats.items()}, "grad_norm": grad_norm / max(n, 1),
             "kl_last": kl_last / max(n_last, 1)}
 
@@ -362,7 +398,11 @@ def build_model(args, info):
                              chain=getattr(args, "chain", 0), cand_latent=getattr(args, "cand_latent", 0),
                              cand_latent_zone=getattr(args, "cand_latent_zone", 0),
                              cand_latent_gate=getattr(args, "cand_latent_gate", 0),
-                             state_canon=getattr(args, "state_canon", 0), state_key=getattr(args, "state_key", 0))
+                             cand_latent_pick=getattr(args, "cand_latent_pick", 0),
+                             cand_latent_center=getattr(args, "cand_latent_center", 0),
+                             state_canon=getattr(args, "state_canon", 0), state_key=getattr(args, "state_key", 0),
+                             card_content=getattr(args, "card_content", 0), emb_scale=getattr(args, "emb_scale", 0.0),
+                             cand_origin=getattr(args, "cand_origin", 0))
 
 
 # Weights a pilot may lack when a checkpoint is read into a larger architecture: new modules that start as the
@@ -387,7 +427,9 @@ def token_net(cfg: dict, info: dict, **overrides):
                                                                "card_inputs", "deck_tokens", "slot_bind", "ability_text",
                                                                "deck_mode", "deck_layers", "history", "memory",
                                                                "value_tower", "value_query", "chain", "cand_latent", "cand_latent_zone",
-                                                               "cand_latent_gate", "state_canon", "state_key") if k in c}), info)
+                                                               "cand_latent_gate", "cand_latent_pick", "cand_latent_center", "state_canon", "state_key",
+                                                               "card_content", "emb_scale", "cand_origin")
+                                                               if k in c}), info)
 
 
 def load_grown(model, state: dict) -> list:
